@@ -103,7 +103,7 @@ test('missing key opens Media settings and saves through the credential manager'
 
   await rightClickSelected()
   await editor.page.getByTestId('context-vectorize').click()
-  const dialog = editor.page.getByTestId('app-settings-dialog')
+  const dialog = editor.page.getByTestId('app-settings')
   const vectorizeRow = dialog.locator('[data-vectorize-settings]')
   await expect(vectorizeRow).toBeVisible()
 
@@ -113,7 +113,7 @@ test('missing key opens Media settings and saves through the credential manager'
   await dialog.getByRole('button', { name: 'Save', exact: true }).click()
   await expect(vectorizeRow).toBeVisible()
   await editor.page.getByTestId('app-settings-done').click()
-  await expect(editor.page.getByTestId('app-settings-dialog')).toHaveCount(0)
+  await expect(editor.page.getByTestId('app-settings')).toHaveCount(0)
   expect(
     await editor.page.evaluate((id) => window.kalka?.getStore?.().graph.getNode(id)?.type, nodeId)
   ).toBe('RECTANGLE')

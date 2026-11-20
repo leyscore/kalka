@@ -2,7 +2,7 @@
 import { useI18n } from '@kalka/vue'
 
 import { useCollabIdentity } from '@/app/collab/identity'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
 import { openExternalLink } from '@/app/shell/ui'
 import BrandMark from '@/components/brand/BrandMark.vue'
 import PixelSky from '@/components/brand/PixelSky.vue'
@@ -49,7 +49,7 @@ const identity = useCollabIdentity()
             side="left"
             data-test-id="home-settings"
             :class="homeHero.cornerButton"
-            @click="openSettingsDialog()"
+            @click="openSettings()"
           >
             <icon-hugeicons-settings-01 class="size-[18px]" />
           </IconButton>

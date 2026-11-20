@@ -12,7 +12,6 @@ import {
 import { useNotificationMessages } from '@/app/i18n/notifications'
 import { useStorageSettingsFeedback } from '@/app/integrations/storage/settings/feedback'
 import { useStorageSettings } from '@/app/integrations/storage/settings/use'
-import { settingsDialogOpen } from '@/app/settings/dialog'
 import { useSettingsFormGuard } from '@/app/settings/navigation/use'
 import { focusInvalidField } from '@/components/settings/layout/focus'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
@@ -80,8 +79,8 @@ async function save() {
   }
   if ((await connection.save()) === 'saved') editing.value = false
 }
+/** Leaving the Settings address closes Settings (`src/app/settings/route.ts`). */
 async function openWorkspace() {
-  settingsDialogOpen.value = false
   await router.push('/storage')
 }
 async function testConnection() {

@@ -12,7 +12,7 @@ import { useAIChat } from '@/app/ai/chat/use'
 import { designModelProfile } from '@/app/ai/models'
 import { useInstructionCatalog } from '@/app/document/instructions/catalog'
 import { useEditorStore } from '@/app/editor/active-store'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
 import ChatNodePreview from '@/components/chat/ChatNodePreview.vue'
 import ChatProfileSelect from '@/components/chat/ChatProfileSelect.vue'
 import ChatThinkingSelect from '@/components/chat/ChatThinkingSelect.vue'
@@ -150,7 +150,7 @@ const selectedProfileName = computed(
     @submit="emit('submit', takeSubmission($event))"
     @stop="emit('stop')"
     @paste="handlePaste"
-    @settings="openSettingsDialog('ai')"
+    @settings="openSettings('ai')"
   >
     <template v-if="images.length || referencedNodes.length" #attachment>
       <div class="flex flex-wrap gap-1.5">

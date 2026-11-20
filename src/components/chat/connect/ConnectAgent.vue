@@ -16,7 +16,7 @@ import {
 } from '@/app/ai/models/settings/onboarding/plan'
 import { useAIOnboarding } from '@/app/ai/models/settings/onboarding/use'
 import { OPENROUTER_KEY_LABEL } from '@/app/ai/providers/openrouter/sign-in'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
 import AISetupConnection from '@/components/settings/ai-setup/AISetupConnection.vue'
 import ProviderLogo from '@/components/settings/provider/ProviderLogo.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
@@ -38,7 +38,7 @@ const styles = computed(() => connectAgent({ placement }))
 /** A dialog closes itself on the way to Settings; the panel only opens them. */
 function advanced(): void {
   if (placement === 'dialog') emit('advanced')
-  else openSettingsDialog('ai')
+  else openSettings('ai')
 }
 
 type Screen = 'kind' | 'agents' | 'providers' | 'detail'

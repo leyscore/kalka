@@ -18,7 +18,7 @@ test('AI tab directs provider setup to unified settings', async ({ chat }) => {
 test('saving an API key in Settings opens the chat interface', async ({ chat }) => {
   await chat.chatTab.click()
   await chat.page.getByTestId('provider-setup-open-settings').click()
-  await expect(chat.page.getByTestId('app-settings-dialog')).toBeVisible()
+  await expect(chat.page.getByTestId('app-settings')).toBeVisible()
   await chat.page.locator('[data-model-id]').first().click()
   await chat.page.getByTestId('settings-model-provider').click()
   await chat.page.getByRole('option', { name: 'OpenRouter' }).click()

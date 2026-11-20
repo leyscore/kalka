@@ -15,7 +15,8 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     await page.setViewportSize({ width: 1280, height: 900 })
     await page.emulateMedia({ reducedMotion })
     await openSettings(page)
-    await expect(page.getByRole('dialog')).toHaveCSS('width', '840px')
+    // Settings is a page: it takes the whole window.
+    await expect(page.getByRole('dialog')).toHaveCSS('width', '1280px')
     await page.getByTestId('settings-section-tools').click()
     const trigger = page.getByRole('button', { name: 'Read-only tools', exact: true })
     await trigger.click()
@@ -58,9 +59,9 @@ test('external Settings requests respect a dirty editor', async ({ page }) => {
   await name.fill('Keep this draft')
   const requestSection = () =>
     page.evaluate(async () => {
-      const path = '/src/app/settings/dialog.ts'
-      const { openSettingsDialog } = await import(path)
-      openSettingsDialog('media')
+      const path = '/src/app/settings/open.ts'
+      const { openSettings } = await import(path)
+      openSettings('media')
     })
   await requestSection()
   await expect(page.getByRole('alertdialog')).toBeVisible()

@@ -23,7 +23,7 @@ import { shortcutPlatform, useEditorCommands, useI18n } from '@kalka/vue'
 import { requestWriteAccess } from '@/app/document/io/capability'
 import { useEditorStore } from '@/app/editor/active-store'
 import { openVariablesDialog } from '@/app/editor/tokens/dialog'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
 import { setDesignIssuesOnCanvas, setSnappingPreference } from '@/app/settings/preferences/apply'
 import { appPreferences } from '@/app/settings/preferences/store'
 import { appMenuChecked } from '@/app/shell/menu/checked'
@@ -184,7 +184,7 @@ export function useAppMenu() {
     close: () => {
       if (activeTab.value) void closeTab(activeTab.value.id)
     },
-    settings: openSettingsDialog,
+    settings: openSettings,
     documentation: () => void openExternalLink(docsURL(locale.value)),
     variables: () => openVariablesDialog(store),
     'insert-icon': () => {

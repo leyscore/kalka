@@ -20,7 +20,9 @@ const router = createRouter({
     { path: '/demo', component: WorkspaceView, meta: { demo: true } },
     { path: '/share/:roomId', component: WorkspaceView },
     // A server document's own address; the name after the id follows renames and is ignored.
-    { path: '/design/:id/:slug?', component: WorkspaceView }
+    { path: '/design/:id/:slug?', component: WorkspaceView },
+    // Settings is a page over the workspace, so the open documents stay as they are behind it.
+    { path: '/settings/:section?', component: WorkspaceView }
   ]
 })
 

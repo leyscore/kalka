@@ -4,6 +4,7 @@ import { useEventListener } from '@vueuse/core'
 import { MotionConfig } from 'motion-v'
 import { TooltipProvider } from 'reka-ui'
 import { computed, defineAsyncComponent, onMounted, onScopeDispose } from 'vue'
+import { useRouter } from 'vue-router'
 
 import { provideEditor, useI18n } from '@kalka/vue'
 
@@ -14,7 +15,8 @@ import { useFollowingEditorStore } from '@/app/editor/active-store'
 import { publishLibraryDialogOpen } from '@/app/libraries/publish/dialog'
 import { libraryReviewRequest } from '@/app/libraries/review'
 import { welcomeOpen } from '@/app/onboarding/welcome'
-import { settingsDialogOpen } from '@/app/settings/dialog'
+import { settingsOpen } from '@/app/settings/open'
+import { syncSettingsRoute } from '@/app/settings/route'
 import { reducedEffects, watchRenderingCapability } from '@/app/shell/effects'
 import { latch } from '@/app/shell/latch'
 import { animationsEnabled } from '@/app/shell/motion'
@@ -33,8 +35,8 @@ import AppShell from '@/components/shell/AppShell.vue'
 import Toaster from '@/components/shell/Toaster.vue'
 
 // Dialogs load their code the first time they open, so none of it delays the first screen.
-const SettingsDialog = defineAsyncComponent(
-  () => import('@/components/settings/SettingsDialog.vue')
+const SettingsScreen = defineAsyncComponent(
+  () => import('@/components/settings/SettingsScreen.vue')
 )
 const AISetupDialog = defineAsyncComponent(
   () => import('@/components/settings/ai-setup/AISetupDialog.vue')
@@ -46,7 +48,7 @@ const LibraryUpdateReviewDialog = defineAsyncComponent(
   () => import('@/components/libraries/review/LibraryUpdateReviewDialog.vue')
 )
 const WelcomeFlow = defineAsyncComponent(() => import('@/components/onboarding/WelcomeFlow.vue'))
-const settingsUsed = latch(() => settingsDialogOpen.value)
+const settingsUsed = latch(() => settingsOpen.value)
 const aiSetupUsed = latch(() => aiSetupDialogOpen.value)
 const publishUsed = latch(() => publishLibraryDialogOpen.value)
 const libraryReviewUsed = latch(() => libraryReviewRequest.value !== null)
@@ -67,6 +69,7 @@ provideEditor(useFollowingEditorStore())
 useAppTheme()
 useWindowTheme()
 useDocumentCloseProtection()
+onScopeDispose(syncSettingsRoute(useRouter()))
 useRestartApprovals()
 useEventListener(window, 'pagehide', () => {
   void prepareForReload()
@@ -90,7 +93,7 @@ onMounted(() => {
       <AppShell>
         <RouterView />
       </AppShell>
-      <SettingsDialog v-if="settingsUsed" />
+      <SettingsScreen v-if="settingsUsed" />
       <AISetupDialog v-if="aiSetupUsed" />
       <RecoveryDialog />
       <UnsavedChangesDialog :prompt="closePrompt" @answer="answerClosePrompt" />

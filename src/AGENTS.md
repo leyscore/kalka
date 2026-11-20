@@ -71,6 +71,7 @@ The supported browser baseline lives in `src/app/shell/support/baseline.ts` and 
 
 ### Settings
 
+- Settings is a page at `/settings/<section>`: open it with `openSettings(section)` and close it with `closeSettings()`, and `src/app/settings/route.ts` keeps the address in step. A Settings action that leaves for another page navigates and lets the route close Settings (`tests/e2e/settings/address.spec.ts`).
 - Compose Settings sections with `SettingsSection` and its `title`, `description`, `actions`, and default content slots. It owns heading association and internal spacing; `SettingsGroup` owns bordered row grouping. Do not repeat section, header, or spacing markup per feature.
 - Settings components own layout, translated copy, confirmation visibility, and emits; small presentation-only computed bindings may stay in components. Workflows, persistence, and credentials: `src/AGENTS.md`.
 - `SettingsSaveFeedback` maps domain outcomes (`saved`, `failed`, `partial`) to `AppAlert`. `SettingsLink` owns external-link styling, the icon, and native opening for provider key pages and setup guides; keep arrow glyphs out of translated labels.

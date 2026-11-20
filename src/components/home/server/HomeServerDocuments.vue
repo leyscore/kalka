@@ -12,7 +12,7 @@ import {
   serverDocuments,
   serverDocumentsLoading
 } from '@/app/collab/server/documents'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
 import DocumentEntry from '@/components/home/document/DocumentEntry.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 
@@ -66,9 +66,7 @@ const LIST = 'overflow-hidden rounded-[14px] bg-card'
         serverSessionExpired ? collaboration.serverSessionExpired : collaboration.serverNotSignedIn
       }}
     </p>
-    <AppButton variant="outline" @click="openSettingsDialog('server')">{{
-      settings.title
-    }}</AppButton>
+    <AppButton variant="outline" @click="openSettings('server')">{{ settings.title }}</AppButton>
   </div>
 
   <p v-else-if="error && !serverDocuments.length" class="text-xs text-danger" role="alert">

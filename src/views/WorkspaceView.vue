@@ -34,7 +34,8 @@ import { notificationMessages } from '@/app/i18n/notifications'
 import { offerWelcomeOnFirstRun } from '@/app/onboarding/welcome'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import { createDeferred } from '@/app/runtime/deferred'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
+import { settingsSectionFromPath } from '@/app/settings/route'
 import { focusNodeWhenReady, syncAddressWithTabs } from '@/app/shell/address/sync'
 import { useDocumentDrop } from '@/app/shell/document-drop'
 import { useDocumentHandoff } from '@/app/shell/document-handoff'
@@ -71,8 +72,10 @@ const EditorTour = defineAsyncComponent(() => import('@/components/onboarding/Ed
 const route = useRoute()
 const router = useRouter()
 const createdInitialTab = tabCount() === 0
+/** Home and Settings, which opens over Home, start the workspace the same way. */
+const opensHome = route.path === '/' || settingsSectionFromPath(route.path) !== null
 const shouldCreateHome =
-  route.path === '/' &&
+  opensHome &&
   !appRuntimeConfig.test &&
   !route.meta.demo &&
   (isTauri() || appRuntimeConfig.recentFiles)
@@ -131,7 +134,7 @@ function openFirstTab(): Tab {
 const launchedFromCloud = IS_BROWSER && window.location.hash.includes('kalka-server=')
 if (
   createdInitialTab &&
-  route.path === '/' &&
+  opensHome &&
   !appRuntimeConfig.test &&
   !route.meta.demo &&
   !launchedFromCloud
@@ -280,7 +283,7 @@ onMounted(async () => {
     console.error('[Room link]', error)
   }
 
-  const openServerSettings = () => openSettingsDialog('server')
+  const openServerSettings = () => openSettings('server')
   try {
     serverLinksCleanup.value = await bindDesktopServerLinks((url) => {
       offerLinkedServer(url, openServerSettings)

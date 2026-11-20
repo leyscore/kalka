@@ -9,6 +9,10 @@
 - In the browser, Back and Forward move between the documents you opened in tabs, as they do between pages.
 - The web editor opens from a Kalka Cloud workspace already signed in to it, on one of its files or on a new file saved there, which can start from a frame size or a request to the AI agent.
 
+### Changed
+
+- Settings is a page of its own at `/settings/<section>`, filling the window instead of a dialog: Back closes it, a reload or a link opens it on that section, and the open documents stay as they were behind it.
+
 ### Fixed
 
 - On the Variables page, moving from one variable to the next no longer blanks the inspector for a moment: it shows the new variable in place.

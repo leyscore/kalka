@@ -13,7 +13,7 @@ import {
 } from '@/app/editor/clipboard/properties'
 import { requestRenameSelection } from '@/app/editor/selection/rename-dialog'
 import { TOOL_SHORTCUTS } from '@/app/editor/session'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
 import { setSnappingPreference } from '@/app/settings/preferences/apply'
 import { isButtonActivation, isEditing } from '@/app/shell/keyboard/focus'
 import { bindSpaceHandTool } from '@/app/shell/keyboard/space-tool'
@@ -228,7 +228,7 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
     {
       id: 'open-settings',
       keys: appMenuTinykeysShortcut('settings') ?? '$mod+Comma',
-      run: () => openSettingsDialog(),
+      run: () => openSettings(),
       global: true
     },
     {

@@ -1,7 +1,7 @@
 import { locale, useI18n } from '@kalka/vue'
 
 import { requestAppExit } from '@/app/document/close/exit'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
 import { setDesignIssuesOnCanvas, setSnappingPreference } from '@/app/settings/preferences/apply'
 import {
   syncNativeDesignIssuesMenu,
@@ -50,7 +50,7 @@ export function useShellMenu() {
     'open-storage-workspace': () => {
       void import('@/router').then(({ default: router }) => openStorageWorkspace(router))
     },
-    settings: openSettingsDialog,
+    settings: openSettings,
     documentation: () => void openExternalLink(docsURL(locale.get())),
     'snap-geometry': () => {
       const current = appPreferences.value.editing.snapping.geometry

@@ -7,7 +7,7 @@ test('model editing keeps the Settings shell stable and isolates the form', asyn
   await new CanvasHelper(page).waitForInit()
   await page.getByTestId('app-settings-trigger').click()
   await page.getByTestId('settings-section-ai').click()
-  const dialog = page.getByTestId('app-settings-dialog')
+  const dialog = page.getByTestId('app-settings')
   await expect(dialog).toBeVisible()
   await dialog.evaluate(async (element) => {
     await Promise.all(element.getAnimations().map((animation) => animation.finished))
@@ -43,7 +43,7 @@ for (const reducedMotion of ['reduce', 'no-preference'] as const) {
     await new CanvasHelper(page).waitForInit()
     await page.getByTestId('app-settings-trigger').click()
     await page.getByTestId('settings-section-ai').click()
-    const dialog = page.getByTestId('app-settings-dialog')
+    const dialog = page.getByTestId('app-settings')
     if (reducedMotion === 'reduce') await expect(dialog).toHaveCSS('animation-name', 'none')
     const add = page.getByTestId('settings-add-model')
     for (let attempt = 0; attempt < 3; attempt++) {

@@ -3,7 +3,7 @@ import type { Fill, SceneNode } from '@kalka/scene-graph'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { notificationMessages } from '@/app/i18n/notifications'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
 import { toast } from '@/app/shell/ui'
 
 import { resolveVectorizeCredential } from './credentials'
@@ -49,7 +49,7 @@ export async function vectorizeImageNode(store: EditorStore, nodeId: string): Pr
       toast.error(
         notificationMessages.get().vectorizeCredentialRequired({ provider: provider.name })
       )
-      openSettingsDialog('media')
+      openSettings('media')
       return
     }
 
@@ -83,7 +83,7 @@ export async function vectorizeImageNode(store: EditorStore, nodeId: string): Pr
   } catch (error) {
     if (error instanceof VectorizeAuthError) {
       toast.error(notificationMessages.get().vectorizeCredentialFailed({ error: error.message }))
-      openSettingsDialog('media')
+      openSettings('media')
     } else {
       toast.error(
         notificationMessages

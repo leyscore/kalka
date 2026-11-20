@@ -25,7 +25,13 @@ export default {
       lg: { content: 'w-[min(46rem,94vw)]' },
       xl: { content: 'w-[min(64rem,96vw)]' },
       /** Nearly the whole window, for editors such as the variables dialog when expanded. */
-      screen: { content: 'w-[98vw]' }
+      screen: { content: 'w-[98vw]' },
+      /** The whole window, as a page of its own with an address, such as Settings. */
+      page: {
+        overlay: 'bg-canvas',
+        content:
+          'top-0 left-0 h-dvh max-h-dvh w-screen translate-x-0 translate-y-0 rounded-none bg-panel shadow-none backdrop-blur-none data-[state=closed]:zoom-out-100 data-[state=open]:zoom-in-100'
+      }
     },
     height: {
       auto: {},

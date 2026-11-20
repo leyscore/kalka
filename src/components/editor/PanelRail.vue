@@ -7,7 +7,7 @@ import { useComments } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
 import { countIssues } from '@/app/editor/design-check/issues'
 import { toggleVariablesPage } from '@/app/editor/tokens/dialog'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
 import { useLeftPanel, type RailPanel } from '@/app/shell/left-panel/use'
 import { openExternalLink } from '@/app/shell/ui'
 import { useGlide } from '@/components/ui/motion/useGlide'
@@ -261,7 +261,7 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
         data-test-id="app-settings-trigger"
         :aria-label="settings.title"
         :class="rail.item()"
-        @click="openSettingsDialog()"
+        @click="openSettings()"
       >
         <icon-hugeicons-settings-01 :class="rail.icon()" />
       </button>
