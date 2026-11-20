@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- A Save As whose write fails leaves the document where it was, with its name and format, instead of pointing it at the file that was not written.
 - When another program, such as a Kalka development server left running, already holds the local MCP server's port, Settings › MCP says that port 7600 is in use and what to do, instead of reporting that the server did not respond in time.
 - When another app, git or a sync tool changes the open file while you have unsaved edits, Kalka keeps your edits and offers to reload the file instead of reloading it silently and dropping them with the undo history; with no unsaved edits it still reloads.
 - The desktop app's native menu shows Autosave, Pixel Grid, Multiplayer Cursors, Rulers and the theme choices as they are; they all started checked, and clicking Autosave showed it off when it was on.

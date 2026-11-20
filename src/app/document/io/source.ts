@@ -13,7 +13,12 @@ import {
   downloadNameFromPath,
   figDownloadName
 } from '@/app/document/io/names'
-import { createSaveActions } from '@/app/document/io/save'
+import {
+  chooseSaveAsTarget,
+  createSaveActions,
+  saveAsTargetName,
+  type SaveAsTarget
+} from '@/app/document/io/save'
 import { createDocumentSourceState } from '@/app/document/io/source-state'
 import {
   fileFormatForName,
@@ -120,11 +125,10 @@ export function createDocumentSourceActions({
       (!!getFileHandle() || !!getFilePath() || !!getStorageBinding())
   })
 
-  const { saveFigFile, saveFigFileAs, writeFile } = createSaveActions({
+  const { saveFigFile, writeFile } = createSaveActions({
     state,
     version: changes.capture,
     buildFigFile: buildDocumentFile,
-    setSourceFormat,
     getFilePath,
     setFilePath,
     getFileHandle,
@@ -136,14 +140,9 @@ export function createDocumentSourceActions({
     setSourceIdentity,
     setSavedVersion,
     setLastWriteTime,
-    startWatchingFile: () => {
-      void startWatchingFile()
-    },
     onWriteSuccess: (version) => recovery.markProtectedVersion(version),
     onDownloadSuccess: (version) => recovery.markProtectedVersion(version),
-    onSavedAs: (format) => {
-      if (format === 'fig') warnFigmaLosses(editor.graph)
-    }
+    saveAs: () => saveFigFileAs()
   })
 
   /** The file is behind now: what it lacks is kept for recovery until a save succeeds. */
@@ -266,6 +265,32 @@ export function createDocumentSourceActions({
     }
   }
 
+  /** Points the document at a Save As target, in the format its file name says. */
+  function planSaveAsTarget(target: SaveAsTarget) {
+    stopWatchingFile()
+    setStorageBinding(null)
+    const name = saveAsTargetName(target)
+    setSourceFormat(fileFormatForName(name))
+    setFilePath(target.kind === 'path' ? target.path : null)
+    setFileHandle(target.kind === 'handle' ? target.handle : null)
+    if (target.kind === 'download') setDownloadName(name)
+    state.documentName = documentNameFromFigPath(name)
+  }
+
+  /**
+   * Saves to a place the person picks. A failed write keeps the place, name and format the
+   * document had, as any save to a new target does.
+   */
+  async function saveFigFileAs(): Promise<boolean> {
+    const target = await chooseSaveAsTarget(getDownloadName())
+    if (!target) return false
+    const saved = await saveToNewTarget(() => planSaveAsTarget(target))
+    if (!saved) return false
+    if (target.kind !== 'download') void startWatchingFile()
+    if (fileFormatForName(saveAsTargetName(target)) === 'fig') warnFigmaLosses(editor.graph)
+    return true
+  }
+
   async function saveFigFileToPath(path: string): Promise<boolean> {
     const saved = await saveToNewTarget(() => setPlannedFilePath(path))
     if (saved) void startWatchingFile()
@@ -330,7 +355,8 @@ export function createDocumentSourceActions({
     startWatchingCurrentFile,
     disposeDocumentIO,
     saveFigFile: () => saveAndTrack(saveFigFile),
-    saveFigFileAs: () => saveAndTrack(saveFigFileAs),
+    // Saving to the new target records the saved revision itself.
+    saveFigFileAs,
     hasUnsavedChanges: changes.hasUnsavedChanges,
     markDocumentSaved,
     getStorageBinding,

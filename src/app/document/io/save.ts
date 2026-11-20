@@ -2,14 +2,8 @@ import type { EditorState } from '@kalka/core/editor'
 import { filesMessages } from '@kalka/vue'
 
 import { downloadBlob } from '@/app/document/io/browser'
-import { documentNameFromFigPath } from '@/app/document/io/names'
 import { chooseBrowserFigSaveHandle, chooseTauriFigSavePath } from '@/app/document/io/save-targets'
-import {
-  fileFormatForName,
-  type DocumentFileFormat,
-  type DocumentPayload,
-  type DocumentSourceAccess
-} from '@/app/document/io/types'
+import type { DocumentPayload, DocumentSourceAccess } from '@/app/document/io/types'
 import { createDocumentWriter } from '@/app/document/io/write'
 import { IS_TAURI } from '@/constants'
 
@@ -21,13 +15,10 @@ type SaveActionsOptions = Omit<DocumentSourceAccess, 'getSavedVersion'> & {
   version: () => number
   /** The document as its source format saves it. */
   buildFigFile: () => DocumentPayload | Promise<DocumentPayload>
-  /** Switches what saving writes, when Save As picks a file of another format. */
-  setSourceFormat?: (format: DocumentFileFormat) => void
-  startWatchingFile: () => void
   onWriteSuccess?: (version: number) => void | Promise<void>
   onDownloadSuccess?: (version: number) => void | Promise<void>
-  /** After Save As writes a file, with the format it chose, to say what that format loses. */
-  onSavedAs?: (format: DocumentFileFormat) => void
+  /** Saves to a place the person picks, for a document that has none yet. */
+  saveAs: () => Promise<boolean>
 }
 
 export function createSaveActions({
@@ -35,21 +26,15 @@ export function createSaveActions({
   version: currentVersion,
   buildFigFile,
   getFilePath,
-  setFilePath,
   getFileHandle,
-  setFileHandle,
   getDownloadName,
-  setDownloadName,
   getStorageBinding,
-  setStorageBinding,
   setSourceIdentity,
   setSavedVersion,
   setLastWriteTime,
-  startWatchingFile,
-  setSourceFormat,
   onWriteSuccess,
   onDownloadSuccess,
-  onSavedAs
+  saveAs
 }: SaveActionsOptions) {
   const writeFile = createDocumentWriter({
     state,
@@ -79,69 +64,41 @@ export function createSaveActions({
     }
     if (downloadName) {
       const { data, version } = await buildVersionedFigFile()
-      if (!(data instanceof Uint8Array)) return saveFigFileAs()
+      if (!(data instanceof Uint8Array)) return saveAs()
       downloadBlob(new Uint8Array(data), downloadName, 'application/octet-stream')
       await onDownloadSuccess?.(version)
       return true
     }
-    return saveFigFileAs()
+    return saveAs()
   }
 
-  /** The document as the chosen file's format saves it. */
-  async function buildFor(name: string) {
-    const format = fileFormatForName(name)
-    setSourceFormat?.(format)
-    const built = await buildVersionedFigFile()
-    if (!(built.data instanceof Uint8Array)) throw new Error('A file target needs one file')
-    return { data: built.data, version: built.version, format }
+  return { saveFigFile, writeFile }
+}
+
+/** Where Save As writes: a path on desktop, a file handle in browsers that have them, or a download. */
+export type SaveAsTarget =
+  | { kind: 'path'; path: string }
+  | { kind: 'handle'; handle: FileSystemFileHandle }
+  | { kind: 'download'; name: string }
+
+/** Asks where to save; null when the person cancels. */
+export async function chooseSaveAsTarget(
+  downloadName: string | null
+): Promise<SaveAsTarget | null> {
+  if (IS_TAURI) {
+    const path = await chooseTauriFigSavePath()
+    return path ? { kind: 'path', path } : null
   }
+  // The picker helper returns null when the browser has no File System Access API.
+  const handle = await chooseBrowserFigSaveHandle()
+  if (handle) return { kind: 'handle', handle }
+  const name = prompt(filesMessages.get().saveAsPrompt, downloadName ?? 'Untitled.fig')
+  return name ? { kind: 'download', name } : null
+}
 
-  async function saveFigFileAs() {
-    if (IS_TAURI) {
-      const path = await chooseTauriFigSavePath()
-      if (!path) return false
-      const { data, version, format } = await buildFor(path)
-      setStorageBinding(null)
-      setFilePath(path)
-      setFileHandle(null)
-      state.documentName = documentNameFromFigPath(path)
-      const wrote = await writeFile(data, version)
-      if (wrote) {
-        setSourceIdentity({ handle: null, path })
-        onSavedAs?.(format)
-      }
-      startWatchingFile()
-      return wrote
-    }
-
-    // The picker helper returns null when the browser has no File System Access API.
-    const handle = await chooseBrowserFigSaveHandle()
-    if (handle) {
-      const { data, version, format } = await buildFor(handle.name)
-      setStorageBinding(null)
-      setFileHandle(handle)
-      setFilePath(null)
-      state.documentName = documentNameFromFigPath(handle.name)
-      const wrote = await writeFile(data, version)
-      if (wrote) {
-        setSourceIdentity({ handle, path: null })
-        onSavedAs?.(format)
-      }
-      startWatchingFile()
-      return wrote
-    }
-
-    const filename = prompt(filesMessages.get().saveAsPrompt, getDownloadName() ?? 'Untitled.fig')
-    if (!filename) return false
-    const { data, version, format } = await buildFor(filename)
-    setStorageBinding(null)
-    setDownloadName(filename)
-    state.documentName = documentNameFromFigPath(filename)
-    downloadBlob(new Uint8Array(data), filename, 'application/octet-stream')
-    await onDownloadSuccess?.(version)
-    onSavedAs?.(format)
-    return true
-  }
-
-  return { saveFigFile, saveFigFileAs, writeFile }
+/** The file name a Save As target writes. */
+export function saveAsTargetName(target: SaveAsTarget): string {
+  if (target.kind === 'path') return target.path
+  if (target.kind === 'handle') return target.handle.name
+  return target.name
 }
