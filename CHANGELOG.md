@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Exporting a frame that sits in a section, or a layer from inside a frame, as HTML, or as an image or PDF from the CLI, draws it where the page starts instead of moved by its position in its parent and cut off.
 - Saving a Kalka folder writes every file aside before replacing any, so a crash or power loss during a save leaves the folder as the last save or the new one, never pages from both; a save cut short after it was all written is finished when the folder next opens.
 - A document restored after a crash goes back to the `.fig` or `.kalka` file it was opened from, so saving it writes that file instead of asking where to save an untitled copy.
 - In Chromium browsers, turning on Autosave for a file opened from disk asks for permission to write it then, so the first autosave is not refused for lack of a click.

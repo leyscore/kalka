@@ -1,3 +1,5 @@
+import { omit } from 'es-toolkit'
+
 import {
   exportHTMLBundle,
   sceneNodeToDesignDocument,
@@ -14,6 +16,25 @@ import { exportWebFontFaceAssets } from '#core/text/web-font/assets'
 import { loadedFontFaceAssets } from './fonts'
 import { vectorElement } from './vectors'
 
+/** What places a layer inside its parent, which an exported page does not have. */
+const PLACEMENT = ['position', 'left', 'top', 'right', 'bottom', 'inset']
+
+/**
+ * The exported layer drawn where the page starts, as a top-level frame is. A layer from inside a
+ * section or frame keeps the offset its parent placed it at otherwise, so the page, and the image
+ * or PDF drawn from it, show it moved by that much and cut off. It stays the containing block of
+ * the layers placed inside it.
+ */
+function unplaced(document: DesignDocument): DesignDocument {
+  for (const root of document.children) {
+    if (root.type !== 'element') continue
+    const style = root.inlineStyle ?? {}
+    if (style.position !== 'absolute' && style.position !== 'fixed') continue
+    root.inlineStyle = { ...omit(style, PLACEMENT), position: 'relative' }
+  }
+  return document
+}
+
 function designDocument(
   graph: SceneGraph,
   nodeIds: string[],
@@ -22,12 +43,14 @@ function designDocument(
   hairlineScale?: number
 ): DesignDocument {
   const projected = nodeIds.map((id) =>
-    sceneNodeToDesignDocument(graph, id, {
-      vectorElement,
-      includeSourceIds,
-      fontFallbacks,
-      hairlineScale
-    })
+    unplaced(
+      sceneNodeToDesignDocument(graph, id, {
+        vectorElement,
+        includeSourceIds,
+        fontFallbacks,
+        hairlineScale
+      })
+    )
   )
   // Each layer records the variables it references; the page defines all of them once.
   const tokens = projected.find((layer) => layer.tokens)?.tokens
