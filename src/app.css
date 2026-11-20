@@ -242,23 +242,6 @@
   animation: kalka-liquid-fill 1.8s cubic-bezier(0.45, 0, 0.2, 1) infinite;
 }
 
-/* A few dots of an agent's loading cloud brighten, then fade, each at its own pace. */
-@keyframes kalka-skeleton-twinkle {
-  0%,
-  100% {
-    opacity: 0;
-  }
-  45%,
-  60% {
-    opacity: 1;
-  }
-}
-
-@utility animate-skeleton-twinkle {
-  animation: kalka-skeleton-twinkle var(--twinkle-duration, 2s) ease-in-out var(--twinkle-delay, 0s)
-    infinite;
-}
-
 /*
  * The welcome's selected word: an agent's cursor drafts the frame, then yours comes and drags its
  * corner. One ten second loop shared by the cursors, the frame and its size badge.
