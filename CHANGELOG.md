@@ -52,7 +52,7 @@
 
 ### Performance
 
-- Typing and other edits no longer rebuild the app menu and command palette on every change, and the properties panel, Typography and Layout guides included, re-renders only the fields an edit changed instead of every field, and dragging or resizing a layer no longer forces a layout of the whole editor on every frame, so typing, gestures and agents editing other layers stay smoother on slower computers.
+- Typing and other edits no longer rebuild the app menu and command palette on every change, and the properties panel, Typography and Layout guides included, re-renders only the fields an edit changed instead of every field, with variable pickers, the HTML tag list and the export settings no longer redrawn on each keystroke, and dragging or resizing a layer no longer forces a layout of the whole editor on every frame, so typing, gestures and agents editing other layers stay smoother on slower computers.
 
 ## 0.2.0-beta.3.2 — 2026-11-19
 

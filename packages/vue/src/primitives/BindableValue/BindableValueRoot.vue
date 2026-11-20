@@ -20,6 +20,7 @@ import type {
   BindableValueSlotProps,
   BindableValueStateAttrs
 } from '#vue/primitives/BindableValue/types'
+import { createStableVariableList } from '#vue/primitives/BindableValue/variables'
 
 const {
   provider: providerProp,
@@ -65,9 +66,11 @@ const resolvedValue = computed(() => {
   const current = variable.value
   return current ? provider.resolve(current.id, targets.value[0]) : undefined
 })
+// Kept while it shows the same, so a keystroke does not re-render the field in the slot.
+const stableVariables = createStableVariableList()
 const variables = computed(() => {
   void provider.revision?.value
-  return provider.filterVariables(searchTerm.value)
+  return stableVariables(provider.filterVariables(searchTerm.value))
 })
 const stateAttrs = computed<BindableValueStateAttrs>(() => ({
   'data-unresolved': state.value === 'unresolved' ? '' : undefined,

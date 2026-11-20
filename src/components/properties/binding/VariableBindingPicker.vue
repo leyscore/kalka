@@ -18,6 +18,7 @@ export interface VariableBindingPickerProps {
 </script>
 
 <script setup lang="ts">
+import { isEqual } from 'es-toolkit'
 import { computed } from 'vue'
 
 import type { Color } from '@kalka/scene-graph/primitives'
@@ -51,8 +52,12 @@ function isColor(value: unknown): value is Color {
   return typeof value === 'object' && value !== null && 'r' in value
 }
 
-const items = computed<VariablePickerItem[]>(() =>
-  binding.variables.value.map((variable) => {
+// The list is read again on every scene change, a keystroke included; the items keep their
+// identity while they show the same, so the picker and its options do not re-render each time.
+const items = computed<VariablePickerItem[]>((previous) => {
+  // A colour variable's value changes in place; the revision says when to read it again.
+  void binding.provider.revision?.value
+  const next = binding.variables.value.map((variable) => {
     const value = variable.type === 'COLOR' ? binding.provider.resolve(variable.id) : undefined
     return {
       id: variable.id,
@@ -61,7 +66,8 @@ const items = computed<VariablePickerItem[]>(() =>
       color: isColor(value) ? value : undefined
     }
   })
-)
+  return previous && isEqual(previous, next) ? previous : next
+})
 
 defineOptions({ inheritAttrs: false })
 </script>

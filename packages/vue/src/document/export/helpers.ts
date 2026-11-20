@@ -13,7 +13,7 @@ import {
 } from '@kalka/scene-graph'
 import type { ExportFormatId, ExportSetting, PluginDataEntry } from '@kalka/scene-graph'
 
-import { useSceneComputed } from '#vue/internal/scene-computed/use'
+import { useSceneComputed, useStableSceneComputed } from '#vue/internal/scene-computed/use'
 
 export const EXPORT_SCALES = [0.5, 0.75, 1, 1.5, 2, 3, 4] as const
 // Persisted export-setting formats must name built-in IO adapters.
@@ -51,8 +51,8 @@ export function createExportTargetState(editor: Editor, selectedIds: ComputedRef
   const activeTarget = computed<ExportPanelTarget>(() =>
     hasSelection.value ? 'selection' : 'page'
   )
-  const targetIds = useSceneComputed(() =>
-    selectedIds.value.length > 0 ? selectedIds.value : [editor.state.currentPageId]
+  const targetIds = useStableSceneComputed(() =>
+    selectedIds.value.length > 0 ? [...selectedIds.value] : [editor.state.currentPageId]
   )
 
   const selectedNodeName = computed(() => {
@@ -75,9 +75,9 @@ export function createExportTargetState(editor: Editor, selectedIds: ComputedRef
       ? (selectedNodeName.value ?? 'Export')
       : currentPageName.value
   )
-  const activeSettings = useSceneComputed(() => {
+  const activeSettings = useStableSceneComputed(() => {
     const firstId = targetIds.value[0]
-    return firstId ? [...(editor.graph.getNode(firstId)?.exportSettings ?? [])] : []
+    return firstId ? structuredClone(editor.graph.getNode(firstId)?.exportSettings ?? []) : []
   })
   const mixed = useSceneComputed(() => {
     const [firstId, ...otherIds] = targetIds.value

@@ -49,4 +49,37 @@ describe('typography panel state', () => {
       editor.dispose()
     }
   })
+
+  test('the missing fonts keep their list while typing, so a warning that shows them holds', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const state = shallowReactive(createDefaultEditorState(page.id))
+    const editor = createEditor({ graph, state })
+    const family = 'A Font Nobody Has'
+    const styleRuns = [{ start: 0, length: 5, style: { fontFamily: family } }]
+    const text = graph.createNode('TEXT', page.id, { text: 'Hello', fontFamily: family, styleRuns })
+    editor.select([text.id])
+    const app = createApp({ render: () => null })
+    app.provide(EDITOR_KEY, editor)
+    const scope = effectScope()
+    try {
+      const typography = app.runWithContext(() => scope.run(() => createTypographyState(editor)))
+      if (!typography) throw new Error('No typography state')
+      const missing = typography.missingFonts.value
+      expect(missing).toEqual([family])
+
+      // Typing replaces the style runs with equal ones on every keystroke.
+      for (const typed of ['Hello!', 'Hello!!']) {
+        const runs = [{ start: 0, length: typed.length, style: { fontFamily: family } }]
+        editor.updateNode(text.id, { text: typed, styleRuns: runs })
+        expect(typography.missingFonts.value).toBe(missing)
+      }
+
+      editor.updateNode(text.id, { fontFamily: 'Another Missing Font', styleRuns: [] })
+      expect(typography.missingFonts.value).toEqual(['Another Missing Font'])
+    } finally {
+      scope.stop()
+      editor.dispose()
+    }
+  })
 })

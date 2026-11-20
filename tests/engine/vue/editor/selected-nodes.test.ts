@@ -224,6 +224,27 @@ describe('selected-node preview projections', () => {
     }
   })
 
+  test('a scene change without an edit event reaches the copies once the task settles', async () => {
+    const fixture = setup()
+    const { editor, first, selection } = fixture
+    try {
+      const calls = { x: 0 }
+      const x = computed(() => {
+        calls.x++
+        return selection.node.value?.x
+      })
+      expect(x.value).toBe(10)
+      // A layout pass or a variable's value moves the scene version once per layer it touches.
+      Object.assign(first, { x: 25 })
+      for (let index = 0; index < 50; index++) editor.requestRender()
+      await Promise.resolve()
+      expect(x.value).toBe(25)
+      expect(calls.x).toBe(2)
+    } finally {
+      fixture.dispose()
+    }
+  })
+
   test('components of one editor share one selection state, which outlives its first user', () => {
     const fixture = setup()
     const { editor, first } = fixture

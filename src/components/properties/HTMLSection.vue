@@ -42,9 +42,14 @@ const choosesTag = computed(() => {
   return !!layer && canTakeHTMLTag(layer)
 })
 const tag = computed(() => current()?.htmlTag ?? DEFAULT_TAG)
-const tagOptions = computed(() => {
+// The tag a layer gets by default is read on every scene change, but the long list of options
+// is built again only when it differs, so typing in a layer does not re-render the select.
+const fallbackTag = computed(() => {
   const layer = current()
-  const fallback = layer ? defaultTagForNode(layer) : 'div'
+  return layer ? defaultTagForNode(layer) : 'div'
+})
+const tagOptions = computed(() => {
+  const fallback = fallbackTag.value
   return [
     { value: DEFAULT_TAG, label: panels.value.htmlTagDefault({ tag: fallback }) },
     ...HTML_TAGS.map((value) => ({ value, label: value }))

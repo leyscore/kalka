@@ -36,6 +36,18 @@ export function createSelectedNodeState(
   const byId = computed(() => new Map(nodes.value.map((node) => [node.id, node])))
   const node = computed(() => (nodes.value.length === 1 ? nodes.value[0] : null))
 
+  /** Copies the given fields of a layer into its copy where they differ. */
+  function syncFields(copy: SceneNode, live: SceneNode, keys: Iterable<string>) {
+    for (const key of keys) {
+      if (!Object.hasOwn(live, key)) {
+        Reflect.deleteProperty(copy, key)
+        continue
+      }
+      const value: unknown = Reflect.get(live, key)
+      if (!isEqual(Reflect.get(copy, key), value)) Reflect.set(copy, key, structuredClone(value))
+    }
+  }
+
   /** Brings each copy up to its layer; a selection whose layers changed is copied again. */
   function syncSelected() {
     const copies = nodes.value
@@ -44,16 +56,31 @@ export function createSelectedNodeState(
     for (const copy of copies) {
       const live = ids.has(copy.id) ? editor.graph.getNode(copy.id) : undefined
       if (!live) return refresh()
-      for (const key of Object.keys(live) as (keyof SceneNode)[]) {
-        if (!isEqual(copy[key], live[key]))
-          Object.assign(copy, { [key]: structuredClone(live[key]) })
-      }
+      syncFields(copy, live, Object.keys(live))
       for (const key of Object.keys(copy))
         if (!Object.hasOwn(live, key)) Reflect.deleteProperty(copy, key)
     }
   }
-  const refreshSelected = (id: string) => {
-    if (editor.state.selectedIds.has(id)) syncSelected()
+
+  // An edit to a selected layer names the fields it changed, so only those are compared. Every
+  // layout pass also moves the scene version once per layer it updates; comparing every field of
+  // every copy each time cost about a quarter of a keystroke, so those catch-ups run once per task.
+  const refreshSelected = (id: string, changes: Partial<SceneNode>) => {
+    if (!editor.state.selectedIds.has(id)) return
+    const copy = byId.value.get(id)
+    const live = editor.graph.getNode(id)
+    if (!copy || !live) return refresh()
+    syncFields(copy, live, Object.keys(changes))
+  }
+  let syncQueued = false
+  let syncEnabled = false
+  function queueSync() {
+    if (syncQueued) return
+    syncQueued = true
+    queueMicrotask(() => {
+      syncQueued = false
+      if (syncEnabled) syncSelected()
+    })
   }
 
   function updatePreview(id: string, changes: Partial<SceneNode>) {
@@ -66,11 +93,15 @@ export function createSelectedNodeState(
     () => active?.value ?? true,
     (enabled, _previous, onCleanup) => {
       if (!enabled) return
+      syncEnabled = true
+      onCleanup(() => {
+        syncEnabled = false
+      })
       refresh()
       onCleanup(editor.onEditorEvent('node:previewUpdated', updatePreview))
       onCleanup(editor.onEditorEvent('node:updated', refreshSelected))
       // Anything else that moves the scene, such as a variable's value, reaches the copies too.
-      onCleanup(watch(() => editor.state.sceneVersion, syncSelected, { flush: 'sync' }))
+      onCleanup(watch(() => editor.state.sceneVersion, queueSync, { flush: 'sync' }))
       onCleanup(editor.onEditorEvent('selection:changed', refresh))
       onCleanup(editor.onEditorEvent('graph:replaced', refresh))
       onCleanup(editor.onEditorEvent('page:changed', refresh))
