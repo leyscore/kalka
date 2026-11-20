@@ -1,28 +1,14 @@
 <script setup lang="ts">
 import { PositionControlsRoot, useI18n } from '@kalka/vue'
 
-import { useEditorStore } from '@/app/editor/active-store'
 import NumberField from '@/components/inputs/NumberField.vue'
-import IconButton from '@/components/ui/button/IconButton.vue'
+import AlignToolbar from '@/components/properties/position/AlignToolbar.vue'
+import TransformButtons from '@/components/properties/position/TransformButtons.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'
 import PanelGrid from '@/components/ui/panel/PanelGrid.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'
 
 const { panels } = useI18n()
-const store = useEditorStore()
-
-function handleAlign(
-  nodeAlign: (axis: 'horizontal' | 'vertical', pos: 'min' | 'center' | 'max') => void,
-  axis: 'horizontal' | 'vertical',
-  pos: 'min' | 'center' | 'max'
-) {
-  const editState = store.state.nodeEditState
-  if (editState && editState.selectedVertexIndices.size >= 2) {
-    store.nodeEditAlignVertices(axis, pos)
-  } else {
-    nodeAlign(axis, pos)
-  }
-}
 </script>
 
 <template>
@@ -30,54 +16,7 @@ function handleAlign(
     v-slot="{ active, isMulti, xValue, yValue, wValue, hValue, rotationValue, actions }"
   >
     <PanelSection v-if="active" :label="panels.position">
-      <div role="toolbar" :aria-label="panels.position" class="mb-1.5 flex justify-between">
-        <div class="flex gap-0.5">
-          <IconButton
-            :label="panels.alignLeft"
-            size="xs"
-            @click="handleAlign(actions.align, 'horizontal', 'min')"
-          >
-            <icon-hugeicons-align-start-vertical class="size-3.5" />
-          </IconButton>
-          <IconButton
-            :label="panels.alignCenterHorizontally"
-            size="xs"
-            @click="handleAlign(actions.align, 'horizontal', 'center')"
-          >
-            <icon-hugeicons-align-vertical-center class="size-3.5" />
-          </IconButton>
-          <IconButton
-            :label="panels.alignRight"
-            size="xs"
-            @click="handleAlign(actions.align, 'horizontal', 'max')"
-          >
-            <icon-hugeicons-align-end-vertical class="size-3.5" />
-          </IconButton>
-        </div>
-        <div class="flex gap-0.5">
-          <IconButton
-            :label="panels.alignTop"
-            size="xs"
-            @click="handleAlign(actions.align, 'vertical', 'min')"
-          >
-            <icon-hugeicons-align-start-horizontal class="size-3.5" />
-          </IconButton>
-          <IconButton
-            :label="panels.alignCenterVertically"
-            size="xs"
-            @click="handleAlign(actions.align, 'vertical', 'center')"
-          >
-            <icon-hugeicons-align-horizontal-center class="size-3.5" />
-          </IconButton>
-          <IconButton
-            :label="panels.alignBottom"
-            size="xs"
-            @click="handleAlign(actions.align, 'vertical', 'max')"
-          >
-            <icon-hugeicons-align-end-horizontal class="size-3.5" />
-          </IconButton>
-        </div>
-      </div>
+      <AlignToolbar :align="actions.align" />
 
       <PanelGrid :columns="2">
         <Tip :label="panels.xAxis">
@@ -149,17 +88,7 @@ function handleAlign(
             </template>
           </NumberField>
         </Tip>
-        <div class="flex h-6 items-center justify-end gap-0.5">
-          <IconButton :label="panels.flipHorizontal" size="xs" @click="actions.flip('horizontal')">
-            <icon-hugeicons-flip-horizontal2 class="size-3.5" />
-          </IconButton>
-          <IconButton :label="panels.flipVertical" size="xs" @click="actions.flip('vertical')">
-            <icon-hugeicons-flip-vertical2 class="size-3.5" />
-          </IconButton>
-          <IconButton :label="panels.rotate90" size="xs" @click="actions.rotate(90)">
-            <icon-hugeicons-rotate-cw-square class="size-3.5" />
-          </IconButton>
-        </div>
+        <TransformButtons :flip="actions.flip" :rotate="actions.rotate" />
       </PanelGrid>
     </PanelSection>
   </PositionControlsRoot>
