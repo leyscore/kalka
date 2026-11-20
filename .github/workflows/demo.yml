@@ -1,0 +1,54 @@
+name: Demo
+
+# demo.kalka.design is Kalka's web editor opened on the Learn the basics document. Every
+# published release redeploys it from the release's tag, so the demo matches the installers;
+# run it by hand to redeploy the current main. app.kalka.design is not touched: it belongs to
+# Kalka Cloud.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: demo
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy demo.kalka.design
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.release.tag_name || github.ref }}
+
+      - uses: ./.github/actions/setup-bun
+        with:
+          cache-scope: demo
+
+      - name: Build the web app
+        run: |
+          bun run build:packages
+          bunx vite build
+
+      - name: Prepare the demo site
+        run: |
+          # The demo site's root opens the demo document; every other path falls back to the app.
+          printf '/ /demo 302\n' > dist/_redirects
+          cat > wrangler.demo.jsonc <<'EOF'
+          {
+            "name": "kalka-demo",
+            "compatibility_date": "2026-11-01",
+            "assets": { "directory": "./dist", "not_found_handling": "single-page-application" },
+            "routes": [{ "pattern": "demo.kalka.design", "custom_domain": true }]
+          }
+          EOF
+
+      - name: Deploy to Cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bunx wrangler@4.149.0 deploy --config wrangler.demo.jsonc
