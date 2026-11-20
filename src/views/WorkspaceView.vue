@@ -12,7 +12,12 @@ import { startWebMCP } from '@/app/automation/webmcp/runtime'
 import { exposeCollaborationActions } from '@/app/browser-bridge'
 import { useJoinRoom } from '@/app/collab/join'
 import { bindDesktopRoomLinks } from '@/app/collab/room/links'
-import { openServerDocumentById } from '@/app/collab/server/documents'
+import {
+  openServerDocument,
+  openServerDocumentById,
+  shareToServer
+} from '@/app/collab/server/documents'
+import { launchFromServerLink } from '@/app/collab/server/launch'
 import {
   bindDesktopServerLinks,
   offerLinkedServer,
@@ -24,6 +29,7 @@ import type { PendingOpenFile } from '@/app/document/io/pending-open'
 import { openPendingFiles } from '@/app/document/io/pending-open'
 import { openWebLinkFromLocation, withoutWebLinkParams } from '@/app/document/io/web-link'
 import { focusNodesByName } from '@/app/editor/selection/focus'
+import { fillNewDocument } from '@/app/home/start'
 import { notificationMessages } from '@/app/i18n/notifications'
 import { offerWelcomeOnFirstRun } from '@/app/onboarding/welcome'
 import { appRuntimeConfig } from '@/app/runtime/config'
@@ -38,6 +44,7 @@ import { holdBootSplash } from '@/app/shell/support/splash'
 import { toast } from '@/app/shell/ui'
 import {
   activeTab,
+  createDocumentInCurrentTab,
   createHomeTab,
   createTab,
   getActiveStore,
@@ -120,7 +127,15 @@ function openFirstTab(): Tab {
   }
 }
 
-if (createdInitialTab && route.path === '/' && !appRuntimeConfig.test && !route.meta.demo) {
+// Opened from Kalka Cloud to work on a file: the file comes first, the welcome can wait.
+const launchedFromCloud = IS_BROWSER && window.location.hash.includes('kalka-server=')
+if (
+  createdInitialTab &&
+  route.path === '/' &&
+  !appRuntimeConfig.test &&
+  !route.meta.demo &&
+  !launchedFromCloud
+) {
   offerWelcomeOnFirstRun()
 }
 
@@ -180,6 +195,10 @@ function openDocumentPaths(): string[] {
  * navigation, which would put `file` and `node` back into the entry. Route and hash are
  * preserved, so the link works on `/`, `/share/:id` and `/demo` alike.
  */
+function stripServerLaunch(): void {
+  void router.replace({ path: route.path, query: route.query, hash: '' })
+}
+
 function stripWebLinkParams(): void {
   void router.replace({
     path: route.path,
@@ -278,6 +297,19 @@ onMounted(async () => {
   // deep-link plugin above, so only a real browser reads them off the address bar.
   if (IS_BROWSER && !isTauri()) {
     try {
+      // Kalka Cloud's launch link: sign in to the workspace, then open or create a file.
+      await launchFromServerLink(window.location.hash, window.location.origin, stripServerLaunch, {
+        openDocument: (document) => void openServerDocument(document),
+        createDocument: async (start) => {
+          // The blank tab the editor opened with takes the new file; otherwise a tab of its own.
+          if (!createdInitialTab) createTab()
+          else if (activeTab.value?.kind === 'home') createDocumentInCurrentTab()
+          const store = getActiveStore()
+          await shareToServer(store)
+          await fillNewDocument(store, start)
+        },
+        notify: (message, level) => (level === 'error' ? toast.error : toast.info)(message)
+      })
       await openWebLinkFromLocation(window.location.search, stripWebLinkParams, {
         selectByName: selectNodeByName,
         notify: (message, level) => (level === 'error' ? toast.error : toast.info)(message)

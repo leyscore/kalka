@@ -1,7 +1,10 @@
 import { queueChatPrompt } from '@/app/ai/chat/queued-prompt'
 import { isConfigured } from '@/app/ai/chat/storage'
 import { useAIChat } from '@/app/ai/chat/use'
+import { openAISetup } from '@/app/ai/models/settings/onboarding/dialog'
+import type { ServerLaunchStart } from '@/app/collab/server/launch'
 import { openDemoDocument } from '@/app/demo/document'
+import type { EditorStore } from '@/app/editor/active-store'
 import { offerTourOnFirstDocument } from '@/app/onboarding/tour'
 import { openBrowserFileFromURL } from '@/app/shell/menu/files'
 import { createDocumentInCurrentTab } from '@/app/tabs'
@@ -66,4 +69,22 @@ export function parseDocumentURL(text: string): URL | null {
 
 export function startFromURL(url: URL): Promise<void> {
   return openBrowserFileFromURL(url, { credentials: 'omit' })
+}
+
+/**
+ * A file just created from a Kalka Cloud launch link takes what the console asked for: a frame
+ * of a size, a request to the AI agent, or both. Without a model the request waits in the chat
+ * and AI setup opens.
+ */
+export async function fillNewDocument(store: EditorStore, start: ServerLaunchStart): Promise<void> {
+  if (start.frame) {
+    await store.canvasReady
+    store.createFrameFromPreset(start.frame)
+    store.zoomToSelection()
+  }
+  if (start.prompt) {
+    queueChatPrompt(store, start.prompt)
+    useAIChat().activeTab.value = 'ai'
+    if (!isConfigured.value) openAISetup('connect')
+  }
 }
