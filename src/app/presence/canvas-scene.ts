@@ -1,8 +1,10 @@
 import { shallowRef, type ShallowRef } from 'vue'
 
-import { skeletonLive, type AgentSkeleton, type DomScenePreview, type RevealStep } from '@kalka/vue'
+import type { DomScenePreview, RevealStep } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
+
+import { skeletonLive, type AgentSkeleton } from './skeletons'
 
 /** A DOM scene drawing this document, as `useDomScene` returns it. */
 export interface CanvasScene {
@@ -57,7 +59,7 @@ export function hideScenePreview(store: EditorStore, preview: DomScenePreview): 
 }
 
 /**
- * Skeleton blocks where agents' work is loading, as every pane's overlay draws them. The array is
+ * Skeletons where agents' work is loading, as every pane draws them. The array is
  * replaced on each change and holds only skeletons still showing or about to.
  */
 export function agentSkeletons(store: EditorStore): readonly AgentSkeleton[] {

@@ -1,11 +1,5 @@
 import type { DocumentChange } from '@kalka/core/editor'
-import {
-  planReveal,
-  revealEnd,
-  type AgentEdit,
-  type AgentSkeleton,
-  type RevealStep
-} from '@kalka/vue'
+import { planReveal, revealEnd, type AgentEdit, type RevealStep } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { flyToCreation } from '@/app/presence/fly-to-work'
@@ -13,6 +7,7 @@ import { agentAnimationsEnabled } from '@/app/shell/motion'
 
 import { holdOnCanvas, releaseOnCanvas, revealOnCanvas, showAgentSkeletons } from './canvas-scene'
 import { localAgentColor, type AgentHandle } from './registry'
+import type { AgentSkeleton } from './skeletons'
 
 /** New layers one edit keeps hidden until its reveal; the outermost come first. */
 export const MAX_HELD_LAYERS = 64

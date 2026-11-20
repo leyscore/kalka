@@ -90,9 +90,9 @@ function replaying(page: Page) {
   })
 }
 
-/** The skeleton blocks the overlay draws where an agent's new layers are loading. */
+/** The skeletons shown where an agent's new layers are loading. */
 function skeletons(page: Page) {
-  return page.getByTestId('svg-overlay').locator('rect[rx][opacity]')
+  return page.locator('[data-slot="agent-skeleton"]')
 }
 
 async function open(page: Page) {

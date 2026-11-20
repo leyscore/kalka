@@ -51,7 +51,7 @@ import { useCanvasCollaborationAwareness } from '@/app/editor/canvas/collaborati
 import { createCanvasContextSelection } from '@/app/editor/canvas/context-selection'
 import { canvasOverlayObstacles } from '@/app/editor/canvas/obstacles'
 import { workingMarks } from '@/app/presence/activity'
-import { agentSkeletons, attachCanvasScene, scenePreviews } from '@/app/presence/canvas-scene'
+import { attachCanvasScene, scenePreviews } from '@/app/presence/canvas-scene'
 import { useFollowView } from '@/app/presence/follow-view'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import IssueMarkerTooltip from '@/components/design-check/IssueMarkerTooltip.vue'
@@ -68,6 +68,7 @@ import CommentLayer from './comments/CommentLayer.vue'
 import FrameReviewBadges from './comments/FrameReviewBadges.vue'
 import NumberField from './inputs/NumberField.vue'
 import AgentGhostFrames from './presence/AgentGhostFrames.vue'
+import AgentSkeletons from './presence/AgentSkeletons.vue'
 
 const { paneId } = defineProps<{
   paneId?: string
@@ -184,9 +185,7 @@ const svgOverlay = domScene
       getOverlayObstacles: () => canvasOverlayObstacles(canvasRef.value),
       getCanvasColor: canvasBackgroundColor,
       // Layers agents are still building, with their names.
-      getAgentWork: (pageId) => workingMarks(store, pageId),
-      // Skeletons where agents' work is loading.
-      getAgentSkeletons: () => agentSkeletons(store)
+      getAgentWork: (pageId) => workingMarks(store, pageId)
     })
   : null
 // Over the DOM scene, names are hit tested where the SVG overlay drew them.
@@ -353,6 +352,7 @@ const cursor = computed(() =>
           class="absolute inset-0 block size-full touch-none outline-none"
         />
         <PlayIslands :view="paneView" :drawn="drawnView" :canvas="canvasRef" />
+        <AgentSkeletons v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
         <AgentGhostFrames v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
         <FrameReviewBadges v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
         <CommentLayer v-if="!paneView.play" :view="paneView" :drawn="drawnView" />

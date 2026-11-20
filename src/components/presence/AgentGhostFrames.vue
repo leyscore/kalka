@@ -6,6 +6,7 @@ import { useCommentsMessages } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { presenceOf } from '@/app/presence/registry'
+import { agentSkeleton } from '@/theme/collaboration/agent-skeleton'
 
 /**
  * Where an agent's work will land, before it has anything to show: a skeleton that breathes
@@ -18,6 +19,7 @@ const { view, drawn } = defineProps<{
 }>()
 
 const store = useEditorStore()
+const ui = agentSkeleton()
 const messages = useCommentsMessages()
 const placement = computed(() => drawn ?? view)
 
@@ -69,7 +71,7 @@ const ghosts = computed(() =>
     <div
       v-for="ghost in ghosts"
       :key="ghost.id"
-      class="absolute rounded-lg border border-accent/40 bg-foreground/[0.06] motion-safe:animate-pulse"
+      :class="ui.root({ class: 'border-accent/60' })"
       data-slot="agent-ghost-frame"
       :style="{
         left: `${ghost.left}px`,
@@ -78,6 +80,7 @@ const ghosts = computed(() =>
         height: `${ghost.height}px`
       }"
     >
+      <div :class="ui.clip()"><div :class="ui.shine()" /></div>
       <span
         class="absolute -top-6 right-0 max-w-full truncate rounded bg-accent px-1.5 py-0.5 text-[10px] font-medium text-white"
       >

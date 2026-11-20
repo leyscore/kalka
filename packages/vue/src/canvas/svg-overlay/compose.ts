@@ -8,10 +8,6 @@ import type {
 import { RULER_SIZE } from '@kalka/core/constants'
 import type { Color, Rect } from '@kalka/scene-graph/primitives'
 
-import {
-  agentSkeletonsLayer,
-  type AgentSkeleton
-} from '#vue/canvas/svg-overlay/layers/agent-skeletons'
 import { agentWorkLayer, type AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
 import { aiMarksLayer, type AIMarks } from '#vue/canvas/svg-overlay/layers/ai-marks'
 import { autoLayoutHoverLayer } from '#vue/canvas/svg-overlay/layers/auto-layout-hover'
@@ -107,8 +103,6 @@ export interface ComposeInput extends OverlayContext {
   aiMarks: AIMarks
   /** Layers agents are building and have not let go of yet. */
   agentWork?: readonly AgentWorkMark[]
-  /** Skeleton blocks where agents' work is loading. */
-  agentSkeletons?: readonly AgentSkeleton[]
   /** Motion is reduced: loaders hold still. */
   still?: boolean
   now: number
@@ -166,11 +160,6 @@ export function composeOverlay(input: ComposeInput): ComposedOverlay {
     ...selectionLayer(input),
     ...(isMeasuring ? measurementsLayer(input) : []),
     // Gesture feedback.
-    // Skeletons under the agents' marks, so a badge stays readable over what loads.
-    ...agentSkeletonsLayer(input, input.agentSkeletons ?? [], {
-      now: input.now,
-      still: input.still
-    }),
     ...agentWorkLayer(input, input.agentWork ?? [], { now: input.now, still: input.still }),
     ...aiMarksLayer(input, input.aiMarks, input.now),
     ...flashesLayer(input, input.flashes, input.now),

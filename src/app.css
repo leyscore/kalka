@@ -154,6 +154,20 @@
   animation: kalka-liquid-fill 1.8s cubic-bezier(0.45, 0, 0.2, 1) infinite;
 }
 
+/* The shine that passes over an agent's skeleton while its content loads, like light on glass. */
+@keyframes kalka-skeleton-shine {
+  from {
+    transform: translateX(-100%) skewX(-16deg);
+  }
+  to {
+    transform: translateX(400%) skewX(-16deg);
+  }
+}
+
+@utility animate-skeleton-shine {
+  animation: kalka-skeleton-shine 1.6s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+
 /*
  * The welcome's selected word: an agent's cursor drafts the frame, then yours comes and drags its
  * corner. One ten second loop shared by the cursors, the frame and its size badge.
