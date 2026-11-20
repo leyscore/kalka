@@ -495,11 +495,12 @@ const groupOptions = computed(() => groupEntries.value.map((entry) => entry.path
           :group-options="groupOptions"
           :labels="tableLabels"
         />
+        <!-- The inspector fades between kinds only; moving from token to token updates it in place. -->
         <Transition v-bind="swapTransition" mode="out-in">
           <TokenBulkInspector v-if="bulkIds" key="bulk" v-bind="bulkInspector" />
           <TokenInspector
             v-else-if="editedRow"
-            :key="editedRow.variable.id"
+            key="token"
             v-bind="tokenInspector"
             :row="editedRow"
             :collection="collection"
