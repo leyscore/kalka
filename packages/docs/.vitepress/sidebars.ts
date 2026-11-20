@@ -72,6 +72,7 @@ export const developmentSidebar = (
         ? [
             { text: 'Roadmap', link: '/development/roadmap' },
             { text: 'AI Chat Replies', link: '/development/ai-chat' },
+            { text: 'Anti-slop Research', link: '/development/anti-slop' },
             { text: 'App Benchmark', link: '/development/app-benchmark' },
             { text: 'Behaviours and Preview', link: '/development/behaviours-and-preview' },
             { text: 'Navigation Performance', link: '/development/navigation-performance' },

@@ -104,6 +104,7 @@ After each section, get_screenshot the page frame and judge it before moving on:
 - text contrast is enough and the accent is used sparingly
 - edges align on the container and the grid
 - content is real and nothing is left from a placeholder
+- no sign from the anti-slop catalogue is left that the direction did not choose
 
 Fix what fails, then go on. When the desktop page is done, add_breakpoint at 390 (and 810 when it
 matters) and adjust the phone layout: stack the rows, shrink the display sizes, keep the tap
@@ -121,6 +122,12 @@ the comments that ask you (get_comments, reply_to_comment).
   are chosen.
 - Type does most of the work: few sizes, strong contrast, text lines of 45 to 75 characters.
 - Spacing varies on purpose; alignment is exact.
+- Give the page a world, not a theme: one place or material from the brief carried through every
+  section, so the page could not be swapped for another product's.
+- Show the real product: screens and parts captured from it, never drawn look-alikes.
 - Avoid what reads as generated: purple-to-blue gradients on white, glass everywhere, a shadow on
-  every card, three identical feature cards with icons, emoji as icons, everything centred, neon
-  accents on dark grey, a gradient on every heading.
+  every card, a coloured glow under buttons, three identical feature cards with icons, emoji as
+  icons, middle dots between short phrases, 01 / 02 / 03 on things that are not steps,
+  everything centred, neon accents on dark grey, a gradient on every heading. The anti-slop
+  catalogue (returned with this guide by get_design_guide, `/anti-slop` in Kalka's chat) lists
+  every sign, what replaces it and how to check for it; go through it in step 7.

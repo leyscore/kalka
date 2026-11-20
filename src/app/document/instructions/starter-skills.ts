@@ -1,4 +1,5 @@
-import antiSlop from './skills/anti-slop.md?raw'
+import { ANTI_SLOP_GUIDE } from '@kalka/core/tools'
+
 import copy from './skills/copy.md?raw'
 import critique from './skills/critique.md?raw'
 import designSystem from './skills/design-system.md?raw'
@@ -24,7 +25,7 @@ export const BUILT_IN_SKILLS: Readonly<Record<string, string>> = {
   critique,
   responsive,
   polish,
-  'anti-slop': antiSlop
+  'anti-slop': ANTI_SLOP_GUIDE
 }
 
 const USES = /^Uses:[ \t]*(.+)$/m

@@ -1,4 +1,4 @@
-export { CODEGEN_PROMPT, DESIGN_GUIDE } from './prompts'
+export { ANTI_SLOP_GUIDE, CODEGEN_PROMPT, DESIGN_GUIDE } from './prompts'
 
 export { getComponentCatalog, registerComponentCatalog } from './component-catalog'
 export type {
