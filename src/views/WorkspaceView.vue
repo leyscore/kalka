@@ -19,7 +19,6 @@ import type { PendingOpenFile } from '@/app/document/io/pending-open'
 import { openPendingFiles } from '@/app/document/io/pending-open'
 import { openWebLinkFromLocation, withoutWebLinkParams } from '@/app/document/io/web-link'
 import { focusNodesByName } from '@/app/editor/selection/focus'
-import { startBlank } from '@/app/home/start'
 import { notificationMessages } from '@/app/i18n/notifications'
 import { offerWelcomeOnFirstRun } from '@/app/onboarding/welcome'
 import { appRuntimeConfig } from '@/app/runtime/config'
@@ -260,7 +259,7 @@ onUnmounted(() => {
     <RenameSelectionDialog />
     <CommandPalette />
     <TabBar />
-    <HomeWorkspace v-show="activeTab?.kind === 'home'" @new-document="startBlank" />
+    <HomeWorkspace v-show="activeTab?.kind === 'home'" />
     <EditorWorkspace
       v-if="activeTab && activeTab.kind !== 'home'"
       :key="activeTab.id"

@@ -13,7 +13,9 @@ import {
   readBoundedBody
 } from '@/app/document/io/browser'
 import {
+  canHoldKalkaFolder,
   chooseKalkaFolder,
+  chooseNewKalkaFolder,
   finishInterruptedFolderSave,
   folderName,
   joinFolderPath,
@@ -210,11 +212,18 @@ export async function openFolderDialog() {
   await openDesignFileBatch([path], (item) => item, openFolderFromPath)
 }
 
-/** Saves the active document as a Kalka folder the user picks, and keeps it there. */
+/** Saves the active document as a new Kalka folder the user names, and keeps it there. */
 export async function saveAsFolderDialog(store: EditorStore) {
   if (!isTauri()) return
-  const path = await chooseKalkaFolder(menuMessages.get().saveAsFolder.replace('…', ''))
+  const path = await chooseNewKalkaFolder(
+    menuMessages.get().saveAsFolder.replace('…', ''),
+    store.state.documentName
+  )
   if (!path) return
+  if (!(await canHoldKalkaFolder(path))) {
+    toast.error(notificationMessages.get().folderHoldsOtherFiles({ name: folderName(path) }))
+    return
+  }
   if (await store.saveKalkaFolderToPath(path)) rememberRecentFile(path)
 }
 

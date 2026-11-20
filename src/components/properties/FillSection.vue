@@ -6,11 +6,13 @@ import {
   BindableValueRoot,
   useColorBindingProvider,
   useFillControls,
+  useHoverPreview,
   useI18n,
   useOkHCL
 } from '@kalka/vue'
 import type { BindableValueActions } from '@kalka/vue'
 
+import { useEditorStore } from '@/app/editor/active-store'
 import FillPicker from '@/components/fill-picker/FillPicker.vue'
 import VariableBindingPicker from '@/components/properties/binding/VariableBindingPicker.vue'
 import {
@@ -40,6 +42,21 @@ const okhcl = useOkHCL()
 const colorProvider = useColorBindingProvider()
 const { panels, common } = useI18n()
 const blendModeOptions = useBlendModeOptions()
+const store = useEditorStore()
+const hoverFill = useHoverPreview(store, 'Preview fill')
+
+/** Shows a fill's blend mode on the selection while it is hovered in the list; `null` takes it away. */
+function previewFillBlend(index: number, blendMode: string | null) {
+  if (blendMode === null) {
+    hoverFill([], null)
+    return
+  }
+  hoverFill([...store.state.selectedIds], (id) => ({
+    fills: (store.graph.getNode(id)?.fills ?? []).map((fill, at) =>
+      at === index ? { ...fill, blendMode: blendMode as Fill['blendMode'] } : fill
+    )
+  }))
+}
 const {
   visible: stylesVisible,
   hasStyle,
@@ -190,6 +207,7 @@ function updateSolidColor(
                 :options="blendModeOptions"
                 :label="panels.blendMode"
                 data-property="fill-blend-mode"
+                :preview="(mode: string | null) => previewFillBlend(index, mode)"
                 @update:model-value="
                   commitDiscretePropertyListChange(flush, () =>
                     actions.patch(index, { blendMode: $event as Fill['blendMode'] })

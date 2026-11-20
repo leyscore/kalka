@@ -92,6 +92,7 @@ defineOptions({ inheritAttrs: false })
     :selected="binding.variable.value?.id"
     :state="binding.state.value"
     @select="binding.actions.bind($event)"
+    @highlight="binding.actions.preview($event)"
     @detach="binding.actions.unbind()"
     @create="binding.actions.create($event)"
   />

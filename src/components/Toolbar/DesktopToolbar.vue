@@ -18,16 +18,29 @@ import { useGlide } from '@/components/ui/motion/useGlide'
 import Tip from '@/components/ui/overlay/Tip.vue'
 import { glidePills } from '@/theme/motion/glide'
 
-const { tools, activeTool, flyoutSelections, toolIcons, toolLabels, toolShortcuts, ui } =
-  defineProps<{
-    tools: EditorToolDef[]
-    activeTool: Tool
-    flyoutSelections: ReadonlyMap<Tool, Tool>
-    toolIcons: ToolIconMap
-    toolLabels: ToolLabels
-    toolShortcuts: Record<Tool, string>
-    ui?: ToolbarUI
-  }>()
+const {
+  tools,
+  activeTool,
+  flyoutSelections,
+  toolIcons,
+  toolLabels,
+  toolShortcuts,
+  ui,
+  toolsIdle = false
+} = defineProps<{
+  tools: EditorToolDef[]
+  activeTool: Tool
+  flyoutSelections: ReadonlyMap<Tool, Tool>
+  toolIcons: ToolIconMap
+  toolLabels: ToolLabels
+  toolShortcuts: Record<Tool, string>
+  ui?: ToolbarUI
+  /**
+   * A mode in the end slot, such as comments, is on: no tool shows pressed, so the accent pill
+   * moves to that mode's button instead of leaving its white icon on the bare toolbar.
+   */
+  toolsIdle?: boolean
+}>()
 
 const emit = defineEmits<{
   setTool: [tool: Tool]
@@ -67,6 +80,7 @@ useGlide(toolbarElement, { items: 'button', hover: true, pillClass: glidePills.h
             :tool-labels="toolLabels"
             :tool-shortcuts="toolShortcuts"
             :ui="ui"
+            :idle="toolsIdle"
             @select="emit('setTool', $event)"
           />
         </Tip>
@@ -77,7 +91,7 @@ useGlide(toolbarElement, { items: 'button', hover: true, pillClass: glidePills.h
               :data-test-id="toolbarToolTestId(tool.key)"
               :icon="toolIcons[tool.key]"
               :label="toolLabels[tool.key]"
-              :active="active || isToolbarToolActive(tool, activeTool)"
+              :active="!toolsIdle && (active || isToolbarToolActive(tool, activeTool))"
               :ui="ui"
               @click="actions.select"
             />

@@ -13,7 +13,7 @@ import {
   ComboboxViewport,
   type AcceptableValue
 } from 'reka-ui'
-import { nextTick } from 'vue'
+import { nextTick, watch } from 'vue'
 
 import { useRetainedPopup } from '#vue/lifecycle/retention/popup'
 import type { FontPickerUI } from '#vue/primitives/FontPicker/types'
@@ -34,7 +34,9 @@ const { listFamilies, localFontAccess, ui, emptySearchText, emptyFontsText, empt
   }>()
 
 const modelValue = defineModel<string>({ required: true })
-const emit = defineEmits<{ select: [family: string] }>()
+// `highlight` is the family under the pointer or keys while the list is open, and `null` once it
+// closes, so an owner can preview it.
+const emit = defineEmits<{ select: [family: string]; highlight: [family: string | null] }>()
 
 const contentRef = templateRef<HTMLElement>('contentRef')
 
@@ -53,6 +55,13 @@ const { searchTerm, open, filtered, loading, accessState, requestAccess, select 
   onSelect: (family) => emit('select', family)
 })
 const { portalActive } = useRetainedPopup(open)
+
+function highlight(payload: { value: AcceptableValue } | undefined) {
+  emit('highlight', typeof payload?.value === 'string' ? payload.value : null)
+}
+watch(open, (isOpen) => {
+  if (!isOpen) emit('highlight', null)
+})
 </script>
 
 <template>
@@ -60,6 +69,7 @@ const { portalActive } = useRetainedPopup(open)
     v-model:open="open"
     :model-value="modelValue"
     :ignore-filter="true"
+    @highlight="highlight"
     @update:model-value="
       (v: AcceptableValue) => {
         if (typeof v === 'string') select(v)

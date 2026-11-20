@@ -98,7 +98,12 @@ const {
   align = 'start',
   ui
 } = defineProps<AppPickerProps>()
-const emit = defineEmits<{ select: [value: string]; loadMore: [] }>()
+// `highlight` follows the item under the pointer or keys, so an owner can preview it.
+const emit = defineEmits<{
+  select: [value: string]
+  loadMore: []
+  highlight: [value: string | null]
+}>()
 const slots = defineSlots<AppPickerSlots>()
 const open = defineModel<boolean>('open', { default: false })
 const { portalActive } = useRetainedPopup(open, () => close())
@@ -131,6 +136,7 @@ watch(matches, () => {
 function highlight(payload: { value: AcceptableValue } | undefined) {
   highlighted.value = matches.value.find((item) => item.value === payload?.value) ?? null
 }
+watch(highlighted, (item) => emit('highlight', item?.value ?? null))
 
 /** Placeholders shown while loading: the grid's visible rows, or a few list rows. */
 const LOADING_PLACEHOLDERS = computed(() => (layout === 'grid' ? APP_PICKER_GRID_COLUMNS * 7 : 3))

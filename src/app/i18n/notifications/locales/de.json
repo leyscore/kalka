@@ -8,6 +8,7 @@
   "pngClipboardUnavailable": "Der PNG-Export in die Zwischenablage ist in diesem Browser nicht verfügbar.",
   "openFileFailed": "„{name}“ konnte nicht geöffnet werden: {error}",
   "autosaveFailed": "„{name}“ konnte nicht automatisch gesichert werden: {error}. Deine letzten Änderungen sind noch nicht in der Datei.",
+  "folderHoldsOtherFiles": "„{name}“ enthält bereits andere Dateien. Speichern Sie das Dokument unter einem neuen Ordnernamen.",
   "importedDOMCSS": "DOM/CSS-Dokument importiert.",
   "importDOMCSSFailed": "DOM/CSS konnte nicht importiert werden: {error}",
   "openDOMCSSFailed": "DOM/CSS-Datei konnte nicht geöffnet werden: {error}",

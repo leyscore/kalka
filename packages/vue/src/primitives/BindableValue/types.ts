@@ -37,6 +37,8 @@ export interface BindableValueStateAttrs {
 
 export interface BindableValueActions<V = unknown> {
   bind(variableId: string): void
+  /** Shows the field as if bound to a hovered variable; `null` takes it away. */
+  preview(variableId: string | null): void
   unbind(): void
   create(name: string): void
   openPicker(): void

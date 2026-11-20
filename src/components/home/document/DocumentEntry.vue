@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, normalizeClass, type HTMLAttributes } from 'vue'
 
+import { useI18n } from '@kalka/vue'
+
 import { documentEntry } from '@/theme/home/document-entry'
 
 const {
@@ -8,6 +10,7 @@ const {
   metadata,
   previewURL,
   view = 'grid',
+  lead = false,
   disabled = false,
   class: className
 } = defineProps<{
@@ -15,11 +18,20 @@ const {
   metadata: string
   previewURL?: string | null
   view?: 'grid' | 'list'
+  /** The last file opened, shown larger with a button to continue it. */
+  lead?: boolean
   disabled?: boolean
   class?: HTMLAttributes['class']
 }>()
 const emit = defineEmits<{ open: [] }>()
-const styles = computed(() => documentEntry({ view }))
+const { files } = useI18n()
+const styles = computed(() => documentEntry({ view, lead: lead && view === 'grid' }))
+const HANDLES = [
+  '-top-[5px] -left-[5px]',
+  '-top-[5px] -right-[5px]',
+  '-bottom-[5px] -left-[5px]',
+  '-right-[5px] -bottom-[5px]'
+]
 </script>
 
 <template>
@@ -31,16 +43,36 @@ const styles = computed(() => documentEntry({ view }))
       :class="styles.trigger()"
       @click="emit('open')"
     >
-      <span v-if="view === 'grid'" data-slot="preview" :class="styles.preview()">
-        <img v-if="previewURL" :src="previewURL" alt="" :class="styles.image()" />
-        <icon-hugeicons-file-image v-else :class="styles.fallback()" />
-      </span>
-      <icon-hugeicons-file-image v-else :class="styles.icon()" />
-      <span data-slot="body" :class="styles.body()">
-        <span data-slot="name" :class="styles.name()">{{ name }}</span>
-        <span data-slot="metadata" :class="styles.metadata()">{{ metadata }}</span>
-      </span>
-      <span v-if="view === 'list'" :class="styles.trailingMetadata()">{{ metadata }}</span>
+      <template v-if="view === 'grid'">
+        <span data-slot="body" :class="styles.body()">
+          <span data-slot="name" :class="styles.name()">{{ name }}</span>
+          <span data-slot="metadata" :class="styles.metadata()">{{ metadata }}</span>
+        </span>
+        <span data-slot="preview" :class="styles.preview()">
+          <img v-if="previewURL" :src="previewURL" alt="" :class="styles.image()" />
+          <icon-hugeicons-file-image v-else :class="styles.fallback()" />
+          <span v-if="lead" :class="styles.continueBar()">
+            <span :class="styles.continueText()">{{ metadata }}</span>
+            <span :class="styles.continueButton()">
+              {{ files.continueFile }}<icon-hugeicons-arrow-right-01 class="size-3.5" />
+            </span>
+          </span>
+          <i
+            v-for="corner in HANDLES"
+            :key="corner"
+            aria-hidden="true"
+            :class="styles.handle({ class: corner })"
+          />
+        </span>
+      </template>
+      <template v-else>
+        <icon-hugeicons-file-image :class="styles.icon()" />
+        <span data-slot="body" :class="styles.body()">
+          <span data-slot="name" :class="styles.name()">{{ name }}</span>
+          <span data-slot="metadata" :class="styles.metadata()">{{ metadata }}</span>
+        </span>
+        <span :class="styles.trailingMetadata()">{{ metadata }}</span>
+      </template>
     </button>
     <div v-if="$slots.actions" data-slot="actions" :class="styles.actions()">
       <slot name="actions" />

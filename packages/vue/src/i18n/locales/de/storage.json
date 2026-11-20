@@ -3,6 +3,7 @@
   "emptyStorageWorkspace": "Noch keine gespeicherten Dokumente.",
   "loadingDocuments": "Dokumente werden geladen…",
   "workspace": "Speicher-Arbeitsbereich",
+  "tab": "Speicher",
   "openWorkspace": "Arbeitsbereich öffnen",
   "loadingWorkspace": "Speicher-Arbeitsbereich wird geladen…",
   "notConfigured": "Konfiguriere den Speicher, bevor du diesen Arbeitsbereich verwendest.",

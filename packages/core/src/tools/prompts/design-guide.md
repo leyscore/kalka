@@ -12,8 +12,18 @@ step it needs and keep the existing system.
   variables (list_variables), its classes (get_css_classes) and components (get_components).
   If the document already has a direction or a system, follow it and go to step 5.
 - Gather what is true about the product and its audience from the person, the document's
-  instructions and the other servers this client has. Ask up to three questions when the facts
-  are thin. Never invent a fact, a number, a name, a logo or a testimonial.
+  instructions and the other servers this client has. Never invent a fact, a number, a name, a
+  logo or a testimonial.
+- For new work, interview the person with ask_user before any brief, the way a designer runs a
+  kickoff. Ask only what you do not know yet, in this order, in one call:
+  - the product or business and its name
+  - who it is for, and what they should do on the page
+  - the sections or features it needs (multiple choice)
+  - the brand: colours, fonts or a logo they have, and anything to avoid
+  - the tone, and two or three sites or brands they like
+- Give each question two to six concrete suggested answers drawn from what they said, never
+  placeholders such as "Option A". When ask_user is not available, ask the same in your reply and
+  wait for the answers. When they skip, decide and say what you assumed.
 
 ## 2. References
 
@@ -28,11 +38,14 @@ step it needs and keep the existing system.
 Write a short brief in the conversation before drawing:
 
 - the mood, as a concrete place or material (a print shop, a greenhouse, a ferry terminal);
-  list three and keep one that is not your first idea
+  list three and keep one that is not your first idea. A warm-paper "atelier" or "editorial"
+  mood is everyone's first idea; choose it only when the product really lives there
 - a palette with roles: one ground, one ink, one strong accent, two or three supporting tones
   taken from that place, with their hex values and enough contrast for text
 - two typefaces: a display face with character and a quiet text face, and a type scale with
   strong contrast between display and labels (for example 72 / 48 / 28 / 18 / 16 / 13)
+- before building, hold the palette and the typefaces against the generated look listed under
+  Taste rules; if they match it, pick again from the product's own world
 - a spacing scale on a 4 px base (4, 8, 12, 16, 24, 32, 48, 64, 96, 128) and a radius scale
 - the one device that carries the hero (product shot, type, photography, illustration)
 - the sections of the page, in order, each with its job in a few words
@@ -125,9 +138,20 @@ the comments that ask you (get_comments, reply_to_comment).
 - Give the page a world, not a theme: one place or material from the brief carried through every
   section, so the page could not be swapped for another product's.
 - Show the real product: screens and parts captured from it, never drawn look-alikes.
-- Avoid what reads as generated: purple-to-blue gradients on white, glass everywhere, a shadow on
-  every card, a coloured glow under buttons, three identical feature cards with icons, emoji as
-  icons, middle dots between short phrases, 01 / 02 / 03 on things that are not steps,
-  everything centred, neon accents on dark grey, a gradient on every heading. The anti-slop
-  catalogue (returned with this guide by get_design_guide, `/anti-slop` in Kalka's chat) lists
-  every sign, what replaces it and how to check for it; go through it in step 7.
+- Avoid what reads as generated. People spot these at once, and one is enough to make a page
+  look machine-made:
+  - colour: purple-to-blue gradients on white; cyan or neon on dark grey; a glowing dark mode by
+    default; a cream or warm-paper ground with a serif display and a terracotta, rust or
+    burnt-orange accent
+  - type: the reflex faces (Inter, Space Grotesk, Playfair Display, Fraunces, DM Sans) chosen
+    because they come first; monospace as a "technical" signal; gradient text; one headline word
+    set apart in italic or colour; a tracked all-caps eyebrow above every heading
+  - layout: three identical cards with an icon, a heading and a line; cards nested in cards;
+    everything centred; thick coloured side stripes on cards and callouts; 01 / 02 / 03 markers
+    on things that are not a sequence
+  - surface: one radius and one soft grey shadow on everything; glass as decoration; a gradient
+    on every heading
+  - motion: a fade-up on every section, a lift on every card on hover, bounce easing
+  - details: emoji as icons; an arrow added to every link; meta lines joined with middle dots
+- The anti-slop catalogue (returned with this guide by get_design_guide, `/anti-slop` in Kalka's chat)
+  lists every sign, what replaces it and how to check for it; go through it in step 7.

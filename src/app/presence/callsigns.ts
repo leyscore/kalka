@@ -1,6 +1,9 @@
 import { randomIndex } from '@kalka/scene-graph/random'
 
-/** Short, distinct names that are easy to say: "ask Fern to align the cards". */
+/** The name Kalka's agent goes by: the first agent in a document is always Pebble. */
+export const DEFAULT_CALLSIGN = 'Pebble'
+
+/** Short, distinct names for the agents beside it, easy to say: "ask Fern to align the cards". */
 const CALLSIGNS = [
   'Fern',
   'Orbit',
@@ -9,7 +12,6 @@ const CALLSIGNS = [
   'Comet',
   'Maple',
   'Nova',
-  'Pebble',
   'Quill',
   'Sable',
   'Tango',
@@ -36,8 +38,12 @@ const CALLSIGNS = [
   'Flint'
 ] as const
 
-/** A callsign not in `taken`, picked at random so peers rarely choose the same one. */
+/**
+ * Pebble while no visible agent goes by it, then a callsign not in `taken`, picked at random so
+ * peers rarely choose the same one.
+ */
 export function pickCallsign(taken: ReadonlySet<string>): string {
+  if (!taken.has(DEFAULT_CALLSIGN)) return DEFAULT_CALLSIGN
   const free = CALLSIGNS.filter((name) => !taken.has(name))
   if (free.length > 0) return free[randomIndex(free.length)] ?? CALLSIGNS[0]
   // Every callsign is taken: number the first one that is still unique.

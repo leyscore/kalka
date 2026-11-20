@@ -4,15 +4,31 @@ import { computed, ref } from 'vue'
 import { useI18n, vTestId } from '@kalka/vue'
 
 import { FRAME_PRESETS, startBlank, startWithFrame, type FramePresetID } from '@/app/home/start'
-import { importClaudeDesignDialog, openFileDialog } from '@/app/shell/menu/use'
-import { homeHeading, inlineLink, presetCard } from '@/theme/home/start'
+import { importClaudeDesignDialog, openFileDialog, openFolderDialog } from '@/app/shell/menu/use'
+import { isTauri } from '@/app/tauri/env'
+import HomeJoinRoom from '@/components/home/search/HomeJoinRoom.vue'
+import { homeAction, sizeChip } from '@/theme/home/start'
 
 import HomeOpenURLDialog from './HomeOpenURLDialog.vue'
 import HomePasteHTMLDialog from './HomePasteHTMLDialog.vue'
 
-const { welcome } = useI18n()
+/**
+ * Under the request on Home: the sizes to start a design with, as chips on the sky, then the ways
+ * to bring something in.
+ */
+const { welcome, menu } = useI18n()
 const pasteOpen = ref(false)
 const urlOpen = ref(false)
+/** Folders open through the desktop app's file system access. */
+const canOpenFolder = isTauri()
+
+/** The longest side of a chip's frame, in pixels; the other side follows the preset's ratio. */
+const FRAME_SIDE = 22
+/** Below this a portrait frame would read as a line. */
+const FRAME_MIN = 7
+
+const size = sizeChip()
+const custom = sizeChip({ custom: true })
 
 const presets = computed(() => {
   const w = welcome.value
@@ -23,77 +39,48 @@ const presets = computed(() => {
     mobile: w.presetMobile,
     social: w.presetSocial
   }
-  return FRAME_PRESETS.map((preset) => ({
-    ...preset,
-    name: names[preset.id],
-    styles: presetCard({ device: preset.id })
-  }))
-})
-const custom = presetCard({ kind: 'custom' })
-
-const IMPORT_CHOICES = ['file', 'html', 'url', 'claude'] as const
-type ImportChoice = (typeof IMPORT_CHOICES)[number]
-
-/** The import sentence, split around its choices so each one can be a link. */
-const importParts = computed(() => {
-  const sentence = welcome.value.importSentence({
-    file: '{file}',
-    html: '{html}',
-    url: '{url}',
-    claude: '{claude}'
+  return FRAME_PRESETS.map((preset) => {
+    const scale = FRAME_SIDE / Math.max(preset.width, preset.height)
+    return {
+      ...preset,
+      name: names[preset.id],
+      frame: {
+        width: `${Math.max(FRAME_MIN, Math.round(preset.width * scale))}px`,
+        height: `${Math.max(FRAME_MIN, Math.round(preset.height * scale))}px`
+      }
+    }
   })
-  return sentence
-    .split(/(\{file\}|\{html\}|\{url\}|\{claude\})/)
-    .filter((part) => part !== '')
-    .map((part) => {
-      const choice = IMPORT_CHOICES.find((candidate) => part === `{${candidate}}`)
-      return choice ? { choice, text: importLabel(choice) } : { choice: null, text: part }
-    })
 })
-
-function importLabel(choice: ImportChoice): string {
-  if (choice === 'file') return welcome.value.importFile
-  if (choice === 'html') return welcome.value.importHTML
-  if (choice === 'claude') return welcome.value.importClaudeDesign
-  return welcome.value.importURL
-}
-
-function runImport(choice: ImportChoice): void {
-  if (choice === 'file') void openFileDialog()
-  else if (choice === 'html') pasteOpen.value = true
-  else if (choice === 'claude') void importClaudeDesignDialog()
-  else urlOpen.value = true
-}
 </script>
 
 <template>
-  <section aria-labelledby="home-sizes" class="flex flex-col gap-3.5">
-    <h2 id="home-sizes" :class="homeHeading">{{ welcome.startWithSize }}</h2>
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-2.5">
+  <div class="flex flex-col items-center gap-3">
+    <span id="home-sizes" class="text-[13px] text-[#B9C9F8]">{{ welcome.orStartWithSize }}</span>
+    <div aria-labelledby="home-sizes" role="group" class="flex flex-wrap justify-center gap-2">
       <button
         v-for="preset in presets"
         :key="preset.id"
         type="button"
-        :class="preset.styles.root()"
+        :class="size.root()"
         v-test-id="`home-preset-${preset.id}`"
         @click="startWithFrame(preset.name, preset.width, preset.height)"
       >
-        <span :class="preset.styles.device()" aria-hidden="true">
-          <span :class="preset.styles.outline()" />
+        <span :class="size.device()" aria-hidden="true">
+          <span :class="size.outline()" :style="preset.frame" />
         </span>
-        <span :class="preset.styles.body()">
-          <span :class="preset.styles.name()">{{ preset.name }}</span>
-          <span :class="preset.styles.detail()">{{ preset.width }} × {{ preset.height }}</span>
+        <span :class="size.body()">
+          <span :class="size.name()">{{ preset.name }}</span>
+          <span :class="size.detail()">{{ preset.width }} × {{ preset.height }}</span>
         </span>
       </button>
       <button
         type="button"
         :class="custom.root()"
-        data-test-id="home-preset-custom"
+        data-test-id="home-new-document"
         @click="startBlank"
       >
         <span :class="custom.device()" aria-hidden="true">
-          <icon-hugeicons-plus class="size-[22px]" />
+          <icon-hugeicons-plus class="size-3.5" />
         </span>
         <span :class="custom.body()">
           <span :class="custom.name()">{{ welcome.presetCustom }}</span>
@@ -101,21 +88,43 @@ function runImport(choice: ImportChoice): void {
         </span>
       </button>
     </div>
-    <p class="text-[13px] text-muted">
-      <template v-for="(part, index) in importParts" :key="index">
-        <button
-          v-if="part.choice"
-          type="button"
-          :class="inlineLink"
-          @click="runImport(part.choice)"
-        >
-          {{ part.text }}
-        </button>
-        <template v-else>{{ part.text }}</template>
-      </template>
-    </p>
+  </div>
 
-    <HomePasteHTMLDialog v-model:open="pasteOpen" />
-    <HomeOpenURLDialog v-model:open="urlOpen" />
-  </section>
+  <div class="flex flex-wrap items-center justify-center gap-0.5">
+    <HomeJoinRoom />
+    <button type="button" :class="homeAction" data-test-id="home-open-file" @click="openFileDialog">
+      <icon-hugeicons-file-import class="size-4" />{{ menu.open }}
+    </button>
+    <button
+      v-if="canOpenFolder"
+      type="button"
+      :class="homeAction"
+      data-test-id="home-open-folder"
+      @click="openFolderDialog"
+    >
+      <icon-hugeicons-folder-open class="size-4" />{{ menu.openFolder }}
+    </button>
+    <button
+      type="button"
+      :class="homeAction"
+      data-test-id="home-paste-html"
+      @click="pasteOpen = true"
+    >
+      <icon-hugeicons-code-xml class="size-4" />{{ welcome.pasteHTML }}
+    </button>
+    <button
+      type="button"
+      :class="homeAction"
+      data-test-id="home-import-claude-design"
+      @click="importClaudeDesignDialog"
+    >
+      <icon-hugeicons-file-import class="size-4" />{{ menu.importClaudeDesign }}
+    </button>
+    <button type="button" :class="homeAction" data-test-id="home-open-url" @click="urlOpen = true">
+      <icon-hugeicons-link-01 class="size-4" />{{ welcome.openURL }}
+    </button>
+  </div>
+
+  <HomePasteHTMLDialog v-model:open="pasteOpen" />
+  <HomeOpenURLDialog v-model:open="urlOpen" />
 </template>

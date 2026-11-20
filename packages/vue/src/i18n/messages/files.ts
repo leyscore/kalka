@@ -37,6 +37,8 @@ export const filesMessageDefaults = {
     'Failed to fetch {count} images from Figma. Check that the source file is accessible and try again.'
   ),
   recentFiles: 'Recent files',
+  recentTab: 'Recent',
+  continueFile: 'Continue',
   recentFilesDescription: 'Continue working on a design or start a new one.',
   noRecentFiles: 'No recent files yet',
   noRecentFilesDescription: 'Files you open in the desktop app will appear here.',

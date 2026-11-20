@@ -6,9 +6,9 @@ import { useCommentsMessages, useDesignCheckMessages, useI18n } from '@kalka/vue
 import { useComments } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
 import { countIssues } from '@/app/editor/design-check/issues'
-import { openVariablesDialog } from '@/app/editor/tokens/dialog'
+import { toggleVariablesPage } from '@/app/editor/tokens/dialog'
 import { openSettingsDialog } from '@/app/settings/dialog'
-import { useLeftPanel } from '@/app/shell/left-panel/use'
+import { useLeftPanel, type RailPanel } from '@/app/shell/left-panel/use'
 import { useGlide } from '@/components/ui/motion/useGlide'
 import Tip from '@/components/ui/overlay/Tip.vue'
 import { glidePills } from '@/theme/motion/glide'
@@ -18,6 +18,26 @@ const { panels, settings } = useI18n()
 const checkMessages = useDesignCheckMessages()
 const store = useEditorStore()
 const { activePanel, show, toggleAgent } = useLeftPanel()
+
+/** The variables page covers the panels and the canvas, so while it is open no panel shows as chosen. */
+const variablesOpen = computed(() => store.state.variablesOpen)
+function isActive(panel: RailPanel) {
+  return !variablesOpen.value && activePanel.value === panel
+}
+
+/** Choosing a panel closes the variables page first, and shows that panel. */
+function choose(panel: RailPanel) {
+  store.state.variablesOpen = false
+  show(panel)
+}
+
+function chooseAgent() {
+  if (variablesOpen.value && activePanel.value === 'ai') store.state.variablesOpen = false
+  else {
+    store.state.variablesOpen = false
+    toggleAgent()
+  }
+}
 const commentMessages = useCommentsMessages()
 const comments = useComments(store)
 const commentsLabel = computed(() =>
@@ -63,11 +83,11 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
         role="tab"
         data-test-id="properties-tab-ai"
         :aria-label="panels.ai"
-        :aria-selected="activePanel === 'ai'"
-        :data-state="activePanel === 'ai' ? 'active' : 'inactive'"
-        :data-active="activePanel === 'ai' || undefined"
+        :aria-selected="isActive('ai')"
+        :data-state="isActive('ai') ? 'active' : 'inactive'"
+        :data-active="isActive('ai') || undefined"
         :class="rail.item()"
-        @click="toggleAgent"
+        @click="chooseAgent"
       >
         <icon-hugeicons-sparkle :class="rail.icon()" />
       </button>
@@ -79,11 +99,11 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
         role="tab"
         data-test-id="left-panel-instructions-tab"
         :aria-label="panels.instructions"
-        :aria-selected="activePanel === 'instructions'"
-        :data-state="activePanel === 'instructions' ? 'active' : 'inactive'"
-        :data-active="activePanel === 'instructions' || undefined"
+        :aria-selected="isActive('instructions')"
+        :data-state="isActive('instructions') ? 'active' : 'inactive'"
+        :data-active="isActive('instructions') || undefined"
         :class="rail.item()"
-        @click="show('instructions')"
+        @click="choose('instructions')"
       >
         <icon-hugeicons-book-open-01 :class="rail.icon()" />
       </button>
@@ -95,11 +115,11 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
         role="tab"
         data-test-id="left-panel-layers-tab"
         :aria-label="panels.layers"
-        :aria-selected="activePanel === 'file'"
-        :data-state="activePanel === 'file' ? 'active' : 'inactive'"
-        :data-active="activePanel === 'file' || undefined"
+        :aria-selected="isActive('file')"
+        :data-state="isActive('file') ? 'active' : 'inactive'"
+        :data-active="isActive('file') || undefined"
         :class="rail.item()"
-        @click="show('file')"
+        @click="choose('file')"
       >
         <icon-hugeicons-layers-01 :class="rail.icon()" />
       </button>
@@ -110,23 +130,25 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
         role="tab"
         data-test-id="left-panel-assets-tab"
         :aria-label="panels.assets"
-        :aria-selected="activePanel === 'assets'"
-        :data-state="activePanel === 'assets' ? 'active' : 'inactive'"
-        :data-active="activePanel === 'assets' || undefined"
+        :aria-selected="isActive('assets')"
+        :data-state="isActive('assets') ? 'active' : 'inactive'"
+        :data-active="isActive('assets') || undefined"
         :class="rail.item()"
-        @click="show('assets')"
+        @click="choose('assets')"
       >
         <icon-hugeicons-component :class="rail.icon()" />
       </button>
     </Tip>
-    <!-- Variables open as a dialog over the editor, so this is a button, not one of the panel's tabs. -->
+    <!-- Variables open as a page over the panels and the canvas; another press closes it. -->
     <Tip :label="panels.variables" side="right">
       <button
         type="button"
         data-test-id="panel-rail-variables"
         :aria-label="panels.variables"
+        :aria-pressed="variablesOpen"
+        :data-active="variablesOpen || undefined"
         :class="rail.item()"
-        @click="openVariablesDialog(store)"
+        @click="toggleVariablesPage(store)"
       >
         <icon-hugeicons-swatch-book :class="rail.icon()" />
       </button>
@@ -138,11 +160,11 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
         role="tab"
         data-test-id="properties-tab-code"
         :aria-label="panels.code"
-        :aria-selected="activePanel === 'code'"
-        :data-state="activePanel === 'code' ? 'active' : 'inactive'"
-        :data-active="activePanel === 'code' || undefined"
+        :aria-selected="isActive('code')"
+        :data-state="isActive('code') ? 'active' : 'inactive'"
+        :data-active="isActive('code') || undefined"
         :class="rail.item()"
-        @click="show('code')"
+        @click="choose('code')"
       >
         <icon-hugeicons-code :class="rail.icon()" />
       </button>
@@ -153,11 +175,11 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
         role="tab"
         data-test-id="left-panel-folder-tab"
         :aria-label="panels.folder"
-        :aria-selected="activePanel === 'folder'"
-        :data-state="activePanel === 'folder' ? 'active' : 'inactive'"
-        :data-active="activePanel === 'folder' || undefined"
+        :aria-selected="isActive('folder')"
+        :data-state="isActive('folder') ? 'active' : 'inactive'"
+        :data-active="isActive('folder') || undefined"
         :class="rail.item()"
-        @click="show('folder')"
+        @click="choose('folder')"
       >
         <icon-hugeicons-folder-01 :class="rail.icon()" />
       </button>
@@ -168,11 +190,11 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
         role="tab"
         data-test-id="left-panel-history-tab"
         :aria-label="panels.versionsHistory"
-        :aria-selected="activePanel === 'history'"
-        :data-state="activePanel === 'history' ? 'active' : 'inactive'"
-        :data-active="activePanel === 'history' || undefined"
+        :aria-selected="isActive('history')"
+        :data-state="isActive('history') ? 'active' : 'inactive'"
+        :data-active="isActive('history') || undefined"
         :class="rail.item()"
-        @click="show('history')"
+        @click="choose('history')"
       >
         <icon-hugeicons-git-branch :class="rail.icon()" />
       </button>
@@ -183,11 +205,11 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
         role="tab"
         data-test-id="left-panel-comments-tab"
         :aria-label="commentsLabel"
-        :aria-selected="activePanel === 'comments'"
-        :data-state="activePanel === 'comments' ? 'active' : 'inactive'"
-        :data-active="activePanel === 'comments' || undefined"
+        :aria-selected="isActive('comments')"
+        :data-state="isActive('comments') ? 'active' : 'inactive'"
+        :data-active="isActive('comments') || undefined"
         :class="rail.item()"
-        @click="show('comments')"
+        @click="choose('comments')"
       >
         <icon-hugeicons-comment-01 :class="rail.icon()" />
       </button>
@@ -198,11 +220,11 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
         role="tab"
         data-test-id="properties-tab-lint"
         :aria-label="checkLabel"
-        :aria-selected="activePanel === 'lint'"
-        :data-state="activePanel === 'lint' ? 'active' : 'inactive'"
-        :data-active="activePanel === 'lint' || undefined"
+        :aria-selected="isActive('lint')"
+        :data-state="isActive('lint') ? 'active' : 'inactive'"
+        :data-active="isActive('lint') || undefined"
         :class="rail.item()"
-        @click="show('lint')"
+        @click="choose('lint')"
       >
         <icon-hugeicons-list-checks :class="rail.icon()" />
         <span

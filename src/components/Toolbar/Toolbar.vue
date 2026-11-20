@@ -10,6 +10,7 @@ import {
 } from '@kalka/vue'
 import type { Tool } from '@kalka/vue'
 
+import { commentPlacing } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
 import { toolIcons } from '@/app/editor/icons'
 import { useActionToast } from '@/app/shell/toast/action'
@@ -57,6 +58,7 @@ const toolShortcuts: Record<Tool, string> = {
 
 const flyoutMenuCls = useMenuUI({ content: 'min-w-32' })
 const toolbarUI = { flyoutContent: flyoutMenuCls.content }
+const commentsPlacing = computed(() => commentPlacing(store))
 const { editActions, arrangeActions } = useToolbarActions({ store, getCommand, menu })
 
 const { mobileCategory, slideDirection, hasPrev, hasNext, goPrev, goNext } = useToolbarState()
@@ -78,6 +80,7 @@ function onActionTap(item: ToolbarActionItem) {
       :tool-labels="toolLabels"
       :tool-shortcuts="toolShortcuts"
       :ui="toolbarUI"
+      :tools-idle="commentsPlacing"
       @set-tool="actions.setTool"
     >
       <template #end>

@@ -17,6 +17,11 @@ export interface SegmentedControlProps {
   label?: string
   size?: keyof SegmentedControlTheme['variants']['size']
   ui?: SegmentedControlUI
+  /**
+   * Shows an option on the canvas while the pointer is over it, and `null` when the pointer leaves
+   * or an option is chosen.
+   */
+  preview?: (value: string | null) => void
 }
 
 export interface SegmentedControlSlots {
@@ -26,7 +31,7 @@ export interface SegmentedControlSlots {
 
 <script setup lang="ts">
 import { tv } from 'tailwind-variants'
-import { computed, useTemplateRef } from 'vue'
+import { computed, shallowRef, useTemplateRef } from 'vue'
 
 import { SegmentedControlItem, SegmentedControlRoot } from '@kalka/vue'
 
@@ -34,7 +39,7 @@ import { useGlide } from '@/components/ui/motion/useGlide'
 import { glidePills } from '@/theme/motion/glide'
 import theme from '@/theme/select/segmented-control'
 
-const { options, label, size = 'sm', ui } = defineProps<SegmentedControlProps>()
+const { options, label, size = 'sm', ui, preview } = defineProps<SegmentedControlProps>()
 defineSlots<SegmentedControlSlots>()
 const modelValue = defineModel<string>({ required: true })
 const emit = defineEmits<{ change: [value: string] }>()
@@ -48,8 +53,29 @@ useGlide(
   { items: '[data-state]', active: '[data-state="on"]', pillClass: glidePills.segment }
 )
 
+/**
+ * The value the pointer came in on. A preview feeds the hovered value back into `modelValue`, so
+ * while previewing the control keeps showing this one, and choosing the hovered option is still a
+ * change.
+ */
+const heldOn = shallowRef<string>()
+const shownValue = computed(() => heldOn.value ?? modelValue.value)
+
+function hover(option: SegmentedControlOption) {
+  if (!preview || option.disabled) return
+  heldOn.value ??= modelValue.value
+  preview(option.value)
+}
+
+function leave() {
+  if (heldOn.value === undefined) return
+  heldOn.value = undefined
+  preview?.(null)
+}
+
 function select(value: string | string[] | undefined) {
   if (typeof value !== 'string') return
+  leave()
   modelValue.value = value
   emit('change', value)
 }
@@ -58,10 +84,11 @@ function select(value: string | string[] | undefined) {
 <template>
   <SegmentedControlRoot
     ref="root"
-    :model-value="modelValue"
+    :model-value="shownValue"
     :aria-label="label"
     :class="styles.root({ class: ui?.root })"
     @update:model-value="select"
+    @pointerleave="leave"
   >
     <SegmentedControlItem
       v-for="option in options"
@@ -71,6 +98,7 @@ function select(value: string | string[] | undefined) {
       :aria-label="option.label"
       :disabled="option.disabled"
       :class="styles.item({ class: ui?.item })"
+      @pointerenter="hover(option)"
     >
       <slot name="option" :option="option" :selected="selected">
         <span class="truncate">{{ option.label }}</span>

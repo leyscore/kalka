@@ -62,7 +62,7 @@ test('library manager scopes populated updates and does not mutate on discovery'
   await expect(publish.getByLabel('Library ID')).toBeHidden()
   await page.keyboard.press('Escape')
   await page.keyboard.press('ControlOrMeta+KeyN')
-  await page.getByRole('button', { name: 'New design', exact: true }).click()
+  await page.getByTestId('home-new-document').click()
   await expect.poll(() => page.evaluate(() => !!window.kalka?.getStore?.())).toBe(true)
 
   await page.getByTestId('left-panel-assets-tab').click()

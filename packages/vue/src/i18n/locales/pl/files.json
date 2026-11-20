@@ -26,6 +26,8 @@
   "clipboardImageFetchFailed": "Nie udało się pobrać 1 obrazu z Figmy. Sprawdź, czy plik źródłowy jest dostępny, i spróbuj ponownie.",
   "clipboardImagesFetchFailed": "Nie udało się pobrać {count} obrazów z Figmy. Sprawdź, czy plik źródłowy jest dostępny, i spróbuj ponownie.",
   "recentFiles": "Ostatnie pliki",
+  "recentTab": "Ostatnie",
+  "continueFile": "Kontynuuj",
   "recentFilesDescription": "Kontynuuj pracę nad projektem lub rozpocznij nowy.",
   "noRecentFiles": "Brak ostatnich plików",
   "noRecentFilesDescription": "Pliki otwarte w aplikacji komputerowej pojawią się tutaj.",

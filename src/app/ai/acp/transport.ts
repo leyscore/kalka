@@ -18,7 +18,7 @@ import { describeDiagnosticError, recordACPTransportFailure } from '@/app/diagno
 import { buildACPMCPServers } from '@/app/integrations/mcp'
 import { errorSummary } from '@/app/runtime/error'
 
-import { mapUpdate } from './map-update'
+import { createUpdateMapper } from './map-update'
 import { spawnACPProcess } from './process'
 
 type TauriChild = Awaited<ReturnType<typeof spawnACPProcess>>['child']
@@ -121,20 +121,6 @@ export async function openACPConnection({
   }
 }
 
-export function buildCrashChunks(
-  destroying: boolean,
-  textId: string,
-  textStarted: boolean
-): { chunks: UIMessageChunk[]; shouldNullSession: boolean } {
-  if (destroying) return { chunks: [], shouldNullSession: false }
-  const chunks: UIMessageChunk[] = []
-  if (textStarted) chunks.push({ type: 'text-end', id: textId })
-  chunks.push({ type: 'error', errorText: 'Agent process exited unexpectedly.' })
-  chunks.push({ type: 'finish-step' })
-  chunks.push({ type: 'finish', finishReason: 'error' })
-  return { chunks, shouldNullSession: true }
-}
-
 /** What a prompt needs from a session: the connection to the agent and where its updates go. */
 export interface ACPPromptSession {
   connection: Pick<ClientSideConnection, 'prompt' | 'cancel'>
@@ -155,15 +141,14 @@ export function promptStream(
   const { connection, sessionId } = session
   return new ReadableStream<UIMessageChunk>({
     start: (controller) => {
-      const textId = `text-${Date.now()}`
-      let textStarted = false
+      const mapper = createUpdateMapper(String(Date.now()))
       let closed = false
 
       function finish(reason: 'stop' | 'other' | 'error', errorText?: string) {
         if (closed) return
         closed = true
         if (errorText) controller.enqueue({ type: 'error', errorText })
-        if (textStarted) controller.enqueue({ type: 'text-end', id: textId })
+        for (const chunk of mapper.close()) controller.enqueue(chunk)
         controller.enqueue({ type: 'finish-step' })
         controller.enqueue({ type: 'finish', finishReason: reason })
         session.onUpdate = null
@@ -172,11 +157,7 @@ export function promptStream(
 
       session.onUpdate = (params) => {
         if (closed) return
-        const result = mapUpdate(params.update, textId, textStarted)
-        for (const chunk of result.chunks) {
-          controller.enqueue(chunk)
-        }
-        textStarted = result.textStarted
+        for (const chunk of mapper.map(params.update)) controller.enqueue(chunk)
       }
 
       abortSignal?.addEventListener('abort', () => {

@@ -162,6 +162,7 @@ test('comments work in a document opened after the editor started', async ({ pag
   await expect(page.locator('[data-slot="comment-tool"]')).toBeVisible()
   await page.locator('[data-slot="comment-tool"]').click()
   await expect(page.locator('[data-slot="comment-placement"]')).toBeVisible()
+  await expect(page.locator('[data-slot="comment-tool"]')).toHaveAttribute('aria-pressed', 'true')
   const canvas = await page.getByTestId('canvas-element').boundingBox()
   if (!canvas) throw new Error('No canvas')
   await page.mouse.click(canvas.x + canvas.width / 2, canvas.y + canvas.height / 2)

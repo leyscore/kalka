@@ -71,6 +71,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
           class="min-w-0 flex-1"
           :model-value="ctx.node.value.fontFamily"
           :label="panels.fontFamily"
+          :preview="ctx.actions.previewFamily"
           @select="ctx.actions.setFamily"
         />
         <FontSettingsPopover />
@@ -102,6 +103,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
             :label="panels.fontWeight"
             :model-value="ctx.node.value.fontWeight"
             :options="ctx.weights"
+            :preview="(weight: number | null) => ctx.actions.previewWeight(weight)"
             @update:model-value="ctx.actions.setWeight(+$event)"
           />
         </PanelFieldGroup>
@@ -163,6 +165,14 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
             :model-value="ctx.node.value.textAlignHorizontal"
             :options="alignmentOptions"
             :label="panels.textAlignment"
+            :preview="
+              (value) =>
+                ctx.actions.previewText(
+                  value
+                    ? { textAlignHorizontal: value as 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED' }
+                    : null
+                )
+            "
             @change="ctx.actions.align($event as 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED')"
           >
             <template #option="{ option }">
@@ -182,6 +192,12 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
             :model-value="ctx.node.value.textAlignVertical"
             :options="verticalAlignmentOptions"
             :label="panels.verticalTextAlignment"
+            :preview="
+              (value) =>
+                ctx.actions.previewText(
+                  value ? { textAlignVertical: value as 'TOP' | 'CENTER' | 'BOTTOM' } : null
+                )
+            "
             @change="ctx.actions.setVerticalAlign($event as 'TOP' | 'CENTER' | 'BOTTOM')"
           >
             <template #option="{ option }">
@@ -251,6 +267,14 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
               :label="panels.textCase"
               :model-value="ctx.node.value.textCase"
               :options="textCaseOptions"
+              :preview="
+                (value: string | null) =>
+                  ctx.actions.previewText(
+                    value === null
+                      ? null
+                      : { textCase: value as 'ORIGINAL' | 'UPPER' | 'LOWER' | 'TITLE' }
+                  )
+              "
               @update:model-value="
                 ctx.actions.setTextCase($event as 'ORIGINAL' | 'UPPER' | 'LOWER' | 'TITLE')
               "

@@ -10,7 +10,7 @@ import {
   type ShaderLayer,
   type ShaderPreset
 } from '@kalka/scene-graph'
-import { useI18n } from '@kalka/vue'
+import { useHoverPreview, useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import ColorInput from '@/components/ColorPicker/ColorInput.vue'
@@ -77,19 +77,34 @@ function withChanges(changes: Partial<ShaderLayer>): ShaderLayer | null {
   return layer.value ? { ...layer.value, ...changes } : null
 }
 
+/** The layer a preset makes from `current`: the colors and speed carry over, the parameters do not. */
+function withPreset(current: ShaderLayer, preset: ShaderPreset): ShaderLayer {
+  return {
+    ...createShaderLayer(preset),
+    colors: current.colors.slice(0, SHADER_PRESET_INFO[preset].maxColors),
+    speed: current.speed
+  }
+}
+
 function setPreset(preset: ShaderPreset): void {
-  const current = layer.value
-  if (!current) return
-  const fresh = createShaderLayer(preset)
-  // The colors and speed carry over; the new preset brings its own parameters.
-  commit(
-    {
-      ...fresh,
-      colors: current.colors.slice(0, SHADER_PRESET_INFO[preset].maxColors),
-      speed: current.speed
-    },
-    'Change shader'
-  )
+  if (layer.value) commit(withPreset(layer.value, preset), 'Change shader')
+}
+
+const hoverShader = useHoverPreview(store, 'Preview shader')
+/** The shader the list was opened on; previews start from it, not from the previous preview. */
+let previewBase: ShaderLayer | null = null
+
+/** Shows a preset on the canvas while it is hovered in the list; `null` takes it away. */
+function previewPreset(preset: ShaderPreset | null): void {
+  if (preset === null) {
+    previewBase = null
+    hoverShader([], null)
+    return
+  }
+  previewBase ??= layer.value
+  if (node.value && previewBase) {
+    hoverShader([node.value.id], { shader: withPreset(previewBase, preset) })
+  }
 }
 
 function scrubParameter(name: string, percent: number): void {
@@ -169,6 +184,7 @@ function removeColor(index: number): void {
         :options="presetOptions"
         :label="panels.shader"
         data-property="shader-preset"
+        :preview="previewPreset"
         @update:model-value="setPreset"
       />
 

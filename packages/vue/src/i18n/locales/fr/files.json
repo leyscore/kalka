@@ -26,6 +26,8 @@
   "clipboardImageFetchFailed": "Impossible de récupérer 1 image depuis Figma. Vérifiez que le fichier source est accessible, puis réessayez.",
   "clipboardImagesFetchFailed": "Impossible de récupérer {count} images depuis Figma. Vérifiez que le fichier source est accessible, puis réessayez.",
   "recentFiles": "Fichiers récents",
+  "recentTab": "Récents",
+  "continueFile": "Continuer",
   "recentFilesDescription": "Continuez un design ou commencez-en un nouveau.",
   "noRecentFiles": "Aucun fichier récent",
   "noRecentFilesDescription": "Les fichiers ouverts dans l’application de bureau apparaîtront ici.",

@@ -5,6 +5,7 @@ import type { Editor } from '@kalka/core/editor'
 import { FONT_WEIGHT_NAMES, weightToStyle } from '@kalka/core/text'
 import type { SceneNode, TextDecoration } from '@kalka/scene-graph'
 
+import { useHoverPreview } from '#vue/controls/node-preview/hover'
 import type { UseTypographyOptions } from '#vue/controls/typography/use'
 import { useSelectedNodeState } from '#vue/editor/selection-state/nodes'
 import { useNodeFontStatus } from '#vue/shared/font-status/use'
@@ -77,10 +78,52 @@ export function createTypographyActions({
     await options.fontLoader?.load(family, style)
   }
 
+  const hoverText = useHoverPreview(editor, 'Preview text')
+  /** Counts hovers, so a font that loads after the pointer moved on is not shown. */
+  let hover = 0
+
+  /** Ends any hover preview, so a choice starts from the document's own value. */
+  function endPreview() {
+    hover++
+    hoverText([], null)
+  }
+
   async function setFamily(family: string) {
+    endPreview()
     if (!node.value) return
     await doLoadFont(family, currentWeightLabel.value)
     editor.updateNodeWithUndo(node.value.id, { fontFamily: family }, 'Change font')
+  }
+
+  /** Shows a family once its face at the current weight has loaded, if it is still hovered. */
+  async function previewFamily(family: string | null) {
+    const current = ++hover
+    if (family === null || !node.value) {
+      hoverText([], null)
+      return
+    }
+    const { id } = node.value
+    await doLoadFont(family, currentWeightLabel.value)
+    if (current === hover) hoverText([id], { fontFamily: family })
+  }
+
+  /** Shows text settings on the selection while they are hovered in a list; `null` takes them away. */
+  function previewText(changes: Partial<SceneNode> | null) {
+    hover++
+    const id = node.value?.id
+    hoverText(id ? [id] : [], changes)
+  }
+
+  /** Shows a weight once its font face has loaded, if it is still the one hovered. */
+  async function previewWeight(weight: number | null) {
+    const current = ++hover
+    if (weight === null || !node.value) {
+      hoverText([], null)
+      return
+    }
+    const { id, fontFamily } = node.value
+    await doLoadFont(fontFamily, weightToStyle(weight))
+    if (current === hover) hoverText([id], { fontWeight: weight })
   }
 
   async function setWeight(weight: number) {
@@ -92,6 +135,7 @@ export function createTypographyActions({
   }
 
   function setAlign(align: TextAlign) {
+    endPreview()
     if (!node.value) return
     editor.updateNodeWithUndo(
       node.value.id,
@@ -106,6 +150,7 @@ export function createTypographyActions({
   }
 
   function setVerticalAlign(align: TextVerticalAlign) {
+    endPreview()
     if (!node.value) return
     editor.updateNodeWithUndo(
       node.value.id,
@@ -196,7 +241,10 @@ export function createTypographyActions({
 
   return {
     setFamily,
+    previewFamily,
     setWeight,
+    previewWeight,
+    previewText,
     setAlign,
     setDirection,
     setVerticalAlign,

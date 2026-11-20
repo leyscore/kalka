@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
 import { FigmaAPI } from '@kalka/core/figma-api'
-import { CORE_TOOLS, finishWorkingOnNodes, isToolExposed } from '@kalka/core/tools'
+import { askUser, CORE_TOOLS, finishWorkingOnNodes, isToolExposed } from '@kalka/core/tools'
 import { SceneGraph } from '@kalka/scene-graph'
 
 describe('finish_working_on_nodes', () => {
@@ -30,5 +30,50 @@ describe('finish_working_on_nodes', () => {
     expect(isToolExposed(finishWorkingOnNodes, 'mcp')).toBe(true)
     expect(isToolExposed(finishWorkingOnNodes, 'ai')).toBe(true)
     expect(finishWorkingOnNodes.mutates).toBe(false)
+  })
+})
+
+describe('ask_user', () => {
+  const questions = [
+    { question: 'What is the shop called?', placeholder: 'Name' },
+    { question: 'Which sections?', options: ['Menu', 'Hours', 'Shop'], multiple: true }
+  ]
+
+  test('hands the questions to the host and returns the answers', async () => {
+    const figma = new FigmaAPI(new SceneGraph())
+    const asked: unknown[] = []
+    figma.askUser = (sent) => {
+      asked.push(sent)
+      return Promise.resolve([
+        { question: 'What is the shop called?', answer: 'Grain' },
+        { question: 'Which sections?', answer: 'Menu, Hours' }
+      ])
+    }
+    expect(await askUser.execute(figma, { questions })).toEqual({
+      answers: [
+        { question: 'What is the shop called?', answer: 'Grain' },
+        { question: 'Which sections?', answer: 'Menu, Hours' }
+      ]
+    })
+    expect(asked).toEqual([questions])
+  })
+
+  test('tells the agent to decide when the person skips', async () => {
+    const figma = new FigmaAPI(new SceneGraph())
+    figma.askUser = () => Promise.resolve(null)
+    expect(await askUser.execute(figma, { questions })).toMatchObject({ answers: null })
+  })
+
+  test('asks in the reply in a host with no person to ask, such as the CLI', async () => {
+    const result = await askUser.execute(new FigmaAPI(new SceneGraph()), { questions })
+    expect(result).toMatchObject({ answers: null })
+    expect(JSON.stringify(result)).toContain('ask in your reply')
+  })
+
+  test('is a default tool for MCP and the chat, and changes nothing', () => {
+    expect(CORE_TOOLS).toContain(askUser)
+    expect(isToolExposed(askUser, 'mcp')).toBe(true)
+    expect(isToolExposed(askUser, 'ai')).toBe(true)
+    expect(askUser.mutates).toBe(false)
   })
 })

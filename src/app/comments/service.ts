@@ -82,6 +82,9 @@ function createState() {
  * shortcuts the proxy that forwards to the active tab.
  */
 function stateOf(store: EditorStore) {
+  // Opening a document replaces the graph and bumps the scene version: reading it here makes every
+  // computed that reaches the state, such as the toolbar button, follow the new document.
+  void store.state.sceneVersion
   const key = toRaw(store.graph)
   let state = states.get(key)
   if (!state) {

@@ -9,7 +9,8 @@ export const HANDOFF_PARAM = 'handoff'
 
 /**
  * Sites that may hand this tab a file: the free tools on kalka.design open the web app in a new
- * tab and post the file the person chose, which stays in their browser.
+ * tab, and its home page embeds it to edit the page itself; either posts the file, which stays in
+ * the person's browser.
  */
 const HANDOFF_ORIGINS: readonly string[] = import.meta.env.DEV
   ? ['https://kalka.design', 'http://localhost:8788', 'http://localhost:4321']
@@ -27,23 +28,24 @@ export function handoffFile(event: MessageEvent, opener: unknown): File | null {
   return message.success ? message.output.file : null
 }
 
-/**
- * The window that opened this tab, when a page can post to it. An opener on another origin, as
- * kalka.design is to the web app, is a window whose prototype is not this page's `Object`.
- */
-export function handoffOpener(opener: unknown): Pick<Window, 'postMessage'> | null {
-  if (opener === null || typeof opener !== 'object' || !('postMessage' in opener)) return null
-  return opener as Pick<Window, 'postMessage'>
+/** The window that may hand a file over: the tab that opened this one, else the page embedding it. */
+export function handoffSender(self: Pick<Window, 'opener' | 'parent'>): Window | null {
+  // A tab opened by another site sees its opener as a cross-origin window, which is no
+  // `instanceof Object` in this realm: check its shape instead.
+  const opener: unknown = self.opener
+  if (typeof opener === 'object' && opener !== null && 'postMessage' in opener)
+    return opener as Window
+  return self.parent !== self ? self.parent : null
 }
 
 /**
- * Opens a file a kalka.design tool hands over: this tab tells its opener it is ready, the
- * opener posts the file, and it opens as File → Open would.
+ * Opens a file a kalka.design page hands over: this tab tells its opener, or the page embedding
+ * it, that it is ready; that page posts the file, and it opens as File → Open would.
  */
 export function useDocumentHandoff() {
   if (IS_TAURI) return
   const url = new URL(window.location.href)
-  const opener = handoffOpener(window.opener)
+  const opener = handoffSender(window)
   if (!url.searchParams.has(HANDOFF_PARAM) || !opener) return
   url.searchParams.delete(HANDOFF_PARAM)
   window.history.replaceState(window.history.state, '', url)

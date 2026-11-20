@@ -26,10 +26,10 @@ function openVariables() {
     .getByRole('button', { name: 'Open variables' })
 }
 
-test('empty variables dialog offers to create a collection', async () => {
+test('empty variables page offers to create a collection', async () => {
   await openVariables().click()
 
-  const dialog = editor.page.getByTestId('variables-dialog')
+  const dialog = editor.page.getByTestId('variables-page')
   await expect(dialog).toBeVisible()
   await expect(dialog.getByText('No variable collections')).toBeVisible()
   await expect(dialog.getByRole('button', { name: 'Create collection' })).toBeVisible()
@@ -37,11 +37,11 @@ test('empty variables dialog offers to create a collection', async () => {
   await expect(dialog).toBeHidden()
 })
 
-test('variables dialog opens on the token list, collection, and stylesheet', async () => {
+test('variables page opens on the token list, collection, and stylesheet', async () => {
   await createColorVariable('primary-color')
 
   await openVariables().click()
-  const dialog = editor.page.getByTestId('variables-dialog')
+  const dialog = editor.page.getByTestId('variables-page')
   await expect(dialog).toBeVisible()
   await expect(variableRows()).toHaveCount(1)
   await expect(dialog.getByTestId('collection-inspector').getByText('Default')).toBeVisible()
@@ -79,7 +79,7 @@ test('add variable menu creates non-color variable types', async () => {
   )
   await editor.page.keyboard.press('Escape')
   await expect(numberOption).toBeHidden()
-  await expect(editor.page.getByTestId('variables-dialog')).toBeVisible()
+  await expect(editor.page.getByTestId('variables-page')).toBeVisible()
 
   await editor.page.getByTestId('variables-add-variable').click()
   await editor.page.getByTestId(variablesAddTestId('FLOAT')).click()
@@ -180,11 +180,11 @@ test('manual modes switch by the attribute the collection names', async () => {
 
 test('color swatch opens color picker', async () => {
   await createColorVariable('SwatchVar')
-  // close dialog if open from previous test
+  // close the page if open from the previous test
   await editor.page.keyboard.press('Escape')
   await editor.page.waitForTimeout(200)
   await openVariables().click()
-  await expect(editor.page.getByTestId('variables-dialog')).toBeVisible({ timeout: 3000 })
+  await expect(editor.page.getByTestId('variables-page')).toBeVisible({ timeout: 3000 })
 
   await variableRows().filter({ hasText: 'SwatchVar' }).click()
   await expect(
@@ -206,8 +206,8 @@ function inspectorName() {
     .getByRole('textbox', { name: 'Name', exact: true })
 }
 
-test('the View menu opens the variables dialog', async () => {
-  const dialog = editor.page.getByTestId('variables-dialog')
+test('the View menu opens the variables page', async () => {
+  const dialog = editor.page.getByTestId('variables-page')
   // The color picker from the previous test takes the first Escape.
   await editor.page.keyboard.press('Escape')
   await expect(editor.page.locator('[data-picker-content]')).toBeHidden()
@@ -297,7 +297,7 @@ test('several tokens are duplicated, grouped, and deleted together', async () =>
   editor.canvas.assertNoErrors()
 })
 
-test('undo and redo reach the document from inside the dialog', async () => {
+test('undo and redo reach the document from inside the page', async () => {
   // Deleting the last tokens of the filtered group above let the filter go.
   await expect(variableRows().filter({ hasText: 'beta-spacing' })).toHaveCount(1)
   await variableRows().filter({ hasText: 'beta-spacing' }).click()
@@ -365,7 +365,7 @@ test('search finds variables by CSS name and by value', async () => {
   editor.canvas.assertNoErrors()
 })
 
-test('the add menu opens under its button after the dialog changes width', async () => {
+test('the add menu opens under its button after the page changes width', async () => {
   const viewport = editor.page.viewportSize()
   if (!viewport) throw new Error('viewport size is not set')
   const add = editor.page.getByTestId('variables-add-variable')

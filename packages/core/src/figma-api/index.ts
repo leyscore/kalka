@@ -601,6 +601,29 @@ export class FigmaAPI implements NodeProxyHost {
    * an empty text. Absent in hosts that show no agents.
    */
   setAgentStatus?: (text: string) => void
+  /**
+   * Shows the calling agent's questions to the person, one at a time with suggested answers, and
+   * resolves with what they answered, or null when they skipped. Absent in hosts with no person
+   * to ask.
+   */
+  askUser?: (questions: AgentQuestion[]) => Promise<AgentAnswer[] | null>
   /** The name the calling agent's comment replies carry, when the host knows it. */
   commentAuthorName?: string
+}
+
+/** A question an agent asks the person, with answers they can pick in one click. */
+export interface AgentQuestion {
+  question: string
+  /** Suggested answers, shown as buttons; the person can always type their own. */
+  options?: string[]
+  /** Whether several options can be picked together. */
+  multiple?: boolean
+  /** A hint for the typed answer. */
+  placeholder?: string
+}
+
+/** The person's answer to one question: the options they picked and what they typed. */
+export interface AgentAnswer {
+  question: string
+  answer: string
 }

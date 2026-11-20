@@ -5,6 +5,7 @@ import { SceneGraph } from '@kalka/scene-graph'
 
 import {
   finishInterruptedFolderSave,
+  canHoldKalkaFolder,
   readKalkaFolderAsFile,
   writeKalkaFolderFiles
 } from '@/app/document/io/kalka-folder'
@@ -91,3 +92,24 @@ describe('Kalka folders on desktop', () => {
 function text(files: Map<string, Uint8Array>, path: string): string {
   return new TextDecoder().decode(files.get(path))
 }
+describe('canHoldKalkaFolder', () => {
+  test('takes a folder that does not exist yet', async () => {
+    await memoryFileSystem({ '/home/Downloads/photo.png': 'x' })
+    expect(await canHoldKalkaFolder('/home/Downloads/Landing')).toBe(true)
+  })
+
+  test('takes a folder that already holds a Kalka document', async () => {
+    await memoryFileSystem({ '/home/Landing/project.json': '{}', '/home/Landing/pages/a.html': '' })
+    expect(await canHoldKalkaFolder('/home/Landing')).toBe(true)
+  })
+
+  test('takes a folder whose only files are hidden', async () => {
+    await memoryFileSystem({ '/home/Landing/.DS_Store': '' })
+    expect(await canHoldKalkaFolder('/home/Landing')).toBe(true)
+  })
+
+  test('refuses a folder holding other files, such as Downloads', async () => {
+    await memoryFileSystem({ '/home/Downloads/photo.png': 'x', '/home/Downloads/app.dmg': 'x' })
+    expect(await canHoldKalkaFolder('/home/Downloads')).toBe(false)
+  })
+})

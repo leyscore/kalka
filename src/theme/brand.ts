@@ -16,15 +16,15 @@ export const brandLoader = tv({
 })
 
 /**
- * A word drawn as a selected layer, as on kalka.design: a selection frame with handles and a size
+ * A word drawn as a selected layer on the pixel sky, as on kalka.design: a selection frame with handles and a size
  * badge, an agent's cursor drafting it and yours resizing it. Still with reduced motion.
  */
 export const selectedWord = tv({
   slots: {
-    root: 'relative mx-[0.14em] inline-block text-surface',
-    box: 'pointer-events-none absolute top-[0.05em] -right-[0.075em] bottom-[-0.05em] -left-[0.075em] border-2 border-accent motion-safe:animate-frame-grow',
-    handle: 'absolute size-2.5 border-2 border-accent bg-white',
-    size: 'absolute bottom-[-34px] left-1/2 -translate-x-1/2 rounded-[5px] bg-accent px-[9px] py-1.5 font-mono text-xs leading-none font-medium tracking-normal whitespace-nowrap text-white',
+    root: 'relative mx-[0.14em] inline-block text-current',
+    box: 'pointer-events-none absolute top-[0.05em] -right-[0.075em] bottom-[-0.05em] -left-[0.075em] border-2 border-white motion-safe:animate-frame-grow',
+    handle: 'absolute size-2.5 border-2 border-white bg-accent',
+    size: 'absolute bottom-[-34px] left-1/2 -translate-x-1/2 rounded-[5px] bg-white px-[9px] py-1.5 font-mono text-xs leading-none font-medium tracking-normal whitespace-nowrap text-[#1236B8]',
     cursor:
       'pointer-events-none absolute hidden font-sans text-[13px] leading-none font-medium tracking-normal motion-safe:block',
     arrow: 'block size-[22px] [&_path]:fill-current',
@@ -49,8 +49,8 @@ export const selectedWord = tv({
       },
       you: {
         cursor: '-right-[30px] -bottom-[26px] z-[3] animate-frame-you',
-        arrow: 'text-accent',
-        tag: 'bg-accent'
+        arrow: 'text-[#0E1222] [&_path]:stroke-white',
+        tag: 'bg-white text-[#0E1222]'
       }
     }
   }
@@ -65,4 +65,47 @@ export const brandSpinner = tv({
     liquid:
       'absolute inset-x-0 bottom-0 h-full animate-liquid-fill bg-accent motion-reduce:animate-none'
   }
+})
+
+/**
+ * The pixel sky of kalka.design: a deep blue that lightens toward the bottom, a fine grain, and
+ * clouds drawn in dots that sway slowly. Inside the clouds a few dots at a time double their
+ * brightness, at their own size, and fade, so the sky feels alive; reduced motion holds the clouds
+ * still and the dots unlit. In the dark theme it is the night of kalka.design's footer, its blue, its
+ * fine star grid and its four-point stars, falling over the day from the top like a veil and lifting
+ * back for the day. As
+ * a `screen` it sits behind a full screen such as the welcome; as a `band` it fills the top of Home,
+ * with its clouds along the bottom edge.
+ */
+export const pixelSky = tv({
+  slots: {
+    root: 'pointer-events-none overflow-hidden',
+    grain:
+      'absolute inset-0 sky-night-dim bg-[radial-gradient(circle,rgb(255_255_255/0.1)_0_1px,transparent_1.4px)] bg-size-[6px_6px]',
+    clouds:
+      'absolute -inset-x-40 sky-night-dim bg-[radial-gradient(circle,rgb(255_255_255/0.5)_0_2.6px,transparent_3.1px)] bg-size-[9px_9px] motion-safe:animate-sky-drift',
+    spark:
+      'absolute bg-[radial-gradient(circle,rgb(255_255_255/0.5)_0_2.6px,transparent_3.1px)] bg-size-[9px_9px] opacity-0 motion-safe:animate-sky-twinkle',
+    night: 'absolute inset-0 sky-night-veil',
+    stars:
+      'absolute inset-0 bg-[radial-gradient(circle,rgb(157_183_245/0.1)_0_0.8px,transparent_1.2px)] bg-size-[16px_16px]',
+    star: 'absolute bg-[#DCE6FF] mask-sky-star opacity-45 drop-shadow-[0_0_4px_rgb(220_230_255/0.7)] motion-safe:animate-star-glow'
+  },
+  variants: {
+    place: {
+      screen: {
+        root: 'fixed inset-0 -z-10 bg-[linear-gradient(180deg,#071B6B_0%,#1236B8_30%,#2F5BEA_58%,#7FA2F5_82%,#CFDCFC_100%)]',
+        night: 'bg-[linear-gradient(180deg,#060920_0%,#0A1033_38%,#0D1440_68%,#18245F_100%)]',
+        clouds:
+          'inset-y-0 [mask-image:radial-gradient(ellipse_20%_12%_at_14%_84%,#000_15%,transparent_70%),radial-gradient(ellipse_26%_12%_at_54%_96%,#000_15%,transparent_70%),radial-gradient(ellipse_18%_10%_at_88%_80%,#000_15%,transparent_70%),radial-gradient(ellipse_9%_5%_at_82%_22%,#000_15%,transparent_70%),radial-gradient(ellipse_8%_4%_at_16%_20%,#000_15%,transparent_70%)]'
+      },
+      band: {
+        root: 'absolute inset-0 bg-[linear-gradient(180deg,#071B6B_0%,#1236B8_36%,#2F5BEA_68%,#7FA2F5_100%)]',
+        night: 'bg-[linear-gradient(180deg,#0D1440_0%,#0A1033_45%,#060920_100%)]',
+        clouds:
+          '-bottom-[30px] h-[200px] [mask-image:radial-gradient(ellipse_16%_42%_at_9%_82%,#000_10%,transparent_70%),radial-gradient(ellipse_22%_36%_at_58%_98%,#000_10%,transparent_70%),radial-gradient(ellipse_13%_30%_at_93%_72%,#000_10%,transparent_70%)]'
+      }
+    }
+  },
+  defaultVariants: { place: 'screen' }
 })

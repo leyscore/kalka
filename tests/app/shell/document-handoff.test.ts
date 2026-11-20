@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { handoffFile, handoffOpener } from '@/app/shell/document-handoff'
+import { handoffFile, handoffSender } from '@/app/shell/document-handoff'
 
 import { asDouble } from '#tests/helpers/doubles'
 
@@ -28,15 +28,31 @@ describe('handoffFile', () => {
   })
 })
 
-describe('handoffOpener', () => {
-  test('takes an opener from another origin, whose window has no Object prototype here', () => {
-    const crossOrigin = Object.create(null) as Record<string, unknown>
-    crossOrigin.postMessage = () => undefined
-    expect(handoffOpener(crossOrigin)).toBe(crossOrigin)
+describe('handoffSender', () => {
+  test('is the tab that opened this one', () => {
+    const tab = asDouble<Window>({ postMessage: () => undefined })
+    const self = asDouble<Window>({ opener: tab, parent: null })
+    expect(handoffSender(asDouble<Window>({ ...self, parent: self }))).toBe(tab)
   })
 
-  test('takes no opener when there is none or it cannot be posted to', () => {
-    expect(handoffOpener(null)).toBeNull()
-    expect(handoffOpener({})).toBeNull()
+  test('is the tab that opened this one from another site', () => {
+    // A cross-origin opener is no `instanceof Object` here; a prototype-less object behaves alike.
+    const tab = asDouble<Window>(
+      Object.assign(Object.create(null), { postMessage: () => undefined })
+    )
+    const self = asDouble<Window>({ opener: tab })
+    Object.assign(self, { parent: self })
+    expect(handoffSender(self)).toBe(tab)
+  })
+
+  test('is the page embedding this one when no tab opened it', () => {
+    const page = asDouble<Window>({ postMessage: () => undefined })
+    expect(handoffSender(asDouble<Window>({ opener: null, parent: page }))).toBe(page)
+  })
+
+  test('is nobody for a tab on its own', () => {
+    const self = asDouble<Window>({ opener: null })
+    Object.assign(self, { parent: self })
+    expect(handoffSender(self)).toBeNull()
   })
 })

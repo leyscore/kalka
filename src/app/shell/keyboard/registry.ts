@@ -99,7 +99,9 @@ function shouldIgnoreShortcut(
     isEditing(event) ||
     options.inputFocused.value ||
     !!options.store.state.editingTextId ||
-    !!options.store.state.numberFieldFocused
+    !!options.store.state.numberFieldFocused ||
+    // The variables cover the canvas, so its keys must not reach layers that cannot be seen.
+    options.store.state.variablesOpen
   )
 }
 

@@ -5,6 +5,7 @@ import type { Editor } from '@kalka/core/editor'
 import type { BlendMode, SceneNode } from '@kalka/scene-graph'
 
 import type { CornerGeometryKey, CornerRadiusKey } from '#vue/controls/appearance/types'
+import { useHoverPreview } from '#vue/controls/node-preview/hover'
 import { MIXED, type MixedValue } from '#vue/controls/node-props/use'
 
 const CORNER_RADIUS_TYPES = new Set([
@@ -141,7 +142,8 @@ export function createAppearanceActions({
     const selected = node.value
     const targets = isMulti.value ? nodes.value : []
     if (!isMulti.value && selected) targets.push(selected)
-    const changed = targets.filter((target) => target.blendMode !== value)
+    // Read the live nodes: a hover preview just cancelled may not have reached the snapshot yet.
+    const changed = targets.filter((target) => editor.getNode(target.id)?.blendMode !== value)
     if (changed.length === 0) return
 
     editor.undo.runBatch('Change blend mode', () => {
@@ -149,6 +151,15 @@ export function createAppearanceActions({
         editor.updateNodeWithUndo(target.id, { blendMode: value }, 'Change blend mode')
       }
     })
+  }
+
+  const hoverBlendMode = useHoverPreview(editor, 'Preview blend mode')
+
+  /** Shows a blend mode on the selection while it is hovered in the list; `null` takes it away. */
+  function previewBlendMode(value: BlendMode | null) {
+    const single = node.value ? [node.value.id] : []
+    const ids = isMulti.value ? nodes.value.map((n) => n.id) : single
+    hoverBlendMode(ids, value === null ? null : { blendMode: value })
   }
 
   function toggleVisibility() {
@@ -313,6 +324,7 @@ export function createAppearanceActions({
     updateUniformRadius,
     commitUniformRadius,
     setBlendMode,
+    previewBlendMode,
     toggleVisibility,
     toggleIndependentCorners,
     updateCornerProp,

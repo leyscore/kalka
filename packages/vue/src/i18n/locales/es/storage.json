@@ -3,6 +3,7 @@
   "emptyStorageWorkspace": "Aún no hay documentos guardados.",
   "loadingDocuments": "Cargando documentos…",
   "workspace": "Espacio de almacenamiento",
+  "tab": "Almacenamiento",
   "openWorkspace": "Abrir espacio",
   "loadingWorkspace": "Cargando espacio de almacenamiento…",
   "notConfigured": "Configura el almacenamiento antes de usar este espacio.",

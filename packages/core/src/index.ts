@@ -68,7 +68,14 @@ export {
   type DocumentColorSpace
 } from '@kalka/scene-graph'
 
-export { FigmaAPI, FigmaNodeProxy, computeImageHash, type FigmaFontName } from './figma-api'
+export {
+  FigmaAPI,
+  FigmaNodeProxy,
+  computeImageHash,
+  type AgentAnswer,
+  type AgentQuestion,
+  type FigmaFontName
+} from './figma-api'
 export { BehaviourHandle, KalkaAPI, type NodeRef } from './kalka-api'
 export {
   ALL_TOOLS,

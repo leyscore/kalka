@@ -13,6 +13,7 @@ import {
 import type { JSONObject } from '@kalka/scene-graph/primitives'
 import type { AgentEdit } from '@kalka/vue'
 
+import { askInAIPanel } from '@/app/ai/questions/ask'
 import {
   agentFinished,
   agentStarted,
@@ -157,6 +158,8 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
     const figma = makeFigma(store, target.pageId)
     // Set by the host hook, which TypeScript cannot see run.
     const call = { released: false }
+    figma.askUser = (questions) =>
+      askInAIPanel(questions, session ? sessionAgentName(store, session) : null)
     if (session) {
       figma.finishWorking = (ids) => {
         call.released = true
