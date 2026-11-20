@@ -10,8 +10,18 @@ import { assertNodeEditable } from './capabilities'
 import {
   captureDocumentChange as startDocumentChange,
   restoreDocumentChange as applyDocumentChangeToEditor,
+  withoutLayerFields,
   type DocumentChange
 } from './history/document-change'
+
+/** What typing changes on a text layer: its text, its style runs, and the size it grows to. */
+const TEXT_EDIT_FIELDS: ReadonlySet<PropertyKey> = new Set([
+  'text',
+  'styleRuns',
+  'derivedTextGlyphs',
+  'width',
+  'height'
+])
 import { collectNodePositions, pushPositionUndo } from './history/position'
 import {
   restorePageFromSnapshot as restorePageSnapshot,
@@ -284,7 +294,7 @@ export function createUndoActions(ctx: EditorContext) {
     const finish = startDocumentChange(ctx.graph, pageId)
     // A person may edit while an agent's call awaits; those edits are steps of their own.
     const following = ctx.undo.followSteps()
-    return () => {
+    const record = () => {
       const steps = following.stop()
       if (!steps?.length) return finish()
       // Their changes are taken out of the recording, so undoing it keeps them.
@@ -294,6 +304,12 @@ export function createUndoActions(ctx: EditorContext) {
       } finally {
         ctx.undo.replaySteps(steps, 'forward')
       }
+    }
+    return () => {
+      const change = record()
+      // Text being typed is recorded as its own step when the edit ends.
+      const typing = ctx.state.editingTextId
+      return typing ? withoutLayerFields(change, typing, TEXT_EDIT_FIELDS) : change
     }
   }
 

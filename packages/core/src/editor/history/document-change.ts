@@ -279,6 +279,35 @@ export function captureDocumentChange(graph: SceneGraph, pageId: string): () => 
   }
 }
 
+/**
+ * The change without some fields of one layer, such as the text a person is typing into it,
+ * which their own edit records when it ends.
+ */
+export function withoutLayerFields(
+  change: DocumentChange,
+  nodeId: string,
+  fields: ReadonlySet<PropertyKey>
+): DocumentChange {
+  const updated = change.updated.flatMap((update) => {
+    if (update.id !== nodeId || !update.fields) return [update]
+    const { before, after, absent } = update.fields
+    const keep = (side: Partial<SceneNode>) =>
+      Object.fromEntries(Object.entries(side).filter(([key]) => !fields.has(key)))
+    const kept = {
+      id: update.fields.id,
+      before: keep(before),
+      after: keep(after),
+      absent: {
+        before: absent.before.filter((key) => !fields.has(key)),
+        after: absent.after.filter((key) => !fields.has(key))
+      }
+    }
+    const next = { ...update, fields: Object.keys(kept.after).length > 0 ? kept : null }
+    return next.fields || next.source || next.fig ? [next] : []
+  })
+  return { ...change, updated }
+}
+
 export function isEmptyDocumentChange(change: DocumentChange): boolean {
   return (
     change.created.length === 0 &&

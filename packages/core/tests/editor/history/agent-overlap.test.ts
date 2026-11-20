@@ -64,4 +64,24 @@ describe('an agent edit with the user editing meanwhile', () => {
     expect(node(title.id).text).toBe('Hello')
     expect(documentComments(editor.graph)).toHaveLength(1)
   })
+
+  test('undoing the agent step keeps text typed while the agent worked', () => {
+    const { editor, pageId, title, card, node } = setup()
+    const finish = editor.captureDocumentChange(pageId)
+    editor.updateNodeWithUndo(card.id, { x: 0 }, 'noop')
+    editor.graph.updateNode(card.id, { x: 120 })
+    // Typing records its step only when the edit ends, after the agent's call.
+    editor.state.editingTextId = title.id
+    editor.updateTextEditNode(title.id, { text: 'Hello, world' })
+    const change = finish()
+    editor.pushUndoStep({
+      label: 'Agent: move',
+      forward: () => editor.restoreDocumentChange(change, 'after'),
+      inverse: () => editor.restoreDocumentChange(change, 'before')
+    })
+
+    editor.undoAction()
+    expect(node(card.id).x).toBe(0)
+    expect(node(title.id).text).toBe('Hello, world')
+  })
 })
