@@ -20,6 +20,7 @@ function onFormattingChange(val: AcceptableValue | AcceptableValue[]) {
 
 const actions = {
   setFamily: ctx.setFamily,
+  previewFamily: ctx.previewFamily,
   setWeight: ctx.setWeight,
   previewWeight: ctx.previewWeight,
   previewText: ctx.previewText,

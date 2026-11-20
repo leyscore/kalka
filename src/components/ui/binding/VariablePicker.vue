@@ -34,7 +34,13 @@ const {
   ui
 } = defineProps<VariablePickerProps>()
 const open = defineModel<boolean>('open', { default: false })
-const emit = defineEmits<{ select: [id: string]; detach: []; create: [name: string] }>()
+// `highlight` is the variable under the pointer or keys, for a preview of it.
+const emit = defineEmits<{
+  select: [id: string]
+  highlight: [id: string | null]
+  detach: []
+  create: [name: string]
+}>()
 
 const { common } = useI18n()
 const creating = ref(false)
@@ -90,6 +96,7 @@ defineOptions({ inheritAttrs: false })
       :tooltip="triggerLabel"
       :side="side"
       @select="emit('select', $event)"
+      @highlight="emit('highlight', $event)"
     >
       <template #trigger>
         <BindingTrigger

@@ -1,8 +1,13 @@
 import { isEqual } from 'es-toolkit'
 import { useFilter } from 'reka-ui'
 
-import type { Editor } from '@kalka/core/editor'
-import type { Variable, VariableType } from '@kalka/scene-graph'
+import type { Editor, NodePreview } from '@kalka/core/editor'
+import {
+  isNumericVariableBindingField,
+  type SceneNode,
+  type Variable,
+  type VariableType
+} from '@kalka/scene-graph'
 
 import type {
   BindingValueEdit,
@@ -83,6 +88,44 @@ export function createKalkaBindingProvider<V>(
     return values.every((value) => isEqual(value, values[0])) ? 'bound' : 'mixed'
   }
 
+  let hovered: NodePreview | undefined
+
+  /** The node changes that binding `target` to a variable would show, as a preview. */
+  function boundChanges(target: BindingTarget, variableId: string): Partial<SceneNode> | undefined {
+    const node = editor.getNode(target.nodeId)
+    const value = options.resolve(editor, variableId, target)
+    if (!node || value === undefined) return undefined
+    const changes: Partial<SceneNode> = {
+      boundVariables: { ...node.boundVariables, [target.path]: variableId }
+    }
+    const paint = target.path.match(/^(fills|strokes)\/(\d+)\/color$/)
+    if (paint && typeof value === 'object' && value !== null && 'r' in value) {
+      const key = paint[1] === 'fills' ? 'fills' : 'strokes'
+      const index = Number(paint[2])
+      changes[key] = node[key].map((item, i) =>
+        i === index ? { ...item, color: structuredClone(value) } : item
+      ) as SceneNode['fills'] & SceneNode['strokes']
+    } else if (isNumericVariableBindingField(target.path) && typeof value === 'number') {
+      Object.assign(changes, { [target.path]: value })
+    }
+    return changes
+  }
+
+  function preview(targets: BindingTarget[], variableId: string | null) {
+    if (variableId === null) {
+      hovered?.cancel()
+      hovered = undefined
+      return
+    }
+    const edits = targets.flatMap((target) => {
+      const changes = boundChanges(target, variableId)
+      return changes ? [{ id: target.nodeId, changes }] : []
+    })
+    if (!edits.length) return
+    if (!hovered || hovered.closed) hovered = editor.beginNodePreview('Preview variable')
+    for (const { id, changes } of edits) hovered.update(id, changes)
+  }
+
   return {
     revision,
     listVariables: variables,
@@ -93,6 +136,7 @@ export function createKalkaBindingProvider<V>(
     getState,
     resolve: (variableId, target) => options.resolve(editor, variableId, target),
     bind: (target, variableId) => editor.bindVariable(target.nodeId, target.path, variableId),
+    preview,
     unbind: (target) => editor.unbindVariable(target.nodeId, target.path),
     create: options.create
       ? (target, value, name) => options.create?.(editor, target, value, name)

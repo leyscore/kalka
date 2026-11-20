@@ -31,6 +31,11 @@ export interface BindingProvider<V = unknown> {
   getState(targets: BindingTarget[]): BindingState
   resolve(variableId: string, target?: BindingTarget): V | undefined
   bind(target: BindingTarget, variableId: string): void
+  /**
+   * Shows the targets as if bound to a variable, without binding them, while it is hovered in a
+   * picker; `null` takes the preview away.
+   */
+  preview?(targets: BindingTarget[], variableId: string | null): void
   unbind(target: BindingTarget): void
   create?(target: BindingTarget, value: V, name: string): void
   prepareEdit?(variableId: string, target: BindingTarget): BindingValueEdit<V> | undefined

@@ -15,7 +15,11 @@ import { usePopoverUI } from '@/components/ui/overlay/popover'
 import { useSelectUI } from '@/components/ui/select/select'
 
 const { panels } = useI18n()
-const { label: labelProp } = defineProps<{ label?: string }>()
+const { label: labelProp, preview } = defineProps<{
+  label?: string
+  /** Shows a hovered family on the canvas; `null` when the list closes or a family is chosen. */
+  preview?: (family: string | null) => void
+}>()
 const label = computed(() => labelProp ?? panels.value.fontFamily)
 const modelValue = defineModel<string>({ required: true })
 const emit = defineEmits<{ select: [family: string] }>()
@@ -65,6 +69,7 @@ function loadPreviewFont(family: string, source: string) {
     :empty-fonts-text="panels.noLocalFontsAvailable"
     :empty-fonts-hint="panels.localFontsAccessHint"
     @select="emit('select', $event)"
+    @highlight="preview?.($event)"
   >
     <template #trigger>
       <button

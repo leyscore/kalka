@@ -4,7 +4,7 @@
 
 ### Added
 
-- Hovering a choice in a property list shows it on the canvas before you pick it, for the layer and fill blend modes, the font weight, the text case and the shader preset. Leaving the list puts the design back as it was, and nothing reaches undo, autosave or collaborators until you choose.
+- Hovering a choice in a property list shows it on the canvas before you pick it, for the layer and fill blend modes, the font family and weight, the text case, the horizontal and vertical text alignment, the shader preset, and the color and number variables of a field. Leaving the list puts the design back as it was, and nothing reaches undo, autosave or collaborators until you choose.
 - Agents interview you before a new design: the agent asks what it needs, such as the business and its name, who the page is for, its sections, and colours to use or avoid, and each question appears in the AI panel one at a time with suggested answers you pick in one click, a field for your own, and Skip to let the agent decide. Agents over MCP, such as Claude Code, ask through the new `ask_user` tool.
 
 ### Changed

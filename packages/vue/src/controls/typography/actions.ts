@@ -76,15 +76,34 @@ export function createTypographyActions({
     await options.fontLoader?.load(family, style)
   }
 
+  const hoverText = useHoverPreview(editor, 'Preview text')
+  /** Counts hovers, so a font that loads after the pointer moved on is not shown. */
+  let hover = 0
+
+  /** Ends any hover preview, so a choice starts from the document's own value. */
+  function endPreview() {
+    hover++
+    hoverText([], null)
+  }
+
   async function setFamily(family: string) {
+    endPreview()
     if (!node.value) return
     await doLoadFont(family, currentWeightLabel.value)
     editor.updateNodeWithUndo(node.value.id, { fontFamily: family }, 'Change font')
   }
 
-  const hoverText = useHoverPreview(editor, 'Preview text')
-  /** Counts hovers, so a weight whose font loads after the pointer moved on is not shown. */
-  let hover = 0
+  /** Shows a family once its face at the current weight has loaded, if it is still hovered. */
+  async function previewFamily(family: string | null) {
+    const current = ++hover
+    if (family === null || !node.value) {
+      hoverText([], null)
+      return
+    }
+    const { id } = node.value
+    await doLoadFont(family, currentWeightLabel.value)
+    if (current === hover) hoverText([id], { fontFamily: family })
+  }
 
   /** Shows text settings on the selection while they are hovered in a list; `null` takes them away. */
   function previewText(changes: Partial<SceneNode> | null) {
@@ -114,6 +133,7 @@ export function createTypographyActions({
   }
 
   function setAlign(align: TextAlign) {
+    endPreview()
     if (!node.value) return
     editor.updateNodeWithUndo(
       node.value.id,
@@ -128,6 +148,7 @@ export function createTypographyActions({
   }
 
   function setVerticalAlign(align: TextVerticalAlign) {
+    endPreview()
     if (!node.value) return
     editor.updateNodeWithUndo(
       node.value.id,
@@ -218,6 +239,7 @@ export function createTypographyActions({
 
   return {
     setFamily,
+    previewFamily,
     setWeight,
     previewWeight,
     previewText,

@@ -89,7 +89,12 @@ function runImmediate(label: string, action: () => void) {
   else action()
 }
 
+function preview(variableId: string | null) {
+  provider.preview?.(targets.value, variableId)
+}
+
 function bind(variableId: string) {
+  preview(null)
   runImmediate('Bind variable', () => {
     for (const target of targets.value) provider.bind(target, variableId)
   })
@@ -97,6 +102,7 @@ function bind(variableId: string) {
 }
 
 function unbind() {
+  preview(null)
   runImmediate('Unbind variable', () => {
     for (const target of targets.value) provider.unbind(target)
   })
@@ -105,6 +111,7 @@ function unbind() {
 function create(name: string) {
   const target = targets.value[0]
   if (!target || !provider.create) return
+  preview(null)
   runImmediate('Create and bind variable', () => provider.create?.(target, value.value, name))
   open.value = false
 }
@@ -114,11 +121,13 @@ function openPicker() {
 }
 
 function closePicker() {
+  preview(null)
   open.value = false
 }
 
 function togglePicker() {
-  open.value = !open.value
+  if (open.value) closePicker()
+  else openPicker()
 }
 
 function setSearchTerm(term: string) {
@@ -204,6 +213,7 @@ function cancelMutation() {
 
 const actions: BindableValueActions<V> = {
   bind,
+  preview,
   unbind,
   create,
   openPicker,
@@ -247,6 +257,7 @@ const context: BindableValueContext<V> = {
 
 provideBindableValue(context)
 function deactivate() {
+  preview(null)
   cancelMutation()
   closePicker()
 }
@@ -258,7 +269,10 @@ watchImmediate(
   },
   { flush: 'sync' }
 )
-onBeforeUnmount(cancelMutation)
+onBeforeUnmount(() => {
+  preview(null)
+  cancelMutation()
+})
 onDeactivated(deactivate)
 </script>
 
