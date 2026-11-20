@@ -20,6 +20,7 @@ import type { BuiltinIOFormatId } from '@kalka/core/io'
 import type { CommandPaletteGroup, CommandPaletteItem, MenuEntry } from '@kalka/vue'
 import { shortcutPlatform, useEditorCommands, useI18n } from '@kalka/vue'
 
+import { requestWriteAccess } from '@/app/document/io/capability'
 import { useEditorStore } from '@/app/editor/active-store'
 import { openVariablesDialog } from '@/app/editor/tokens/dialog'
 import { openSettingsDialog } from '@/app/settings/dialog'
@@ -208,6 +209,9 @@ export function useAppMenu() {
       case 'autosave':
         return (value: boolean) => {
           store.state.autosaveEnabled = value
+          // In the browser, the click that turns autosave on is when the file may be granted.
+          const handle = store.getSourceIdentity().handle
+          if (value && handle) void requestWriteAccess(handle)
         }
       case 'profiler':
         return () => store.toggleProfiler()

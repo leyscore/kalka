@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- In Chromium browsers, turning on Autosave for a file opened from disk asks for permission to write it then, so the first autosave is not refused for lack of a click.
 - Native menu commands reach the editor when another Kalka window, such as Software Update, is in front, where Close closes that window; on macOS with no window open, a menu command opens an editor window instead of doing nothing.
 - A Save As whose write fails leaves the document where it was, with its name and format, instead of pointing it at the file that was not written.
 - When another program, such as a Kalka development server left running, already holds the local MCP server's port, Settings › MCP says that port 7600 is in use and what to do, instead of reporting that the server did not respond in time.
