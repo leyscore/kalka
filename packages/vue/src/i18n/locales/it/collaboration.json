@@ -27,6 +27,7 @@
   "agentIdle": "Inattivo",
   "sharedFile": "File condiviso",
   "invalidRoomLink": "Non è un link né un ID di stanza.",
+  "serverFileNeedsSignIn": "Accedi al server Kalka per aprire questo file.",
   "joiningTitle": "Accesso alla stanza…",
   "connectingDescription": "Connessione ai server della stanza.",
   "lookingDescription": "Ricerca delle persone in questa stanza.",

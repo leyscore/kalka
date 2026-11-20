@@ -27,6 +27,7 @@
   "agentIdle": "Inaktiv",
   "sharedFile": "Geteilte Datei",
   "invalidRoomLink": "Das ist kein Raumlink und keine Raum-ID.",
+  "serverFileNeedsSignIn": "Melde dich beim Kalka-Server an, um diese Datei zu öffnen.",
   "joiningTitle": "Raum wird betreten…",
   "connectingDescription": "Verbindung zu den Servern des Raums wird hergestellt.",
   "lookingDescription": "Personen in diesem Raum werden gesucht.",

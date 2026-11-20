@@ -108,6 +108,36 @@ test('joining from a document opens a new tab and leaves that document alone', a
   }
 })
 
+test('back and forward switch between the tabs the addresses name', async ({ browser }) => {
+  const relay = await startRelay()
+  let host: Peer | null = null
+  let guest: Peer | null = null
+  try {
+    host = await createPeer(browser, 'Host', relay.url)
+    const hostNode = await addRectangle(host.page, 'Room card')
+    await share(host)
+
+    guest = await createPeer(browser, 'Guest', relay.url)
+    const ownNode = await addRectangle(guest.page, 'My own work')
+    await guest.page.getByTestId('collab-share-button').click()
+    await guest.page.getByTestId('collab-join-input').fill(ROOM_ID)
+    await guest.page.getByTestId('collab-join-room-button').click()
+    await expect(guest.page).toHaveURL(new RegExp(`/share/${ROOM_ID}`))
+    await expect.poll(() => layerName((guest as Peer).page, hostNode)).toBe('Room card')
+
+    await guest.page.goBack()
+    await expect(guest.page).not.toHaveURL(/\/share\//)
+    await expect.poll(() => layerName((guest as Peer).page, ownNode)).toBe('My own work')
+
+    await guest.page.goForward()
+    await expect(guest.page).toHaveURL(new RegExp(`/share/${ROOM_ID}`))
+    await expect.poll(() => layerName((guest as Peer).page, hostNode)).toBe('Room card')
+    await expect(guest.page.getByTestId('tabbar-tab')).toHaveCount(2)
+  } finally {
+    await closeAll([guest, host], relay)
+  }
+})
+
 test('a pasted link that is not a room says so and joins nothing', async ({ browser }) => {
   const relay = await startRelay()
   let guest: Peer | null = null

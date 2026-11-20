@@ -27,6 +27,7 @@
   "agentIdle": "空闲",
   "sharedFile": "共享文件",
   "invalidRoomLink": "这不是房间链接或 ID。",
+  "serverFileNeedsSignIn": "登录 Kalka 服务器以打开此文件。",
   "joiningTitle": "正在加入房间…",
   "connectingDescription": "正在连接房间的服务器。",
   "lookingDescription": "正在寻找此房间中的人。",

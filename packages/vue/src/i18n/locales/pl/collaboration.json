@@ -27,6 +27,7 @@
   "agentIdle": "Bezczynny",
   "sharedFile": "Udostępniony plik",
   "invalidRoomLink": "To nie jest link ani identyfikator pokoju.",
+  "serverFileNeedsSignIn": "Zaloguj się na serwerze Kalka, aby otworzyć ten plik.",
   "joiningTitle": "Dołączanie do pokoju…",
   "connectingDescription": "Łączenie z serwerami pokoju.",
   "lookingDescription": "Szukanie osób w tym pokoju.",

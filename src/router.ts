@@ -18,7 +18,9 @@ const router = createRouter({
       }
     },
     { path: '/demo', component: WorkspaceView, meta: { demo: true } },
-    { path: '/share/:roomId', component: WorkspaceView }
+    { path: '/share/:roomId', component: WorkspaceView },
+    // A server document's own address; the name after the id follows renames and is ignored.
+    { path: '/design/:id/:slug?', component: WorkspaceView }
   ]
 })
 

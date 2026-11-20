@@ -140,6 +140,7 @@ ja:code.writeJSX
 ja:collaboration.invalidRoomLink
 ja:collaboration.joinRoomDescription
 ja:collaboration.pasteRoomLinkOrId
+ja:collaboration.serverFileNeedsSignIn
 ja:collaboration.serverNotKalka
 ja:collaboration.serverNotSignedIn
 ja:collaboration.serverPopupBlocked
@@ -414,6 +415,7 @@ zh-cn:code.writeJSX
 zh-cn:collaboration.invalidRoomLink
 zh-cn:collaboration.joinRoomDescription
 zh-cn:collaboration.pasteRoomLinkOrId
+zh-cn:collaboration.serverFileNeedsSignIn
 zh-cn:collaboration.serverNotKalka
 zh-cn:collaboration.serverNotSignedIn
 zh-cn:collaboration.serverPopupBlocked
