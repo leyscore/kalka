@@ -26,9 +26,21 @@ export async function memoryFileSystem(initial: Record<string, string> = {}) {
       case 'plugin:fs|read_file':
         return [...(files.get(path) ?? [])]
       case 'plugin:fs|mkdir':
-      case 'plugin:fs|remove':
-        if (cmd === 'plugin:fs|remove') files.delete(path)
         return null
+      case 'plugin:fs|remove':
+        for (const file of [...files.keys()])
+          if (file === path || file.startsWith(`${path}/`)) files.delete(file)
+        return null
+      case 'plugin:fs|rename': {
+        const from = Reflect.get(Object(args), 'oldPath')
+        const to = Reflect.get(Object(args), 'newPath')
+        const content = typeof from === 'string' ? files.get(from) : undefined
+        if (typeof from !== 'string' || typeof to !== 'string' || !content)
+          throw new Error(`No file to rename at ${String(from)}`)
+        files.delete(from)
+        files.set(to, content)
+        return null
+      }
       case 'plugin:fs|exists':
         return files.has(path) || isDirectory(path)
       case 'plugin:fs|read_dir': {

@@ -10,7 +10,11 @@ import {
   MAX_REMOTE_DOCUMENT_BYTES,
   readBoundedBody
 } from '@/app/document/io/browser'
-import { chooseKalkaFolder, readKalkaFolderAsFile } from '@/app/document/io/kalka-folder'
+import {
+  chooseKalkaFolder,
+  finishInterruptedFolderSave,
+  readKalkaFolderAsFile
+} from '@/app/document/io/kalka-folder'
 import type { EditorStore } from '@/app/editor/active-store'
 import { notificationMessages } from '@/app/i18n/notifications'
 import { rememberRecentFile } from '@/app/recent-files'
@@ -147,6 +151,7 @@ export async function openFileFromPath(path: string) {
 /** Opens a Kalka folder in a new tab; saving writes back into the folder. Desktop only. */
 export async function openFolderFromPath(path: string) {
   if (!isTauri()) return
+  await finishInterruptedFolderSave(path)
   const file = await readKalkaFolderAsFile(path)
   await openFileInNewTab(file, undefined, path)
   rememberRecentFile(path)

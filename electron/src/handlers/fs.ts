@@ -51,6 +51,15 @@ export const fsHandlers = {
   remove(_context: CallContext, path: string, baseDir: number | null, recursive: boolean) {
     return fs.rm(resolvePath(path, baseDir), { recursive })
   },
+  rename(
+    _context: CallContext,
+    oldPath: string,
+    newPath: string,
+    oldBaseDir: number | null,
+    newBaseDir: number | null
+  ) {
+    return fs.rename(resolvePath(oldPath, oldBaseDir), resolvePath(newPath, newBaseDir))
+  },
   /** A directory's entries, as Tauri's `readDir` lists them: names and kinds, not recursive. */
   async readDir(_context: CallContext, path: string, baseDir: number | null) {
     const entries = await fs.readdir(resolvePath(path, baseDir), { withFileTypes: true })
