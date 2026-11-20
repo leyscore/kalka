@@ -30,7 +30,21 @@ export const welcomeScreen = tv({
     primary: 'h-12 flex-1 gap-2 rounded-[14px] px-5 text-sm font-semibold whitespace-nowrap',
     secondary: 'h-12 gap-2 rounded-[14px] px-5 text-sm font-semibold whitespace-nowrap',
     skip: 'absolute top-5 right-6 z-10 text-white hover:text-white/80',
-    footer: 'flex items-center gap-3'
+    footer: 'flex items-center gap-3',
+    // The questions after the name: a step count, choices as chips or cards, and the way on.
+    progress: 'flex items-center gap-1.5',
+    progressDot:
+      'h-1 w-6 rounded-full bg-white/35 transition-colors duration-300 data-[done=true]:bg-white motion-reduce:transition-none',
+    group: 'flex w-full flex-col gap-2 text-left',
+    chips: 'flex flex-wrap gap-1.5',
+    chip: 'h-8 cursor-pointer rounded-full border border-border bg-panel-field px-3 text-[13px] text-surface transition-colors outline-none hover:border-border-strong focus-visible:ring-2 focus-visible:ring-accent/50 data-[selected=true]:border-accent data-[selected=true]:bg-accent/15 data-[selected=true]:text-accent',
+    choices: 'grid w-full grid-cols-1 gap-2 sm:grid-cols-2',
+    choice:
+      'flex cursor-pointer flex-col gap-0.5 rounded-[14px] border border-border bg-panel-field px-4 py-3 text-left transition-colors outline-none hover:border-border-strong focus-visible:ring-2 focus-visible:ring-accent/50 data-[selected=true]:border-accent data-[selected=true]:bg-accent/10',
+    choiceTitle: 'text-[13px] font-semibold text-surface',
+    choiceHint: 'text-xs text-muted',
+    fields: 'grid w-full grid-cols-1 gap-3 sm:grid-cols-2',
+    nav: 'flex w-full items-center gap-2 pt-1'
   },
   variants: {
     step: {

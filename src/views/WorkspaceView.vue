@@ -31,6 +31,7 @@ import { openWebLinkFromLocation, withoutWebLinkParams } from '@/app/document/io
 import { focusNodesByName } from '@/app/editor/selection/focus'
 import { fillNewDocument } from '@/app/home/start'
 import { notificationMessages } from '@/app/i18n/notifications'
+import { WELCOME_PATH } from '@/app/onboarding/route'
 import { offerWelcomeOnFirstRun } from '@/app/onboarding/welcome'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import { createDeferred } from '@/app/runtime/deferred'
@@ -72,8 +73,9 @@ const EditorTour = defineAsyncComponent(() => import('@/components/onboarding/Ed
 const route = useRoute()
 const router = useRouter()
 const createdInitialTab = tabCount() === 0
-/** Home and Settings, which opens over Home, start the workspace the same way. */
-const opensHome = route.path === '/' || settingsSectionFromPath(route.path) !== null
+/** Home, and Settings and the welcome, which open over Home, start the workspace the same way. */
+const opensHome =
+  route.path === '/' || route.path === WELCOME_PATH || settingsSectionFromPath(route.path) !== null
 const shouldCreateHome =
   opensHome &&
   !appRuntimeConfig.test &&

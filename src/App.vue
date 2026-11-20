@@ -14,6 +14,7 @@ import { useDocumentCloseProtection } from '@/app/document/close/use'
 import { useFollowingEditorStore } from '@/app/editor/active-store'
 import { publishLibraryDialogOpen } from '@/app/libraries/publish/dialog'
 import { libraryReviewRequest } from '@/app/libraries/review'
+import { syncWelcomeRoute } from '@/app/onboarding/route'
 import { welcomeOpen } from '@/app/onboarding/welcome'
 import { settingsOpen } from '@/app/settings/open'
 import { syncSettingsRoute } from '@/app/settings/route'
@@ -69,7 +70,9 @@ provideEditor(useFollowingEditorStore())
 useAppTheme()
 useWindowTheme()
 useDocumentCloseProtection()
-onScopeDispose(syncSettingsRoute(useRouter()))
+const router = useRouter()
+onScopeDispose(syncSettingsRoute(router))
+onScopeDispose(syncWelcomeRoute(router))
 useRestartApprovals()
 useEventListener(window, 'pagehide', () => {
   void prepareForReload()
