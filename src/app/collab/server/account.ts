@@ -81,6 +81,17 @@ export async function signInWithPassword(
   return session.user
 }
 
+/** Signs in with a one-time code the server handed over, as Kalka Cloud's launch links do. */
+export async function signInWithCode(
+  url: string,
+  info: ServerInfo,
+  code: string
+): Promise<ServerUser> {
+  const session = await serverAPI.exchange(url, code)
+  await remember(url, info, session)
+  return session.user
+}
+
 /** Reads `?code=` or `?error=` from where the server sent the browser back. */
 function codeFrom(query: string): string {
   const params = new URLSearchParams(query)

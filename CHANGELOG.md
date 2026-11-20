@@ -9,6 +9,8 @@
 - Connect Kalka to a self-hosted Kalka server in Settings › Server, signing in with a password or the server's single sign-on. Save on <server> in the Share panel puts a file on the server, where teammates open it from the new Server tab on Home and edit it together in real time, even when the person who shared it is offline; Kalka also keeps a Kalka file of each server document up to date for the server's export. Each server document has its own address, `/design/<id>/<name>`, which reopens it after a reload and opens it for a signed-in teammate; `?node-id=` shows one layer.
 
 - In the browser, Back and Forward move between the documents you opened in tabs, as they do between pages.
+- Connect Kalka to a self-hosted Kalka server in Settings › Server, signing in with a password or the server's single sign-on. Save on <server> in the Share panel puts a file on the server, where teammates open it from the new Server tab on Home and edit it together in real time, even when the person who shared it is offline; Kalka also keeps a Kalka file of each server document up to date for the server's export.
+- The web editor opens from a Kalka Cloud workspace already signed in to it, on one of its files or on a new file saved there.
 
 ### Fixed
 
