@@ -55,6 +55,8 @@ export class ServerRequestError extends Error {
 export function normalizeServerURL(input: string): string | null {
   const trimmed = input.trim()
   if (!trimmed) return null
+  // Another scheme (ftp:, javascript:) is refused, not taken for a host; `host:8787` is a port.
+  if (/^[a-z][a-z0-9+.-]*:(?!\d)/i.test(trimmed) && !/^https?:\/\//i.test(trimmed)) return null
   const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
   try {
     const url = new URL(withScheme)

@@ -13,6 +13,11 @@ import { exposeCollaborationActions } from '@/app/browser-bridge'
 import { useJoinRoom } from '@/app/collab/join'
 import { bindDesktopRoomLinks } from '@/app/collab/room/links'
 import { syncRoomRoute } from '@/app/collab/route'
+import {
+  bindDesktopServerLinks,
+  offerLinkedServer,
+  takeWebServerLink
+} from '@/app/collab/server/links'
 import { COLLAB_KEY, useCollab } from '@/app/collab/use'
 import { openDemoDocument } from '@/app/demo/document'
 import type { PendingOpenFile } from '@/app/document/io/pending-open'
@@ -23,6 +28,7 @@ import { notificationMessages } from '@/app/i18n/notifications'
 import { offerWelcomeOnFirstRun } from '@/app/onboarding/welcome'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import { createDeferred } from '@/app/runtime/deferred'
+import { openSettingsDialog } from '@/app/settings/dialog'
 import { useDocumentDrop } from '@/app/shell/document-drop'
 import { useDocumentHandoff } from '@/app/shell/document-handoff'
 import { useKeyboard } from '@/app/shell/keyboard/use'
@@ -120,6 +126,7 @@ useEventListener(
 
 const fileAssociationCleanup = ref<(() => void) | null>(null)
 const roomLinksCleanup = ref<(() => void) | null>(null)
+const serverLinksCleanup = ref<(() => void) | null>(null)
 
 /**
  * A drain that fails wholesale — the `take_pending_open` invoke, the event binding —
@@ -229,6 +236,19 @@ onMounted(async () => {
     console.error('[Room link]', error)
   }
 
+  const openServerSettings = () => openSettingsDialog('server')
+  try {
+    serverLinksCleanup.value = await bindDesktopServerLinks((url) => {
+      offerLinkedServer(url, openServerSettings)
+    })
+  } catch (error) {
+    console.error('[Server link]', error)
+  }
+  if (IS_BROWSER && !isTauri()) {
+    const linked = takeWebServerLink()
+    if (linked) offerLinkedServer(linked, openServerSettings)
+  }
+
   // The browser twin of the deep link: the desktop build takes its links through the
   // deep-link plugin above, so only a real browser reads them off the address bar.
   if (IS_BROWSER && !isTauri()) {
@@ -248,6 +268,7 @@ onUnmounted(() => {
   void stopMCPRuntime()
   fileAssociationCleanup.value?.()
   roomLinksCleanup.value?.()
+  serverLinksCleanup.value?.()
 })
 </script>
 
