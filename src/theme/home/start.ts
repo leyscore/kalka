@@ -2,8 +2,8 @@ import { tv } from 'tailwind-variants'
 
 /**
  * The top of Home: the kalka.design pixel sky as a band, with the mark, the greeting, the request
- * to the agent, the sizes to start from and the ways to bring a file in. The sky is the same in
- * both themes, so everything on it is white.
+ * to the agent, the sizes to start from and the ways to bring a file in. The sky is day in the
+ * light theme and night in the dark one, so everything on it stays white.
  */
 export const homeHero = {
   root: 'relative isolate mx-0 flex shrink-0 scroll-mt-14 flex-col items-center gap-6 overflow-hidden px-4 pt-16 pb-24 text-center text-white sm:mx-2 sm:rounded-b-[28px] sm:pt-[72px] sm:pb-28',

@@ -9,6 +9,7 @@
 
 ### Changed
 
+- In the dark theme the pixel sky of the welcome screen and of Home is kalka.design's night, deep night blue with fine stars and a few glowing four-point stars, and switching themes lets the night fall over it from the top like a veil, or lift for the day. With reduced motion the sky switches at once.
 - Variables open as a page in the desktop editor, over the panels and the canvas, instead of a dialog: the Variables button in the rail stays pressed while it is open and closes it on a second press, and choosing another panel or pressing Escape gives the canvas back as it was. Picking a variable for a property still opens the small list beside the field, and on phones and with the interface hidden variables stay a dialog.
 - The welcome screen matches kalka.design: the pixel sky with drifting dot clouds whose dots twinkle on and off, the agent's cursor named Pebble and yours named as you type, and the name and agent buttons in a framed card, in light and dark themes.
 - Home opens on the kalka.design pixel sky: the greeting and the request to the agent, the sizes to start a design with as chips drawn to their proportions, and Join room, Open, Open folder, Paste HTML and Open from a URL under them. Below, Recent and Storage tabs show files like frames on the canvas, with the last file opened in a double tile to continue it and the sample file listing the tour, the code view and the AI agent.

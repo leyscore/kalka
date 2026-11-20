@@ -69,31 +69,39 @@ export const brandSpinner = tv({
 
 /**
  * The pixel sky of kalka.design: a deep blue that lightens toward the bottom, a fine grain, and
- * clouds drawn in dots that sway slowly. It is the brand's own picture, the same in light and dark
- * themes. Inside the clouds a few dots at a time double their brightness, at their own size, and
- * fade, so the sky feels alive; reduced motion holds the clouds still and the dots unlit. As a
- * `screen` it sits behind a full screen such as the welcome; as a `band` it fills the top of Home,
+ * clouds drawn in dots that sway slowly. Inside the clouds a few dots at a time double their
+ * brightness, at their own size, and fade, so the sky feels alive; reduced motion holds the clouds
+ * still and the dots unlit. In the dark theme it is the night of kalka.design's footer, its blue, its
+ * fine star grid and its four-point stars, falling over the day from the top like a veil and lifting
+ * back for the day. As
+ * a `screen` it sits behind a full screen such as the welcome; as a `band` it fills the top of Home,
  * with its clouds along the bottom edge.
  */
 export const pixelSky = tv({
   slots: {
     root: 'pointer-events-none overflow-hidden',
     grain:
-      'absolute inset-0 bg-[radial-gradient(circle,rgb(255_255_255/0.1)_0_1px,transparent_1.4px)] bg-size-[6px_6px]',
+      'absolute inset-0 sky-night-dim bg-[radial-gradient(circle,rgb(255_255_255/0.1)_0_1px,transparent_1.4px)] bg-size-[6px_6px]',
     clouds:
-      'absolute -inset-x-40 bg-[radial-gradient(circle,rgb(255_255_255/0.5)_0_2.6px,transparent_3.1px)] bg-size-[9px_9px] motion-safe:animate-sky-drift',
+      'absolute -inset-x-40 sky-night-dim bg-[radial-gradient(circle,rgb(255_255_255/0.5)_0_2.6px,transparent_3.1px)] bg-size-[9px_9px] motion-safe:animate-sky-drift',
     spark:
-      'absolute bg-[radial-gradient(circle,rgb(255_255_255/0.5)_0_2.6px,transparent_3.1px)] bg-size-[9px_9px] opacity-0 motion-safe:animate-sky-twinkle'
+      'absolute bg-[radial-gradient(circle,rgb(255_255_255/0.5)_0_2.6px,transparent_3.1px)] bg-size-[9px_9px] opacity-0 motion-safe:animate-sky-twinkle',
+    night: 'absolute inset-0 sky-night-veil',
+    stars:
+      'absolute inset-0 bg-[radial-gradient(circle,rgb(157_183_245/0.1)_0_0.8px,transparent_1.2px)] bg-size-[16px_16px]',
+    star: 'absolute bg-[#DCE6FF] mask-sky-star opacity-45 drop-shadow-[0_0_4px_rgb(220_230_255/0.7)] motion-safe:animate-star-glow'
   },
   variants: {
     place: {
       screen: {
         root: 'fixed inset-0 -z-10 bg-[linear-gradient(180deg,#071B6B_0%,#1236B8_30%,#2F5BEA_58%,#7FA2F5_82%,#CFDCFC_100%)]',
+        night: 'bg-[linear-gradient(180deg,#060920_0%,#0A1033_38%,#0D1440_68%,#18245F_100%)]',
         clouds:
           'inset-y-0 [mask-image:radial-gradient(ellipse_20%_12%_at_14%_84%,#000_15%,transparent_70%),radial-gradient(ellipse_26%_12%_at_54%_96%,#000_15%,transparent_70%),radial-gradient(ellipse_18%_10%_at_88%_80%,#000_15%,transparent_70%),radial-gradient(ellipse_9%_5%_at_82%_22%,#000_15%,transparent_70%),radial-gradient(ellipse_8%_4%_at_16%_20%,#000_15%,transparent_70%)]'
       },
       band: {
         root: 'absolute inset-0 bg-[linear-gradient(180deg,#071B6B_0%,#1236B8_36%,#2F5BEA_68%,#7FA2F5_100%)]',
+        night: 'bg-[linear-gradient(180deg,#0D1440_0%,#0A1033_45%,#060920_100%)]',
         clouds:
           '-bottom-[30px] h-[200px] [mask-image:radial-gradient(ellipse_16%_42%_at_9%_82%,#000_10%,transparent_70%),radial-gradient(ellipse_22%_36%_at_58%_98%,#000_10%,transparent_70%),radial-gradient(ellipse_13%_30%_at_93%_72%,#000_10%,transparent_70%)]'
       }

@@ -155,6 +155,63 @@
   }
 }
 
+/*
+ * Night over the pixel sky in the dark theme: a veil with a soft edge sweeps down from the top as
+ * the theme turns dark, and lifts back up for the day. Opening in the dark theme shows the night
+ * at once; reduced motion switches without the sweep.
+ */
+@utility sky-night-veil {
+  mask-image: linear-gradient(180deg, #000 40%, transparent 60%);
+  mask-size: 100% 250%;
+  mask-repeat: no-repeat;
+  mask-position: 0 100%;
+  transition: mask-position 1.8s cubic-bezier(0.65, 0, 0.35, 1);
+  :where([data-theme='dark']) & {
+    mask-position: 0 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+  :where([data-motion='off']) & {
+    transition: none;
+  }
+}
+
+/* The day's clouds and grain fade as the night falls: the night is the footer's, stars only. */
+@utility sky-night-dim {
+  transition: opacity 1.8s cubic-bezier(0.65, 0, 0.35, 1);
+  :where([data-theme='dark']) & {
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+/* The four-point star of kalka.design's night, cut out of its fill colour. */
+@utility mask-sky-star {
+  mask-image: url('./assets/sky-star.svg');
+  mask-size: contain;
+  mask-repeat: no-repeat;
+}
+
+/* A four-point star of the night glows and fades at its own pace, as on kalka.design. */
+@keyframes kalka-star-glow {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@utility animate-star-glow {
+  animation: kalka-star-glow var(--glow-duration, 4.5s) ease-in-out var(--glow-delay, 0s) infinite;
+}
+
 @utility animate-sky-twinkle {
   animation: kalka-sky-twinkle var(--twinkle-duration, 4s) ease-in-out var(--twinkle-delay, 0s)
     infinite;

@@ -3,7 +3,7 @@ import { tv } from 'tailwind-variants'
 /**
  * The welcome: one screen on the kalka.design pixel sky with the mark, a greeting, and the name and
  * agent in a framed card, as the site frames the app. Connecting an agent over MCP is a wider
- * second screen. The sky is the same in both themes, so text on it is white; the card follows the theme.
+ * second screen. The sky is day in the light theme and night in the dark one, so text on it stays white; the card follows the theme.
  */
 export const welcomeScreen = tv({
   slots: {

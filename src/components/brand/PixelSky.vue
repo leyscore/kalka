@@ -39,10 +39,39 @@ function twinkles() {
 }
 
 const sparks = twinkles()
+
+/** The four-point stars of the night, where kalka.design's footer places them: where, how big, what pace. */
+const STARS = [
+  [6, 38, 10, 3.8, 0],
+  [17, 64, 7, 5.2, -1.4],
+  [29, 44, 12, 4.4, -2.6],
+  [41, 78, 8, 6.0, -0.8],
+  [52, 36, 9, 4.9, -3.1],
+  [63, 58, 14, 5.6, -1.9],
+  [74, 42, 8, 3.6, -0.4],
+  [86, 70, 11, 4.7, -2.2],
+  [94, 48, 7, 5.9, -3.6],
+  [12, 86, 9, 4.2, -1.1],
+  [58, 90, 7, 5.0, -2.9],
+  [81, 30, 9, 6.3, -0.6]
+] as const
+
+const stars = STARS.map(([left, top, size, duration, delay]) => ({
+  left: `${left}%`,
+  top: `${top}%`,
+  width: `${size}px`,
+  height: `${size}px`,
+  '--glow-duration': `${duration}s`,
+  '--glow-delay': `${delay}s`
+}))
 </script>
 
 <template>
   <div aria-hidden="true" :class="sky.root()">
+    <div :class="sky.night()">
+      <div :class="sky.stars()" />
+      <i v-for="(star, index) in stars" :key="index" :class="sky.star()" :style="star" />
+    </div>
     <div :class="sky.grain()" />
     <div :class="sky.clouds()">
       <i v-for="(spark, index) in sparks" :key="index" :class="sky.spark()" :style="spark" />
