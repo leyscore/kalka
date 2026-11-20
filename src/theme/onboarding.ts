@@ -14,7 +14,9 @@ export const welcomeScreen = tv({
     title:
       'font-display text-[clamp(36px,4.4vw,60px)] leading-[1.02] font-semibold tracking-[-0.045em] text-balance text-white',
     intro: 'max-w-[60ch] text-[16px] leading-relaxed text-balance text-[#DCE6FF]',
-    frame: 'w-full rounded-[26px] border border-white/85 bg-white/40 p-2.5',
+    // White glass on the day sky, night glass under the stars, changing at the pace of the sky.
+    frame:
+      'w-full rounded-[26px] border border-white/85 bg-white/40 p-2.5 transition-[background-color,border-color] duration-[1.8s] ease-[cubic-bezier(0.65,0,0.35,1)] motion-reduce:transition-none [[data-theme=dark]_&]:border-[#9DB7F5]/22 [[data-theme=dark]_&]:bg-[#0C1336]/60',
     card: 'flex w-full flex-col gap-5 rounded-[18px] bg-panel p-6 text-left text-surface',
     field: 'flex w-full max-w-[440px] flex-col gap-2 text-left',
     labelRow: 'flex items-center gap-1.5',
