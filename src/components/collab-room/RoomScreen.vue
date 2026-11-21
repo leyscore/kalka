@@ -188,7 +188,6 @@ const progress = computed(() => {
               {{ messages.openInDesktopApp }}
             </a>
             <template v-if="downloadURL">
-              <span aria-hidden="true">·</span>
               <a
                 :href="downloadURL"
                 target="_blank"
