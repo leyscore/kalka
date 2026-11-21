@@ -31,9 +31,10 @@
 }
 
 * { box-sizing: border-box; }
-/* Only the root has a color, under the sky: a body background would hide it. */
-html { margin: 0; min-height: 100%; background: #2f5bea; }
-:root[data-theme='dark'] { background: #060920; }
+/* Only the root has a color, under the sky: a body background would hide it. It is the sky's own
+   gradient, so the first paint, before the scripts mount the sky, already looks like it. */
+html { margin: 0; min-height: 100%; background: #2f5bea linear-gradient(180deg, #071b6b 0%, #1236b8 30%, #2f5bea 58%, #7fa2f5 82%, #cfdcfc 100%) fixed; }
+:root[data-theme='dark'] { background: #060920 linear-gradient(180deg, #060920 0%, #0a1033 38%, #0d1440 68%, #18245f 100%) fixed; }
 body { margin: 0; min-height: 100%; background: transparent; }
 body { color: var(--text); font: 13px/1.5 'Geist', -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
 a { color: inherit; }
