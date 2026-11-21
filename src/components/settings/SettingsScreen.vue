@@ -8,7 +8,6 @@ import IconCloud from '~icons/hugeicons/cloud'
 import IconImage from '~icons/hugeicons/image-01'
 import IconPlug from '~icons/hugeicons/plug'
 import IconSettings from '~icons/hugeicons/settings-01'
-import IconSliders from '~icons/hugeicons/sliders-horizontal'
 import IconSparkles from '~icons/hugeicons/sparkles'
 import IconUser from '~icons/hugeicons/user'
 
@@ -28,6 +27,8 @@ import AccountProfile from '@/components/settings/account/AccountProfile.vue'
 import ChatSettingsSection from '@/components/settings/chat/ChatSettingsSection.vue'
 import DiagnosticsSettingsPanel from '@/components/settings/diagnostics/DiagnosticsSettingsPanel.vue'
 import GeneralSettingsPanel from '@/components/settings/general/GeneralSettingsPanel.vue'
+import RenderingSettingsSection from '@/components/settings/general/RenderingSettingsSection.vue'
+import SettingsDisclosure from '@/components/settings/layout/SettingsDisclosure.vue'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
 import SettingsSidebar from '@/components/settings/layout/SettingsSidebar.vue'
 import type { SettingsSidebarGroup } from '@/components/settings/layout/sidebar'
@@ -55,7 +56,7 @@ import { settingsColumn, settingsShell } from '@/theme/settings/shell'
  * Settings, a page at `/settings/<section>` in the app's shell: the sidebar holds the way back,
  * the person and the sections; the section itself sits on a frosted panel beside it.
  */
-const { settings, common, files } = useI18n()
+const { settings, common, files, ai } = useI18n()
 const identity = useCollabIdentity()
 const avatar = useAvatar()
 const navigation = provideSettingsNavigation()
@@ -76,17 +77,16 @@ const groups = computed<SettingsSidebarGroup[]>(() => [
     id: 'workspace',
     label: settings.value.groupWorkspace,
     sections: [
-      { value: 'storage', label: settings.value.storage, icon: IconCloud },
-      { value: 'media', label: settings.value.media, icon: IconImage }
+      { value: 'storage', label: settings.value.navSharedStorage, icon: IconCloud },
+      { value: 'media', label: settings.value.navImages, icon: IconImage }
     ]
   },
   {
     id: 'ai',
     label: settings.value.groupAI,
     sections: [
-      { value: 'ai', label: settings.value.aiAndAgents, icon: IconSparkles },
-      { value: 'mcp', label: settings.value.mcp, icon: IconPlug },
-      { value: 'tools', label: settings.value.toolAccess, icon: IconSliders },
+      { value: 'ai', label: settings.value.navKalkaAI, icon: IconSparkles },
+      { value: 'mcp', label: settings.value.navAgents, icon: IconPlug },
       { value: 'usage', label: settings.value.usage, icon: IconChart }
     ]
   },
@@ -96,6 +96,10 @@ const groups = computed<SettingsSidebarGroup[]>(() => [
     sections: [{ value: 'diagnostics', label: settings.value.diagnostics, icon: IconActivity }]
   }
 ])
+/** Tool access is a page inside External agents: reached from it, with a way back to it. */
+const parentSection = computed<SettingsSection | undefined>(() =>
+  settingsSection.value === 'tools' ? 'mcp' : undefined
+)
 /** A sentence under each section's name, saying what it is for. */
 const descriptions = computed<Record<SettingsSection, string>>(() => ({
   server: settings.value.accountDescription,
@@ -104,13 +108,15 @@ const descriptions = computed<Record<SettingsSection, string>>(() => ({
   media: settings.value.mediaDescription,
   ai: settings.value.aiDescription,
   mcp: settings.value.mcpDescription,
-  tools: settings.value.toolsDescription,
+  tools: settings.value.chooseToolsDescription,
   usage: settings.value.usageDescription,
   diagnostics: settings.value.diagnosticsDescription
 }))
 const sections = computed(() => groups.value.flatMap((group) => group.sections))
-const sectionLabel = computed(
-  () => sections.value.find((section) => section.value === settingsSection.value)?.label ?? ''
+const sectionLabel = computed(() =>
+  settingsSection.value === 'tools'
+    ? settings.value.chooseTools
+    : (sections.value.find((section) => section.value === settingsSection.value)?.label ?? '')
 )
 
 const profile = computed(() => {
@@ -165,6 +171,7 @@ function onOpenChange(open: boolean): void {
             :label="settings.title"
             :back-label="common.back"
             :can-leave="!editing"
+            :parent="parentSection"
             @back="close"
           />
         </template>
@@ -185,6 +192,16 @@ function onOpenChange(open: boolean): void {
         <div :class="ui.panel()" data-test-id="settings-panel">
           <header :class="ui.header()">
             <div :class="settingsColumn">
+              <button
+                v-if="parentSection"
+                type="button"
+                :class="ui.parent()"
+                data-test-id="settings-parent"
+                @click="onSectionChange(parentSection)"
+              >
+                <icon-hugeicons-arrow-left-01 class="size-3.5" aria-hidden="true" />
+                {{ settings.navAgents }}
+              </button>
               <h1 :class="ui.heading()">{{ sectionLabel }}</h1>
               <p :class="ui.description()">{{ descriptions[settingsSection] }}</p>
             </div>
@@ -195,7 +212,10 @@ function onOpenChange(open: boolean): void {
           <AppTabsContent value="ai" as-child>
             <section class="flex min-h-0 min-w-0 flex-1 flex-col" data-test-id="settings-ai-panel">
               <ModelsPanel>
-                <ChatSettingsSection />
+                <SettingsDisclosure data-test-id="settings-chat-options">
+                  <template #label>{{ ai.chatOptions }}</template>
+                  <ChatSettingsSection untitled />
+                </SettingsDisclosure>
               </ModelsPanel>
             </section>
           </AppTabsContent>
@@ -203,7 +223,12 @@ function onOpenChange(open: boolean): void {
             <SettingsPage><UsageSettingsPanel /></SettingsPage>
           </AppTabsContent>
           <AppTabsContent value="diagnostics" as-child>
-            <SettingsPage><DiagnosticsSettingsPanel /></SettingsPage>
+            <SettingsPage>
+              <div class="flex flex-col gap-8">
+                <DiagnosticsSettingsPanel />
+                <RenderingSettingsSection />
+              </div>
+            </SettingsPage>
           </AppTabsContent>
           <AppTabsContent value="mcp" as-child>
             <MCPWorkspacePanel />

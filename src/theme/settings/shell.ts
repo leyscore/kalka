@@ -13,6 +13,8 @@ export const settingsShell = tv({
     panel:
       'mx-[max(0.75rem,env(safe-area-inset-left))] mt-3 mb-3 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-[18px] bg-float text-surface shadow-[0_0_0_1px_var(--color-float-border),var(--float-shadow)] backdrop-blur-[28px] backdrop-saturate-150 md:m-0',
     header: 'shrink-0 px-5 pt-4 sm:px-6 md:pt-8',
+    parent:
+      'mb-2 inline-flex cursor-pointer items-center gap-1.5 rounded-[8px] border-0 bg-transparent p-0 text-xs font-medium text-accent outline-none hover:underline focus-visible:ring-2 focus-visible:ring-accent',
     heading:
       'm-0 font-display text-2xl font-semibold tracking-[-0.03em] text-surface max-md:sr-only',
     description: 'm-0 mt-1 text-[13px] leading-relaxed text-muted',

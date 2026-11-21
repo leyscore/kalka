@@ -9,7 +9,6 @@ import { appPreferences, updateReduceAgentAnimations } from '@/app/settings/pref
 import { animationPreference } from '@/app/shell/motion'
 import { useAppTheme } from '@/app/shell/theme'
 import CredentialSettingsSection from '@/components/settings/credentials/CredentialSettingsSection.vue'
-import RenderingSettingsSection from '@/components/settings/general/RenderingSettingsSection.vue'
 import ThemePicker from '@/components/settings/general/ThemePicker.vue'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
 import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
@@ -60,8 +59,10 @@ const snapToPixelGrid = computed({
 <template>
   <section class="flex flex-col gap-6" data-test-id="settings-general-panel">
     <SettingsSection>
-      <template #title>{{ menu.language }}</template>
-      <template #description>{{ settings.languageDescription }}</template>
+      <template #title>{{ settings.appearance }}</template>
+      <SettingsGroup>
+        <ThemePicker v-model="theme" />
+      </SettingsGroup>
       <SettingsGroup>
         <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
           <span class="text-[13px] text-surface">{{ menu.language }}</span>
@@ -73,15 +74,6 @@ const snapToPixelGrid = computed({
             data-test-id="settings-language"
           />
         </label>
-      </SettingsGroup>
-    </SettingsSection>
-
-    <SettingsSection>
-      <template #title>{{ settings.appearance }}</template>
-      <SettingsGroup>
-        <ThemePicker v-model="theme" />
-      </SettingsGroup>
-      <SettingsGroup>
         <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
           <span class="text-[13px] text-surface">{{ settings.animations }}</span>
           <AppSelect
@@ -105,26 +97,6 @@ const snapToPixelGrid = computed({
             v-model="reduceAgentAnimations"
             :label="settings.reduceAgentAnimations"
             data-test-id="settings-reduce-agent-animations"
-          />
-        </label>
-      </SettingsGroup>
-    </SettingsSection>
-
-    <SettingsSection>
-      <template #title>{{ recovery.settingsTitle }}</template>
-
-      <SettingsGroup>
-        <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
-          <span>
-            <span class="block text-[13px] text-surface">{{ recovery.preserveUnsavedWork }}</span>
-            <span class="mt-0.5 block text-xs text-muted">{{
-              recovery.preserveUnsavedWorkDescription
-            }}</span>
-          </span>
-          <AppSwitch
-            v-model="preserveUnsavedWork"
-            :label="recovery.preserveUnsavedWork"
-            data-test-id="settings-recovery-enabled"
           />
         </label>
       </SettingsGroup>
@@ -179,7 +151,26 @@ const snapToPixelGrid = computed({
       <p class="text-[11px] text-muted">{{ settings.temporaryDisableSnappingHint }}</p>
     </SettingsSection>
 
+    <SettingsSection>
+      <template #title>{{ recovery.settingsTitle }}</template>
+
+      <SettingsGroup>
+        <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
+          <span>
+            <span class="block text-[13px] text-surface">{{ recovery.preserveUnsavedWork }}</span>
+            <span class="mt-0.5 block text-xs text-muted">{{
+              recovery.preserveUnsavedWorkDescription
+            }}</span>
+          </span>
+          <AppSwitch
+            v-model="preserveUnsavedWork"
+            :label="recovery.preserveUnsavedWork"
+            data-test-id="settings-recovery-enabled"
+          />
+        </label>
+      </SettingsGroup>
+    </SettingsSection>
+
     <CredentialSettingsSection />
-    <RenderingSettingsSection />
   </section>
 </template>

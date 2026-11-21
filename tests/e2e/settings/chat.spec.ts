@@ -5,6 +5,8 @@ import { CanvasHelper } from '#tests/helpers/canvas'
 async function openChatSettings(page: Page) {
   await page.keyboard.press(process.platform === 'darwin' ? 'Meta+,' : 'Control+,')
   await page.getByTestId('settings-section-ai').click()
+  // Chat options wait folded under Kalka AI.
+  await page.getByTestId('settings-chat-options').getByRole('button').first().click()
 }
 
 async function reloadAndOpenChatSettings(page: Page) {
@@ -30,7 +32,9 @@ test('chat step limit validates, persists and preserves reasoning preferences', 
   // The numeric field only appears behind the custom option.
   await expect(row.getByRole('spinbutton')).toHaveCount(0)
   await limit.click()
-  await page.getByRole('option', { name: 'Custom…' }).click()
+  // Typing picks the option even where the open list reaches past the window's edge.
+  await page.keyboard.type('Custom')
+  await page.keyboard.press('Enter')
 
   const custom = row.getByRole('spinbutton', { name: /Maximum steps per message/ })
   for (const invalid of ['', '0', '1.5', '1001']) {
