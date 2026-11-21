@@ -156,6 +156,7 @@ body {
   font-size: 12px;
 }
 .soon {
+  text-decoration: none;
   margin-left: auto;
   color: var(--faint);
 }

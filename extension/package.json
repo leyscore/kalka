@@ -6,7 +6,8 @@
   "description": "Kalka Snapshot: inspect any site and copy an element into Kalka as editable layers.",
   "scripts": {
     "build": "bun scripts/build.ts",
-    "typecheck": "tsgo --noEmit -p tsconfig.json"
+    "typecheck": "tsgo --noEmit -p tsconfig.json",
+    "package": "bun scripts/package.ts"
   },
   "devDependencies": {
     "@types/chrome": "0.3.7"
