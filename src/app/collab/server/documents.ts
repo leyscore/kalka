@@ -1,5 +1,7 @@
 import { shallowRef } from 'vue'
 
+import type { SceneGraph } from '@kalka/scene-graph'
+
 import { joinRoom, roomForStore, shareDocument } from '@/app/collab/rooms'
 import type { RoomSession } from '@/app/collab/session'
 import { serverRoomJoiner } from '@/app/collab/transport/server'
@@ -53,7 +55,21 @@ export function openServerDocument(
 export function openServerDocumentById(id: string, fallbackName: string): RoomSession | null {
   if (!serverAccount.value) return null
   const known = serverDocuments.value.find((document) => document.id === id)
-  return openServerDocument({ id, name: known?.name ?? fallbackName })
+  const session = openServerDocument({ id, name: known?.name ?? fallbackName })
+  // The server's name wins over the one guessed from the address, which a new document takes.
+  if (session && !known) {
+    withServerSession((url, token) => serverAPI.document(url, token, id))
+      .then((document) => {
+        serverDocuments.value = [
+          document,
+          ...serverDocuments.value.filter((other) => other.id !== document.id)
+        ]
+        session.store.state.documentName = document.name
+        return undefined
+      })
+      .catch(() => undefined)
+  }
+  return session
 }
 
 /** Puts a tab's document on the server: a new server document whose room it then shares. */
@@ -69,11 +85,46 @@ export async function shareToServer(store: EditorStore): Promise<RoomSession> {
   return shareDocument(store, document.id, serverTransport)
 }
 
+/** Gives a server document a new name, on the server and in the list of its files. */
+export async function renameServerDocument(roomId: string, name: string): Promise<void> {
+  if (serverDocuments.value.some((document) => document.id === roomId && document.name === name)) {
+    return
+  }
+  const renamed = await withServerSession((url, token) =>
+    serverAPI.renameDocument(url, token, roomId, name)
+  )
+  serverDocuments.value = serverDocuments.value.map((document) =>
+    document.id === renamed.id ? renamed : document
+  )
+}
+
 /** Saves the document as a Kalka file on the server, for export and backups. */
 export async function saveServerFile(roomId: string, store: EditorStore): Promise<void> {
   const { writeKalkaArchive } = await import('@kalka/core/io/formats/kalka')
   const archive = await writeKalkaArchive(store.graph)
   await withServerSession((url, token) => serverAPI.saveFile(url, token, roomId, archive))
+}
+
+/**
+ * Takes the version waiting for a server document: reads it, then dismisses it, and returns it
+ * only when this window's dismissal went through, so one window applies each version. A file
+ * Kalka cannot read is dismissed too, so it does not wait forever. Null when there is nothing
+ * to apply.
+ */
+export async function takePendingVersion(roomId: string): Promise<SceneGraph | null> {
+  const pending = await withServerSession((url, token) => serverAPI.pending(url, token, roomId))
+  if (!pending) return null
+  const { readKalkaArchive } = await import('@kalka/core/io/formats/kalka')
+  let graph: SceneGraph | null = null
+  try {
+    graph = readKalkaArchive(pending.data)
+  } catch (error) {
+    console.warn('[Kalka server] Dismissed an uploaded version Kalka cannot read', error)
+  }
+  const { dismissed } = await withServerSession((url, token) =>
+    serverAPI.dismissPending(url, token, roomId, pending.version)
+  )
+  return dismissed ? graph : null
 }
 
 /** Whether a room lives on the signed-in server rather than between peers. */

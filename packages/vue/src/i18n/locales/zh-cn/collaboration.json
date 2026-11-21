@@ -86,5 +86,11 @@
   "serverShareFailed": "无法将此文件保存到服务器。",
   "serverRoleAdmin": "管理员",
   "serverRoleEditor": "编辑者",
-  "serverRoleViewer": "查看者"
+  "serverRoleViewer": "查看者",
+  "serverOpeningDescription": "正在从 {server} 打开文件。",
+  "serverMissingTitle": "服务器上没有这个文件",
+  "serverMissingDescription": "文件已被删除，或链接不完整。请向发送者索取新链接。",
+  "serverEmptyTitle": "这个文件还是空的",
+  "serverEmptyDescription": "编辑者在 Kalka 中打开后，它就会显示在这里。",
+  "serverCloseFile": "关闭"
 }

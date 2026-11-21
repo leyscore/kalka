@@ -4,14 +4,22 @@ import { IndexeddbPersistence } from 'y-indexeddb'
 import * as awarenessProtocol from 'y-protocols/awareness'
 import * as Y from 'yjs'
 
+import type { SceneGraph } from '@kalka/scene-graph'
+
 import { shareAgentPreviews } from '@/app/collab/agent-preview'
 import { buildRemotePeers } from '@/app/collab/awareness'
 import { useCollabIdentity } from '@/app/collab/identity'
 import { publishLocalAgents } from '@/app/collab/local-awareness'
 import { connectCollabRoom } from '@/app/collab/room/connection'
-import { deriveRoomStatus, type RoomStatus } from '@/app/collab/room/status'
-import { saveServerFile } from '@/app/collab/server/documents'
+import { deriveRoomStatus, type RoomStatus, type ServerRoomState } from '@/app/collab/room/status'
+import { serverAccount } from '@/app/collab/server/account'
+import {
+  renameServerDocument,
+  saveServerFile,
+  takePendingVersion
+} from '@/app/collab/server/documents'
 import { bindServerPeer } from '@/app/collab/server/peer'
+import { replaceDocumentContent } from '@/app/collab/server/version'
 import {
   readRoomName,
   readRoot,
@@ -28,6 +36,7 @@ import {
   createYjsGraphSync,
   registerYjsObservers
 } from '@/app/collab/yjs-sync'
+import { keepRecoveryElsewhere } from '@/app/document/recovery/kept-elsewhere'
 import type { EditorStore } from '@/app/editor/active-store'
 import { recordPeerActivity } from '@/app/presence/activity'
 import { setPeers } from '@/app/presence/registry'
@@ -69,6 +78,15 @@ export interface RoomSessionOptions {
   unreachableMs?: number
   /** How often the tab rechecks its connection while it waits for the file. */
   tickMs?: number
+  /**
+   * For a server room: takes the version uploaded outside Kalka that waits to be applied, or
+   * null when another window took it or there is nothing to apply.
+   */
+  takePendingVersion?: (roomId: string) => Promise<SceneGraph | null>
+  /** For a server room: saves the document as a Kalka file on the server. */
+  saveServerFile?: (roomId: string, store: EditorStore) => Promise<void>
+  /** For a server room: gives the server document its new name. */
+  renameServerDocument?: (roomId: string, name: string) => Promise<void>
 }
 
 function openIndexedDBCopy(roomId: string, ydoc: Y.Doc): RoomSavedCopy {
@@ -84,7 +102,10 @@ export function openRoomSession({
   joinRoom,
   openSavedCopy = openIndexedDBCopy,
   unreachableMs = ROOM_UNREACHABLE_MS,
-  tickMs = ROOM_STATUS_TICK_MS
+  tickMs = ROOM_STATUS_TICK_MS,
+  takePendingVersion: takeVersion = takePendingVersion,
+  saveServerFile: saveFile = saveServerFile,
+  renameServerDocument: renameOnServer = renameServerDocument
 }: RoomSessionOptions): RoomSession {
   const identity = useCollabIdentity()
   const ydoc = new Y.Doc()
@@ -103,6 +124,7 @@ export function openRoomSession({
   const now = ref(openedAt)
   /** When the current stretch of being connected to the service that introduces peers began. */
   const connectedSince = ref<number | null>(null)
+  const serverState = ref<ServerRoomState | null>(null)
   let suppressYjsEvents = false
   let suppressGraphSync = false
   let disposed = false
@@ -116,7 +138,8 @@ export function openRoomSession({
       discoveryMs: connection.room.discoveryMs,
       unreachableMs,
       peerCount: peers.value.length,
-      peersWithFile: peers.value.filter((peer) => peer.hasFile).length
+      peersWithFile: peers.value.filter((peer) => peer.hasFile).length,
+      server: serverState.value
     })
   )
 
@@ -138,8 +161,11 @@ export function openRoomSession({
     if (awareness.getLocalState()?.hasFile !== hasDocument.value) {
       awareness.setLocalStateField('hasFile', hasDocument.value)
     }
+    // The room's name is the document's: a rename by anyone in it reaches everyone.
     const name = readRoomName(meta)
-    if (hasDocument.value && name && origin === 'joined') store.state.documentName = name
+    if (hasDocument.value && name && store.state.documentName !== name) {
+      store.state.documentName = name
+    }
   }
 
   function updatePeers() {
@@ -152,8 +178,14 @@ export function openRoomSession({
     recordPeerActivity(store, next)
   }
 
+  /** On a server, people appear under their account's name, not a generated one. */
+  function displayName(): string {
+    const account = serverAccount.value
+    return account && isServerTransport(connection.room) ? account.user.name : identity.name.value
+  }
+
   function broadcastIdentity() {
-    awareness.setLocalStateField('user', { name: identity.name.value, color: identity.color })
+    awareness.setLocalStateField('user', { name: displayName(), color: identity.color })
     awareness.setLocalStateField('treeFormat', TREE_FORMAT)
   }
 
@@ -182,12 +214,83 @@ export function openRoomSession({
   })
   broadcastIdentity()
   const room = connection.room
-  const stopServerPeer = isServerTransport(room)
+
+  function shareDocument() {
+    sync.syncAllNodesToYjs()
+    variableSync.share()
+    writeRoomName(meta, store.state.documentName)
+    refreshDocument()
+  }
+
+  /** Puts a version uploaded outside Kalka into the room, as one edit everyone receives. */
+  function applyVersion(incoming: SceneGraph) {
+    if (readRoot(meta) === undefined) {
+      store.replaceGraph(incoming)
+      shareDocument()
+      return
+    }
+    replaceDocumentContent(store.graph, incoming)
+    variableSync.send()
+    store.refreshVariables({ variables: store.graph.variables.keys() })
+    store.undo.clear()
+    store.requestRender()
+  }
+
+  const serverRoom = isServerTransport(room) ? room : null
+  let loadedVersion: string | null = null
+  let settling: Promise<void> = Promise.resolve()
+  /** Read through a function: the session can close while a request is awaited. */
+  const isOpen = () => !disposed
+
+  /**
+   * After the server's load, or a version arriving: an editor applies the waiting version, and
+   * starts a document the server has nothing of, so it never waits for someone who has it.
+   */
+  async function settleServerDocument(version: string | null) {
+    const state = serverState.value
+    if (!serverRoom || !state || disposed || serverRoom.role() === 'viewer') return
+    state.settling = true
+    try {
+      await persistence.whenSynced
+      if (version && isOpen()) {
+        const incoming = await takeVersion(roomId)
+        if (incoming && isOpen()) applyVersion(incoming)
+      }
+      if (isOpen() && readRoot(meta) === undefined) shareDocument()
+    } finally {
+      state.settling = false
+    }
+  }
+
+  function queueSettle(version: string | null) {
+    settling = settling
+      .then(() => settleServerDocument(version))
+      .catch((error: unknown) => console.warn('[Kalka server] Could not apply a version', error))
+  }
+
+  if (serverRoom) {
+    keepRecoveryElsewhere(store.state, true)
+    void store.discardRecovery()
+    serverState.value = { loaded: false, settling: false, gone: false }
+    serverRoom.onGone(() => {
+      if (serverState.value) serverState.value.gone = true
+    })
+  }
+  const stopServerPeer = serverRoom
     ? bindServerPeer({
-        room,
+        room: serverRoom,
         ydoc,
         sendYjsUpdate: (update) => connection.sendYjsUpdate(update),
-        saveFile: () => saveServerFile(roomId, store)
+        saveFile: () => saveFile(roomId, store),
+        onPending: (version) => {
+          if (serverState.value?.loaded) queueSettle(version)
+          else loadedVersion = version
+        },
+        onLoaded: () => {
+          if (serverState.value) serverState.value.loaded = true
+          queueSettle(loadedVersion)
+          loadedVersion = null
+        }
       })
     : undefined
 
@@ -208,7 +311,21 @@ export function openRoomSession({
     if (!hasDocument.value) checkConnection()
   }, tickMs)
 
-  const stopNameWatch = watch(identity.name, broadcastIdentity)
+  const stopNameWatch = watch([identity.name, serverAccount], broadcastIdentity)
+  // A rename in this tab names the room's document, and the server's.
+  const stopRenameWatch = watch(
+    () => store.state.documentName,
+    (name) => {
+      if (disposed || !hasDocument.value || !name || readRoomName(meta) === name) return
+      if (serverRoom?.role() === 'viewer') return
+      writeRoomName(meta, name)
+      if (serverRoom) {
+        renameOnServer(roomId, name).catch((error: unknown) =>
+          console.warn('[Kalka server] Could not rename the file', error)
+        )
+      }
+    }
+  )
   const stopZoomWatch = store.onEditorEvent('viewport:changed', (viewport) => {
     const cursor = awareness.getLocalState()?.cursor as CursorState | undefined
     if (cursor) awareness.setLocalStateField('cursor', { ...cursor, zoom: viewport.zoom })
@@ -237,12 +354,7 @@ export function openRoomSession({
     updateSelection(ids) {
       awareness.setLocalStateField('selection', ids)
     },
-    shareDocument() {
-      sync.syncAllNodesToYjs()
-      variableSync.share()
-      writeRoomName(meta, store.state.documentName)
-      refreshDocument()
-    },
+    shareDocument,
     dispose() {
       if (disposed) return
       // Unbinding writes an edit still waiting to be sent, so it runs while the room is open.
@@ -251,10 +363,12 @@ export function openRoomSession({
       disposed = true
       connectionTimer.pause()
       stopNameWatch()
+      stopRenameWatch()
       stopZoomWatch()
       stopAgentSync()
       stopAgentPreviews()
       stopServerPeer?.()
+      if (serverRoom) keepRecoveryElsewhere(store.state, false)
       meta.unobserve(refreshDocument)
       unregisterYjsObservers()
       // Destroying the awareness can emit a last change; nothing here should react to it.

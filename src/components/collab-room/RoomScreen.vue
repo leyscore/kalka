@@ -22,7 +22,8 @@ const {
   name,
   copied = false,
   desktopLink = null,
-  downloadURL = null
+  downloadURL = null,
+  serverName = null
 } = defineProps<{
   status: PendingRoomStatus
   /** Who the file is coming from, while it is on its way. */
@@ -36,6 +37,8 @@ const {
   desktopLink?: string | null
   /** Where to get the desktop app, offered beside `desktopLink`. */
   downloadURL?: string | null
+  /** The Kalka server that keeps the room's document, for a server document. */
+  serverName?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -50,6 +53,7 @@ const ui = roomScreen()
 const fetching = computed(() => isFetchingRoom(status))
 const progress = computed(() => {
   if (status === 'receiving' && sender) return messages.value.receivingDescription({ name: sender })
+  if (serverName) return messages.value.serverOpeningDescription({ server: serverName })
   if (status === 'looking') return messages.value.lookingDescription
   return messages.value.connectingDescription
 })
@@ -106,6 +110,32 @@ const progress = computed(() => {
           @click="emit('leave')"
         >
           {{ messages.leave }}
+        </AppButton>
+      </template>
+    </AppPlaceholder>
+
+    <AppPlaceholder
+      v-else-if="status === 'missing' || status === 'empty'"
+      size="page"
+      label-as="h2"
+      :label="status === 'missing' ? messages.serverMissingTitle : messages.serverEmptyTitle"
+      :description="
+        status === 'missing' ? messages.serverMissingDescription : messages.serverEmptyDescription
+      "
+      :ui="{ label: ui.title(), description: ui.description() }"
+    >
+      <template #icon>
+        <icon-hugeicons-file-not-found v-if="status === 'missing'" class="size-5" />
+        <icon-hugeicons-file-01 v-else class="size-5" />
+      </template>
+      <template #action>
+        <AppButton
+          color="neutral"
+          variant="outline"
+          data-test-id="room-screen-leave"
+          @click="emit('leave')"
+        >
+          {{ messages.serverCloseFile }}
         </AppButton>
       </template>
     </AppPlaceholder>

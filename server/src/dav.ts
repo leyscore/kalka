@@ -168,7 +168,15 @@ async function readBody(request: Request): Promise<ArrayBuffer> {
   if (declared > MAX_FILE_BYTES) throw new HttpError(413, 'This file is too large.')
   const data = await request.arrayBuffer()
   if (data.byteLength > MAX_FILE_BYTES) throw new HttpError(413, 'This file is too large.')
+  // A Kalka file is a ZIP archive; anything else would wait as a version Kalka cannot open.
+  if (data.byteLength > 0 && !isZip(data)) throw new HttpError(415, 'This is not a Kalka file.')
   return data
+}
+
+/** Whether the bytes start as a ZIP archive does, the only check that needs no unpacking. */
+function isZip(data: ArrayBuffer): boolean {
+  const head = new Uint8Array(data, 0, Math.min(4, data.byteLength))
+  return head.length === 4 && head[0] === 0x50 && head[1] === 0x4b && head[2] === 0x03 && head[3] === 0x04
 }
 
 function lockResponse(request: Request, href: string, status: number, owner: string): Response {

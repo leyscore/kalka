@@ -5,6 +5,8 @@ import { useViewportKind } from '@kalka/vue'
 
 import { roomLinkURL } from '@/app/collab/room/links'
 import { showsRoomDocument, type PendingRoomStatus } from '@/app/collab/room/status'
+import { serverAccount } from '@/app/collab/server/account'
+import { isServerRoom } from '@/app/collab/server/documents'
 import { DEFAULT_COLLAB_STATE, useCollabInjected } from '@/app/collab/use'
 import { useNotificationMessages } from '@/app/i18n/notifications'
 import { toast } from '@/app/shell/ui'
@@ -31,10 +33,16 @@ export function useRoomActions() {
   const othersWaiting = computed(() =>
     state.value.peers.filter((peer) => !peer.hasFile).map((peer) => peer.name)
   )
-  // Browsers on a computer can hand the room to the desktop app; phones and the app cannot.
+  /** The server that keeps the room's document, for a server document. */
+  const serverName = computed(() => {
+    const roomId = state.value.roomId
+    return roomId && isServerRoom(roomId) ? (serverAccount.value?.serverName ?? null) : null
+  })
+  // Browsers on a computer can hand the room to the desktop app; phones and the app cannot. A
+  // server document is not a peer-to-peer room, which is all a `kalka://join` link opens.
   const desktopLink = computed(() => {
     const roomId = state.value.roomId
-    if (!roomId || !IS_BROWSER || IS_TAURI || isMobile.value) return null
+    if (!roomId || !IS_BROWSER || IS_TAURI || isMobile.value || isServerRoom(roomId)) return null
     return roomLinkURL(roomId)
   })
   /** Offered beside the desktop link, for people without the app. */
@@ -69,6 +77,7 @@ export function useRoomActions() {
     copied,
     desktopLink,
     downloadURL,
+    serverName,
     copyLink,
     leave,
     rename,

@@ -17,6 +17,7 @@ const room = useRoomActions()
     :copied="room.copied.value"
     :desktop-link="room.desktopLink.value"
     :downloadURL="room.downloadURL.value"
+    :server-name="room.serverName.value"
     @copy-link="room.copyLink"
     @leave="room.leave"
     @rename="room.rename"

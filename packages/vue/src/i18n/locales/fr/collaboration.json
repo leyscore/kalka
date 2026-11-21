@@ -86,5 +86,11 @@
   "serverShareFailed": "Impossible d’enregistrer ce fichier sur le serveur.",
   "serverRoleAdmin": "Administrateur",
   "serverRoleEditor": "Éditeur",
-  "serverRoleViewer": "Lecteur"
+  "serverRoleViewer": "Lecteur",
+  "serverOpeningDescription": "Ouverture du fichier depuis {server}.",
+  "serverMissingTitle": "Ce fichier n’est pas sur le serveur",
+  "serverMissingDescription": "Il a été supprimé, ou le lien est incomplet. Demandez un nouveau lien à la personne qui vous l’a envoyé.",
+  "serverEmptyTitle": "Ce fichier est encore vide",
+  "serverEmptyDescription": "Il s’ouvrira ici dès qu’un éditeur l’ouvrira dans Kalka.",
+  "serverCloseFile": "Fermer"
 }
