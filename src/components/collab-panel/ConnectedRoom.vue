@@ -7,6 +7,7 @@ import { useCollabPanelContext } from '@/components/collab-panel/context'
 import { roomStatusText } from '@/components/collab-room/statusText'
 import { useRoomActions } from '@/components/collab-room/useRoomActions'
 import AppButton from '@/components/ui/button/AppButton.vue'
+import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 import { roomStatus } from '@/theme/collaboration/room-status'
 
@@ -15,7 +16,12 @@ const room = useRoomActions()
 const ui = roomStatus()
 
 const statusText = computed(() =>
-  roomStatusText(collab.messages, collab.state.status ?? 'connecting', collab.state.peers.length)
+  roomStatusText(
+    collab.messages,
+    collab.state.status ?? 'connecting',
+    collab.state.peers.length,
+    collab.inServerRoom ? (collab.serverName ?? null) : null
+  )
 )
 </script>
 
@@ -26,16 +32,27 @@ const statusText = computed(() =>
   </p>
 
   <template v-if="collab.inServerRoom">
-    <p
-      class="mb-3 flex items-center gap-1.5 text-xs text-surface"
-      data-test-id="collab-server-room"
+    <AppAlert
+      v-if="collab.viewOnly"
+      tone="warning"
+      class="mb-3"
+      :heading="collab.messages.serverViewOnlyBadge"
+      :description="collab.messages.serverViewOnly"
+    />
+    <AppButton
+      v-if="collab.serverLink"
+      color="neutral"
+      variant="outline"
+      class="mb-3 w-full"
+      data-test-id="collab-copy-server-link"
+      @click="collab.copyServerLink"
     >
-      <icon-hugeicons-server-stack-01 class="size-3.5 text-muted" />
-      {{ collab.messages.serverRoomSaved({ server: collab.serverName ?? '' }) }}
-    </p>
-    <p v-if="collab.viewOnly" class="mb-3 text-xs text-warning" role="status">
-      {{ collab.messages.serverViewOnly }}
-    </p>
+      <template #leading>
+        <icon-hugeicons-check v-if="collab.copied" class="size-3" />
+        <icon-hugeicons-copy v-else class="size-3" />
+      </template>
+      {{ collab.copied ? collab.messages.linkCopied : collab.messages.serverCopyFileLink }}
+    </AppButton>
   </template>
   <div v-if="!collab.inServerRoom" class="mb-1.5 text-xs font-medium text-surface">
     {{ collab.messages.roomLink }}
@@ -63,10 +80,16 @@ const statusText = computed(() =>
     </AppButton>
   </div>
 
-  <label for="collab-room-name-input" class="mb-1 block text-xs text-muted">
+  <!-- On a server, people appear under their account's name. -->
+  <label
+    v-if="!collab.inServerRoom"
+    for="collab-room-name-input"
+    class="mb-1 block text-xs text-muted"
+  >
     {{ collab.messages.yourName }}
   </label>
   <AppInput
+    v-if="!collab.inServerRoom"
     id="collab-room-name-input"
     v-model="collab.nameDraft"
     data-test-id="collab-name-input"
@@ -78,7 +101,7 @@ const statusText = computed(() =>
   <div class="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
     <p
       v-if="room.desktopLink.value"
-      class="flex shrink-0 items-center gap-1.5 text-[11px] whitespace-nowrap text-muted"
+      class="flex shrink-0 items-center gap-3 text-[11px] whitespace-nowrap text-muted"
     >
       <a
         :href="room.desktopLink.value"
@@ -88,7 +111,6 @@ const statusText = computed(() =>
         {{ collab.messages.openInDesktopApp }}
       </a>
       <template v-if="room.downloadURL.value">
-        <span aria-hidden="true">·</span>
         <a
           :href="room.downloadURL.value"
           target="_blank"

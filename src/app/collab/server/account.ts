@@ -166,6 +166,20 @@ export async function signOutOfServer(): Promise<void> {
   serverSessionExpired.value = false
 }
 
+/** Takes the account as the server has it now, such as a role an administrator changed. */
+export function updateServerUser(user: ServerUser): void {
+  const account = storedAccount.value
+  if (!account || account.user.id !== user.id) return
+  if (account.user.role === user.role && account.user.name === user.name) return
+  storedAccount.value = { ...account, user }
+}
+
+/** Reads the signed-in account again from the server, so a changed role shows. */
+export async function refreshServerAccount(): Promise<void> {
+  const user = await withServerSession((url, token) => serverAPI.me(url, token))
+  updateServerUser(user)
+}
+
 /**
  * Runs a request with the session; a refused session marks the account as needing to sign in
  * again rather than signing out, so the address and name stay.

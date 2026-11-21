@@ -82,7 +82,7 @@
   "serverShareOn": "Сохранить на {server}",
   "serverShareOnDescription": "Команда сможет открыть его в любое время, даже когда вы не в сети.",
   "serverRoomSaved": "Сохранено на {server}",
-  "serverViewOnly": "Только просмотр: ваши изменения не сохраняются на сервере.",
+  "serverViewOnly": "Только просмотр: можно смотреть файл и следить за другими, но не изменять его.",
   "serverShareFailed": "Не удалось сохранить файл на сервере.",
   "serverRoleAdmin": "Администратор",
   "serverRoleEditor": "Редактор",
@@ -92,5 +92,11 @@
   "serverMissingDescription": "Его удалили, или ссылка неполная. Попросите того, кто её прислал, о новой ссылке.",
   "serverEmptyTitle": "В этом файле пока ничего нет",
   "serverEmptyDescription": "Он откроется здесь, как только редактор откроет его в Kalka.",
-  "serverCloseFile": "Закрыть"
+  "serverCloseFile": "Закрыть",
+  "serverViewOnlyEdit": "Этот файл доступен только для просмотра, поэтому изменение отменено. Попросите администратора дать вам роль редактора.",
+  "serverViewOnlyBadge": "Только просмотр",
+  "shareThisFileDescription": "Живая ссылка, которая работает, пока этот файл открыт у вас.",
+  "serverSavedLinkCopied": "Сохранено на {server}. Ссылка скопирована.",
+  "serverStatusLive": "Здесь {count} чел., сохранено на {server}",
+  "serverCopyFileLink": "Копировать ссылку на файл"
 }

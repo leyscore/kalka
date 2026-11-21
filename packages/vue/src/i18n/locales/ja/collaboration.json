@@ -82,7 +82,7 @@
   "serverShareOn": "{server} に保存",
   "serverShareOnDescription": "あなたがオフラインでも、チームはいつでも開けます。",
   "serverRoomSaved": "{server} に保存済み",
-  "serverViewOnly": "閲覧のみ：変更はサーバーに保存されません。",
+  "serverViewOnly": "閲覧のみ：このファイルを見たり他の人をフォローしたりできますが、変更はできません。",
   "serverShareFailed": "このファイルをサーバーに保存できませんでした。",
   "serverRoleAdmin": "管理者",
   "serverRoleEditor": "編集者",
@@ -92,5 +92,11 @@
   "serverMissingDescription": "削除されたか、リンクが不完全です。送ってくれた人に新しいリンクを頼んでください。",
   "serverEmptyTitle": "このファイルはまだ空です",
   "serverEmptyDescription": "編集者が Kalka で開くと、ここに表示されます。",
-  "serverCloseFile": "閉じる"
+  "serverCloseFile": "閉じる",
+  "serverViewOnlyEdit": "このファイルは閲覧のみのため、変更は取り消されました。管理者に編集者の役割を依頼してください。",
+  "serverViewOnlyBadge": "閲覧のみ",
+  "shareThisFileDescription": "このファイルを開いている間だけ使えるライブリンクです。",
+  "serverSavedLinkCopied": "{server} に保存しました。リンクをコピーしました。",
+  "serverStatusLive": "{count} 人が参加中、{server} に保存済み",
+  "serverCopyFileLink": "このファイルへのリンクをコピー"
 }

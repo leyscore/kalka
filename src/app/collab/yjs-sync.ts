@@ -347,5 +347,33 @@ export function createYjsGraphSync({
       })
   }
 
-  return { syncNodeToYjs, syncLocalEdit, syncAllNodesToYjs, applyYjsToGraph }
+  /**
+   * Puts back what one local edit changed, from the room's document: layers it changed or
+   * deleted come back as the room has them, layers it created go. For people who may not edit
+   * the room's document, such as a server's viewers.
+   */
+  function revertLocalEdit(edit: LocalEdit) {
+    const store = getStore()
+    const ydoc = getYdoc()
+    const ynodes = getYnodes()
+    if (!ydoc || !ynodes) return
+    const touched = new Set([
+      ...edit.changed,
+      ...edit.placed,
+      ...edit.deleted,
+      ...edit.reordered,
+      ...edit.previousParents
+    ])
+    const kept = new Set([...touched].filter((nodeId) => ynodes.has(nodeId)))
+    const gone = [...touched].filter((nodeId) => !ynodes.has(nodeId))
+    for (const nodeId of kept) {
+      const ynode = ynodes.get(nodeId)
+      if (ynode) applyYnodeToGraph(store.graph, nodeId, ynode)
+    }
+    applySharedTree(sharedTreeOf(ydoc), store.graph, ynodes, ydoc.getMap('meta'), kept, gone)
+    for (const nodeId of gone) store.graph.deleteNode(nodeId)
+    ensureCurrentPageExists(store)
+  }
+
+  return { syncNodeToYjs, syncLocalEdit, syncAllNodesToYjs, applyYjsToGraph, revertLocalEdit }
 }

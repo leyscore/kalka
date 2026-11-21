@@ -91,7 +91,7 @@ export const collaborationMessageDefaults = {
   serverShareOn: params('Save on {server}'),
   serverShareOnDescription: 'Your team can open it any time, even when you’re offline.',
   serverRoomSaved: params('Saved on {server}'),
-  serverViewOnly: 'View only: your changes aren’t saved on the server.',
+  serverViewOnly: 'View only: you can look at this file and follow others, but not change it.',
   serverShareFailed: 'Couldn’t save this file on the server.',
   serverRoleAdmin: 'Administrator',
   serverRoleEditor: 'Editor',
@@ -102,7 +102,14 @@ export const collaborationMessageDefaults = {
     'It was deleted, or the link is incomplete. Ask whoever sent it for a new link.',
   serverEmptyTitle: 'Nothing in this file yet',
   serverEmptyDescription: 'It opens here as soon as an editor opens it in Kalka.',
-  serverCloseFile: 'Close'
+  serverCloseFile: 'Close',
+  serverViewOnlyEdit:
+    'You can view this file but not change it, so your change was undone. Ask an administrator for the Editor role.',
+  serverViewOnlyBadge: 'View only',
+  shareThisFileDescription: 'A live link that works while you keep this file open.',
+  serverSavedLinkCopied: params('Saved on {server}. Link copied.'),
+  serverStatusLive: params('{count} people here, saved on {server}'),
+  serverCopyFileLink: 'Copy link to this file'
 } as const
 
 export const collaborationMessages = i18n('collaboration', collaborationMessageDefaults)

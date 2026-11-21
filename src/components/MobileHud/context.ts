@@ -9,6 +9,8 @@ import IconZoomIn from '~icons/hugeicons/zoom-in'
 
 import { useEditorCommands, useI18n } from '@kalka/vue'
 
+import { serverAccount } from '@/app/collab/server/account'
+import { isServerRoom } from '@/app/collab/server/documents'
 import { DEFAULT_COLLAB_STATE, useCollabInjected } from '@/app/collab/use'
 import { useActiveEditorStoreRef, useEditorStore } from '@/app/editor/active-store'
 import { toolIcons } from '@/app/editor/icons'
@@ -79,7 +81,14 @@ function createMobileHudContext() {
 
   const statusText = computed(() =>
     collabState.value.status
-      ? roomStatusText(collaboration.value, collabState.value.status, collabPeers.value.length)
+      ? roomStatusText(
+          collaboration.value,
+          collabState.value.status,
+          collabPeers.value.length,
+          collabState.value.roomId && isServerRoom(collabState.value.roomId)
+            ? (serverAccount.value?.serverName ?? null)
+            : null
+        )
       : ''
   )
 

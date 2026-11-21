@@ -82,7 +82,7 @@
   "serverShareOn": "Enregistrer sur {server}",
   "serverShareOnDescription": "Votre équipe peut l’ouvrir à tout moment, même quand vous êtes hors ligne.",
   "serverRoomSaved": "Enregistré sur {server}",
-  "serverViewOnly": "Lecture seule : vos modifications ne sont pas enregistrées sur le serveur.",
+  "serverViewOnly": "Lecture seule : vous pouvez regarder ce fichier et suivre les autres, mais pas le modifier.",
   "serverShareFailed": "Impossible d’enregistrer ce fichier sur le serveur.",
   "serverRoleAdmin": "Administrateur",
   "serverRoleEditor": "Éditeur",
@@ -92,5 +92,11 @@
   "serverMissingDescription": "Il a été supprimé, ou le lien est incomplet. Demandez un nouveau lien à la personne qui vous l’a envoyé.",
   "serverEmptyTitle": "Ce fichier est encore vide",
   "serverEmptyDescription": "Il s’ouvrira ici dès qu’un éditeur l’ouvrira dans Kalka.",
-  "serverCloseFile": "Fermer"
+  "serverCloseFile": "Fermer",
+  "serverViewOnlyEdit": "Vous pouvez voir ce fichier mais pas le modifier : votre modification a été annulée. Demandez le rôle Éditeur à un administrateur.",
+  "serverViewOnlyBadge": "Lecture seule",
+  "shareThisFileDescription": "Un lien en direct, qui fonctionne tant que vous gardez ce fichier ouvert.",
+  "serverSavedLinkCopied": "Enregistré sur {server}. Lien copié.",
+  "serverStatusLive": "{count} personnes ici, enregistré sur {server}",
+  "serverCopyFileLink": "Copier le lien de ce fichier"
 }
