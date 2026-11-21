@@ -13,8 +13,9 @@ import { startWebMCP } from '@/app/automation/webmcp/runtime'
 import { exposeCollaborationActions } from '@/app/browser-bridge'
 import { useJoinRoom } from '@/app/collab/join'
 import { bindDesktopRoomLinks } from '@/app/collab/room/links'
-import type { ServerAccountSummary } from '@/app/collab/server/account'
+import { serverAccount, type ServerAccountSummary } from '@/app/collab/server/account'
 import { normalizeServerURL } from '@/app/collab/server/api'
+import { joinKalkaCloud } from '@/app/collab/server/cloud'
 import {
   openServerDocument,
   openServerDocumentById,
@@ -33,6 +34,7 @@ import { openPendingFiles } from '@/app/document/io/pending-open'
 import { openWebLinkFromLocation, withoutWebLinkParams } from '@/app/document/io/web-link'
 import { focusNodesByName } from '@/app/editor/selection/focus'
 import { filesListFromPath } from '@/app/home/files-route'
+import { homeFilesTab } from '@/app/home/files-tab'
 import { fillNewDocument } from '@/app/home/start'
 import { notificationMessages } from '@/app/i18n/notifications'
 import { isWelcomePath } from '@/app/onboarding/route'
@@ -50,6 +52,7 @@ import { holdBootSplash } from '@/app/shell/support/splash'
 import { toast } from '@/app/shell/ui'
 import {
   activeTab,
+  closeTab,
   createDocumentInCurrentTab,
   createHomeTab,
   createTab,
@@ -84,12 +87,20 @@ const opensHome =
   isWelcomePath(route.path) ||
   filesListFromPath(route.path) !== null ||
   settingsSectionFromPath(route.path) !== null
+/** Kalka Cloud serves the app at the address of the server it signed in to: Home comes first. */
+function servedByOwnServer(): boolean {
+  const account = serverAccount.value
+  return IS_BROWSER && account !== null && new URL(account.url).origin === window.location.origin
+}
 const shouldCreateHome =
   opensHome &&
   !appRuntimeConfig.test &&
   !route.meta.demo &&
   // The web editor starts on a document, except when the address names one of Home's lists.
-  (isTauri() || appRuntimeConfig.recentFiles || filesListFromPath(route.path) !== null)
+  (isTauri() ||
+    appRuntimeConfig.recentFiles ||
+    filesListFromPath(route.path) !== null ||
+    servedByOwnServer())
 const { collaboration } = useI18n()
 
 /** A launch link that would sign in as someone else waits here for the person to say yes. */
@@ -371,6 +382,24 @@ onMounted(async () => {
             }
           )
       })
+      // Served by Kalka Cloud: sign in to the person's workspace and show its files on Home.
+      if (!launchedFromCloud) {
+        const joined = await joinKalkaCloud(window.location.origin)
+        if (joined.kind === 'joined') {
+          homeFilesTab.value = 'server'
+          // The first visit opened on a blank file before the Cloud answered: Home replaces it.
+          const first = activeTab.value
+          if (
+            createdInitialTab &&
+            tabCount() === 1 &&
+            first?.kind === 'document' &&
+            !first.store.hasUnsavedChanges()
+          ) {
+            createHomeTab()
+            await closeTab(first.id, 'discard')
+          }
+        }
+      }
       await openWebLinkFromLocation(window.location.search, stripWebLinkParams, {
         selectByName: selectNodeByName,
         notify: (message, level) => (level === 'error' ? toast.error : toast.info)(message)

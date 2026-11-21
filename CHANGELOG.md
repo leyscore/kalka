@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- On Kalka Cloud, opening app.kalka.design signed in shows Home with your workspace's files, without going through the console.
+
 ## 0.2.0-beta.5 — 2026-11-21
 
 ### Breaking changes
