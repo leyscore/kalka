@@ -43,6 +43,7 @@ export const filesMessageDefaults = {
   accountAndSettings: 'Account and settings',
   openMenu: 'Open the menu',
   thisComputer: 'On this computer',
+  localFiles: 'Local files',
   placesLabel: 'Places',
   continueFile: 'Continue',
   recentFilesDescription: 'Continue working on a design or start a new one.',

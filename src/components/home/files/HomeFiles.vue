@@ -5,6 +5,7 @@ import { computed, ref, useTemplateRef, watch } from 'vue'
 import { useDocumentWorkspace, useI18n, useViewportKind } from '@kalka/vue'
 
 import { serverAccount } from '@/app/collab/server/account'
+import { openServerDocumentById } from '@/app/collab/server/documents'
 import { homeFilesTab } from '@/app/home/files-tab'
 import {
   activeStorageProviderID,
@@ -32,32 +33,36 @@ import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
-import { filesTab, storageChip } from '@/theme/home/start'
+import { filesHeading, storageChip } from '@/theme/home/start'
 
 /**
- * The files on Home, in two tabs: Recent, the files opened on this computer led by the last one,
- * with the sample file; and Storage, the documents in the storage workspace the team shares.
+ * The files on Home and on the lists of files. Home shows the recent files from every place, led
+ * by the last one opened, with the sample file. A list shows one place in full: the files opened
+ * from this computer, the storage workspace the team shares, or the signed-in Kalka server.
  */
+const { place } = defineProps<{ place: 'home' | 'files' }>()
+
 const { panels, locale, storage, files, common, settings, collaboration } = useI18n()
 const { isMobile } = useViewportKind()
 const view = useLocalStorage<'grid' | 'list'>('kalka:home-files-view', 'grid')
 const query = ref('')
 const openError = ref<string | null>(null)
 const storageConfigured = ref(storagePreferencesComplete(activeStorageProviderID.value))
-const inStorage = computed(() => homeFilesTab.value === 'storage')
-const inServer = computed(() => homeFilesTab.value === 'server')
+const inStorage = computed(() => place === 'files' && homeFilesTab.value === 'storage')
+const inServer = computed(() => place === 'files' && homeFilesTab.value === 'server')
 const serverList = useTemplateRef<{ refresh: () => Promise<void> }>('serverList')
-const inRecent = computed(() => !inStorage.value && !inServer.value)
 
 const workspace = useDocumentWorkspace<RecentDocument>({
   source: {
     async refresh() {
-      return recentFiles.value
+      if (place === 'home') return recentFiles.value
+      return recentFiles.value.filter((document) => document.kind === 'local')
     },
     loadPreview(documentId) {
       const document = recentFiles.value.find((candidate) => candidate.id === documentId)
       if (!document) return Promise.resolve(null)
       if (document.kind === 'local') return loadRecentFileThumbnail(document.path)
+      if (document.kind === 'server') return Promise.resolve(null)
       return createStorageWorkspaceSource(() => undefined).loadPreview(document.documentId)
     }
   },
@@ -120,6 +125,13 @@ const filteredStorageDocuments = computed(() => {
     document.name.toLocaleLowerCase(locale.value).includes(normalizedQuery.value)
   )
 })
+/** Recent on Home; on a list, the place it shows. */
+const heading = computed(() => {
+  if (place === 'home') return files.value.recentTab
+  if (inStorage.value) return storage.value.tab
+  if (inServer.value) return serverAccount.value?.serverName ?? collaboration.value.serverTab
+  return files.value.localFiles
+})
 const hasRecentFiles = computed(() => documents.value.length > 0)
 const noSearchMatches = computed(
   () =>
@@ -140,6 +152,10 @@ async function openRecent(document: RecentDocument): Promise<void> {
   try {
     if (document.kind === 'local') {
       await openFileFromPath(document.path)
+      return
+    }
+    if (document.kind === 'server') {
+      openServerDocumentById(document.documentId, document.name, document.serverURL)
       return
     }
     const storageDocument = storageDocuments.value.find(
@@ -177,44 +193,10 @@ function formattedDate(updatedAt: string): string {
 <template>
   <section id="home-files" class="flex scroll-mt-14 flex-col gap-5">
     <div class="flex flex-wrap items-center gap-x-2.5 gap-y-3">
-      <div role="tablist" class="flex min-w-0 flex-1 items-baseline gap-[22px]">
-        <button
-          id="home-tab-recent"
-          type="button"
-          role="tab"
-          aria-controls="home-files-panel"
-          :aria-selected="inRecent"
-          :class="filesTab({ selected: inRecent })"
-          data-test-id="home-tab-recent"
-          @click="homeFilesTab = 'recent'"
-        >
-          {{ files.recentTab }}
-        </button>
-        <button
-          id="home-tab-storage"
-          type="button"
-          role="tab"
-          aria-controls="home-files-panel"
-          :aria-selected="inStorage"
-          :class="filesTab({ selected: inStorage })"
-          data-test-id="home-tab-storage"
-          @click="homeFilesTab = 'storage'"
-        >
-          {{ storage.tab }}
-        </button>
-        <button
-          v-if="serverAccount || inServer"
-          id="home-tab-server"
-          type="button"
-          role="tab"
-          aria-controls="home-files-panel"
-          :aria-selected="inServer"
-          :class="filesTab({ selected: inServer })"
-          data-test-id="home-tab-server"
-          @click="homeFilesTab = 'server'"
-        >
-          {{ serverAccount?.serverName ?? collaboration.serverTab }}
-        </button>
+      <div class="flex min-w-0 flex-1 items-baseline gap-[22px]">
+        <h2 id="home-files-heading" :class="filesHeading" data-test-id="home-files-heading">
+          {{ heading }}
+        </h2>
         <span v-if="inStorage && storageConfigured" :class="storageChip">
           <span class="size-[7px] shrink-0 rounded-full bg-success" aria-hidden="true" />
           <span class="truncate">{{ storagePlace.label }}</span>
@@ -284,14 +266,7 @@ function formattedDate(updatedAt: string): string {
       </div>
     </div>
 
-    <div
-      id="home-files-panel"
-      role="tabpanel"
-      :aria-labelledby="
-        inStorage ? 'home-tab-storage' : inServer ? 'home-tab-server' : 'home-tab-recent'
-      "
-      class="flex flex-col gap-3"
-    >
+    <div id="home-files-panel" aria-labelledby="home-files-heading" class="flex flex-col gap-3">
       <AppAlert v-if="openError" tone="error" :heading="openError" />
       <p
         v-if="noSearchMatches"

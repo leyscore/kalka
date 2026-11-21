@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+
 import { useI18n } from '@kalka/vue'
 
 import { useCollabIdentity } from '@/app/collab/identity'
-import BrandMark from '@/components/brand/BrandMark.vue'
+import { filesListFromPath } from '@/app/home/files-route'
 import HomeFiles from '@/components/home/files/HomeFiles.vue'
 import HomePrompt from '@/components/home/prompt/HomePrompt.vue'
 import HomeStart from '@/components/home/start/HomeStart.vue'
@@ -13,10 +16,13 @@ import { homeHero } from '@/theme/home/start'
 /**
  * Home, in the app's shell: the sidebar with the places, documentation and account; beside it, on
  * the sky, the greeting, the request to the agent, the sizes to start from and the ways to bring a
- * file in; then the recent and stored files on a frosted panel.
+ * file in; then the recent files from every place on a frosted panel. At a list's address
+ * (`/files/<list>`) the page is that list in full instead.
  */
 const { files, welcome } = useI18n()
 const identity = useCollabIdentity()
+const route = useRoute()
+const onList = computed(() => filesListFromPath(route.path) !== null)
 </script>
 
 <template>
@@ -28,8 +34,7 @@ const identity = useCollabIdentity()
       class="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto px-[max(0.75rem,env(safe-area-inset-left))] pb-3 md:px-0 md:pb-0"
       data-test-id="recent-files-home"
     >
-      <section id="home-top" :class="homeHero.root">
-        <BrandMark variant="app-icon" decorative :class="homeHero.mark" />
+      <section v-if="!onList" id="home-top" :class="homeHero.root">
         <h1 :class="homeHero.title">
           {{
             identity.hasChosenName.value
@@ -41,8 +46,8 @@ const identity = useCollabIdentity()
         <HomeStart />
       </section>
 
-      <div :class="homeHero.files">
-        <HomeFiles />
+      <div :class="homeHero.files({ list: onList })">
+        <HomeFiles :key="onList ? 'files' : 'home'" :place="onList ? 'files' : 'home'" />
       </div>
     </main>
   </ShellFrame>

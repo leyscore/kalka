@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import IconRecent from '~icons/hugeicons/clock-01'
 import IconCloud from '~icons/hugeicons/cloud'
+import IconComputer from '~icons/hugeicons/computer'
 import IconHome from '~icons/hugeicons/home-01'
 import IconServer from '~icons/hugeicons/server-stack-01'
 
@@ -38,7 +38,7 @@ const workspace = computed(() => {
 
 const groups = computed<ShellSidebarGroup[]>(() => {
   const lists: ShellSidebarItem[] = [
-    { id: 'recent', label: files.value.recentTab, icon: IconRecent },
+    { id: 'recent', label: files.value.localFiles, icon: IconComputer },
     { id: 'storage', label: storage.value.tab, icon: IconCloud }
   ]
   const account = serverAccount.value
@@ -72,10 +72,11 @@ const account = computed(() => {
 
 function select(id: string): void {
   if (id === 'home') {
-    void router.push('/')
+    void router.push({ path: '/', query: route.query })
     return
   }
-  if (id === 'recent' || id === 'storage' || id === 'server') void router.push(filesPath(id))
+  if (id === 'recent' || id === 'storage' || id === 'server')
+    void router.push({ path: filesPath(id), query: route.query })
 }
 
 function openDocs(): void {
