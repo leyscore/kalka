@@ -16,6 +16,7 @@ import { openExternalLink } from '@/app/shell/ui'
 import BrandMark from '@/components/brand/BrandMark.vue'
 import ShellSidebar from '@/components/shell/ShellSidebar.vue'
 import {
+  avatarColors,
   initialsOf,
   type ShellSidebarGroup,
   type ShellSidebarItem
@@ -59,9 +60,15 @@ const selected = computed(() => {
 })
 
 const account = computed(() => {
-  const name = identity.hasChosenName.value ? identity.name.value : serverAccount.value?.user.name
-  if (!name) return { name: files.value.accountAndSettings, initials: 'K' }
-  return { name, detail: files.value.accountAndSettings, initials: initialsOf(name) }
+  const name = identity.hasChosenName.value
+    ? identity.name.value
+    : (serverAccount.value?.user.name ?? identity.guestName)
+  return {
+    name,
+    detail: files.value.accountAndSettings,
+    initials: initialsOf(name),
+    colors: avatarColors(identity.color)
+  }
 })
 
 function select(id: string): void {

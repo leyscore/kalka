@@ -54,6 +54,8 @@
   "joinRoomEllipsis": "加入房间…",
   "joinRoomDescription": "粘贴房间链接或 ID，打开别人与你共享的文件。",
   "nameSettingTitle": "你的名字",
+  "namePreview": "团队看到的你",
+  "serverConnected": "已连接",
   "nameSettingDescription": "在共享房间中，其他人会在你的光标旁看到此名字。",
   "serverTab": "服务器",
   "serverSettingsTitle": "Kalka 服务器",

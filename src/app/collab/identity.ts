@@ -25,5 +25,5 @@ export const useCollabIdentity = createGlobalState(() => {
     storedName.value = next.trim()
   }
 
-  return { name, color, hasChosenName, setName }
+  return { name, guestName, color, hasChosenName, setName }
 })

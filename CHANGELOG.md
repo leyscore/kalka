@@ -9,7 +9,7 @@
 ### Changed
 
 - Home has a sidebar: your workspace (this computer, or the Kalka server or Cloud workspace you are signed in to), Home, the places your files live, the documentation, and your account leading to Settings. On a phone it opens from a menu button. Home itself shows your recent files from every place, server files included; each place in the sidebar (Local files, Cloud storage, your server) lists its files in full at its own address.
-- Settings opens in the same frame: the sidebar holds Back, you, and the sections grouped as Account (your name and the server or Cloud you're signed in to, then Preferences), Workspace, AI and Advanced; each section opens with a sentence on what it is for, its content in a column centered on a panel beside the sidebar. On a phone the sections open from the menu button and a close button leaves Settings.
+- Settings opens in the same frame: the sidebar holds Back, you, and the sections grouped as Account (your avatar and name with a live preview of your cursor as teammates see it, the server or Cloud you're signed in to, then Preferences), Workspace, AI and Advanced; each section opens with a sentence on what it is for, its content in a column centered on a panel beside the sidebar. On a phone the sections open from the menu button and a close button leaves Settings.
 
 ## 0.2.0-beta.5 — 2026-11-21
 

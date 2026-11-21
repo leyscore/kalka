@@ -60,6 +60,8 @@ export const collaborationMessageDefaults = {
   joinRoomEllipsis: 'Join room…',
   joinRoomDescription: 'Paste a room link or ID to open a file someone shared with you.',
   nameSettingTitle: 'Your name',
+  namePreview: 'How teammates see you',
+  serverConnected: 'Connected',
   nameSettingDescription: 'Others see this name next to your cursor in shared rooms.',
   serverTab: 'Server',
   serverSettingsTitle: 'Kalka server',

@@ -54,6 +54,8 @@
   "joinRoomEllipsis": "Войти в комнату…",
   "joinRoomDescription": "Вставьте ссылку или ID комнаты, чтобы открыть файл, которым с вами поделились.",
   "nameSettingTitle": "Ваше имя",
+  "namePreview": "Как вас видит команда",
+  "serverConnected": "Подключено",
   "nameSettingDescription": "Другие видят это имя рядом с вашим курсором в общих комнатах.",
   "serverTab": "Сервер",
   "serverSettingsTitle": "Сервер Kalka",
