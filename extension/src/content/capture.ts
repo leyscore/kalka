@@ -2,6 +2,7 @@
 // carries the styles the browser computed for it, URLs made absolute, pseudo-elements turned
 // into real elements and the fonts it uses declared. Kalka pastes that HTML as editable layers;
 // any other editor reads it as plain HTML and CSS.
+import type { Shots } from './shots'
 
 /** How the styles are written: inline on each element (Kalka) or as classes in a stylesheet. */
 export type CaptureFormat = 'kalka' | 'html'
@@ -79,6 +80,11 @@ const PROPERTIES = [
   'filter',
   'backdrop-filter',
   'mix-blend-mode',
+  'clip-path',
+  'mask-image',
+  'mask-size',
+  'mask-position',
+  'mask-repeat',
   'object-fit',
   'object-position',
   'font-family',
@@ -319,6 +325,8 @@ interface Walk {
   /** Elements to keep even where the page does not show them, hidden: see `captureElement`. */
   keep: ReadonlySet<Element>
   defaults: BrowserDefaults
+  /** Pictures of canvases that keep their pixels to themselves, such as WebGL ones. */
+  canvases: ReadonlyMap<Element, string>
 }
 
 /** How an element the page hides at this width is written: hidden, taking no room. */
@@ -379,7 +387,7 @@ function copyReplaced(
   if (!(source instanceof HTMLCanvasElement)) return null
   try {
     const image = document.createElement('img')
-    image.src = source.toDataURL('image/png')
+    image.src = walk.canvases.get(source) ?? source.toDataURL('image/png')
     applyStyle(image, declarations(style, parent, 'img', walk.defaults), walk)
     walk.layers++
     walk.images++
@@ -633,19 +641,28 @@ function pageBackground(element: Element): string {
   return '#FFFFFF'
 }
 
-/**
- * Copies an element. `keep` lists elements to write even where the page hides them, as hidden
- * layers, so copies made at several widths have the same elements in the same order.
- */
+/** What a copy can take besides the markup. */
+export interface CaptureOptions {
+  /**
+   * Elements to write even where the page hides them, as hidden layers, so copies made at
+   * several widths have the same elements in the same order.
+   */
+  keep?: ReadonlySet<Element>
+  /** What the screen showed: the backdrop behind the element and its unreadable canvases. */
+  shots?: Shots
+}
+
+/** Copies an element as standalone HTML. */
 export function captureElement(
   element: Element,
   format: CaptureFormat,
-  keep: ReadonlySet<Element> = new Set()
+  { keep = new Set(), shots }: CaptureOptions = {}
 ): Capture {
   const defaults = new BrowserDefaults()
   const walk: Walk = {
     keep,
     defaults,
+    canvases: shots?.canvases ?? new Map(),
     layers: 0,
     images: 0,
     replaced: 0,
@@ -664,6 +681,16 @@ export function captureElement(
     const behind = shownBackground(background, pageBackground(element))
     const extra = ['box-sizing: border-box', `width: ${Math.round(box.width)}px`, 'margin: 0']
     if (behind) extra.push(`background-color: ${behind}`)
+    // What the page drew behind it, from the screen, under the element's own background.
+    if (shots?.backdrop) {
+      const own = getComputedStyle(element).backgroundImage
+      const layers = [...(own && own !== 'none' ? [own] : []), `url("${shots.backdrop}")`]
+      extra.push(
+        `background-image: ${layers.join(', ')}`,
+        `background-size: ${layers.map((_, index) => (index === layers.length - 1 ? '100% 100%' : 'auto')).join(', ')}`
+      )
+      walk.images++
+    }
     if (format === 'kalka') {
       const own = copy.getAttribute('style')
       copy.setAttribute('style', [...(own ? [own] : []), ...extra].join('; '))

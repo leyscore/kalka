@@ -3,6 +3,7 @@
 // element is copied there. Every copy has the same elements in the same order, those the page
 // hides at a width written as hidden, so Kalka pairs the layers of each breakpoint by position.
 import { captureElement, type Capture } from './capture'
+import type { Shots } from './shots'
 
 /** The widths Kalka's Design panel offers as breakpoints. */
 export const BREAKPOINTS = [
@@ -53,13 +54,15 @@ function template(width: number, name: string, html: string): string {
 export async function captureAtWidths(
   element: Element,
   keys: readonly BreakpointKey[],
-  emulate: Emulate
+  emulate: Emulate,
+  shots?: Shots
 ): Promise<{ capture: Capture; widths: number[] }> {
   const own = window.innerWidth
   const breakpoints = BREAKPOINTS.filter(
     (breakpoint) => keys.includes(breakpoint.key) && breakpoint.width < own
   )
-  if (breakpoints.length === 0) return { capture: captureElement(element, 'kalka'), widths: [] }
+  if (breakpoints.length === 0)
+    return { capture: captureElement(element, 'kalka', { shots }), widths: [] }
   // Elements the page shows at any of the widths, so each copy holds them all.
   const keep = shown(element)
   const copies: string[] = []
@@ -72,13 +75,14 @@ export async function captureAtWidths(
     for (const { width, name } of breakpoints) {
       await emulate(width)
       await settle()
-      copies.push(template(width, name, captureElement(element, 'kalka', keep).html))
+      copies.push(template(width, name, captureElement(element, 'kalka', { keep }).html))
     }
   } finally {
     await emulate(null)
     await settle()
   }
-  const capture = captureElement(element, 'kalka', keep)
+  // The page's own width is the one the screen shows: only that copy takes its pictures.
+  const capture = captureElement(element, 'kalka', { keep, shots })
   return {
     capture: { ...capture, html: capture.html + copies.join('') },
     widths: breakpoints.map((breakpoint) => breakpoint.width)

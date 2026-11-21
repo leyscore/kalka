@@ -79,3 +79,27 @@ chrome.runtime.onMessage.addListener((message: unknown, sender, reply) => {
   // The reply is sent once the page is at its width.
   return true
 })
+
+/** A picture of the tab a page asks for, which a content script cannot take itself. */
+async function answerShoot(
+  windowId: number,
+  reply: (answer: { url?: string; error?: string }) => void
+): Promise<void> {
+  try {
+    reply({ url: await chrome.tabs.captureVisibleTab(windowId, { format: 'png' }) })
+  } catch (error) {
+    reply({ error: String(error) })
+  }
+}
+
+chrome.runtime.onMessage.addListener((message: unknown, sender, reply) => {
+  const isShoot =
+    typeof message === 'object' &&
+    message !== null &&
+    'type' in message &&
+    message.type === 'kalka-shoot'
+  const windowId = sender.tab?.windowId
+  if (!isShoot || windowId === undefined) return false
+  void answerShoot(windowId, reply)
+  return true
+})

@@ -12,6 +12,7 @@ import {
 import { captureElement, type Capture, type CaptureFormat } from './capture'
 import { describe, elementLabel } from './describe'
 import { inlineFonts } from './fonts'
+import { takeShots, type Shoot, type Shots } from './shots'
 import { STYLES } from './styles'
 
 const KALKA_BLUE = '#2F5BEA'
@@ -122,6 +123,8 @@ export class Inspector {
       /** Shows the page at another width; without it, copies are made at the page's own. */
       emulate?: Emulate
       save?: (keys: BreakpointKey[]) => void
+      /** Takes a picture of the tab, for what the markup cannot say. */
+      shoot?: Shoot
     } = {}
   ) {
     this.host.setAttribute('data-kalka-snapshot', '')
@@ -327,21 +330,34 @@ export class Inspector {
     this.menu.dataset.open = 'false'
   }
 
+  /** What the screen shows that the markup cannot say, taken with the inspector out of sight. */
+  private async shotsFor(element: Element): Promise<Shots | undefined> {
+    const shoot = this.widths.shoot
+    if (!shoot) return undefined
+    try {
+      return await takeShots(element, shoot, this.host)
+    } catch {
+      // Without pictures, the copy keeps the page's colors and the canvases it can read.
+      return undefined
+    }
+  }
+
   /** A copy at the page's width, and at the chosen breakpoints for Kalka when it can. */
   private async captureFor(
     element: Element,
     format: CaptureFormat
   ): Promise<{ capture: Capture; widths: number[] }> {
+    const shots = format === 'kalka' ? await this.shotsFor(element) : undefined
     const emulate = this.widths.emulate
     if (format !== 'kalka' || !emulate || this.breakpoints.length === 0)
-      return { capture: captureElement(element, format), widths: [] }
+      return { capture: captureElement(element, format, { shots }), widths: [] }
     // The inspector stays out of sight while the page is shown at other widths.
     this.host.style.visibility = 'hidden'
     try {
-      return await captureAtWidths(element, this.breakpoints, emulate)
+      return await captureAtWidths(element, this.breakpoints, emulate, shots)
     } catch {
       this.showToast('Other widths could not be shown; copying at this width only.', 0)
-      return { capture: captureElement(element, format), widths: [] }
+      return { capture: captureElement(element, format, { shots }), widths: [] }
     } finally {
       this.host.style.visibility = ''
       this.draw()

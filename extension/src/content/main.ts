@@ -3,6 +3,7 @@
 import type { BreakpointKey, Emulate } from './breakpoints'
 import type { CaptureFormat } from './capture'
 import { Inspector } from './overlay'
+import type { Shoot } from './shots'
 
 const FORMAT_KEY = 'copyFormat'
 const BREAKPOINTS_KEY = 'breakpoints'
@@ -43,6 +44,19 @@ const emulate: Emulate = async (width) => {
   if (!ok) throw new Error('The page could not be shown at another width.')
 }
 
+/** Asks the extension's worker for a picture of this tab, which only it can take. */
+const shoot: Shoot = async () => {
+  const reply: unknown = await chrome.runtime.sendMessage({ type: 'kalka-shoot' })
+  if (
+    typeof reply === 'object' &&
+    reply !== null &&
+    'url' in reply &&
+    typeof reply.url === 'string'
+  )
+    return reply.url
+  throw new Error('The tab could not be pictured.')
+}
+
 if (window.kalkaSnapshot) {
   window.kalkaSnapshot.stop()
 } else {
@@ -51,7 +65,7 @@ if (window.kalkaSnapshot) {
     () => {
       window.kalkaSnapshot = undefined
     },
-    { emulate, save: saveBreakpoints }
+    { emulate, save: saveBreakpoints, shoot }
   )
   window.kalkaSnapshot = inspector
   inspector.start()
