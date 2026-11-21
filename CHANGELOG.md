@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.2.0-beta.8 — 2026-11-21
+
 ### Changed
 
 - The editor's panels, bars and menus take a faint tint of Kalka's blue, cool grey in the light theme and night blue in the dark one. The canvas behind the artboards stays a neutral grey, so colors in a design look as they are.
