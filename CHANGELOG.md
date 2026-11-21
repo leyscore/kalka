@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.2.0-beta.5 — 2026-11-21
+
+### Breaking changes
+
+- The self-hosted Kalka server now lives in this repository, under `server/`, and its image is still `ghcr.io/leyscore/kalka-server`. A server run in Docker behind a reverse proxy needs `KALKA_TRUSTED_PROXIES` set to the number of proxies in front of it (`1` for a single Caddy, Traefik or nginx, `2` with Cloudflare in front): without it the server no longer trusts `X-Forwarded-For`, so behind a proxy on a private network the rate limits on sign-in, setup, registration and password reset count every client together.
+- A self-hosted server with single sign-on in Docker needs `KALKA_LICENSE_KEY` passed to the container at run time as well as to the build, since the image no longer contains the key; a server deployed from your own machine with `npm run deploy` needs it as a Worker secret.
+- On a self-hosted server, single sign-on no longer links to an existing password account or administrator with the same email unless the identity provider created that account through provisioning or `KALKA_OIDC_LINK_LOCAL_ACCOUNTS=true` is set, and a linked account takes its role from the provider. An invitation created for an email address registers only that address, and making a viewer an editor or administrator needs a free seat.
+
 ### Added
 
 - The user documentation is one click away: a Documentation button on Home and in the editor's left rail, and View › Documentation, open kalka.design/docs in the app's language.
