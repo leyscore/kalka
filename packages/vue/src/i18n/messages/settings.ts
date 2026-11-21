@@ -11,6 +11,8 @@ export const settingsMessageDefaults = {
   title: 'Settings',
   description: 'Manage integrations and app preferences.',
   general: 'General',
+  groupApp: 'App',
+  groupAI: 'AI',
   languageDescription: 'Choose the language used by the app interface.',
   editing: 'Editing',
   snappingDescription: 'Control alignment while editing paths, moving, and resizing layers.',

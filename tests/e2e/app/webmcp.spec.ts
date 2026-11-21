@@ -55,7 +55,7 @@ test('native WebMCP discovery, editing, validation and undo', async ({ page, bro
     await expect(access).toHaveText('Off')
     await access.click()
     await page.getByRole('option', { name: 'Edit', exact: true }).click()
-    await page.getByTestId('app-settings-done').click()
+    await page.getByTestId('app-settings-back').click()
     await expect.poll(() => frames.has('update_node')).toBe(true)
     expect(frames.has('eval')).toBe(false)
     expect(frames.has('save_file')).toBe(false)

@@ -31,6 +31,12 @@ export default {
         content:
           'top-2 left-2 h-[calc(100dvh-1rem)] max-h-[calc(100dvh-1rem)] w-[min(284px,84vw)] translate-x-0 translate-y-0 rounded-[18px] bg-panel data-[state=closed]:zoom-out-100 data-[state=open]:zoom-in-100'
       },
+      /** The whole window in the app's shell, the sky and sidebar drawn by the page, as Settings. */
+      shell: {
+        overlay: 'bg-canvas',
+        content:
+          'top-0 left-0 h-dvh max-h-dvh w-screen translate-x-0 translate-y-0 rounded-none bg-transparent shadow-none backdrop-blur-none data-[state=closed]:zoom-out-100 data-[state=open]:zoom-in-100'
+      },
       /** The whole window, as a page of its own with an address, such as Settings. */
       page: {
         overlay: 'bg-canvas',
