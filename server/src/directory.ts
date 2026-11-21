@@ -5,6 +5,7 @@ import type { EnterpriseHost } from './ee/types'
 import { enterpriseHost, serverUrl } from './enterprise'
 import { hashPassword, hashToken, randomId, randomToken, verifyPassword } from './crypto'
 import { withStoredSettings, type DocumentInfo, type Env, type Role, type User } from './env'
+import { roomName } from './names'
 
 const DAY = 24 * 60 * 60 * 1000
 const SESSION_MS = 30 * DAY
@@ -478,7 +479,7 @@ export class Directory extends DurableObject<Env> {
     return this.all<UserRow>('SELECT * FROM users ORDER BY created_at').map(toUser)
   }
 
-  updateUser(id: string, change: { role?: Role; disabled?: boolean }): Result<User> {
+  async updateUser(id: string, change: { role?: Role; disabled?: boolean }): Promise<Result<User>> {
     const row = this.userById(id)
     if (!row) return failure(404, 'No such user.')
     const losesAdmin =
@@ -493,7 +494,27 @@ export class Directory extends DurableObject<Env> {
     }
     const updated = this.userById(id)
     if (!updated) return failure(404, 'No such user.')
+    if (updated.disabled) await this.revokeInRooms(id, null)
+    else if (updated.role !== row.role) await this.revokeInRooms(id, updated.role)
     return toUser(updated)
+  }
+
+  /**
+   * Tells every room open now that someone lost access (`role` null) or has a new role, so the
+   * sockets they already have stop carrying their edits.
+   */
+  private async revokeInRooms(userId: string, role: Role | null): Promise<void> {
+    const tenant = this.getFlag('tenant') || undefined
+    const live = this.all<{ id: string }>('SELECT id FROM documents WHERE live > 0 AND deleted_at IS NULL')
+    await Promise.all(
+      live.map(async ({ id }) => {
+        try {
+          await this.env.ROOMS.get(this.env.ROOMS.idFromName(roomName(tenant, id))).revokeUser(userId, role)
+        } catch (error) {
+          console.error('[kalka] Could not close a room socket', error)
+        }
+      })
+    )
   }
 
   listDocuments(): DocumentInfo[] {
@@ -752,7 +773,7 @@ export class Directory extends DurableObject<Env> {
    * Finds or creates the account for someone the identity provider vouched for. A new account
    * is refused when `seatsLeft` is 0; an existing one keeps working.
    */
-  ssoSignIn(input: {
+  async ssoSignIn(input: {
     subject: string
     email: string
     emailVerified: boolean
@@ -760,7 +781,7 @@ export class Directory extends DurableObject<Env> {
     role: Role | null
     defaultRole: Role
     seatsLeft: number
-  }): Result<User> {
+  }): Promise<Result<User>> {
     const now = Date.now()
     let row = this.one<UserRow>('SELECT * FROM users WHERE subject = ?', input.subject)
     // Accounts the identity provider provisioned are its own: they link by email.
@@ -800,6 +821,7 @@ export class Directory extends DurableObject<Env> {
     } else if (input.role && input.role !== row.role) {
       // Group membership in the identity provider decides the role at every sign-in.
       this.sql.exec('UPDATE users SET role = ? WHERE id = ?', input.role, row.id)
+      await this.revokeInRooms(row.id, input.role)
     }
     if (row.disabled) return failure(403, 'This account is disabled.')
     this.sql.exec('UPDATE users SET last_seen = ? WHERE id = ?', now, row.id)
@@ -882,8 +904,10 @@ export class Directory extends DurableObject<Env> {
     const row = userId ? this.userById(userId) : undefined
     if (!row || row.disabled) return failure(400, 'This link is invalid or has expired.')
     this.sql.exec('UPDATE users SET password = ? WHERE id = ?', await hashPassword(password), row.id)
-    // Everyone signed in with the old password is signed out.
+    // Everyone signed in with the old password is signed out, and the app passwords made
+    // with it stop working: whoever made them may be why the password was reset.
     this.sql.exec('DELETE FROM sessions WHERE user_id = ?', row.id)
+    this.sql.exec('DELETE FROM app_passwords WHERE user_id = ?', row.id)
     return { token: await this.newSession(row.id), user: toUser(row) }
   }
 
@@ -896,6 +920,7 @@ export class Directory extends DurableObject<Env> {
     if (password.length > 1024) return failure(400, 'That password is too long.')
     this.sql.exec('UPDATE users SET password = ? WHERE id = ?', await hashPassword(password), userId)
     this.sql.exec('DELETE FROM sessions WHERE user_id = ?', userId)
+    this.sql.exec('DELETE FROM app_passwords WHERE user_id = ?', userId)
     return { token: await this.newSession(userId) }
   }
 
@@ -907,7 +932,7 @@ export class Directory extends DurableObject<Env> {
   }
 
   /** Deletes an account and its sessions; the documents it made stay with the team. */
-  deleteUser(id: string): Result<{ deleted: true }> {
+  async deleteUser(id: string): Promise<Result<{ deleted: true }>> {
     const row = this.userById(id)
     if (!row) return failure(404, 'No such user.')
     if (row.role === 'admin' && !this.hasOtherActiveAdmin(id)) {
@@ -916,6 +941,7 @@ export class Directory extends DurableObject<Env> {
     this.sql.exec('DELETE FROM sessions WHERE user_id = ?', id)
     this.sql.exec('DELETE FROM app_passwords WHERE user_id = ?', id)
     this.sql.exec('DELETE FROM users WHERE id = ?', id)
+    await this.revokeInRooms(id, null)
     return { deleted: true }
   }
 }

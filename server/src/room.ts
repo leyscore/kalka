@@ -28,6 +28,10 @@ const COMPACT_AFTER_BYTES = 8 * 1024 * 1024
 const COMPACT_RETRY_MS = 60_000
 const TOUCH_EVERY_MS = 60_000
 
+/** Close codes: the person may no longer open the room, or must reopen it with a new role. */
+export const CLOSE_REVOKED = 4401
+export const CLOSE_ROLE_CHANGED = 4403
+
 /** `srv-load` items: the parts of the deflated snapshot, then log updates, then done. */
 export const LOAD_SNAPSHOT_PART = 1
 export const LOAD_UPDATE = 2
@@ -341,6 +345,22 @@ export class DocumentRoom extends DurableObject<Env> {
     if (!current || (version !== undefined && version !== current)) return false
     this.sql.exec('DELETE FROM pending')
     return true
+  }
+
+  /**
+   * Someone lost access, or their role changed: their sockets close now, so nothing they send
+   * afterwards is relayed or stored. With a new role they reconnect and take it from a new ticket.
+   */
+  revokeUser(userId: string, role: Role | null): void {
+    for (const { ws, info } of this.sockets()) {
+      if (info.userId !== userId || info.role === role) continue
+      this.leave(ws)
+      try {
+        ws.close(role ? CLOSE_ROLE_CHANGED : CLOSE_REVOKED, role ? 'Role changed' : 'Access revoked')
+      } catch {
+        // Already closed.
+      }
+    }
   }
 
   /** Closes every connection and erases the document. */

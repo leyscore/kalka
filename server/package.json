@@ -12,7 +12,8 @@
     "bundle": "npm run gen && wrangler deploy --dry-run --outdir dist && node scripts/workerd-config.mjs",
     "workerd": "npm run bundle && node scripts/run-workerd.mjs",
     "typecheck": "npm run gen && tsc --noEmit",
-    "test": "node test/e2e.mjs && node test/dav.mjs && node test/people.mjs",
+    "test": "node test/e2e.mjs && node test/dav.mjs && node test/people.mjs && node test/access.mjs",
+    "test:proxy": "node test/proxy.mjs",
     "gen": "node scripts/embed-console.mjs && node scripts/fetch-ee.mjs"
   },
   "dependencies": {
