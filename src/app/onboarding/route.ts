@@ -1,9 +1,19 @@
 import { watch, type WatchStopHandle } from 'vue'
 import type { Router } from 'vue-router'
 
-import { closeWelcome, openWelcome, welcomeOpen } from './welcome'
+import { closeWelcome, openWelcome, setWelcomeAside as setAside, welcomeOpen } from './welcome'
 
 export const WELCOME_PATH = '/welcome'
+
+/** Whether a path is the welcome's, with or without a trailing slash. */
+export function isWelcomePath(path: string): boolean {
+  return path.replace(/\/+$/, '') === WELCOME_PATH
+}
+
+/** Settings opened over the welcome, as a server link does: the welcome waits, it is not done. */
+function isSettingsPath(path: string): boolean {
+  return /^\/settings(\/|$)/.test(path)
+}
 
 /**
  * The welcome has an address: opening it pushes `/welcome` and leaving it goes back to where it
@@ -13,7 +23,7 @@ export function syncWelcomeRoute(router: Router): WatchStopHandle {
   let pushed = false
   const stopState = watch(welcomeOpen, (open) => {
     const route = router.currentRoute.value
-    const onWelcome = route.path === WELCOME_PATH
+    const onWelcome = isWelcomePath(route.path)
     if (open && !onWelcome) {
       pushed = true
       void router.push({ path: WELCOME_PATH, query: route.query })
@@ -26,11 +36,12 @@ export function syncWelcomeRoute(router: Router): WatchStopHandle {
   const stopRoute = watch(
     () => router.currentRoute.value.path,
     (path) => {
-      if (path === WELCOME_PATH) {
+      if (isWelcomePath(path)) {
         if (!welcomeOpen.value) openWelcome()
       } else if (welcomeOpen.value) {
         pushed = false
-        closeWelcome()
+        if (isSettingsPath(path)) setAside()
+        else closeWelcome()
       }
     },
     { immediate: true }

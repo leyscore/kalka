@@ -9,7 +9,7 @@ export const welcomeScreen = tv({
   slots: {
     root: 'fixed inset-0 z-[45] isolate flex overflow-y-auto text-white outline-none animate-in fade-in duration-300',
     column:
-      'mx-auto flex min-h-dvh w-full flex-col justify-center px-6 py-10 animate-in fade-in slide-in-from-bottom-2 duration-300 sm:px-12',
+      'mx-auto flex min-h-dvh w-full flex-col justify-start px-6 pt-16 pb-10 animate-in fade-in slide-in-from-bottom-2 duration-300 sm:px-12 sm:pt-[12vh] [&_h2]:outline-none',
     mark: 'size-14 overflow-hidden rounded-[14px] shadow-[0_12px_40px_-12px_color-mix(in_srgb,var(--color-accent)_70%,transparent)]',
     title:
       'font-display text-[clamp(36px,4.4vw,60px)] leading-[1.02] font-semibold tracking-[-0.045em] text-balance text-white',
@@ -29,7 +29,7 @@ export const welcomeScreen = tv({
     buttons: 'flex w-full flex-wrap gap-2.5',
     primary: 'h-12 flex-1 gap-2 rounded-[14px] px-5 text-sm font-semibold whitespace-nowrap',
     secondary: 'h-12 gap-2 rounded-[14px] px-5 text-sm font-semibold whitespace-nowrap',
-    skip: 'absolute top-5 right-6 z-10 text-white hover:text-white/80',
+    skip: 'absolute top-4 right-4 z-10 text-white hover:text-white/80 sm:top-5 sm:right-6',
     footer: 'flex items-center gap-3',
     // The questions after the name: a step count, choices as chips or cards, and the way on.
     progress: 'flex items-center gap-1.5',
@@ -44,13 +44,13 @@ export const welcomeScreen = tv({
     choiceTitle: 'text-[13px] font-semibold text-surface',
     choiceHint: 'text-xs text-muted',
     fields: 'grid w-full grid-cols-1 gap-3 sm:grid-cols-2',
-    nav: 'flex w-full items-center gap-2 pt-1'
+    nav: 'flex w-full flex-wrap items-center gap-2 pt-1'
   },
   variants: {
     step: {
       start: {
         column:
-          'max-w-[540px] items-center gap-5 text-center [&_h2]:mt-2 [&_h2]:mb-9 sm:[&_h2]:whitespace-nowrap',
+          'max-w-[540px] items-center gap-5 text-center [&_h2]:mt-2 [&_h2]:mb-4 sm:[&_h2]:whitespace-nowrap',
         intro: '-mt-1 mb-4'
       },
       claude: { column: 'max-w-[1180px] gap-5', footer: '[&_a]:text-white [&_button]:text-white' }
