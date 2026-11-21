@@ -44,14 +44,8 @@ const ui = shellSidebar()
     </button>
 
     <div :class="ui.workspace()">
-      <span
-        :class="ui.avatar()"
-        :style="
-          profile.colors && { backgroundColor: profile.colors.fill, color: profile.colors.ink }
-        "
-        aria-hidden="true"
-        >{{ profile.initials }}</span
-      >
+      <img v-if="profile.image" :src="profile.image" alt="" :class="ui.avatar({ image: true })" />
+      <span v-else :class="ui.avatar()" aria-hidden="true">{{ profile.initials }}</span>
       <span :class="ui.workspaceText()">
         <span :class="ui.workspaceName()">{{ profile.name }}</span>
         <span v-if="profile.detail" :class="ui.workspaceDetail()">{{ profile.detail }}</span>

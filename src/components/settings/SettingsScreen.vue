@@ -14,6 +14,7 @@ import IconUser from '~icons/hugeicons/user'
 
 import { useI18n } from '@kalka/vue'
 
+import { useAvatar } from '@/app/collab/avatar'
 import { useCollabIdentity } from '@/app/collab/identity'
 import { serverAccount } from '@/app/collab/server/account'
 import { provideSettingsNavigation } from '@/app/settings/navigation/use'
@@ -38,7 +39,7 @@ import StorageSettingsPanel from '@/components/settings/storage/StorageSettingsP
 import ToolAccessSettingsPanel from '@/components/settings/tool-access/ToolAccessSettingsPanel.vue'
 import UsageSettingsPanel from '@/components/settings/usage/UsageSettingsPanel.vue'
 import ShellFrame from '@/components/shell/ShellFrame.vue'
-import { avatarColors, initialsOf } from '@/components/shell/sidebar'
+import { initialsOf } from '@/components/shell/sidebar'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import {
   AppAlertDialogRoot,
@@ -56,6 +57,7 @@ import { settingsColumn, settingsShell } from '@/theme/settings/shell'
  */
 const { settings, common, files } = useI18n()
 const identity = useCollabIdentity()
+const avatar = useAvatar()
 const navigation = provideSettingsNavigation()
 tryOnScopeDispose(registerSettingsNavigation(navigation.request))
 const { editing, confirming } = navigation
@@ -117,7 +119,7 @@ const profile = computed(() => {
     ? identity.name.value
     : (account?.user.name ?? identity.guestName)
   const detail = account?.user.email ?? files.value.thisComputer
-  return { name, detail, initials: initialsOf(name), colors: avatarColors(identity.color) }
+  return { name, detail, initials: initialsOf(name), image: avatar.url.value }
 })
 
 function isSection(value: string): value is SettingsSection {
