@@ -1,2 +1,3 @@
-export { PIXEL_AVATAR_SIZE, pixelAvatarGrid, pixelAvatarURL } from './pixel'
+export { PIXEL_AVATAR_SIZE, pixelAvatarGrid, pixelAvatarURL, seedIndex } from './pixel'
 export { useAvatar } from './store'
+export { personPicture } from './person'

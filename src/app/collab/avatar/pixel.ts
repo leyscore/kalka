@@ -60,3 +60,8 @@ export function pixelAvatarURL(seed: string, color: string): string {
     `<g fill="${color}">${cells}</g></svg>`
   return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
+
+/** A stable index into `length` choices for a seed, such as a person's color from their id. */
+export function seedIndex(seed: string, length: number): number {
+  return hash(seed) % length
+}

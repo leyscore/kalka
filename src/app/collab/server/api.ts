@@ -82,7 +82,8 @@ interface RequestOptions<S extends v.GenericSchema> {
   schema: S
 }
 
-async function request<S extends v.GenericSchema>(
+/** One call to a Kalka server's API, its reply checked against `schema`. */
+export async function serverRequest<S extends v.GenericSchema>(
   base: string,
   path: string,
   { method = 'GET', token, body, raw, schema }: RequestOptions<S>
@@ -140,59 +141,59 @@ async function pendingVersion(
 }
 
 export const serverAPI = {
-  info: (base: string) => request(base, '/api/server', { schema: serverInfoSchema }),
+  info: (base: string) => serverRequest(base, '/api/server', { schema: serverInfoSchema }),
   signIn: (base: string, email: string, password: string) =>
-    request(base, '/api/auth/login', {
+    serverRequest(base, '/api/auth/login', {
       method: 'POST',
       body: { email, password },
       schema: sessionSchema
     }),
   /** With `verifier`, the PKCE verifier of the single sign-on that produced the code. */
   exchange: (base: string, code: string, verifier?: string) =>
-    request(base, '/api/auth/exchange', {
+    serverRequest(base, '/api/auth/exchange', {
       method: 'POST',
       body: verifier ? { code, verifier } : { code },
       schema: sessionSchema
     }),
   signOut: (base: string, token: string) =>
-    request(base, '/api/auth/logout', { method: 'POST', token, schema: v.unknown() }),
+    serverRequest(base, '/api/auth/logout', { method: 'POST', token, schema: v.unknown() }),
   me: (base: string, token: string) =>
-    request(base, '/api/me', { token, schema: serverUserSchema }),
+    serverRequest(base, '/api/me', { token, schema: serverUserSchema }),
   documents: (base: string, token: string) =>
-    request(base, '/api/documents', { token, schema: v.array(serverDocumentSchema) }),
+    serverRequest(base, '/api/documents', { token, schema: v.array(serverDocumentSchema) }),
   createDocument: (base: string, token: string, name: string) =>
-    request(base, '/api/documents', {
+    serverRequest(base, '/api/documents', {
       method: 'POST',
       token,
       body: { name },
       schema: serverDocumentSchema
     }),
   renameDocument: (base: string, token: string, id: string, name: string) =>
-    request(base, `/api/documents/${id}`, {
+    serverRequest(base, `/api/documents/${id}`, {
       method: 'PATCH',
       token,
       body: { name },
       schema: serverDocumentSchema
     }),
   ticket: (base: string, token: string, id: string) =>
-    request(base, `/api/documents/${id}/ticket`, {
+    serverRequest(base, `/api/documents/${id}/ticket`, {
       method: 'POST',
       token,
       body: {},
       schema: ticketSchema
     }),
   document: (base: string, token: string, id: string) =>
-    request(base, `/api/documents/${id}`, { token, schema: serverDocumentSchema }),
+    serverRequest(base, `/api/documents/${id}`, { token, schema: serverDocumentSchema }),
   pending: pendingVersion,
   /** Dismisses a waiting version; `dismissed` is false when another window took it first. */
   dismissPending: (base: string, token: string, id: string, version: string) =>
-    request(base, `/api/documents/${id}/pending?version=${encodeURIComponent(version)}`, {
+    serverRequest(base, `/api/documents/${id}/pending?version=${encodeURIComponent(version)}`, {
       method: 'DELETE',
       token,
       schema: v.object({ dismissed: v.boolean() })
     }),
   saveFile: (base: string, token: string, id: string, data: Uint8Array) =>
-    request(base, `/api/documents/${id}/file`, {
+    serverRequest(base, `/api/documents/${id}/file`, {
       method: 'PUT',
       token,
       raw: new Blob([new Uint8Array(data)]),

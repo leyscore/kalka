@@ -5,6 +5,8 @@ import IconCloud from '~icons/hugeicons/cloud'
 import IconComputer from '~icons/hugeicons/computer'
 import IconHome from '~icons/hugeicons/home-01'
 import IconServer from '~icons/hugeicons/server-stack-01'
+import IconSettings from '~icons/hugeicons/settings-01'
+import IconTeam from '~icons/hugeicons/user-group'
 
 import { useI18n } from '@kalka/vue'
 
@@ -14,6 +16,7 @@ import { serverAccount } from '@/app/collab/server/account'
 import { filesListFromPath, filesPath } from '@/app/home/files-route'
 import { openSettings } from '@/app/settings/open'
 import { openExternalLink } from '@/app/shell/ui'
+import { teamPageFromPath, teamPath } from '@/app/team/route'
 import BrandMark from '@/components/brand/BrandMark.vue'
 import ShellSidebar from '@/components/shell/ShellSidebar.vue'
 import {
@@ -29,7 +32,7 @@ import { shellSidebar } from '@/theme/shell/sidebar'
  * documentation and the account. Each place has an address, so the sidebar only follows and
  * writes the route.
  */
-const { files, storage, menu, locale } = useI18n()
+const { files, storage, menu, locale, collaboration } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const identity = useCollabIdentity()
@@ -49,14 +52,28 @@ const groups = computed<ShellSidebarGroup[]>(() => {
   ]
   const account = serverAccount.value
   if (account) lists.push({ id: 'server', label: account.serverName, icon: IconServer })
-  return [
+  const places: ShellSidebarGroup[] = [
     { id: 'main', items: [{ id: 'home', label: files.value.homePlace, icon: IconHome }] },
     { id: 'files', label: files.value.filesGroup, items: lists }
   ]
+  // The team's pages are an administrator's: the server lists people only to them.
+  if (account?.user.role === 'admin') {
+    places.push({
+      id: 'team',
+      label: collaboration.value.teamGroup,
+      items: [
+        { id: 'team:people', label: collaboration.value.teamPeople, icon: IconTeam },
+        { id: 'team:settings', label: collaboration.value.teamSettings, icon: IconSettings }
+      ]
+    })
+  }
+  return places
 })
 
 const selected = computed(() => {
   if (route.path === '/') return 'home'
+  const team = teamPageFromPath(route.path)
+  if (team) return `team:${team}`
   return filesListFromPath(route.path) ?? undefined
 })
 
@@ -73,6 +90,13 @@ const account = computed(() => {
 })
 
 function select(id: string): void {
+  if (id === 'team:people' || id === 'team:settings') {
+    void router.push({
+      path: teamPath(id === 'team:people' ? 'people' : 'settings'),
+      query: route.query
+    })
+    return
+  }
   if (id === 'home') {
     void router.push({ path: '/', query: route.query })
     return

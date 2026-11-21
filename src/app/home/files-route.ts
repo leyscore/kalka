@@ -2,6 +2,7 @@ import { watch, type WatchStopHandle } from 'vue'
 import type { Router } from 'vue-router'
 
 import { activeTab } from '@/app/tabs'
+import { teamPageFromPath } from '@/app/team/route'
 
 import { homeFilesRequest, homeFilesTab, type HomeFilesTab } from './files-tab'
 
@@ -47,7 +48,8 @@ export function syncFilesRoute(router: Router): WatchStopHandle {
     () => activeTab.value?.kind,
     (kind) => {
       const route = router.currentRoute.value
-      if (kind === 'home' || !filesListFromPath(route.path)) return
+      if (kind === 'home') return
+      if (!filesListFromPath(route.path) && !teamPageFromPath(route.path)) return
       void router.replace({ path: '/', query: route.query })
     }
   )
