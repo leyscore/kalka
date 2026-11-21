@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- File lists, the trash and the team pages fill the space beside the sidebar, as Settings does, instead of sitting in a centered panel.
+
 ## 0.2.0-beta.6 — 2026-11-21
 
 ### Added

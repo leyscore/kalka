@@ -10,10 +10,13 @@ export const homeHero = {
   title:
     'font-display text-[clamp(36px,5.4vw,64px)] leading-none font-semibold tracking-[-0.045em] text-balance',
   prompt: 'w-full max-w-[640px]',
-  /** The files on a frosted panel like the sidebar's: under the greeting, or the whole list page. */
+  /**
+   * The files on a frosted panel like the sidebar's: centered under the greeting on Home, or, on a
+   * list page, filling the space beside the sidebar as Settings does.
+   */
   files: tv({
     base: 'mx-auto flex w-full max-w-[1104px] flex-col rounded-[18px] bg-float px-4 pt-8 pb-12 text-surface shadow-[0_0_0_1px_var(--color-float-border),var(--float-shadow)] backdrop-blur-[28px] backdrop-saturate-150 sm:px-8 sm:pt-10',
-    variants: { list: { true: 'mt-3 min-h-full md:mt-0' } }
+    variants: { list: { true: 'mx-0 mt-3 max-w-none flex-1 md:mt-0' } }
   })
 } as const
 
