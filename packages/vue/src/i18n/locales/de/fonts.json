@@ -69,5 +69,6 @@
   "missingFontsAdded": "Die Schriften werden mit dem Dokument gespeichert.",
   "replaceFontWith": "{family} ersetzen durch",
   "fontReplaced": "{from} durch {to} ersetzt.",
-  "dismiss": "Später"
+  "dismiss": "Später",
+  "replaceFont": "Ersetzen…"
 }

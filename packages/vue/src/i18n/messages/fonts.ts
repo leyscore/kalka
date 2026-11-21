@@ -79,6 +79,7 @@ export const fontsMessageDefaults = {
   addMissingFonts: 'Add fonts',
   addingFonts: 'Adding fonts…',
   missingFontsAdded: 'The fonts are saved with the document.',
+  replaceFont: 'Replace…',
   replaceFontWith: params('Replace {family} with'),
   fontReplaced: params('{from} replaced with {to}.'),
   dismiss: 'Not now'

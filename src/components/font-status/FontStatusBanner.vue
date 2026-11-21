@@ -103,13 +103,22 @@ function replace(from: string, to: string) {
               : fonts.affectedLayerCount({ count: issue.nodeIds.length })
           }}
         </span>
-        <div v-if="unavailable.has(issue.family)" class="w-36 shrink-0">
-          <FontPicker
-            :model-value="issue.family"
-            :label="fonts.replaceFontWith({ family: issue.family })"
-            @select="replace(issue.family, $event)"
-          />
-        </div>
+        <FontPicker
+          v-if="unavailable.has(issue.family)"
+          :model-value="issue.family"
+          :label="fonts.replaceFontWith({ family: issue.family })"
+          @select="replace(issue.family, $event)"
+        >
+          <template #trigger="{ label }">
+            <button
+              type="button"
+              :aria-label="label"
+              class="shrink-0 rounded-md px-1.5 py-0.5 font-medium text-warning-action transition-colors hover:bg-amber-500/20"
+            >
+              {{ fonts.replaceFont }}
+            </button>
+          </template>
+        </FontPicker>
       </div>
     </div>
   </div>

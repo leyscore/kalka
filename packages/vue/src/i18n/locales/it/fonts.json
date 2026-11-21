@@ -69,5 +69,6 @@
   "missingFontsAdded": "I font sono salvati con il documento.",
   "replaceFontWith": "Sostituisci {family} con",
   "fontReplaced": "{from} sostituito con {to}.",
-  "dismiss": "Non ora"
+  "dismiss": "Non ora",
+  "replaceFont": "Sostituisci…"
 }

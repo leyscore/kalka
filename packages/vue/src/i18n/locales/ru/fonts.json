@@ -69,5 +69,6 @@
   "missingFontsAdded": "Шрифты сохранены с документом.",
   "replaceFontWith": "Заменить {family} на",
   "fontReplaced": "{from} заменён на {to}.",
-  "dismiss": "Не сейчас"
+  "dismiss": "Не сейчас",
+  "replaceFont": "Заменить…"
 }

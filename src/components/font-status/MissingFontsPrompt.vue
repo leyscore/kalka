@@ -45,31 +45,33 @@ const { fonts } = useI18n()
         <p class="mt-0.5 text-muted">{{ fonts.missingFontsDescription }}</p>
       </div>
     </div>
-    <ul class="flex flex-wrap gap-1.5 ps-5.5">
-      <li
-        v-for="family in families"
-        :key="family"
-        class="rounded-md bg-input px-2 py-0.5 text-[13px]"
-        :style="{ fontFamily: `'${family}', var(--font-sans)` }"
-      >
-        {{ family }}
-      </li>
-    </ul>
-    <p v-if="error" role="alert" class="ps-5.5 text-error">{{ error }}</p>
-    <div class="flex items-center justify-end gap-1.5">
-      <AppButton size="sm" variant="ghost" :disabled="adding" @click="emit('dismiss')">
-        {{ fonts.dismiss }}
-      </AppButton>
-      <AppButton size="sm" variant="solid" color="primary" :loading="adding" @click="emit('add')">
-        <icon-hugeicons-download-01 v-if="!adding" class="size-3.5" />
-        {{
-          adding
-            ? fonts.addingFonts
-            : families.length === 1
-              ? fonts.addMissingFont
-              : fonts.addMissingFonts
-        }}
-      </AppButton>
+    <div class="flex flex-wrap items-center gap-2 ps-5.5">
+      <ul class="flex min-w-0 flex-1 flex-wrap gap-1.5">
+        <li
+          v-for="family in families"
+          :key="family"
+          class="rounded-md bg-input px-2 py-0.5 text-[13px]"
+          :style="{ fontFamily: `'${family}', var(--font-sans)` }"
+        >
+          {{ family }}
+        </li>
+      </ul>
+      <div class="ms-auto flex shrink-0 items-center gap-1.5">
+        <AppButton size="sm" variant="ghost" :disabled="adding" @click="emit('dismiss')">
+          {{ fonts.dismiss }}
+        </AppButton>
+        <AppButton size="sm" variant="solid" color="primary" :loading="adding" @click="emit('add')">
+          <icon-hugeicons-download-01 v-if="!adding" class="size-3.5" />
+          {{
+            adding
+              ? fonts.addingFonts
+              : families.length === 1
+                ? fonts.addMissingFont
+                : fonts.addMissingFonts
+          }}
+        </AppButton>
+      </div>
     </div>
+    <p v-if="error" role="alert" class="ps-5.5 text-error">{{ error }}</p>
   </section>
 </template>

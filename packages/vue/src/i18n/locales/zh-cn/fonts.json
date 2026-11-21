@@ -69,5 +69,6 @@
   "missingFontsAdded": "字体已随文档保存。",
   "replaceFontWith": "将 {family} 替换为",
   "fontReplaced": "已将 {from} 替换为 {to}。",
-  "dismiss": "以后再说"
+  "dismiss": "以后再说",
+  "replaceFont": "替换…"
 }

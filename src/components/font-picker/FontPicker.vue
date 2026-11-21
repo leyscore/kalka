@@ -141,15 +141,18 @@ async function addFiles(files: File[], { install }: { install: boolean }) {
     @highlight="preview?.($event)"
   >
     <template #trigger>
-      <button
-        type="button"
-        data-test-id="font-picker-trigger"
-        :aria-label="label"
-        :class="selectCls.trigger"
-      >
-        <span class="truncate">{{ modelValue }}</span>
-        <icon-hugeicons-chevron-down class="size-3 shrink-0 text-muted" />
-      </button>
+      <!-- A caller with its own button, such as Replace in the font issues, puts it here. -->
+      <slot name="trigger" :label="label">
+        <button
+          type="button"
+          data-test-id="font-picker-trigger"
+          :aria-label="label"
+          :class="selectCls.trigger"
+        >
+          <span class="truncate">{{ modelValue }}</span>
+          <icon-hugeicons-chevron-down class="size-3 shrink-0 text-muted" />
+        </button>
+      </slot>
     </template>
 
     <template #item="{ family, selected, source }">
