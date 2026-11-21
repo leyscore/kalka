@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import IconCloud from '~icons/hugeicons/cloud'
 import IconComputer from '~icons/hugeicons/computer'
+import IconTrash from '~icons/hugeicons/delete-02'
 import IconHome from '~icons/hugeicons/home-01'
 import IconServer from '~icons/hugeicons/server-stack-01'
 import IconSettings from '~icons/hugeicons/settings-01'
@@ -52,6 +53,9 @@ const groups = computed<ShellSidebarGroup[]>(() => {
   ]
   const account = serverAccount.value
   if (account) lists.push({ id: 'server', label: account.serverName, icon: IconServer })
+  // Viewers cannot delete, so the trash is for editors and administrators.
+  if (account && account.user.role !== 'viewer')
+    lists.push({ id: 'trash', label: files.value.trashPlace, icon: IconTrash })
   const places: ShellSidebarGroup[] = [
     { id: 'main', items: [{ id: 'home', label: files.value.homePlace, icon: IconHome }] },
     { id: 'files', label: files.value.filesGroup, items: lists }
@@ -101,7 +105,7 @@ function select(id: string): void {
     void router.push({ path: '/', query: route.query })
     return
   }
-  if (id === 'recent' || id === 'storage' || id === 'server')
+  if (id === 'recent' || id === 'storage' || id === 'server' || id === 'trash')
     void router.push({ path: filesPath(id), query: route.query })
 }
 

@@ -3,9 +3,9 @@ import { ref } from 'vue'
 
 /**
  * The lists of files on Home: the ones opened on this computer, the storage workspace, and the
- * files on the signed-in Kalka server.
+ * files on the signed-in Kalka server, and that server's trash.
  */
-export type HomeFilesTab = 'recent' | 'storage' | 'server'
+export type HomeFilesTab = 'recent' | 'storage' | 'server' | 'trash'
 
 /** Which list Home shows, kept between launches; opening the storage workspace switches to it. */
 export const homeFilesTab = useLocalStorage<HomeFilesTab>('kalka:home-files-tab', 'recent')

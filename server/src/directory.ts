@@ -4,10 +4,12 @@ import enterprise from './ee/module'
 import type { EnterpriseHost } from './ee/types'
 import { enterpriseHost, serverUrl } from './enterprise'
 import { challengeOf, hashPassword, hashToken, randomId, randomToken, sameSecret, verifyPassword } from './crypto'
-import { withStoredSettings, type DocumentInfo, type Env, type Role, type User } from './env'
+import { withStoredSettings, type DocumentInfo, type Env, type Role, type TrashedDocument, type User } from './env'
 import { roomName } from './names'
 
 const DAY = 24 * 60 * 60 * 1000
+/** How long a deleted document waits in the trash before it is erased for good. */
+export const TRASH_DAYS = 30
 const SESSION_MS = 30 * DAY
 const INVITE_MS = 7 * DAY
 const TICKET_MS = 60 * 1000
@@ -178,7 +180,8 @@ export class Directory extends DurableObject<Env> {
       'ALTER TABLE documents ADD COLUMN file_at INTEGER',
       'ALTER TABLE documents ADD COLUMN pending_at INTEGER',
       'ALTER TABLE documents ADD COLUMN pending_by TEXT',
-      'ALTER TABLE users ADD COLUMN provisioned INTEGER NOT NULL DEFAULT 0'
+      'ALTER TABLE users ADD COLUMN provisioned INTEGER NOT NULL DEFAULT 0',
+      'ALTER TABLE documents ADD COLUMN deleted_by TEXT'
     ]) {
       try {
         this.sql.exec(column)
@@ -568,11 +571,49 @@ export class Directory extends DurableObject<Env> {
     return this.getDocument(id)
   }
 
-  deleteDocument(id: string): boolean {
+  /** Moves a document to the trash; its content stays, so it can be restored for a while. */
+  deleteDocument(id: string, by?: string): boolean {
     const document = this.getDocument(id)
     if (!document) return false
-    this.sql.exec('UPDATE documents SET deleted_at = ? WHERE id = ?', Date.now(), id)
+    this.sql.exec('UPDATE documents SET deleted_at = ?, deleted_by = ? WHERE id = ?', Date.now(), by ?? null, id)
     return true
+  }
+
+  /** The trash, newest first, each with the name of who moved it there. */
+  listTrash(): TrashedDocument[] {
+    return this.all<{ id: string; name: string; deleted_at: number; deleted_by_name: string | null }>(
+      `SELECT documents.id, documents.name, documents.deleted_at, users.name AS deleted_by_name
+       FROM documents LEFT JOIN users ON users.id = documents.deleted_by
+       WHERE documents.deleted_at IS NOT NULL ORDER BY documents.deleted_at DESC`
+    ).map((row) => ({
+      id: row.id,
+      name: row.name,
+      deletedAt: row.deleted_at,
+      deletedBy: row.deleted_by_name,
+      expiresAt: row.deleted_at + TRASH_DAYS * DAY
+    }))
+  }
+
+  /** Takes a document out of the trash; null when it is not there. */
+  restoreDocument(id: string): DocumentInfo | null {
+    const restored = this.sql.exec(
+      'UPDATE documents SET deleted_at = NULL, deleted_by = NULL WHERE id = ? AND deleted_at IS NOT NULL',
+      id
+    ).rowsWritten
+    return restored > 0 ? this.getDocument(id) : null
+  }
+
+  /** Forgets a document in the trash; the caller erases its room. */
+  purgeDocument(id: string): boolean {
+    return this.sql.exec('DELETE FROM documents WHERE id = ? AND deleted_at IS NOT NULL', id).rowsWritten > 0
+  }
+
+  /** Documents whose time in the trash is over. */
+  expiredTrash(): string[] {
+    return this.all<{ id: string }>(
+      'SELECT id FROM documents WHERE deleted_at IS NOT NULL AND deleted_at < ?',
+      Date.now() - TRASH_DAYS * DAY
+    ).map((row) => row.id)
   }
 
   /** Called by a room when its document changes, at most once a minute. */

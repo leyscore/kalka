@@ -63,6 +63,15 @@ export interface DocumentInfo {
   pending: { at: number; by: string } | null
 }
 
+/** A document in the trash: when it was moved there, by whom, and when it goes for good. */
+export interface TrashedDocument {
+  id: string
+  name: string
+  deletedAt: number
+  deletedBy: string | null
+  expiresAt: number
+}
+
 export const SERVER_VERSION = '0.1.0'
 
 export function setting(env: Env, name: string): string | undefined {

@@ -6,7 +6,7 @@ import { teamPageFromPath } from '@/app/team/route'
 
 import { homeFilesRequest, homeFilesTab, type HomeFilesTab } from './files-tab'
 
-const FILES_PATH = /^\/files\/(recent|storage|server)\/?$/
+const FILES_PATH = /^\/files\/(recent|storage|server|trash)\/?$/
 
 export function filesPath(list: HomeFilesTab): string {
   return `/files/${list}`
@@ -15,7 +15,9 @@ export function filesPath(list: HomeFilesTab): string {
 /** The list a path names, or null for a path outside the file lists. */
 export function filesListFromPath(path: string): HomeFilesTab | null {
   const list = FILES_PATH.exec(path)?.[1]
-  return list === 'recent' || list === 'storage' || list === 'server' ? list : null
+  return list === 'recent' || list === 'storage' || list === 'server' || list === 'trash'
+    ? list
+    : null
 }
 
 /**

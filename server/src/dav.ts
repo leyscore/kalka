@@ -309,9 +309,10 @@ export async function dav(env: Env, request: Request, path: string, hooks: DavHo
       if (sidecar) return new Response(null, { status: 204 })
       if (name === '') return text(403, 'The folder itself cannot be deleted.')
       if (!entry) return text(404, 'No such file.')
-      await directory.deleteDocument(entry.doc.id)
-      await roomOf(env, entry.doc.id).destroy()
-      await hooks.emit(user, 'document.deleted', entry.doc.id, { name: entry.doc.name, via: 'webdav' })
+      // Deleting over WebDAV moves the document to the trash, as in Kalka.
+      await directory.deleteDocument(entry.doc.id, user.id)
+      await roomOf(env, entry.doc.id).closeAll()
+      await hooks.emit(user, 'document.trashed', entry.doc.id, { name: entry.doc.name, via: 'webdav' })
       return new Response(null, { status: 204 })
     }
 

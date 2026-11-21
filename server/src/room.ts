@@ -363,8 +363,8 @@ export class DocumentRoom extends DurableObject<Env> {
     }
   }
 
-  /** Closes every connection and erases the document. */
-  async destroy(): Promise<void> {
+  /** Closes every connection, as when the document goes to the trash; its content stays. */
+  closeAll(): void {
     for (const { ws } of this.sockets()) {
       try {
         ws.close(4404, 'Document deleted')
@@ -372,6 +372,11 @@ export class DocumentRoom extends DurableObject<Env> {
         // Already closed.
       }
     }
+  }
+
+  /** Closes every connection and erases the document. */
+  async destroy(): Promise<void> {
+    this.closeAll()
     await this.ctx.storage.deleteAll()
     this.sql.exec(SCHEMA)
   }
