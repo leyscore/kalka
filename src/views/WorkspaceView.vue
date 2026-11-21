@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useHead } from '@unhead/vue'
 import { until, useEventListener } from '@vueuse/core'
+import { omit } from 'es-toolkit'
 import { defineAsyncComponent, onMounted, onUnmounted, provide, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -12,6 +13,7 @@ import { startWebMCP } from '@/app/automation/webmcp/runtime'
 import { exposeCollaborationActions } from '@/app/browser-bridge'
 import { useJoinRoom } from '@/app/collab/join'
 import { bindDesktopRoomLinks } from '@/app/collab/room/links'
+import { normalizeServerURL } from '@/app/collab/server/api'
 import {
   openServerDocument,
   openServerDocumentById,
@@ -32,7 +34,7 @@ import { focusNodesByName } from '@/app/editor/selection/focus'
 import { filesListFromPath } from '@/app/home/files-route'
 import { fillNewDocument } from '@/app/home/start'
 import { notificationMessages } from '@/app/i18n/notifications'
-import { WELCOME_PATH } from '@/app/onboarding/route'
+import { isWelcomePath } from '@/app/onboarding/route'
 import { offerWelcomeOnFirstRun } from '@/app/onboarding/welcome'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import { createDeferred } from '@/app/runtime/deferred'
@@ -77,14 +79,15 @@ const createdInitialTab = tabCount() === 0
 /** Home, and Settings and the welcome, which open over Home, start the workspace the same way. */
 const opensHome =
   route.path === '/' ||
-  route.path === WELCOME_PATH ||
+  isWelcomePath(route.path) ||
   filesListFromPath(route.path) !== null ||
   settingsSectionFromPath(route.path) !== null
 const shouldCreateHome =
   opensHome &&
   !appRuntimeConfig.test &&
   !route.meta.demo &&
-  (isTauri() || appRuntimeConfig.recentFiles)
+  // The web editor starts on a document, except when the address names one of Home's lists.
+  (isTauri() || appRuntimeConfig.recentFiles || filesListFromPath(route.path) !== null)
 const { collaboration } = useI18n()
 const joinRoomFromInput = useJoinRoom()
 
@@ -96,7 +99,10 @@ function nameFromSlug(slug: string): string {
 
 /** A server document's address opens it, and `?node-id=` shows that layer once it arrives. */
 function openDesignAddress(id: string, slug: string, node: string | null) {
-  const session = openServerDocumentById(id, nameFromSlug(slug))
+  // A link names its server (`?server=`), so someone not signed in knows where to sign in.
+  const linked =
+    typeof route.query.server === 'string' ? normalizeServerURL(route.query.server) : null
+  const session = openServerDocumentById(id, nameFromSlug(slug), linked)
   if (session && node) focusNodeWhenReady(session, node)
   return session
 }
@@ -108,7 +114,6 @@ function openFirstTab(): Tab {
     const slug = typeof route.params.slug === 'string' ? route.params.slug : ''
     const node = typeof route.query['node-id'] === 'string' ? route.query['node-id'] : null
     if (openDesignAddress(designId, slug, node) && activeTab.value) return activeTab.value
-    toast.error(collaboration.value.serverFileNeedsSignIn)
   }
   const roomId = typeof route.params.roomId === 'string' ? route.params.roomId : null
   if (roomId) {
@@ -138,9 +143,15 @@ function openFirstTab(): Tab {
 
 // Opened from Kalka Cloud to work on a file: the file comes first, the welcome can wait.
 const launchedFromCloud = IS_BROWSER && window.location.hash.includes('kalka-server=')
+// Opened on Settings, typed or from a server link, the person came for Settings: the welcome
+// waits for the next launch rather than taking its place.
+const opensSettings =
+  settingsSectionFromPath(route.path) !== null ||
+  (IS_BROWSER && new URLSearchParams(window.location.search).has('kalka-server'))
 if (
   createdInitialTab &&
   opensHome &&
+  !opensSettings &&
   !appRuntimeConfig.test &&
   !route.meta.demo &&
   !launchedFromCloud
@@ -161,7 +172,7 @@ exposeAutomationTestRequests()
 const stopAddressSync = syncAddressWithTabs(router, {
   openDesign: (id, slug) => openDesignAddress(id, slug, null),
   openShare: (id) => joinRoomFromInput(id),
-  notifyUnavailable: () => toast.error(collaboration.value.serverFileNeedsSignIn)
+  notifyUnavailable: () => toast.error(collaboration.value.serverMissingTitle)
 })
 
 useEventListener(
@@ -299,7 +310,11 @@ onMounted(async () => {
   }
   if (IS_BROWSER && !isTauri()) {
     const linked = takeWebServerLink()
-    if (linked) offerLinkedServer(linked, openServerSettings)
+    if (linked) {
+      // The router keeps its own copy of the query: drop the link there, or it comes back.
+      await router.replace({ query: omit(route.query, ['kalka-server']) })
+      offerLinkedServer(linked, openServerSettings)
+    }
   }
 
   // The browser twin of the deep link: the desktop build takes its links through the
@@ -317,7 +332,20 @@ onMounted(async () => {
           await shareToServer(store)
           await fillNewDocument(store, start)
         },
-        notify: (message, level) => (level === 'error' ? toast.error : toast.info)(message)
+        started: () => {
+          const progress = toast.startProgress(collaboration.value.serverLaunchOpening)
+          return () => progress.dismiss()
+        },
+        failed: (failure, serverURL) =>
+          toast.error(
+            failure === 'missing'
+              ? collaboration.value.serverLaunchFileGone
+              : collaboration.value.serverLaunchFailed,
+            {
+              label: collaboration.value.serverBackToWorkspace,
+              run: () => window.location.assign(serverURL)
+            }
+          )
       })
       await openWebLinkFromLocation(window.location.search, stripWebLinkParams, {
         selectByName: selectNodeByName,

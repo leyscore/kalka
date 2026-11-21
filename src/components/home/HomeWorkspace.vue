@@ -42,7 +42,7 @@ const identity = useCollabIdentity()
             :class="homeHero.cornerButton"
             @click="openDocs"
           >
-            <icon-hugeicons-book-open-01 class="size-[18px]" />
+            <icon-hugeicons-help-circle class="size-[18px]" />
           </IconButton>
           <IconButton
             :label="settings.title"

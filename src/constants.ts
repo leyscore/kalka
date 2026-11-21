@@ -85,6 +85,8 @@ export const ROOM_STATUS_TICK_MS = 500
 export const WEB_APP_ORIGIN = 'https://kalka.design'
 /** Where the desktop app's installers are published. */
 export const DESKTOP_DOWNLOAD_URL = 'https://github.com/leyscore/kalka/releases/latest'
+/** What a Kalka server is and how to run one. */
+export const SERVER_GUIDE_URL = 'https://github.com/leyscore/kalka/tree/main/server#readme'
 export const NODE_DOWNLOAD_URL = 'https://nodejs.org/en/download'
 
 /** The site's language folder for each app language; English is the site's root. */

@@ -60,3 +60,35 @@ test('Back leaves the welcome like Skip', async ({ page }) => {
   await new CanvasHelper(page).waitForInit()
   await expect(welcome).toHaveCount(0)
 })
+
+test('Back keeps the name typed on the first step', async ({ page }) => {
+  await page.goto('/')
+  await new CanvasHelper(page).waitForInit()
+  const welcome = page.getByTestId('welcome')
+  await welcome.getByTestId('welcome-name').fill('Grace')
+  await page.goBack()
+  await expect(welcome).toHaveCount(0)
+  await page.goto('/welcome/')
+  await new CanvasHelper(page).waitForInit()
+  await expect(welcome.getByTestId('welcome-name')).toHaveValue('Grace')
+})
+
+test('a link to Settings on a fresh install opens Settings and keeps the welcome for later', async ({
+  page
+}) => {
+  await page.goto('/settings/server')
+  await new CanvasHelper(page).waitForInit()
+  await expect(page.getByTestId('app-settings')).toBeVisible()
+  await expect(page).toHaveURL(/\/settings\/server$/)
+  await expect(page.getByTestId('welcome')).toHaveCount(0)
+
+  await page.goto('/')
+  await new CanvasHelper(page).waitForInit()
+  await expect(page.getByTestId('welcome')).toBeVisible()
+})
+
+test('an address that names nothing opens Home instead of a blank page', async ({ page }) => {
+  await page.goto('/nope')
+  await new CanvasHelper(page).waitForInit()
+  await expect(page).toHaveURL(/\/(welcome)?$/)
+})

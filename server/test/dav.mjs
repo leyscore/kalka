@@ -2,11 +2,14 @@
 // roles, locks and renames.
 //   KALKA_URL=http://localhost:8787 node test/dav.mjs
 import assert from 'node:assert/strict'
+import WebSocket from 'ws'
 
 import { admin, BASE, call, member } from './lib.mjs'
 
 const enc = new TextEncoder()
 const dec = new TextDecoder()
+/** Stand-ins for Kalka files: the server only checks that they start as a ZIP archive does. */
+const ZIP = 'PK\u0003\u0004'
 const basic = (email, password) => 'Basic ' + Buffer.from(`${email}:${password}`).toString('base64')
 
 async function dav(method, path, auth, { body, headers } = {}) {
@@ -42,7 +45,7 @@ assert.equal((await dav('PROPFIND', '/dav/', basic(viewer.email, made.password),
 assert.equal((await dav('PROPFIND', '/dav/', `Bearer ${editor.token}`, { headers: { Depth: '0' } })).status, 207, 'a session works too')
 
 // An upload creates a document holding the archive, as a version Kalka may apply.
-const archive = enc.encode('PK pretend kalka archive v1')
+const archive = enc.encode(`${ZIP} pretend kalka archive v1`)
 const put = await dav('PUT', '/dav/Brand%20kit.kalka', ed, { body: archive })
 assert.equal(put.status, 201)
 let docs = await call('GET', '/api/documents', null, root.token)
@@ -67,7 +70,7 @@ assert.deepEqual(hrefs(one), ['/dav/Brand%20kit.kalka'], 'names match without re
 const got = await dav('GET', '/dav/Brand%20kit.kalka', vw)
 assert.equal(got.status, 200)
 assert.equal(got.headers.get('Content-Type'), 'application/vnd.kalka+zip')
-assert.equal(dec.decode(await got.arrayBuffer()), 'PK pretend kalka archive v1')
+assert.equal(dec.decode(await got.arrayBuffer()), `${ZIP} pretend kalka archive v1`)
 const etag = got.headers.get('ETag')
 assert.equal((await dav('GET', '/dav/Brand%20kit.kalka', vw, { headers: { 'If-None-Match': etag } })).status, 304)
 const head = await dav('HEAD', '/dav/Brand%20kit.kalka', vw)
@@ -75,17 +78,56 @@ assert.equal(head.headers.get('Content-Length'), String(archive.length))
 assert.equal((await dav('GET', '/dav/Nothing.kalka', vw)).status, 404)
 
 // Replacing it keeps the document and records a new pending version.
-const v2 = enc.encode('PK pretend kalka archive v2, longer')
+const v2 = enc.encode(`${ZIP} pretend kalka archive v2, longer`)
 assert.equal((await dav('PUT', '/dav/Brand%20kit.kalka', ed, { body: v2 })).status, 204)
 assert.equal((await dav('PUT', '/dav/Brand%20kit.kalka', ed, { body: new Uint8Array() })).status, 204, 'an empty upload keeps the archive')
 docs = await call('GET', '/api/documents', null, root.token)
 assert.equal(docs.filter((d) => d.name === 'Brand kit').length, 1)
 const pending = await fetch(`${BASE}/api/documents/${doc.id}/pending`, { headers: { Authorization: `Bearer ${root.token}` } })
-assert.equal(dec.decode(await pending.arrayBuffer()), 'PK pretend kalka archive v2, longer')
+assert.equal(dec.decode(await pending.arrayBuffer()), `${ZIP} pretend kalka archive v2, longer`)
+const version = pending.headers.get('X-Kalka-Version')
+assert.ok(version, 'the waiting version has an id')
 await assert.rejects(call('DELETE', `/api/documents/${doc.id}/pending`, null, viewer.token), /403/)
-await call('DELETE', `/api/documents/${doc.id}/pending`, null, editor.token)
+// Only the window whose dismissal goes through applies the version.
+assert.equal((await call('DELETE', `/api/documents/${doc.id}/pending?version=another`, null, editor.token)).dismissed, false)
+assert.equal((await call('DELETE', `/api/documents/${doc.id}/pending?version=${version}`, null, editor.token)).dismissed, true)
+assert.equal((await call('DELETE', `/api/documents/${doc.id}/pending?version=${version}`, null, editor.token)).dismissed, false)
 assert.equal((await call('GET', `/api/documents/${doc.id}`, null, root.token)).pending, null)
 assert.equal((await fetch(`${BASE}/api/documents/${doc.id}/pending`, { headers: { Authorization: `Bearer ${root.token}` } })).status, 404)
+
+// A Kalka window learns of a waiting version when it opens the document, before the load is
+// done, and at once when one is uploaded while it is open.
+async function openRoom(token, documentId) {
+  const { url } = await call('POST', `/api/documents/${documentId}/ticket`, {}, token)
+  const ws = new WebSocket(url)
+  ws.binaryType = 'arraybuffer'
+  const seen = []
+  ws.on('message', (data) => {
+    const b = new Uint8Array(data)
+    if (b[0] !== 1) return
+    let at = 1
+    const s = () => { const n = b[at++]; const v = dec.decode(b.subarray(at, at + n)); at += n; return v }
+    const ns = s()
+    s()
+    const payload = b.subarray(at)
+    seen.push(ns === 'srv-load' ? `load:${payload[0]}` : `${ns}:${dec.decode(payload)}`)
+  })
+  await new Promise((resolve) => ws.on('open', resolve))
+  return { ws, seen }
+}
+const until = async (check) => { for (let i = 0; i < 50 && !check(); i++) await new Promise((r) => setTimeout(r, 100)) }
+assert.equal((await dav('PUT', '/dav/Brand%20kit.kalka', ed, { body: v2 })).status, 204)
+const waiting = (await fetch(`${BASE}/api/documents/${doc.id}/pending`, { headers: { Authorization: `Bearer ${root.token}` } })).headers.get('X-Kalka-Version')
+const opened = await openRoom(editor.token, doc.id)
+await until(() => opened.seen.includes('load:3'))
+assert.ok(opened.seen.indexOf(`srv-pending:${waiting}`) >= 0, 'the load says a version waits')
+assert.ok(opened.seen.indexOf(`srv-pending:${waiting}`) < opened.seen.indexOf('load:3'), 'before the load is done')
+assert.equal((await dav('PUT', '/dav/Brand%20kit.kalka', ed, { body: archive })).status, 204)
+await until(() => opened.seen.filter((item) => item.startsWith('srv-pending:')).length === 2)
+const newer = opened.seen.filter((item) => item.startsWith('srv-pending:'))[1]
+assert.ok(newer && newer !== `srv-pending:${waiting}`, 'an upload while open announces its own version')
+opened.ws.close()
+await call('DELETE', `/api/documents/${doc.id}/pending`, null, editor.token)
 
 // Viewers read but never write.
 assert.equal((await dav('PUT', '/dav/Viewer.kalka', vw, { body: archive })).status, 403)
@@ -97,6 +139,8 @@ assert.equal((await dav('MOVE', '/dav/Brand%20kit.kalka', vw, { headers: { Desti
 assert.equal((await dav('PUT', '/dav/._Brand%20kit.kalka', ed, { body: archive })).status, 201)
 assert.equal((await dav('PUT', '/dav/.DS_Store', ed, { body: archive })).status, 201)
 assert.equal((await dav('PUT', '/dav/notes.txt', ed, { body: archive })).status, 403)
+assert.equal((await dav('PUT', '/dav/Junk.kalka', ed, { body: enc.encode('127.0.0.1 localhost') })).status, 415, 'bytes that are not a Kalka file are refused')
+assert.ok(!(await call('GET', '/api/documents', null, root.token)).some((d) => d.name === 'Junk'))
 assert.equal((await dav('PUT', '/dav/folder/inside.kalka', ed, { body: archive })).status, 409)
 assert.equal((await dav('MKCOL', '/dav/folder', ed)).status, 403)
 const after = await (await dav('PROPFIND', '/dav/', ed, { headers: { Depth: '1' } })).text()

@@ -13,11 +13,14 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from 'reka-ui'
-import { watch } from 'vue'
+import { computed, watch } from 'vue'
 import IconChevronRight from '~icons/hugeicons/chevron-right'
 
 import { shortcutPlatform, useEditorCommands, useI18n, vTestId } from '@kalka/vue'
 
+import { serverAccount } from '@/app/collab/server/account'
+import { isServerRoom } from '@/app/collab/server/documents'
+import { useCollabInjected } from '@/app/collab/use'
 import { useEditorStore } from '@/app/editor/active-store'
 import { useAppMenu } from '@/app/shell/menu/app-menu'
 import { useDocumentNameRename } from '@/app/shell/menu/document-name'
@@ -35,6 +38,7 @@ import {
 } from '@/app/shell/menu/entry'
 import { resolvedAppTheme } from '@/app/shell/theme'
 import BrandMark from '@/components/brand/BrandMark.vue'
+import ServerFileChip from '@/components/collab-panel/ServerFileChip.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppShortcutText from '@/components/ui/menu/AppShortcutText.vue'
 import { useMenuUI } from '@/components/ui/menu/menu'
@@ -50,6 +54,12 @@ const store = useEditorStore()
 
 const { rename, editingName, startRename, commitRename } = useDocumentNameRename(store)
 const nameInput = templateRef<HTMLInputElement>('nameInput')
+const collab = useCollabInjected()
+/** The server that keeps the active document, when it is a server document. */
+const documentServer = computed(() => {
+  const roomId = collab?.state.value.roomId
+  return roomId && isServerRoom(roomId) ? (serverAccount.value?.serverName ?? null) : null
+})
 
 watch(nameInput, (input) => {
   if (input) void rename.focusInput(input)
@@ -208,6 +218,11 @@ const { menu: menuMessages } = useI18n()
         @dblclick="startRename"
         >{{ store.state.documentName }}</span
       >
+      <ServerFileChip
+        v-if="documentServer"
+        :server-name="documentServer"
+        :view-only="serverAccount?.user.role === 'viewer'"
+      />
       <IconButton
         :label="tip(undo.label)"
         data-test-id="app-undo"

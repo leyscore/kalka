@@ -2,7 +2,7 @@ import { i18n } from '#vue/i18n/create'
 
 export const storageMessageDefaults = {
   workspace: 'Storage workspace',
-  tab: 'Storage',
+  tab: 'Cloud storage',
   openWorkspace: 'Open workspace',
   newStoredDocument: 'New document',
   emptyStorageWorkspace: 'No stored documents yet.',

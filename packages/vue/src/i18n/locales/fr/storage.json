@@ -3,7 +3,7 @@
   "emptyStorageWorkspace": "Aucun document stocké pour le moment.",
   "loadingDocuments": "Chargement des documents…",
   "workspace": "Espace de stockage",
-  "tab": "Stockage",
+  "tab": "Stockage cloud",
   "openWorkspace": "Ouvrir l’espace",
   "loadingWorkspace": "Chargement de l’espace de stockage…",
   "notConfigured": "Configurez le stockage avant d’utiliser cet espace.",

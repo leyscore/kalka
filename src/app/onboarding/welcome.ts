@@ -46,6 +46,14 @@ export function closeWelcome(): void {
   updateOnboarding({ welcome: 'done', aiSetup: 'done' })
 }
 
+/**
+ * Hides the welcome without counting it as done, as when a link opens Settings over it: it comes
+ * back on the next launch.
+ */
+export function setWelcomeAside(): void {
+  welcomeOpen.value = false
+}
+
 /** Leaves the welcome for the guided setup that connects the agent already on this computer. */
 export function closeWelcomeForAIChat(): void {
   closeWelcome()

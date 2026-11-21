@@ -5,20 +5,23 @@
 ### Added
 
 - The user documentation is one click away: a Documentation button on Home and in the editor's left rail, and View › Documentation, open kalka.design/docs in the app's language.
-- Connect Kalka to a self-hosted Kalka server in Settings › Server, signing in with a password or the server's single sign-on. Save on <server> in the Share panel puts a file on the server, where teammates open it from the new Server tab on Home and edit it together in real time, even when the person who shared it is offline; Kalka also keeps a Kalka file of each server document up to date for the server's export. A `kalka://server?url=…` link, such as the one a server's invitation carries, opens Settings › Server with the address filled in. Each server document has its own address, `/design/<id>/<name>`, which reopens it after a reload and opens it for a signed-in teammate; `?node-id=` shows one layer.
+- Connect Kalka to a self-hosted Kalka server in Settings › Server, signing in with a password or the server's single sign-on. Save on <server> in the Share panel puts a file on the server, where teammates open it from the new Server tab on Home and edit it together in real time, even when the person who shared it is offline; Kalka also keeps a Kalka file of each server document up to date for the server's export, WebDAV and backups, saving it as soon as the tab closes or is hidden; a file put on the server over WebDAV or restored from a backup opens in Kalka, a version uploaded over an open file replaces it for everyone in it, a rename reaches the server and the whole team, people appear under their account's name, and a file deleted on the server, or an address of one that does not exist, says so instead of waiting. A chip beside a server file's name shows its server, or View only for a viewer, whose edits are put back with a notice; Save on <server> confirms and, in the browser, copies the file's address. A link to a server file opened by someone not signed in keeps its address and asks them to sign in to the server it names, then opens the file; Settings › Server and Home's server list explain themselves and show errors in your language. A `kalka://server?url=…` link, such as the one a server's invitation carries, opens Settings › Server with the address filled in. Each server document has its own address, `/design/<id>/<name>`, which reopens it after a reload and opens it for a signed-in teammate; `?node-id=` shows one layer.
 - In the browser, Back and Forward move between the documents you opened in tabs, as they do between pages.
 - The web editor opens from a Kalka Cloud workspace already signed in to it, on one of its files or on a new file saved there, which can start from a frame size or a request to the AI agent.
 - Kalka Snapshot, a Chrome extension, inspects any web page: hover to see an element's size, type, colors and layout, click to select it, ↑ for its parent, then ⌘C to copy it as layers that paste into Kalka with their styles, fonts, images and class names, or ⌥⌘C to copy it as HTML and CSS. With Tablet or Phone turned on, the copy also takes the page at 810 or 390 pixels wide and pastes as an artboard with those breakpoints, each layer showing what the page shows at that width.
 
 ### Changed
 
-- Home's lists of files have their own addresses, `/files/recent`, `/files/storage` and `/files/server`, so a link or a reload opens Home on that list; `/storage` still opens the storage workspace.
-- The welcome is a page at `/welcome` with a few optional questions after the name: what you do, your company, position and team size, what you will design first and how you heard of Kalka, then connecting your AI or leaving it for later. Answers stay on this device.
-- Settings is a page of its own at `/settings/<section>`, filling the window instead of a dialog: Back closes it, a reload or a link opens it on that section, and the open documents stay as they were behind it.
+- Home's lists of files have their own addresses, `/files/recent`, `/files/storage` and `/files/server`, so a link or a reload opens Home on that list, in the web editor too; `/storage` still opens the storage workspace.
+- The welcome is a page at `/welcome` with a few optional questions after the name: what you do, your company, position and team size, what you will design first and how you heard of Kalka, then connecting your AI or leaving it for later. Answers stay on this device and are sent nowhere. A link that opens Settings, such as a server invitation's, opens it and leaves the welcome for the next launch.
+- Settings is a page of its own at `/settings/<section>`, filling the window instead of a dialog, with its content kept to a readable width: Back closes it, a reload or a link opens it on that section, and the open documents stay as they were behind it.
 
 ### Fixed
 
 - Pasted HTML keeps a paragraph or heading hidden with `visibility: hidden` as a hidden layer instead of showing it.
+- An address that names no page, such as `/files` or a mistyped one, opens Home instead of an empty window.
+- Home's Storage tab is called Cloud storage, as in Settings.
+- Errors and warnings in the Publish library, Rename selection and library update dialogs, variant authoring and Diagnostics show in the theme's error and warning colours instead of the default text colour.
 - On the Variables page, moving from one variable to the next no longer blanks the inspector for a moment: it shows the new variable in place.
 
 ## 0.2.0-beta.4 — 2026-11-20

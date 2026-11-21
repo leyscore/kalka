@@ -40,13 +40,14 @@ const JOIN_ERROR_ID = 'collab-join-error'
     size="md"
     :color="collab.serverName ? undefined : 'primary'"
     :variant="collab.serverName ? 'outline' : 'solid'"
-    class="mb-3 w-full"
+    class="w-full"
     data-test-id="collab-share-file"
     @click="collab.share"
   >
     <template #leading><icon-hugeicons-share-01 class="size-3.5" /></template>
     {{ collab.messages.shareThisFile }}
   </AppButton>
+  <p class="mt-1 mb-3 text-[11px] text-muted">{{ collab.messages.shareThisFileDescription }}</p>
 
   <div class="mb-2 flex items-center gap-2">
     <div class="h-px flex-1 bg-border" />

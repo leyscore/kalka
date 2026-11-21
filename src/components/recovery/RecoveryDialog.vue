@@ -87,8 +87,9 @@ onMounted(async () => {
           <icon-hugeicons-file-clock class="size-4 shrink-0 text-muted" />
           <div class="min-w-0 flex-1">
             <p class="truncate text-xs font-medium text-surface">{{ snapshot.documentName }}</p>
-            <p class="text-[11px] text-muted">
-              {{ updatedLabel(snapshot) }} · {{ formatStorageBytes(snapshot.byteLength) }}
+            <p class="flex flex-wrap gap-x-3 text-[11px] text-muted">
+              <span>{{ updatedLabel(snapshot) }}</span>
+              <span>{{ formatStorageBytes(snapshot.byteLength) }}</span>
             </p>
           </div>
           <AppButton

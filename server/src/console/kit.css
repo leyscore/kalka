@@ -162,6 +162,12 @@ button { cursor: pointer; }
 .field { width: 100%; height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--field-edge); background: var(--field); color: var(--text); outline: 0; transition: border-color 0.15s, box-shadow 0.15s; }
 .field:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(47, 91, 234, 0.15); }
 .field:disabled { opacity: 0.6; }
+.field[readonly] { color: var(--sub); }
+.field-wrap { position: relative; display: block; }
+.field-wrap .field { padding-right: 40px; }
+.reveal { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: var(--faint); cursor: pointer; }
+.reveal:hover { background: var(--chip); color: var(--text); }
+.reveal:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 textarea.field { height: auto; min-height: 72px; padding: 10px 12px; resize: vertical; }
 label.stack { display: flex; flex-direction: column; gap: 6px; color: var(--sub); }
 .search { display: flex; align-items: center; gap: 8px; height: 36px; width: 260px; max-width: 100%; padding: 0 12px; border-radius: 11px; background: var(--chip); color: var(--faint); }
@@ -289,8 +295,9 @@ label.stack { display: flex; flex-direction: column; gap: 6px; color: var(--sub)
 .screen p.lead { margin: 0; color: #dce6ff; font-size: 15px; max-width: 520px; }
 .screen .card { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 14px; padding: 20px; text-align: left; }
 .screen form { display: flex; flex-direction: column; gap: 10px; margin: 0; }
-.screen .foot { color: #c9d7ff; font-size: 12px; display: flex; gap: 18px; }
-.screen .foot a { color: #c9d7ff; }
+.screen .foot { color: var(--sub); font-size: 12px; display: flex; gap: 18px; }
+.screen .foot a { color: var(--sub); }
+:root[data-theme='dark'] .screen .foot, :root[data-theme='dark'] .screen .foot a { color: #c9d7ff; }
 .screen .or { display: flex; align-items: center; gap: 10px; color: var(--faint); font-size: 12px; }
 .screen .or::before, .screen .or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .code-input { height: 54px !important; text-align: center; font: 600 26px var(--mono) !important; letter-spacing: 10px; }
@@ -302,6 +309,8 @@ label.stack { display: flex; flex-direction: column; gap: 6px; color: var(--sub)
   ::view-transition-new(root) { animation: none; }
 }
 @media (max-width: 720px) {
-  .k-side { position: static; min-height: 0; }
+  .k-side { position: static; min-height: 0; gap: 10px; }
+  .k-side .side-card { display: none; }
   .k-head .actions { margin-left: 0; }
+  .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 }

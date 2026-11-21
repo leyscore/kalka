@@ -13,9 +13,11 @@ type Args = {
   copied: boolean
   desktopLink: string | null
   downloadURL: string | null
+  serverName: string | null
   onCopyLink: () => void
   onLeave: () => void
   onRename: (name: string) => void
+  onSignIn: () => void
 }
 
 const meta = {
@@ -30,9 +32,11 @@ const meta = {
     copied: false,
     desktopLink: null,
     downloadURL: null,
+    serverName: null,
     onCopyLink: fn(),
     onLeave: fn(),
-    onRename: fn()
+    onRename: fn(),
+    onSignIn: fn()
   },
   render: (args) => ({
     components: { RoomScreen },
@@ -54,6 +58,36 @@ export const LookingForPeople: Story = {
 
 export const ReceivingTheFile: Story = {
   args: { status: 'receiving', sender: 'Ana' }
+}
+
+export const OpeningFromServer: Story = {
+  args: { status: 'connecting', serverName: 'Acme Design' }
+}
+
+export const ServerFileMissing: Story = {
+  args: { status: 'missing', serverName: 'Acme Design' },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button'))
+    await expect(args.onLeave).toHaveBeenCalledOnce()
+  }
+}
+
+export const SignInToOpen: Story = {
+  args: { status: 'signed-out', serverName: 'Acme Design' },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign in' }))
+    await expect(args.onSignIn).toHaveBeenCalledOnce()
+  }
+}
+
+export const SignInToOpenUnknownServer: Story = {
+  args: { status: 'signed-out', serverName: null }
+}
+
+export const ServerFileEmpty: Story = {
+  args: { status: 'empty', serverName: 'Acme Design' }
 }
 
 export const Unreachable: Story = {

@@ -12,14 +12,20 @@ import {
   serverDocuments,
   serverDocumentsLoading
 } from '@/app/collab/server/documents'
+import { serverProblem, type ServerProblem } from '@/app/collab/server/problem'
 import { openSettings } from '@/app/settings/open'
 import DocumentEntry from '@/components/home/document/DocumentEntry.vue'
+import { serverProblemText } from '@/components/settings/server/problemText'
 import AppButton from '@/components/ui/button/AppButton.vue'
+import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 
 /** The files on the signed-in Kalka server; opening one joins its room in a tab of its own. */
 const { query, view } = defineProps<{ query: string; view: 'grid' | 'list' }>()
-const { collaboration, locale, settings } = useI18n()
-const error = ref<string | null>(null)
+const { collaboration, files, locale, settings } = useI18n()
+const problem = ref<ServerProblem | null>(null)
+const error = computed(() =>
+  problem.value ? serverProblemText(collaboration.value, problem.value) : null
+)
 
 const signedIn = computed(() => serverAccount.value !== null && !serverSessionExpired.value)
 const filtered = computed(() =>
@@ -32,11 +38,11 @@ const filtered = computed(() =>
 
 async function refresh() {
   if (!signedIn.value) return
-  error.value = null
+  problem.value = null
   try {
     await refreshServerDocuments()
   } catch (reason) {
-    error.value = reason instanceof Error ? reason.message : String(reason)
+    problem.value = serverProblem(reason)
   }
 }
 
@@ -44,8 +50,10 @@ onMounted(refresh)
 useIntervalFn(refresh, 60_000)
 defineExpose({ refresh })
 
+const DATE_FORMAT: Intl.DateTimeFormatOptions = { dateStyle: 'medium', timeStyle: 'short' }
+
 function formattedDate(updatedAt: number): string {
-  return new Date(updatedAt).toLocaleString(locale.value)
+  return new Date(updatedAt).toLocaleString(locale.value, DATE_FORMAT)
 }
 
 function open(document: ServerDocument) {
@@ -69,19 +77,18 @@ const LIST = 'overflow-hidden rounded-[14px] bg-card'
     <AppButton variant="outline" @click="openSettings('server')">{{ settings.title }}</AppButton>
   </div>
 
-  <p v-else-if="error && !serverDocuments.length" class="text-xs text-danger" role="alert">
-    {{ error }}
-  </p>
+  <AppAlert v-else-if="error" tone="error" :heading="error" data-test-id="home-server-error" />
 
   <div
-    v-else-if="serverDocumentsLoading && !serverDocuments.length"
+    v-if="signedIn && serverDocumentsLoading && !serverDocuments.length"
     class="rounded-[14px] bg-card px-4 py-3 text-[13px] text-muted"
+    role="status"
   >
-    …
+    {{ collaboration.serverLoadingFiles }}
   </div>
 
   <div
-    v-else-if="filtered.length"
+    v-else-if="signedIn && filtered.length"
     :class="view === 'grid' ? GRID : LIST"
     data-test-id="home-server-files"
   >
@@ -95,7 +102,17 @@ const LIST = 'overflow-hidden rounded-[14px] bg-card'
     />
   </div>
 
-  <div v-else class="rounded-[14px] bg-card px-4 py-3 text-[13px] text-muted">
+  <p
+    v-else-if="signedIn && query && serverDocuments.length"
+    class="rounded-[14px] bg-card px-4 py-8 text-center text-xs text-muted"
+  >
+    {{ files.noMatchingFiles({ query }) }}
+  </p>
+
+  <div
+    v-else-if="signedIn && !serverDocumentsLoading && !error"
+    class="rounded-[14px] bg-card px-4 py-3 text-[13px] text-muted"
+  >
     {{ collaboration.serverNoDocuments({ server: serverAccount?.serverName ?? '' }) }}
   </div>
 </template>

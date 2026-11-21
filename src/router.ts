@@ -18,7 +18,9 @@ const router = createRouter({
     // The welcome is a page over Home, so the first workspace is already there behind it.
     { path: '/welcome', component: WorkspaceView },
     // Settings is a page over the workspace, so the open documents stay as they are behind it.
-    { path: '/settings/:section?', component: WorkspaceView }
+    { path: '/settings/:section?', component: WorkspaceView },
+    // Anything else, such as `/files` or `/design` alone, goes to Home rather than a blank page.
+    { path: '/:pathMatch(.*)*', redirect: (to) => ({ path: '/', query: to.query }) }
   ]
 })
 

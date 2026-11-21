@@ -6,7 +6,7 @@ import { useI18n } from '@kalka/vue'
 
 import { useJoinRoom } from '@/app/collab/join'
 import { serverAccount, serverSessionExpired } from '@/app/collab/server/account'
-import { isServerRoom, shareToServer } from '@/app/collab/server/documents'
+import { isServerRoom, serverDocumentLink, shareToServer } from '@/app/collab/server/documents'
 import { DEFAULT_COLLAB_STATE, useCollabInjected } from '@/app/collab/use'
 import { useActiveEditorStoreRef } from '@/app/editor/active-store'
 import { useNotificationMessages } from '@/app/i18n/notifications'
@@ -83,16 +83,40 @@ function createCollabPanelContext() {
     state.value.roomId ? isServerRoom(state.value.roomId) : false
   )
   const viewOnly = computed(() => inServerRoom.value && serverAccount.value?.user.role === 'viewer')
+  /** The web address of the server document, to send to a teammate; null in the desktop app. */
+  const serverLink = computed(() => {
+    const roomId = state.value.roomId
+    const name = storeRef.value?.state.documentName ?? ''
+    return roomId && inServerRoom.value ? serverDocumentLink(roomId, name) : null
+  })
+
+  function copyServerLink() {
+    if (!serverLink.value) return
+    void copy(serverLink.value)
+    toast.info(notifications.value.linkCopied)
+  }
 
   function shareOnServer() {
     const store = storeRef.value
-    if (!store) return
+    const server = serverName.value
+    if (!store || !server) return
     saveName()
     popoverOpen.value = false
-    shareToServer(store).catch((error: unknown) => {
-      console.error('[Kalka server]', error)
-      toast.error(collaboration.value.serverShareFailed)
-    })
+    shareToServer(store)
+      .then((session) => {
+        const link = serverDocumentLink(session.roomId, store.state.documentName)
+        if (link) void copy(link)
+        toast.info(
+          link
+            ? collaboration.value.serverSavedLinkCopied({ server })
+            : collaboration.value.serverRoomSaved({ server })
+        )
+        return undefined
+      })
+      .catch((error: unknown) => {
+        console.error('[Kalka server]', error)
+        toast.error(collaboration.value.serverShareFailed)
+      })
   }
 
   function join() {
@@ -141,6 +165,8 @@ function createCollabPanelContext() {
     serverName,
     inServerRoom,
     viewOnly,
+    serverLink,
+    copyServerLink,
     shareOnServer,
     join,
     clearJoinError,

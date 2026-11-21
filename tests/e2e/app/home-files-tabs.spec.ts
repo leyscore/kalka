@@ -39,7 +39,7 @@ test('Home leads with the last file and keeps the storage workspace in its own t
 
   const home = page.getByTestId('recent-files-home')
   const recent = home.getByRole('tab', { name: 'Recent' })
-  const storage = home.getByRole('tab', { name: 'Storage' })
+  const storage = home.getByRole('tab', { name: 'Cloud storage' })
   await expect(recent).toHaveAttribute('aria-selected', 'true')
   await expect(home.getByRole('button', { name: /^Landing.*Continue/ })).toBeVisible()
   await expect(home.getByRole('button', { name: 'Open the sample file' })).toBeVisible()
@@ -50,13 +50,16 @@ test('Home leads with the last file and keeps the storage workspace in its own t
   await expect(home.getByRole('button', { name: /^Landing/ })).toHaveCount(0)
 
   await page.reload()
-  await expect(home.getByRole('tab', { name: 'Storage' })).toHaveAttribute('aria-selected', 'true')
+  await expect(home.getByRole('tab', { name: 'Cloud storage' })).toHaveAttribute(
+    'aria-selected',
+    'true'
+  )
 })
 
 test('each list of files on Home has its own address', async ({ page }) => {
   await page.goto('/?recent-files')
   const home = page.getByTestId('recent-files-home')
-  const storage = home.getByRole('tab', { name: 'Storage' })
+  const storage = home.getByRole('tab', { name: 'Cloud storage' })
 
   await storage.click()
   await expect(page).toHaveURL(/\/files\/storage\?recent-files/)
@@ -66,4 +69,12 @@ test('each list of files on Home has its own address', async ({ page }) => {
 
   await page.goto('/files/storage?recent-files')
   await expect(storage).toHaveAttribute('aria-selected', 'true')
+})
+
+test('the web editor opens Home on the list its address names', async ({ page }) => {
+  await page.goto('/files/storage')
+  const home = page.getByTestId('recent-files-home')
+  // Named by its id: the tab's label is the storage's name in the app's language.
+  await expect(home.locator('#home-tab-storage')).toHaveAttribute('aria-selected', 'true')
+  await expect(page).toHaveURL(/\/files\/storage$/)
 })

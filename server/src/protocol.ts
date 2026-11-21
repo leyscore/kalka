@@ -26,6 +26,11 @@ export const SERVER_PEER = 'server'
 export const SERVER_LOAD = 'srv-load'
 export const SERVER_COMPACT = 'srv-compact'
 export const SERVER_SNAPSHOT = 'srv-snap'
+/**
+ * A version uploaded outside Kalka (WebDAV, a restore) waits to be applied; the payload is its
+ * id. Sent before `srv-load`'s done item and whenever a new one arrives. Older Kalka ignores it.
+ */
+export const SERVER_PENDING = 'srv-pending'
 export const YJS_UPDATE = 'yjs-update'
 export const SYNC_REPLY = 'sync-reply'
 
