@@ -76,10 +76,9 @@ export const welcomeMessageDefaults = {
   learnClaudeHint: 'Connect your agent to the canvas',
   stepOf: params('Step {current} of {total}'),
   continue: 'Continue',
-  skip: 'Skip',
   aboutTitle: 'About you',
   aboutIntro:
-    'It helps us shape Kalka around the people who use it. Every answer is optional and stays on this device.',
+    'Every answer is optional. Your answers stay on this device: Kalka does not send them anywhere.',
   jobLabel: 'What do you do?',
   jobDesigner: 'Designer',
   jobDeveloper: 'Developer',

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DialogContent, DialogDescription, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui'
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
@@ -168,6 +168,19 @@ function focusName(event: Event): void {
   nameInput.value.focus()
 }
 
+// Leaving by Back or a link keeps what was typed, as Skip setup does.
+watch(welcomeOpen, (open) => {
+  if (!open) keepAnswers()
+})
+
+// Each new step starts at its title, for keyboards and screen readers alike.
+const column = useTemplateRef<HTMLElement>('column')
+watch(welcomeStep, async (step) => {
+  if (step === 'start') return
+  await nextTick()
+  column.value?.querySelector<HTMLElement>('h2')?.focus()
+})
+
 function onOpenChange(open: boolean): void {
   if (!open) finish()
 }
@@ -188,7 +201,12 @@ function onOpenChange(open: boolean): void {
           {{ welcome.skipSetup }}
         </AppButton>
 
-        <form v-if="welcomeStep !== 'claude'" :class="styles.column()" @submit.prevent="next">
+        <form
+          v-if="welcomeStep !== 'claude'"
+          ref="column"
+          :class="styles.column()"
+          @submit.prevent="next"
+        >
           <div :class="styles.progress()" role="img" :aria-label="progress">
             <span
               v-for="(step, index) in WELCOME_STEPS"
@@ -250,7 +268,9 @@ function onOpenChange(open: boolean): void {
           </template>
 
           <template v-else-if="welcomeStep === 'about'">
-            <DialogTitle :class="styles.title()">{{ welcome.aboutTitle }}</DialogTitle>
+            <DialogTitle tabindex="-1" :class="styles.title()">{{
+              welcome.aboutTitle
+            }}</DialogTitle>
             <DialogDescription :class="styles.intro()">{{ welcome.aboutIntro }}</DialogDescription>
             <div :class="styles.frame()">
               <div :class="styles.card()">
@@ -315,7 +335,6 @@ function onOpenChange(open: boolean): void {
                 <div :class="styles.nav()">
                   <AppButton size="lg" variant="link" @click="back">{{ welcome.back }}</AppButton>
                   <div class="flex-1" />
-                  <AppButton size="lg" variant="link" @click="next">{{ welcome.skip }}</AppButton>
                   <AppButton
                     type="submit"
                     size="lg"
@@ -332,7 +351,9 @@ function onOpenChange(open: boolean): void {
           </template>
 
           <template v-else-if="welcomeStep === 'design'">
-            <DialogTitle :class="styles.title()">{{ welcome.designTitle }}</DialogTitle>
+            <DialogTitle tabindex="-1" :class="styles.title()">{{
+              welcome.designTitle
+            }}</DialogTitle>
             <DialogDescription :class="styles.intro()">{{ welcome.designIntro }}</DialogDescription>
             <div :class="styles.frame()">
               <div :class="styles.card()">
@@ -369,7 +390,6 @@ function onOpenChange(open: boolean): void {
                 <div :class="styles.nav()">
                   <AppButton size="lg" variant="link" @click="back">{{ welcome.back }}</AppButton>
                   <div class="flex-1" />
-                  <AppButton size="lg" variant="link" @click="next">{{ welcome.skip }}</AppButton>
                   <AppButton
                     type="submit"
                     size="lg"
@@ -386,7 +406,7 @@ function onOpenChange(open: boolean): void {
           </template>
 
           <template v-else>
-            <DialogTitle :class="styles.title()">{{ welcome.aiTitle }}</DialogTitle>
+            <DialogTitle tabindex="-1" :class="styles.title()">{{ welcome.aiTitle }}</DialogTitle>
             <DialogDescription :class="styles.intro()">{{ welcome.aiIntro }}</DialogDescription>
             <div :class="styles.frame()">
               <div :class="styles.card()">
