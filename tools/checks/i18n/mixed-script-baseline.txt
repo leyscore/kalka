@@ -141,10 +141,13 @@ ja:code.editorHTMLCSSLabel
 ja:code.noSelectionDesignJSX
 ja:code.noSelectionTailwindJSX
 ja:code.writeJSX
+ja:collaboration.billingElsewhere
 ja:collaboration.invalidRoomLink
 ja:collaboration.joinRoomDescription
+ja:collaboration.manageBillingHint
 ja:collaboration.pasteRoomLinkOrId
 ja:collaboration.photoUnreadable
+ja:collaboration.proFeatures
 ja:collaboration.serverEmptyDescription
 ja:collaboration.serverLaunchFailed
 ja:collaboration.serverLaunchOpening
@@ -156,6 +159,7 @@ ja:collaboration.serverSettingsTitle
 ja:collaboration.serverSignInToOpenAnyDescription
 ja:collaboration.serverSignInToOpenDescription
 ja:collaboration.serverWhatIs
+ja:collaboration.teamFeatures
 ja:collaboration.unreachableDescription
 ja:commands.paletteDescription
 ja:comments.empty
@@ -440,10 +444,13 @@ zh-cn:code.editorHTMLCSSLabel
 zh-cn:code.noSelectionDesignJSX
 zh-cn:code.noSelectionTailwindJSX
 zh-cn:code.writeJSX
+zh-cn:collaboration.billingElsewhere
 zh-cn:collaboration.invalidRoomLink
 zh-cn:collaboration.joinRoomDescription
+zh-cn:collaboration.manageBillingHint
 zh-cn:collaboration.pasteRoomLinkOrId
 zh-cn:collaboration.photoUnreadable
+zh-cn:collaboration.proFeatures
 zh-cn:collaboration.serverEmptyDescription
 zh-cn:collaboration.serverLaunchFailed
 zh-cn:collaboration.serverLaunchOpening
@@ -455,6 +462,7 @@ zh-cn:collaboration.serverSettingsTitle
 zh-cn:collaboration.serverSignInToOpenAnyDescription
 zh-cn:collaboration.serverSignInToOpenDescription
 zh-cn:collaboration.serverWhatIs
+zh-cn:collaboration.teamFeatures
 zh-cn:collaboration.unreachableDescription
 zh-cn:commands.paletteDescription
 zh-cn:comments.empty

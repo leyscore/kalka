@@ -13,6 +13,7 @@ import HomeStart from '@/components/home/start/HomeStart.vue'
 import AppSidebar from '@/components/shell/AppSidebar.vue'
 import ShellFrame from '@/components/shell/ShellFrame.vue'
 import TeamPeople from '@/components/team/TeamPeople.vue'
+import TeamPlan from '@/components/team/TeamPlan.vue'
 import TeamSettingsPage from '@/components/team/TeamSettingsPage.vue'
 import { homeHero } from '@/theme/home/start'
 
@@ -41,6 +42,7 @@ const teamPage = computed(() => teamPageFromPath(route.path))
     >
       <div v-if="teamPage" :class="homeHero.files({ list: true })">
         <TeamPeople v-if="teamPage === 'people'" />
+        <TeamPlan v-else-if="teamPage === 'plan'" />
         <TeamSettingsPage v-else />
       </div>
       <section v-else-if="!onList" id="home-top" :class="homeHero.root">

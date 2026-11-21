@@ -20,3 +20,27 @@ export const teamPage = tv({
     notice: 'm-0 text-xs text-muted'
   }
 })
+
+/** The plan page: the current plan with its status and usage meters, then the plans to choose. */
+export const teamPlan = tv({
+  slots: {
+    current: 'flex flex-col gap-4 rounded-[14px] border border-hairline bg-group p-5',
+    currentHead: 'flex flex-wrap items-center gap-3',
+    planName: 'font-display text-xl font-semibold tracking-[-0.02em] text-surface',
+    status: 'rounded-full bg-success/12 px-2.5 py-1 text-[11px] font-medium text-success',
+    hint: 'm-0 text-xs leading-relaxed text-muted',
+    usage: 'grid gap-4 sm:grid-cols-3',
+    meter: 'flex flex-col gap-1.5',
+    meterLabel: 'text-xs text-muted',
+    meterValue: 'text-[13px] font-medium text-surface tabular-nums',
+    track: 'relative h-1.5 overflow-hidden rounded-full bg-panel-field',
+    fill: 'absolute inset-y-0 left-0 rounded-full bg-accent',
+    offer:
+      'flex flex-col gap-1.5 rounded-[14px] border border-hairline bg-group p-5 transition-shadow',
+    price: 'text-[13px] font-medium text-surface'
+  },
+  variants: {
+    warning: { true: { status: 'bg-warning/15 text-warning' } },
+    current: { true: { offer: 'shadow-[0_0_0_2px_var(--color-accent)]' } }
+  }
+})
