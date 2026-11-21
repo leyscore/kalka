@@ -45,6 +45,8 @@ export const shellSidebar = tv({
     accountDetail: 'truncate text-[11px] text-muted'
   },
   variants: {
+    /** A picture instead of initials: pixel art stays crisp at any size. */
+    image: { true: { avatar: 'bg-transparent object-cover [image-rendering:pixelated]' } },
     selected: {
       true: {
         item: 'bg-accent text-white hover:bg-accent hover:text-white'

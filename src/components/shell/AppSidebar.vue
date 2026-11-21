@@ -8,6 +8,7 @@ import IconServer from '~icons/hugeicons/server-stack-01'
 
 import { useI18n } from '@kalka/vue'
 
+import { useAvatar } from '@/app/collab/avatar'
 import { useCollabIdentity } from '@/app/collab/identity'
 import { serverAccount } from '@/app/collab/server/account'
 import { filesListFromPath, filesPath } from '@/app/home/files-route'
@@ -16,7 +17,6 @@ import { openExternalLink } from '@/app/shell/ui'
 import BrandMark from '@/components/brand/BrandMark.vue'
 import ShellSidebar from '@/components/shell/ShellSidebar.vue'
 import {
-  avatarColors,
   initialsOf,
   type ShellSidebarGroup,
   type ShellSidebarItem
@@ -33,6 +33,7 @@ const { files, storage, menu, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const identity = useCollabIdentity()
+const avatar = useAvatar()
 const ui = shellSidebar()
 
 const workspace = computed(() => {
@@ -67,7 +68,7 @@ const account = computed(() => {
     name,
     detail: files.value.accountAndSettings,
     initials: initialsOf(name),
-    colors: avatarColors(identity.color)
+    image: avatar.url.value
   }
 })
 

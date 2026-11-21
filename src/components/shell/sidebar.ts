@@ -33,8 +33,8 @@ export interface ShellAccount {
   /** Under the name; none when the name already says where the button leads. */
   detail?: string
   initials: string
-  /** The avatar's fill and ink, the person's color in shared rooms; the accent when absent. */
-  colors?: AvatarColors
+  /** Their picture: a photo or their pixel creature; the initials stand in without one. */
+  image?: string
 }
 
 export interface AvatarColors {

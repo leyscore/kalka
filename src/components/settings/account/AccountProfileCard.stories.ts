@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { ref } from 'vue'
 
+import { colorToCSS } from '@kalka/scene-graph/color'
 import type { Color } from '@kalka/scene-graph/primitives'
+
+import { pixelAvatarURL } from '@/app/collab/avatar/pixel'
 
 import AccountProfileCard from './AccountProfileCard.vue'
 
@@ -24,9 +27,19 @@ const meta = {
   },
   render: (args) => ({
     components: { AccountProfileCard },
-    setup: () => ({ args, name: ref(args.name) }),
+    setup: () => ({
+      args,
+      name: ref(args.name),
+      image: pixelAvatarURL(args.guestName, colorToCSS(args.color))
+    }),
     template: `<div class="w-full max-w-[760px]">
-      <AccountProfileCard v-model="name" :guest-name="args.guestName" :color="args.color" />
+      <AccountProfileCard
+        v-model="name"
+        :guest-name="args.guestName"
+        :color="args.color"
+        :image="image"
+        :has-photo="false"
+      />
     </div>`
   })
 } satisfies Meta<Args>
