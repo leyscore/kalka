@@ -421,6 +421,16 @@ export class Directory extends DurableObject<Env> {
     this.sql.exec('UPDATE documents SET live = ? WHERE id = ?', count, id)
   }
 
+  /** What an invitation offers, without using it: its role and the address it was sent to. */
+  async checkInvite(code: string): Promise<{ role: Role; email: string | null } | null> {
+    const invite = this.one<{ role: Role; expires_at: number; email: string | null }>(
+      'SELECT role, expires_at, email FROM invites WHERE hash = ?',
+      await hashToken(code)
+    )
+    if (!invite || invite.expires_at < Date.now()) return null
+    return { role: invite.role, email: invite.email }
+  }
+
   async register(input: {
     invite: string
     email: string
@@ -428,12 +438,16 @@ export class Directory extends DurableObject<Env> {
     password: string
   }): Promise<Result<{ token: string; user: User }>> {
     const hash = await hashToken(input.invite)
-    const invite = this.one<{ role: Role; expires_at: number }>(
-      'SELECT role, expires_at FROM invites WHERE hash = ?',
+    const invite = this.one<{ role: Role; expires_at: number; email: string | null }>(
+      'SELECT role, expires_at, email FROM invites WHERE hash = ?',
       hash
     )
     if (!invite || invite.expires_at < Date.now()) {
       return failure(400, 'This invitation is invalid or has expired.')
+    }
+    // An invitation sent to an address is for that address only, with the role it carries.
+    if (invite.email && invite.email.toLowerCase() !== input.email.trim().toLowerCase()) {
+      return failure(403, 'This invitation was sent to another email address.')
     }
     const invalid = checkAccount(input.email, input.name, input.password)
     if (invalid) return invalid
