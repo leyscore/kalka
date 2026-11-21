@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DialogTitle } from 'reka-ui'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import PixelSky from '@/components/brand/PixelSky.vue'
 import AppDialogRoot from '@/components/ui/dialog/AppDialogRoot.vue'
@@ -11,10 +11,19 @@ import { shellFrame } from '@/theme/shell/sidebar'
  * and the page beside it. On a phone the sidebar waits behind a menu button and opens as a drawer;
  * choosing a place in it closes it.
  */
-const { label, menuLabel } = defineProps<{
+const {
+  label,
+  menuLabel,
+  titleBar = false
+} = defineProps<{
   /** The sidebar's name for assistive technology. */
   label: string
   menuLabel: string
+  /**
+   * Keep a strip at the top that moves the window and leaves room for its controls, for a frame
+   * that covers the desktop app's tab bar, as Settings does.
+   */
+  titleBar?: boolean
 }>()
 defineSlots<{
   sidebar: () => unknown
@@ -22,7 +31,7 @@ defineSlots<{
   phoneTitle?: () => unknown
 }>()
 
-const ui = shellFrame()
+const ui = computed(() => shellFrame({ titleBar }))
 const drawerOpen = ref(false)
 
 function closeOnPlace(event: MouseEvent): void {
@@ -37,6 +46,7 @@ function closeOnPlace(event: MouseEvent): void {
 <template>
   <div :class="ui.root()" data-test-id="shell-frame">
     <PixelSky place="screen" class="-z-10" />
+    <div v-if="titleBar" :class="ui.titleBar()" />
     <div :class="ui.frame()">
       <aside :class="ui.aside()" :aria-label="label">
         <slot name="sidebar" />

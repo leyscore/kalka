@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { TabsList, TabsTrigger } from 'reka-ui'
+import { computed, useTemplateRef, type ComponentPublicInstance } from 'vue'
 
 import type { SettingsSidebarGroup } from '@/components/settings/layout/sidebar'
 import type { ShellAccount } from '@/components/shell/sidebar'
+import { useGlide } from '@/components/ui/motion/useGlide'
+import { glidePills } from '@/theme/motion/glide'
 import { shellSidebar } from '@/theme/shell/sidebar'
 
 /**
@@ -30,6 +33,18 @@ const {
 const emit = defineEmits<{ back: [] }>()
 
 const ui = shellSidebar()
+const list = useTemplateRef<ComponentPublicInstance>('list')
+const nav = computed(() => {
+  const element: unknown = list.value?.$el
+  return element instanceof HTMLElement ? element : null
+})
+const SECTION = '[data-shell-place]'
+useGlide(nav, {
+  items: SECTION,
+  active: '[data-state="active"], [data-parent]',
+  pillClass: glidePills.shellActive
+})
+useGlide(nav, { items: SECTION, hover: true, pillClass: glidePills.shellHover })
 </script>
 
 <template>
@@ -37,7 +52,7 @@ const ui = shellSidebar()
     <button
       v-if="canLeave"
       type="button"
-      :class="ui.item()"
+      :class="[ui.item(), 'hover:bg-panel-field']"
       data-shell-place="back"
       data-test-id="app-settings-back"
       @click="emit('back')"
@@ -55,7 +70,7 @@ const ui = shellSidebar()
       </span>
     </div>
 
-    <TabsList :aria-label="label" :class="ui.nav()">
+    <TabsList ref="list" :aria-label="label" :class="ui.nav()">
       <template v-for="group in groups" :key="group.id">
         <span :class="ui.group()" aria-hidden="true">{{ group.label }}</span>
         <TabsTrigger
@@ -64,8 +79,9 @@ const ui = shellSidebar()
           :value="section.value"
           :class="[
             ui.item({ selected: section.value === parent }),
-            'data-[state=active]:bg-accent data-[state=active]:text-white data-[state=active]:hover:bg-accent'
+            'data-[state=active]:text-white data-[state=active]:hover:text-white'
           ]"
+          :data-parent="section.value === parent || undefined"
           :data-shell-place="section.value"
           :data-test-id="`settings-section-${section.value}`"
         >
