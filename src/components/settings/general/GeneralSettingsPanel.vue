@@ -10,6 +10,7 @@ import { animationPreference } from '@/app/shell/motion'
 import { useAppTheme } from '@/app/shell/theme'
 import CredentialSettingsSection from '@/components/settings/credentials/CredentialSettingsSection.vue'
 import RenderingSettingsSection from '@/components/settings/general/RenderingSettingsSection.vue'
+import ThemePicker from '@/components/settings/general/ThemePicker.vue'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
 import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
@@ -62,8 +63,8 @@ const snapToPixelGrid = computed({
       <template #title>{{ menu.language }}</template>
       <template #description>{{ settings.languageDescription }}</template>
       <SettingsGroup>
-        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
-          <span class="text-xs text-surface">{{ menu.language }}</span>
+        <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
+          <span class="text-[13px] text-surface">{{ menu.language }}</span>
           <AppSelect
             v-model="language"
             :label="menu.language"
@@ -78,21 +79,11 @@ const snapToPixelGrid = computed({
     <SettingsSection>
       <template #title>{{ settings.appearance }}</template>
       <SettingsGroup>
-        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
-          <span class="text-xs text-surface">{{ menu.theme }}</span>
-          <AppSelect
-            v-model="theme"
-            :label="menu.theme"
-            :options="[
-              { value: 'auto', label: menu.themeAuto },
-              { value: 'light', label: menu.themeLight },
-              { value: 'dark', label: menu.themeDark }
-            ]"
-            :ui="selectUI"
-          />
-        </label>
-        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
-          <span class="text-xs text-surface">{{ settings.animations }}</span>
+        <ThemePicker v-model="theme" />
+      </SettingsGroup>
+      <SettingsGroup>
+        <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
+          <span class="text-[13px] text-surface">{{ settings.animations }}</span>
           <AppSelect
             v-model="animationPreference"
             :label="settings.animations"
@@ -103,10 +94,10 @@ const snapToPixelGrid = computed({
             :ui="selectUI"
           />
         </label>
-        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
+        <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
           <span>
-            <span class="block text-xs text-surface">{{ settings.reduceAgentAnimations }}</span>
-            <span class="block text-[11px] text-muted">{{
+            <span class="block text-[13px] text-surface">{{ settings.reduceAgentAnimations }}</span>
+            <span class="mt-0.5 block text-xs text-muted">{{
               settings.reduceAgentAnimationsDescription
             }}</span>
           </span>
@@ -123,10 +114,10 @@ const snapToPixelGrid = computed({
       <template #title>{{ recovery.settingsTitle }}</template>
 
       <SettingsGroup>
-        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
+        <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
           <span>
-            <span class="block text-xs text-surface">{{ recovery.preserveUnsavedWork }}</span>
-            <span class="block text-[11px] text-muted">{{
+            <span class="block text-[13px] text-surface">{{ recovery.preserveUnsavedWork }}</span>
+            <span class="mt-0.5 block text-xs text-muted">{{
               recovery.preserveUnsavedWorkDescription
             }}</span>
           </span>
@@ -144,10 +135,10 @@ const snapToPixelGrid = computed({
       <template #description>{{ settings.snappingDescription }}</template>
 
       <SettingsGroup>
-        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
+        <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
           <span>
-            <span class="block text-xs text-surface">{{ settings.snapToGeometry }}</span>
-            <span class="block text-[11px] text-muted">{{
+            <span class="block text-[13px] text-surface">{{ settings.snapToGeometry }}</span>
+            <span class="mt-0.5 block text-xs text-muted">{{
               settings.snapToGeometryDescription
             }}</span>
           </span>
@@ -157,10 +148,10 @@ const snapToPixelGrid = computed({
             data-test-id="settings-snap-geometry"
           />
         </label>
-        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
+        <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
           <span>
-            <span class="block text-xs text-surface">{{ settings.snapToObjects }}</span>
-            <span class="block text-[11px] text-muted">{{
+            <span class="block text-[13px] text-surface">{{ settings.snapToObjects }}</span>
+            <span class="mt-0.5 block text-xs text-muted">{{
               settings.snapToObjectsDescription
             }}</span>
           </span>
@@ -170,10 +161,10 @@ const snapToPixelGrid = computed({
             data-test-id="settings-snap-objects"
           />
         </label>
-        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
+        <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
           <span>
-            <span class="block text-xs text-surface">{{ settings.snapToPixelGrid }}</span>
-            <span class="block text-[11px] text-muted">{{
+            <span class="block text-[13px] text-surface">{{ settings.snapToPixelGrid }}</span>
+            <span class="mt-0.5 block text-xs text-muted">{{
               settings.snapToPixelGridDescription
             }}</span>
           </span>

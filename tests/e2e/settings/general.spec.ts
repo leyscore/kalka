@@ -9,12 +9,11 @@ test('language can be changed from General settings and persists', async ({ page
   await canvas.waitForInit()
 
   await page.getByTestId('app-settings-trigger').click()
-  await page.getByRole('combobox', { name: 'Theme', exact: true }).click()
-  await page.getByRole('option', { name: 'Dark', exact: true }).click()
+  await page.getByRole('radio', { name: 'Dark', exact: true }).click()
   await page.getByTestId('settings-language').click()
   await page.getByRole('option', { name: 'Русский' }).click()
   await expect(page.getByTestId('app-settings')).toContainText('Настройки')
-  await expect(page.getByRole('combobox', { name: 'Тема', exact: true })).toHaveText('Тёмная')
+  await expect(page.getByRole('radio', { name: 'Тёмная', exact: true })).toBeChecked()
   await expect(page.getByRole('combobox', { name: 'Анимации' })).toHaveText('Как в системе')
 
   await page.reload()
@@ -26,7 +25,7 @@ test('language can be changed from General settings and persists', async ({ page
   await page.getByTestId('settings-language').click()
   await page.getByRole('option', { name: 'English' }).click()
   await expect(page.getByTestId('app-settings')).toContainText('Settings')
-  await expect(page.getByRole('combobox', { name: 'Theme', exact: true })).toHaveText('Dark')
+  await expect(page.getByRole('radio', { name: 'Dark', exact: true })).toBeChecked()
   await expect(page.getByRole('combobox', { name: 'Animations' })).toHaveText('Follow system')
 })
 
