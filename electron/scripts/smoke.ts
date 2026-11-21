@@ -2,12 +2,17 @@
  * Starts the packaged app from `electron-builder --dir` and checks that the editor comes up:
  * the window opens, the desktop bridge is there, and the app mounts. On Linux CI it runs under
  * `xvfb-run`. Writes `release/smoke.png` for the job's artifacts.
+ *
+ * The packaged app refuses `--inspect` (an Electron fuse, `scripts/after-pack.cjs`), which
+ * Playwright's Electron launcher needs, so the check starts it itself and attaches over the
+ * Chrome DevTools port instead.
  */
-import { existsSync, mkdtempSync } from 'node:fs'
+import { spawn } from 'node:child_process'
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { _electron as electron } from '@playwright/test'
+import { chromium } from '@playwright/test'
 
 /** What the check reads in the editor's window. */
 interface EditorPage {
@@ -34,14 +39,41 @@ function executable(): string {
 
 // Its own profile, so an installed Kalka's single-instance lock and settings stay out of it.
 const profile = `--user-data-dir=${mkdtempSync(join(tmpdir(), 'kalka-smoke-'))}`
-const app = await electron.launch({
-  executablePath: executable(),
-  // CI runners have no GPU and run as root on Linux.
-  args: process.platform === 'linux' ? [profile, '--no-sandbox', '--disable-gpu'] : [profile],
-  timeout: TIMEOUT_MS
+// CI runners have no GPU and run as root on Linux.
+const extra = process.platform === 'linux' ? ['--no-sandbox', '--disable-gpu'] : []
+const child = spawn(executable(), [profile, '--remote-debugging-port=0', ...extra], {
+  stdio: ['ignore', 'ignore', 'pipe']
 })
+
+/** The DevTools address Chromium prints once it listens. */
+const endpoint = await new Promise<string>((resolve, reject) => {
+  let output = ''
+  const timer = setTimeout(() => reject(new Error(`No DevTools port after ${TIMEOUT_MS} ms:\n${output}`)), TIMEOUT_MS)
+  child.stderr.on('data', (chunk: Buffer) => {
+    output += chunk.toString()
+    const found = /DevTools listening on (ws:\/\/\S+)/.exec(output)?.[1]
+    if (found) {
+      clearTimeout(timer)
+      resolve(found)
+    }
+  })
+  child.once('exit', (code) => reject(new Error(`Kalka exited with ${code}:\n${output}`)))
+})
+
+const browser = await chromium.connectOverCDP(endpoint, { timeout: TIMEOUT_MS })
 try {
-  const page = await app.firstWindow({ timeout: TIMEOUT_MS })
+  const deadline = Date.now() + TIMEOUT_MS
+  const editor = async () => {
+    for (;;) {
+      const page = browser.contexts().flatMap((context) => context.pages())[0]
+      if (page) return page
+      if (Date.now() > deadline) throw new Error('No window opened')
+      await new Promise((resolve) => {
+        setTimeout(resolve, 250)
+      })
+    }
+  }
+  const page = await editor()
   await page.waitForFunction(
     () => {
       // This script is typed for Node; the check runs in the page.
@@ -55,8 +87,10 @@ try {
     { timeout: TIMEOUT_MS }
   )
   await page.screenshot({ path: join(RELEASE, 'smoke.png') })
-  const version = await app.evaluate(({ app: electronApp }) => electronApp.getVersion())
+  const manifest: unknown = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'package.json'), 'utf8'))
+  const version = typeof manifest === 'object' && manifest && 'version' in manifest ? String(manifest.version) : '?'
   console.log(`Kalka ${version} started on ${process.platform}`)
 } finally {
-  await app.close()
+  await browser.close().catch(() => undefined)
+  child.kill()
 }

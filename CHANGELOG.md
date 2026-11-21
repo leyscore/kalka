@@ -22,6 +22,11 @@
 - Errors and warnings in the Publish library, Rename selection and library update dialogs, variant authoring and Diagnostics show in the theme's error and warning colours instead of the default text colour.
 - On the Variables page, moving from one variable to the next no longer blanks the inspector for a moment: it shows the new variable in place.
 
+### Security
+
+- In the desktop app, windows other than the editor, such as Software Update, can no longer navigate to a page outside Kalka or open new windows. Native calls from any page that is not Kalka's own are refused.
+- The desktop app ignores `NODE_OPTIONS` and `--inspect`, loads its code only from its packaged archive (on macOS, after checking the archive against its hash), and encrypts its cookies on disk. Another program can no longer use these to run code as Kalka.
+
 ## 0.2.0-beta.4 — 2026-11-20
 
 ### Breaking changes
