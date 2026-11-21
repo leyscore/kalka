@@ -132,7 +132,12 @@ function openDocs(): void {
       <BrandMark variant="app-icon" decorative class="size-8" />
     </template>
     <template #footer>
-      <button type="button" :class="ui.item()" data-test-id="shell-documentation" @click="openDocs">
+      <button
+        type="button"
+        :class="[ui.item(), 'hover:bg-panel-field']"
+        data-test-id="shell-documentation"
+        @click="openDocs"
+      >
         <icon-hugeicons-help-circle :class="ui.itemIcon()" aria-hidden="true" />
         <span :class="ui.itemLabel()">{{ menu.documentation }}</span>
       </button>

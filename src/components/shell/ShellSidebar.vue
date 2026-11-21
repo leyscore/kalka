@@ -1,5 +1,9 @@
 <script setup lang="ts">
+import { useTemplateRef } from 'vue'
+
 import type { ShellSidebarProps } from '@/components/shell/sidebar'
+import { useGlide } from '@/components/ui/motion/useGlide'
+import { glidePills } from '@/theme/motion/glide'
 import { shellSidebar } from '@/theme/shell/sidebar'
 
 const { workspace, groups, selected, account, label } = defineProps<ShellSidebarProps>()
@@ -7,6 +11,13 @@ const emit = defineEmits<{ select: [id: string]; account: [] }>()
 defineSlots<{ mark?: () => unknown; footer?: () => unknown }>()
 
 const ui = shellSidebar()
+const nav = useTemplateRef<HTMLElement>('nav')
+useGlide(nav, {
+  items: '[data-shell-place]',
+  active: '[aria-current="page"]',
+  pillClass: glidePills.shellActive
+})
+useGlide(nav, { items: '[data-shell-place]', hover: true, pillClass: glidePills.shellHover })
 </script>
 
 <template>
@@ -21,7 +32,7 @@ const ui = shellSidebar()
       </span>
     </div>
 
-    <nav :aria-label="label" :class="ui.nav()">
+    <nav ref="nav" :aria-label="label" :class="ui.nav()">
       <template v-for="group in groups" :key="group.id">
         <span v-if="group.label" :class="ui.group()">{{ group.label }}</span>
         <button

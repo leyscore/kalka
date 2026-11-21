@@ -50,6 +50,7 @@ import {
 } from '@/components/ui/dialog'
 import AppTabsContent from '@/components/ui/tabs/AppTabsContent.vue'
 import AppTabsRoot from '@/components/ui/tabs/AppTabsRoot.vue'
+import { IS_TAURI } from '@/constants'
 import { settingsColumn, settingsShell } from '@/theme/settings/shell'
 
 /**
@@ -163,7 +164,7 @@ function onOpenChange(open: boolean): void {
       :ui="{ root: 'flex-col' }"
       @update:model-value="onSectionChange"
     >
-      <ShellFrame :label="settings.title" :menu-label="files.openMenu">
+      <ShellFrame :label="settings.title" :menu-label="files.openMenu" :title-bar="IS_TAURI">
         <template #sidebar>
           <SettingsSidebar
             :groups="groups"

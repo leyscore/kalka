@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Changed
+
+- The sidebar and pages around Home and Settings are glass on the sky, as on kalka.design: white glass in the light theme and night-blue glass in the dark one, instead of opaque white and grey. In the sidebars the highlight glides from place to place under the pointer and to the current place, as in the rest of the app.
+
+### Fixed
+
+- In the desktop app on macOS, Settings starts below the window's buttons instead of under them.
+
 ## 0.2.0-beta.7 — 2026-11-21
 
 ### Fixed

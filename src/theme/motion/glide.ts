@@ -20,6 +20,10 @@ export const glidePills = {
   selected: `rounded-lg bg-row-selected ${glideMotion}`,
   /** The hover highlight beside it. */
   selectedHover: `rounded-lg bg-hover ${glideMotion}`,
+  /** The current place in the app's shell sidebar: the accent, as the item it moves to. */
+  shellActive: `rounded-[10px] bg-accent ${glideMotion}`,
+  /** The hover highlight in that sidebar. */
+  shellHover: `rounded-[10px] bg-panel-field ${glideMotion}`,
   /** The accent pill behind the active tool. */
   accent: `rounded-[9px] bg-accent ${glideMotion}`
 } as const
