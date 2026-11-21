@@ -9,7 +9,7 @@
 ### Changed
 
 - Home has a sidebar: your workspace (this computer, or the Kalka server or Cloud workspace you are signed in to), Home, the places your files live, the documentation, and your account leading to Settings. On a phone it opens from a menu button. Home itself shows your recent files from every place, server files included; each place in the sidebar (Local files, Cloud storage, your server) lists its files in full at its own address.
-- Settings opens in the same frame: the sidebar holds Back, you, and the sections grouped under App and AI, with the section on a panel beside it; on a phone the sections open from the menu button and a close button leaves Settings.
+- Settings opens in the same frame, its sections grouped as people look for them: Account (your picture, a pixel creature drawn for you until you choose a photo or draw another, your name with a live preview of your cursor as teammates see it, and the server or Cloud you're signed in to), Preferences (the theme picked from small windows, language, snapping, recovery), Shared storage, Images and photos, Kalka AI (connect an AI first, then the model that designs, with a model per task and the chat options folded below), External agents (your coding agents, browser agents, and Choose tool by tool as a page of its own, with the local server under Advanced settings), Usage and Diagnostics (now with rendering performance). Each section opens with a sentence on what it is for, in a column centered beside the sidebar; copy buttons are an icon in the corner. On a phone the sections open from the menu button and a close button leaves Settings.
 
 ## 0.2.0-beta.5 — 2026-11-21
 

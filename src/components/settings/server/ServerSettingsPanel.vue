@@ -18,13 +18,12 @@ import { serverProblem, type ServerProblem } from '@/app/collab/server/problem'
 import { showHomeFiles } from '@/app/home/show'
 import { closeSettings } from '@/app/settings/open'
 import { openExternalLink } from '@/app/shell/ui'
-import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
 import SettingsLink from '@/components/settings/layout/SettingsLink.vue'
-import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 import { SERVER_GUIDE_URL } from '@/constants'
+import { accountCard } from '@/theme/settings/account'
 
 import { serverProblemText } from './problemText'
 
@@ -123,18 +122,30 @@ watch(
 function openServerPage(url: string) {
   void openExternalLink(url)
 }
+const card = accountCard()
 </script>
 
 <template>
-  <SettingsSection data-test-id="settings-server">
-    <template #title>{{ messages.serverSettingsTitle }}</template>
-    <template #description>
-      {{ messages.serverSettingsDescription }}
-      <SettingsLink :href="SERVER_GUIDE_URL">{{ messages.serverWhatIs }}</SettingsLink>
-    </template>
+  <section :class="card.root()" data-test-id="settings-server">
+    <div :class="card.header()">
+      <span :class="card.icon()" aria-hidden="true">
+        <icon-hugeicons-server-stack-01 class="size-5" />
+      </span>
+      <div :class="card.heading()">
+        <h3 :class="card.title()">{{ messages.serverSettingsTitle }}</h3>
+        <p :class="card.description()">
+          {{ messages.serverSettingsDescription }}
+          <SettingsLink :href="SERVER_GUIDE_URL">{{ messages.serverWhatIs }}</SettingsLink>
+        </p>
+      </div>
+      <span v-if="signedIn && serverAccount" :class="card.status()">
+        <span class="size-1.5 rounded-full bg-current" aria-hidden="true" />
+        {{ messages.serverConnected }}
+      </span>
+    </div>
 
-    <SettingsGroup v-if="signedIn && serverAccount">
-      <div class="flex flex-wrap items-center justify-between gap-3 px-3.5 py-3">
+    <div v-if="signedIn && serverAccount" class="border-t border-hairline">
+      <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
         <div class="min-w-0">
           <p class="truncate text-[13px] text-surface" data-test-id="server-signed-in">
             {{
@@ -163,7 +174,7 @@ function openServerPage(url: string) {
         </div>
       </div>
       <div
-        class="flex flex-wrap items-center justify-between gap-3 border-t border-hairline px-3.5 py-3"
+        class="flex flex-wrap items-center justify-between gap-3 border-t border-hairline px-5 py-3"
       >
         <p class="min-w-0 flex-1 text-xs text-surface">
           {{ messages.serverFilesWhere({ server: serverAccount.serverName }) }}
@@ -177,11 +188,11 @@ function openServerPage(url: string) {
           {{ messages.serverSeeFiles }}
         </AppButton>
       </div>
-      <p class="px-3.5 pb-3 text-[11px] text-muted">{{ messages.serverOpenPageDescription }}</p>
-    </SettingsGroup>
+      <p class="px-5 pb-3 text-[11px] text-muted">{{ messages.serverOpenPageDescription }}</p>
+    </div>
 
-    <SettingsGroup v-else>
-      <div class="flex flex-col gap-3 px-3.5 py-3">
+    <div v-else class="border-t border-hairline">
+      <div class="flex flex-col gap-3 px-5 py-3">
         <AppAlert
           v-if="serverSessionExpired && serverAccount"
           tone="warning"
@@ -297,6 +308,6 @@ function openServerPage(url: string) {
         <AppAlert v-if="waitingForBrowser" :heading="messages.serverWaitingForBrowser" />
         <AppAlert v-if="error" tone="error" :heading="error" data-test-id="server-error" />
       </div>
-    </SettingsGroup>
-  </SettingsSection>
+    </div>
+  </section>
 </template>

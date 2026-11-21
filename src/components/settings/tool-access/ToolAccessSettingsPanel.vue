@@ -13,6 +13,7 @@ import { AppDialogBody } from '@/components/ui/dialog'
 import AppPlaceholder from '@/components/ui/feedback/AppPlaceholder.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
+import { settingsColumn } from '@/theme/settings/shell'
 
 import ToolAccessList from './ToolAccessList.vue'
 
@@ -41,67 +42,73 @@ function setExpanded(effect: 'read' | 'write', open: boolean) {
 
 <template>
   <div class="flex min-h-0 min-w-0 flex-1 flex-col" data-slot="tool-access">
-    <div
-      class="flex shrink-0 flex-wrap items-center gap-2 border-b border-hairline px-5 py-3 sm:px-6"
-      data-slot="tool-access-toolbar"
-    >
-      <SegmentedControl
-        :model-value="target"
-        :options="targetOptions"
-        :label="automation.toolAccessTarget"
-        class="max-sm:w-full"
-        @update:model-value="selectTarget"
-      />
-      <span class="text-xs text-muted">
-        {{ automation.toolsEnabled({ enabled: enabledCount, total: tools.length }) }}
-      </span>
-      <AppButton size="xs" variant="link" @click="reset">{{
-        automation.restoreToolDefaults
-      }}</AppButton>
-      <AppInput
-        v-model="search"
-        type="search"
-        class="ml-auto min-w-40 flex-1 sm:max-w-60"
-        :placeholder="automation.searchTools"
-        :aria-label="automation.searchTools"
-      />
+    <div class="shrink-0 border-b border-hairline px-5 py-3 sm:px-6">
+      <div
+        :class="[settingsColumn, 'flex flex-wrap items-center gap-2']"
+        data-slot="tool-access-toolbar"
+      >
+        <SegmentedControl
+          :model-value="target"
+          :options="targetOptions"
+          :label="automation.toolAccessTarget"
+          class="max-sm:w-full"
+          @update:model-value="selectTarget"
+        />
+        <span class="text-xs text-muted">
+          {{ automation.toolsEnabled({ enabled: enabledCount, total: tools.length }) }}
+        </span>
+        <AppButton size="xs" variant="link" @click="reset">{{
+          automation.restoreToolDefaults
+        }}</AppButton>
+        <AppInput
+          v-model="search"
+          type="search"
+          class="ml-auto min-w-40 flex-1 sm:max-w-60"
+          :placeholder="automation.searchTools"
+          :aria-label="automation.searchTools"
+        />
+      </div>
     </div>
     <AppDialogBody :ui="{ body: 'p-5 sm:p-6' }">
-      <p class="pb-3 text-xs leading-relaxed text-muted">
-        {{
-          target === 'ai' ? automation.aiToolAccessDescription : automation.mcpToolAccessDescription
-        }}
-      </p>
-      <AppPlaceholder v-if="!hasMatches" :label="automation.noMatchingTools" />
-      <ToolAccessList
-        v-else
-        :groups="labelledGroups"
-        :expanded="expanded"
-        :is-enabled="isEnabled"
-        @update:expanded="setExpanded"
-        @set-group="setGroupEnabled"
-        @set-tool="setToolEnabled"
-      />
-      <p class="border-t border-hairline pt-3 text-xs leading-relaxed text-muted">
-        {{
-          target === 'ai'
-            ? automation.aiToolsNotice
-            : mcpRuntime.externallyManaged
-              ? automation.externalRestartNotice
-              : automation.toolsRestartNotice
-        }}
-      </p>
-      <div v-if="target === 'mcp'" class="pt-2">
-        <AppButton
-          color="primary"
-          variant="solid"
-          :disabled="mcpRuntime.externallyManaged"
-          :loading="mcpRuntime.status === 'starting' || mcpRuntime.checking"
-          @click="restart"
-          >{{
-            mcpRuntime.externallyManaged ? automation.externallyManaged : automation.restart
-          }}</AppButton
-        >
+      <div :class="settingsColumn">
+        <p class="pb-3 text-xs leading-relaxed text-muted">
+          {{
+            target === 'ai'
+              ? automation.aiToolAccessDescription
+              : automation.mcpToolAccessDescription
+          }}
+        </p>
+        <AppPlaceholder v-if="!hasMatches" :label="automation.noMatchingTools" />
+        <ToolAccessList
+          v-else
+          :groups="labelledGroups"
+          :expanded="expanded"
+          :is-enabled="isEnabled"
+          @update:expanded="setExpanded"
+          @set-group="setGroupEnabled"
+          @set-tool="setToolEnabled"
+        />
+        <p class="border-t border-hairline pt-3 text-xs leading-relaxed text-muted">
+          {{
+            target === 'ai'
+              ? automation.aiToolsNotice
+              : mcpRuntime.externallyManaged
+                ? automation.externalRestartNotice
+                : automation.toolsRestartNotice
+          }}
+        </p>
+        <div v-if="target === 'mcp'" class="pt-2">
+          <AppButton
+            color="primary"
+            variant="solid"
+            :disabled="mcpRuntime.externallyManaged"
+            :loading="mcpRuntime.status === 'starting' || mcpRuntime.checking"
+            @click="restart"
+            >{{
+              mcpRuntime.externallyManaged ? automation.externallyManaged : automation.restart
+            }}</AppButton
+          >
+        </div>
       </div>
     </AppDialogBody>
   </div>

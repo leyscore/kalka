@@ -126,6 +126,8 @@ test('MCP requires a token only for enabled bearer connections and preserves fai
 }) => {
   await openSettings(page)
   await page.getByTestId('settings-section-mcp').click()
+  // The local server's own settings wait under Advanced settings.
+  await page.getByTestId('settings-mcp-advanced').getByRole('button').first().click()
   await page.getByRole('button', { name: 'Add connection', exact: true }).click()
   await page.getByRole('textbox', { name: 'Connection name', exact: true }).fill('Test server')
   await page
@@ -213,6 +215,8 @@ test('MCP field feedback is translated after switching the locale', async ({ pag
   await page.getByTestId('settings-language').click()
   await page.getByRole('option', { name: 'Русский', exact: true }).click()
   await page.getByTestId('settings-section-mcp').click()
+  // The local server's own settings wait under Advanced settings.
+  await page.getByTestId('settings-mcp-advanced').getByRole('button').first().click()
   await page.getByRole('button', { name: 'Добавить подключение', exact: true }).click()
   await page.getByRole('button', { name: 'Сохранить', exact: true }).click()
   const name = page.getByRole('textbox', { name: 'Название подключения', exact: true })

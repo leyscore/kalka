@@ -5,10 +5,13 @@ import { CanvasHelper } from '#tests/helpers/canvas'
 async function selectMCPSection(page: Page, mobile: boolean) {
   if (mobile) {
     await page.getByTestId('app-settings').getByTestId('shell-menu').click()
-    await page.getByRole('tab', { name: 'MCP', exact: true }).click()
+    await page.getByRole('tab', { name: 'External agents', exact: true }).click()
   } else {
     await page.getByTestId('settings-section-mcp').click()
+    await page.getByTestId('settings-mcp-advanced').getByRole('button').first().click()
   }
+  // The local server's own settings wait under Advanced settings.
+  await page.getByTestId('settings-mcp-advanced').getByRole('button').first().click()
 }
 
 for (const viewport of [
@@ -93,11 +96,11 @@ test('MCP connection forms validate, retain invalid drafts and reset dirty state
   await expect(name).toHaveValue('')
   await expect(name).toHaveAttribute('aria-invalid', 'false')
   await name.fill('Temporary')
-  await page.getByTestId('settings-section-tools').click()
+  await page.getByTestId('settings-section-usage').click()
   await expect(page.getByRole('alertdialog')).toBeVisible()
   await page.getByRole('button', { name: 'Keep editing', exact: true }).click()
   await name.fill('')
-  await page.getByTestId('settings-section-tools').click()
+  await page.getByTestId('settings-section-usage').click()
   await expect(page.getByRole('alertdialog')).toHaveCount(0)
   await selectMCPSection(page, false)
   await page.getByRole('button', { name: 'Add connection', exact: true }).click()

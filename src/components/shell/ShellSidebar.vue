@@ -49,7 +49,8 @@ const ui = shellSidebar()
         data-test-id="shell-account"
         @click="emit('account')"
       >
-        <span :class="ui.avatar()" aria-hidden="true">{{ account.initials }}</span>
+        <img v-if="account.image" :src="account.image" alt="" :class="ui.avatar({ image: true })" />
+        <span v-else :class="ui.avatar()" aria-hidden="true">{{ account.initials }}</span>
         <span :class="ui.accountText()">
           <span :class="ui.accountName()">{{ account.name }}</span>
           <span v-if="account.detail" :class="ui.accountDetail()">{{ account.detail }}</span>

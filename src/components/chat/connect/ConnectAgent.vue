@@ -118,7 +118,10 @@ onMounted(() => {
     >
       <icon-hugeicons-arrow-left-01 class="size-3" />{{ common.back }}
     </button>
-    <p v-else :class="styles.heading()">{{ ai.connectProvider }}</p>
+    <!-- In Settings the section title already says it. -->
+    <p v-else-if="placement !== 'settings'" :class="styles.heading()">
+      {{ ai.connectProvider }}
+    </p>
 
     <div v-if="screen === 'kind'" :class="styles.list()">
       <button

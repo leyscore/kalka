@@ -49,6 +49,8 @@ test('MCP connections keep bearer tokens out of ordinary settings', async ({ pag
 
   await page.getByTestId('app-settings-trigger').click()
   await page.getByTestId('settings-section-mcp').click()
+  // The local server's own settings wait under Advanced settings.
+  await page.getByTestId('settings-mcp-advanced').getByRole('button').first().click()
   const section = page.getByTestId('app-settings')
   await section.getByRole('button', { name: 'Add connection' }).click()
   await section.getByLabel('Connection name').fill('GitHub')
@@ -71,6 +73,8 @@ test('MCP connections keep bearer tokens out of ordinary settings', async ({ pag
   await canvas.waitForInit()
   await page.getByTestId('app-settings-trigger').click()
   await page.getByTestId('settings-section-mcp').click()
+  // The local server's own settings wait under Advanced settings.
+  await page.getByTestId('settings-mcp-advanced').getByRole('button').first().click()
   await expect(section).toContainText('https://example.com/mcp')
   await expect(section).toContainText('Enabled')
   await section.getByRole('button', { name: /GitHub/ }).click()
@@ -122,6 +126,8 @@ test('MCP automation settings filter and persist tool availability', async ({ pa
 
   await page.getByTestId('app-settings-trigger').click()
   await page.getByTestId('settings-section-mcp').click()
+  // The local server's own settings wait under Advanced settings.
+  await page.getByTestId('settings-mcp-advanced').getByRole('button').first().click()
 
   const authentication = page.getByTestId('settings-mcp-authentication')
   await expect(authentication).toHaveAttribute('data-state', 'checked')
@@ -131,6 +137,8 @@ test('MCP automation settings filter and persist tool availability', async ({ pa
   // Settings has an address, so a reload reopens it.
   await expect(page.getByTestId('app-settings')).toBeVisible()
   await page.getByTestId('settings-section-mcp').click()
+  // The local server's own settings wait under Advanced settings.
+  await page.getByTestId('settings-mcp-advanced').getByRole('button').first().click()
   await expect(authentication).toHaveAttribute('data-state', 'unchecked')
   await authentication.click()
 
@@ -147,6 +155,8 @@ test('MCP automation settings filter and persist tool availability', async ({ pa
   await canvas.waitForInit()
   await expect(page.getByTestId('app-settings')).toBeVisible()
   await page.getByTestId('settings-section-mcp').click()
+  // The local server's own settings wait under Advanced settings.
+  await page.getByTestId('settings-mcp-advanced').getByRole('button').first().click()
   await page.getByRole('button', { name: 'Tool access', exact: true }).click()
   await expect(createShape).toHaveAttribute('data-state', 'unchecked')
 
@@ -177,6 +187,8 @@ test('model library keeps reusable profiles and role assignments', async ({ page
   await page.getByRole('option').first().click()
   await page.getByRole('button', { name: 'Save model' }).click()
 
+  // Models for other tasks wait behind their disclosure, the design model comes first.
+  await page.getByTestId('settings-model-per-task').getByRole('button').first().click()
   await page.getByTestId('settings-model-assignment-fast').click()
   await page.getByRole('option', { name: 'Fast model' }).click()
   await page.getByTestId('settings-model-assignment-vision').click()
@@ -187,6 +199,7 @@ test('model library keeps reusable profiles and role assignments', async ({ page
   await canvas.waitForInit()
   await page.getByTestId('app-settings-trigger').click()
   await page.getByTestId('settings-section-ai').click()
+  await page.getByTestId('settings-model-per-task').getByRole('button').first().click()
   await expect(page.getByTestId('settings-model-list')).toContainText('Fast model')
   await expect(page.getByTestId('settings-model-list')).toContainText('Vision model')
   await expect(page.getByTestId('settings-model-assignment-fast')).toContainText('Fast model')

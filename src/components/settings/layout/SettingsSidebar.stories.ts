@@ -10,12 +10,14 @@ import type { SettingsSidebarGroup } from './sidebar'
 
 const groups: SettingsSidebarGroup[] = [
   {
-    id: 'app',
-    label: 'App',
-    sections: [
-      { value: 'general', label: 'General', icon: IconSettings },
-      { value: 'storage', label: 'Cloud storage', icon: IconCloud }
-    ]
+    id: 'account',
+    label: 'Account',
+    sections: [{ value: 'general', label: 'Preferences', icon: IconSettings }]
+  },
+  {
+    id: 'workspace',
+    label: 'Workspace',
+    sections: [{ value: 'storage', label: 'Cloud storage', icon: IconCloud }]
   },
   {
     id: 'ai',

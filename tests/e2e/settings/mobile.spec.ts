@@ -18,11 +18,11 @@ for (const theme of ['light', 'dark']) {
     // On a phone the sections wait in the sidebar, behind the menu button.
     const menu = dialog.getByTestId('shell-menu')
     await menu.click()
-    await page.getByRole('tab', { name: 'AI & agents', exact: true }).click()
+    await page.getByRole('tab', { name: 'Kalka AI', exact: true }).click()
     await expect(page.getByTestId('settings-ai-panel')).toBeVisible()
     await expect(dialog).toHaveScreenshot(`mobile-settings-models-${theme}.png`)
     await menu.click()
-    await page.getByRole('tab', { name: 'Cloud storage', exact: true }).click()
+    await page.getByRole('tab', { name: 'Shared storage', exact: true }).click()
     await expect(page.getByTestId('settings-storage-panel')).toBeVisible()
     await expect(dialog).toHaveScreenshot(`mobile-settings-storage-${theme}.png`)
   })
