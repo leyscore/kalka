@@ -4,7 +4,7 @@ import {
   aiSetupEntry,
   closeAISetup
 } from '@/app/ai/models/settings/onboarding/dialog'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
 import ConnectAgent from '@/components/chat/connect/ConnectAgent.vue'
 import { AppDialogRoot } from '@/components/ui/dialog'
 
@@ -16,7 +16,7 @@ function onOpenChange(open: boolean): void {
 
 function openAdvancedSettings(): void {
   closeAISetup()
-  openSettingsDialog('ai')
+  openSettings('ai')
 }
 </script>
 

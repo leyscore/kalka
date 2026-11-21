@@ -1,6 +1,6 @@
 import { shallowRef } from 'vue'
 
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
 
 /** Why Settings opened on a model: its provider rejected the saved key. */
 export type ModelSettingsReason = 'reconnect'
@@ -16,7 +16,7 @@ export const modelSettingsRequest = shallowRef<ModelSettingsRequest | null>(null
 /** Opens Settings › AI & agents on one model's editor, explaining why. */
 export function openModelProfileSettings(profileId: string, reason: ModelSettingsReason): void {
   modelSettingsRequest.value = { profileId, reason }
-  openSettingsDialog('ai')
+  openSettings('ai')
 }
 
 export function takeModelSettingsRequest(): ModelSettingsRequest | null {

@@ -5,13 +5,13 @@ import { computed } from 'vue'
 
 import { useI18n, useViewportKind } from '@kalka/vue'
 
-import {
-  settingsDialogOpen,
-  registerSettingsNavigation,
-  settingsDialogSection,
-  type SettingsSection
-} from '@/app/settings/dialog'
 import { provideSettingsNavigation } from '@/app/settings/navigation/use'
+import {
+  settingsOpen,
+  registerSettingsNavigation,
+  settingsSection,
+  type SettingsSection
+} from '@/app/settings/open'
 import ChatSettingsSection from '@/components/settings/chat/ChatSettingsSection.vue'
 import DiagnosticsSettingsPanel from '@/components/settings/diagnostics/DiagnosticsSettingsPanel.vue'
 import GeneralSettingsPanel from '@/components/settings/general/GeneralSettingsPanel.vue'
@@ -57,43 +57,49 @@ const sections = computed(
 )
 function onSectionChange(section: string | number): void {
   const match = sections.value.find((item) => item.value === section)
-  if (!match || match.value === settingsDialogSection.value) return
+  if (!match || match.value === settingsSection.value) return
   navigation.request(() => {
-    settingsDialogSection.value = match.value
+    settingsSection.value = match.value
   })
 }
 function onOpenChange(open: boolean): void {
-  if (open) settingsDialogOpen.value = true
+  if (open) settingsOpen.value = true
   else
     navigation.request(() => {
-      settingsDialogOpen.value = false
+      settingsOpen.value = false
     })
 }
 </script>
 
 <template>
   <AppDialogRoot
-    :open="settingsDialogOpen"
-    size="xl"
-    :ui="{ content: 'w-[min(52.5rem,96vw)]' }"
-    height="full"
-    data-test-id="app-settings-dialog"
+    :open="settingsOpen"
+    size="page"
+    data-test-id="app-settings"
     @update:open="onOpenChange"
   >
     <AppDialogHeader
       :heading="settings.title"
       :description="settings.description"
-      :close-label="common.close"
-    />
+      :show-close="false"
+    >
+      <template #actions>
+        <DialogClose v-if="!editing" as-child>
+          <AppButton color="primary" variant="solid" data-test-id="app-settings-done">
+            {{ common.done }}
+          </AppButton>
+        </DialogClose>
+      </template>
+    </AppDialogHeader>
 
     <AppTabsRoot
-      :model-value="settingsDialogSection"
+      :model-value="settingsSection"
       @update:model-value="onSectionChange"
       :orientation="isMobile ? 'horizontal' : 'vertical'"
     >
       <div v-if="isMobile" class="shrink-0 border-b border-hairline p-3">
         <AppSelect
-          :model-value="settingsDialogSection"
+          :model-value="settingsSection"
           :options="sections"
           :label="settings.title"
           :ui="{ trigger: 'w-full' }"
@@ -171,14 +177,6 @@ function onOpenChange(open: boolean): void {
         <SettingsPage><ServerSettingsPanel /></SettingsPage>
       </AppTabsContent>
     </AppTabsRoot>
-
-    <AppDialogFooter v-if="!editing">
-      <DialogClose as-child>
-        <AppButton color="primary" variant="solid" data-test-id="app-settings-done">
-          {{ common.done }}
-        </AppButton>
-      </DialogClose>
-    </AppDialogFooter>
   </AppDialogRoot>
   <AppAlertDialogRoot :open="confirming" @update:open="!$event && navigation.keepEditing()">
     <AppDialogHeader

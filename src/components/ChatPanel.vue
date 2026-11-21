@@ -33,7 +33,7 @@ import { didHitStepLimit } from '@/app/ai/tools'
 import { runAgentName } from '@/app/ai/tools/run'
 import { getActiveEditorStore } from '@/app/editor/active-store'
 import { flyToNextCreation } from '@/app/presence/fly-to-work'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
 import { toast, type ToastAction } from '@/app/shell/ui'
 import { activeTab } from '@/app/tabs'
 import ACPPermissionDialog from '@/components/chat/ACPPermissionDialog.vue'
@@ -81,7 +81,7 @@ const submission = useChatSubmission({
     }
   })),
   reportError: toast.error,
-  openModelSettings: () => openSettingsDialog('ai'),
+  openModelSettings: () => openSettings('ai'),
   openSetup: () => openAISetup()
 })
 
@@ -276,7 +276,7 @@ const reconnect = useChatReconnect({
   openSettings: () => {
     const profile = designModelProfile.value
     if (profile) openModelProfileSettings(profile.id, 'reconnect')
-    else openSettingsDialog('ai')
+    else openSettings('ai')
   }
 })
 function startReconnect(): void {
@@ -347,7 +347,7 @@ watch(
     let action: ToastAction = { label: ai.value.retryRequest, run: () => retryFailed(failedId) }
     if (reconnectNeeded.value) action = { label: ai.value.reconnect, run: startReconnect }
     else if (failureHasSettingsAction.value) {
-      action = { label: ai.value.openProviderSettingsAction, run: () => openSettingsDialog('ai') }
+      action = { label: ai.value.openProviderSettingsAction, run: () => openSettings('ai') }
     }
     failureToast = toast.error(failureMessage.value ?? ai.value.chatRequestFailed, action)
   }

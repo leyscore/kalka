@@ -49,7 +49,7 @@ test('MCP connections keep bearer tokens out of ordinary settings', async ({ pag
 
   await page.getByTestId('app-settings-trigger').click()
   await page.getByTestId('settings-section-mcp').click()
-  const section = page.getByTestId('app-settings-dialog')
+  const section = page.getByTestId('app-settings')
   await section.getByRole('button', { name: 'Add connection' }).click()
   await section.getByLabel('Connection name').fill('GitHub')
   await section.getByLabel('MCP server URL').fill('http://example.com/mcp')
@@ -128,7 +128,8 @@ test('MCP automation settings filter and persist tool availability', async ({ pa
   await authentication.click()
   await page.reload()
   await canvas.waitForInit()
-  await page.getByTestId('app-settings-trigger').click()
+  // Settings has an address, so a reload reopens it.
+  await expect(page.getByTestId('app-settings')).toBeVisible()
   await page.getByTestId('settings-section-mcp').click()
   await expect(authentication).toHaveAttribute('data-state', 'unchecked')
   await authentication.click()
@@ -144,7 +145,7 @@ test('MCP automation settings filter and persist tool availability', async ({ pa
   await createShape.click()
   await page.reload()
   await canvas.waitForInit()
-  await page.getByTestId('app-settings-trigger').click()
+  await expect(page.getByTestId('app-settings')).toBeVisible()
   await page.getByTestId('settings-section-mcp').click()
   await page.getByRole('button', { name: 'Tool access', exact: true }).click()
   await expect(createShape).toHaveAttribute('data-state', 'unchecked')

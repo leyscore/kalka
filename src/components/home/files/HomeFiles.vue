@@ -21,7 +21,7 @@ import {
   recentFiles,
   type RecentDocument
 } from '@/app/recent-files'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
 import { openFileFromPath } from '@/app/shell/menu/use'
 import { createStorageWorkspaceSource } from '@/app/storage/workspace/source'
 import { openStorageDocumentInNewTab } from '@/app/tabs'
@@ -234,7 +234,7 @@ function formattedDate(updatedAt: string): string {
           <IconButton
             :label="settings.title"
             class="size-10 sm:size-8"
-            @click="openSettingsDialog('storage')"
+            @click="openSettings('storage')"
           >
             <icon-hugeicons-settings-02 class="size-3.5" />
           </IconButton>
@@ -250,7 +250,7 @@ function formattedDate(updatedAt: string): string {
           <IconButton
             :label="settings.title"
             class="size-10 sm:size-8"
-            @click="openSettingsDialog('server')"
+            @click="openSettings('server')"
           >
             <icon-hugeicons-settings-02 class="size-3.5" />
           </IconButton>
@@ -390,7 +390,7 @@ function formattedDate(updatedAt: string): string {
           class="flex flex-wrap items-center justify-between gap-3 rounded-[14px] bg-card px-4 py-3 text-[13px] text-muted"
         >
           <p>{{ storage.notConfigured }}</p>
-          <AppButton variant="outline" @click="openSettingsDialog('storage')">
+          <AppButton variant="outline" @click="openSettings('storage')">
             {{ settings.title }}
           </AppButton>
         </div>

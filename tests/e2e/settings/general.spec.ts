@@ -13,18 +13,19 @@ test('language can be changed from General settings and persists', async ({ page
   await page.getByRole('option', { name: 'Dark', exact: true }).click()
   await page.getByTestId('settings-language').click()
   await page.getByRole('option', { name: 'Русский' }).click()
-  await expect(page.getByTestId('app-settings-dialog')).toContainText('Настройки')
+  await expect(page.getByTestId('app-settings')).toContainText('Настройки')
   await expect(page.getByRole('combobox', { name: 'Тема', exact: true })).toHaveText('Тёмная')
   await expect(page.getByRole('combobox', { name: 'Анимации' })).toHaveText('Как в системе')
 
   await page.reload()
   await canvas.waitForInit()
-  await page.getByTestId('app-settings-trigger').click()
+  // Settings has an address, so a reload reopens it.
+  await expect(page.getByTestId('app-settings')).toBeVisible()
   await expect(page.getByTestId('settings-language')).toContainText('Русский')
 
   await page.getByTestId('settings-language').click()
   await page.getByRole('option', { name: 'English' }).click()
-  await expect(page.getByTestId('app-settings-dialog')).toContainText('Settings')
+  await expect(page.getByTestId('app-settings')).toContainText('Settings')
   await expect(page.getByRole('combobox', { name: 'Theme', exact: true })).toHaveText('Dark')
   await expect(page.getByRole('combobox', { name: 'Animations' })).toHaveText('Follow system')
 })
@@ -81,7 +82,8 @@ test('progressive tiled rendering preference persists and URL overrides take pre
 
   await page.reload()
   await canvas.waitForInit()
-  await page.getByTestId('app-settings-trigger').click()
+  // Settings has an address, so a reload reopens it.
+  await expect(page.getByTestId('app-settings')).toBeVisible()
   await expect(tiled).toBeChecked()
 
   // The preference sets how the CanvasKit renderer draws; the DOM canvas draws no tiles, so

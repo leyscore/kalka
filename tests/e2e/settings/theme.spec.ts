@@ -20,7 +20,8 @@ test('Appearance groups theme and animation controls and uses the persisted app 
   await page.reload()
   await canvas.waitForInit()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
-  await page.getByTestId('app-settings-trigger').click()
+  // Settings has an address, so a reload reopens it.
+  await expect(page.getByTestId('app-settings')).toBeVisible()
   await expect(theme).toHaveText('Light')
   await theme.click()
   await page.getByRole('option', { name: 'Dark', exact: true }).click()

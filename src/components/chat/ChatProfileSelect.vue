@@ -24,7 +24,7 @@ import {
   setModelRoleAssignment
 } from '@/app/ai/models'
 import type { AIModelProfile, AIModelProfileId } from '@/app/ai/models'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettings } from '@/app/settings/open'
 import ChatProfileItem from '@/components/chat/ChatProfileItem.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import { useSelectUI } from '@/components/ui/select/select'
@@ -57,7 +57,7 @@ function profileMetadata(profile: AIModelProfile): string {
 
 function manageModels(): void {
   open.value = false
-  openSettingsDialog('ai')
+  openSettings('ai')
 }
 </script>
 
