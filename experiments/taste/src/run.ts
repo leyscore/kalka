@@ -108,7 +108,7 @@ function asDocument(html: string, title: string): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${title}</title></head><body>${html}</body></html>`
 }
 
-async function writeRaw(dir: string, reply: string, brief: Brief) {
+export async function writeRaw(dir: string, reply: string, brief: Brief) {
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, 'page.html'), asDocument(fenced(reply, 'html'), brief.title))
   await measureDir(dir, brief.surface)

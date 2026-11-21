@@ -3,6 +3,8 @@
  * every visible element. Metrics, lint and the style vector are all computed from these records,
  * so a baseline page written in raw CSS and a genome page are measured in exactly the same way.
  */
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import { chromium, type Browser } from '@playwright/test'
@@ -206,6 +208,12 @@ export async function renderPage(file: string, options: RenderOptions): Promise<
   try {
     await page.goto(pathToFileURL(file).href, { waitUntil: 'load', timeout: 45_000 })
     await page.evaluate(fillPhotos)
+    // Kalka draws shader layers live; the stand-in gradient is only what other renderers show.
+    const shaders = join(import.meta.dir, '..', 'runs', 'fresh-shaders.js')
+    if (existsSync(shaders) && (await page.locator('[data-shader], [data-kalka-shader]').count()) > 0) {
+      await page.addScriptTag({ path: shaders })
+      await page.waitForTimeout(900)
+    }
     await page.evaluate(() => document.fonts.ready.then(() => true))
     await page.waitForTimeout(400)
     await page.screenshot({ path: options.fold, type: 'jpeg', quality: 88 })
