@@ -34,7 +34,9 @@ function haloColor(page: Page) {
   })
 }
 
-test('Kalka Fresh is a built-in library that can be enabled and dragged from', async ({ page }) => {
+test('Kalka Fresh is a built-in library that can be enabled and inserted from Assets', async ({
+  page
+}) => {
   const canvas = new CanvasHelper(page)
   await page.goto('/?test')
   await canvas.waitForInit()
@@ -58,13 +60,16 @@ test('Kalka Fresh is a built-in library that can be enabled and dragged from', a
   await expect
     .poll(() =>
       page.evaluate(() => {
-        const store = window.kalka?.getStore?.()
-        return [...(store?.graph.getAllNodes() ?? [])].some((node) => {
-          const main = node.componentId ? store?.graph.getNode(node.componentId) : undefined
-          return (
-            node.type === 'INSTANCE' && main?.librarySource?.identity.libraryId === 'kalka-fresh'
-          )
-        })
+        const graph = window.kalka?.getStore?.().graph
+        const libraryOf = (id: string | null): string | undefined => {
+          const node = id ? graph?.getNode(id) : undefined
+          return node
+            ? (node.librarySource?.identity.libraryId ?? libraryOf(node.parentId))
+            : undefined
+        }
+        return [...(graph?.getAllNodes() ?? [])].some(
+          (node) => node.type === 'INSTANCE' && libraryOf(node.componentId) === 'kalka-fresh'
+        )
       })
     )
     .toBe(true)

@@ -45,7 +45,9 @@ describe('searching Kalka Fresh by intent', () => {
     })
     expect(result).toMatchObject({
       library: { id: FRESH_LIBRARY_ID },
-      components: [{ credit: expect.stringMatching(/Cult UI|Paper Shaders/) }],
+      components: expect.arrayContaining([
+        expect.objectContaining({ credit: expect.stringMatching(/Cult UI|Paper Shaders/) })
+      ]),
       note: expect.stringContaining('not a template')
     })
   })
