@@ -245,16 +245,26 @@ async function documentRoute(
   // live document, then dismisses it.
   if (rest === '/pending' && method === 'GET') {
     await requireUser(env, request)
-    const data = await roomOf(env, documentId).getPending()
-    if (!data) throw new HttpError(404, 'No version is waiting for this document.')
-    return new Response(data, { headers: { 'Content-Type': 'application/vnd.kalka+zip', ...CORS_HEADERS } })
+    const pending = await roomOf(env, documentId).getPending()
+    if (!pending) throw new HttpError(404, 'No version is waiting for this document.')
+    return new Response(pending.data, {
+      headers: {
+        'Content-Type': 'application/vnd.kalka+zip',
+        'X-Kalka-Version': pending.version,
+        'Access-Control-Expose-Headers': 'X-Kalka-Version',
+        ...CORS_HEADERS
+      }
+    })
   }
+  // With `?version=`, only that version is dismissed: the Kalka window whose dismissal goes
+  // through is the one that applies it.
   if (rest === '/pending' && method === 'DELETE') {
     await requireUser(env, request, ['admin', 'editor'])
     if (!(await directory.getDocument(documentId))) throw new HttpError(404, 'No such document.')
-    await roomOf(env, documentId).clearPending()
-    await directory.setPending(documentId, null)
-    return json({ dismissed: true })
+    const version = new URL(request.url).searchParams.get('version') ?? undefined
+    const dismissed = await roomOf(env, documentId).clearPending(version)
+    if (dismissed) await directory.setPending(documentId, null)
+    return json({ dismissed })
   }
   throw new HttpError(404, 'Not found.')
 }

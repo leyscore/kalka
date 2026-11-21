@@ -14,6 +14,7 @@ import {
   SERVER_COMPACT,
   SERVER_LOAD,
   SERVER_PEER,
+  SERVER_PENDING,
   SERVER_SNAPSHOT,
   SYNC_REPLY,
   YJS_UPDATE
@@ -139,7 +140,20 @@ export class DocumentRoom extends DurableObject<Env> {
       parts.push(row.data as ArrayBuffer)
     }
     if (seq !== null) send(LOAD_UPDATE, joinParts(parts))
+    const pending = this.pendingVersion()
+    if (pending) ws.send(this.pendingFrame(pending))
     send(LOAD_DONE, new Uint8Array())
+  }
+
+  /** The id of the version waiting to be applied, or null. */
+  private pendingVersion(): string | null {
+    const row = this.sql.exec('SELECT COUNT(*) AS parts FROM pending').toArray()[0]
+    if (!row || Number(row.parts) === 0) return null
+    return this.meta('pendingVersion') ?? 'pending'
+  }
+
+  private pendingFrame(version: string): Uint8Array {
+    return encodeAction(SERVER_PENDING, SERVER_PEER, new TextEncoder().encode(version))
   }
 
   async webSocketMessage(ws: WebSocket, message: ArrayBuffer | string): Promise<void> {
@@ -281,10 +295,14 @@ export class DocumentRoom extends DurableObject<Env> {
       if (pending) {
         this.sql.exec('DELETE FROM pending')
         this.writeParts('pending', new Uint8Array(data))
+        this.setMeta('pendingVersion', randomId(16))
       }
     })
     this.setMeta('fileSavedAt', Date.now())
     this.touch(true, data.byteLength)
+    // Kalka windows that have the document open apply the new version without reopening it.
+    const version = pending ? this.pendingVersion() : null
+    if (version) for (const { ws } of this.sockets()) ws.send(this.pendingFrame(version))
   }
 
   private readParts(table: 'file' | 'pending'): ArrayBuffer | null {
@@ -306,12 +324,23 @@ export class DocumentRoom extends DurableObject<Env> {
     return { size: Number(row.size), savedAt: this.numberMeta('fileSavedAt') }
   }
 
-  getPending(): ArrayBuffer | null {
-    return this.readParts('pending')
+  /** The version waiting to be applied, with its id, or null. */
+  getPending(): { data: ArrayBuffer; version: string } | null {
+    const data = this.readParts('pending')
+    const version = this.pendingVersion()
+    return data && version ? { data, version } : null
   }
 
-  clearPending(): void {
+  /**
+   * Dismisses the waiting version; with `version`, only if it is still that one, so the Kalka
+   * window that applies a version is the one whose dismissal went through. Returns whether a
+   * version was dismissed.
+   */
+  clearPending(version?: string): boolean {
+    const current = this.pendingVersion()
+    if (!current || (version !== undefined && version !== current)) return false
     this.sql.exec('DELETE FROM pending')
+    return true
   }
 
   /** Closes every connection and erases the document. */
