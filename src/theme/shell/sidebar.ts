@@ -30,7 +30,7 @@ export const shellFrame = tv({
  */
 export const shellSidebar = tv({
   slots: {
-    root: 'flex min-h-0 w-full flex-col gap-3.5 overflow-y-auto rounded-[18px] bg-shell px-2.5 py-3.5 text-surface shadow-[0_0_0_1px_var(--color-shell-border),var(--float-shadow)] backdrop-blur-[28px] backdrop-saturate-150',
+    root: 'flex min-h-0 w-full flex-col gap-3.5 overflow-y-auto rounded-[18px] bg-shell [--color-muted:var(--color-shell-muted)] px-2.5 py-3.5 text-surface shadow-[0_0_0_1px_var(--color-shell-border),var(--float-shadow)] backdrop-blur-[28px] backdrop-saturate-150',
     workspace: 'flex items-center gap-2.5 rounded-[12px] p-1.5',
     workspaceMark:
       'flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-[9px] bg-accent text-[13px] font-semibold text-white',

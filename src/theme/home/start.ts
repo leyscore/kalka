@@ -15,7 +15,7 @@ export const homeHero = {
    * list page, filling the space beside the sidebar as Settings does.
    */
   files: tv({
-    base: 'mx-auto flex w-full max-w-[1104px] flex-col rounded-[18px] bg-shell px-4 pt-8 pb-12 text-surface shadow-[0_0_0_1px_var(--color-shell-border),var(--float-shadow)] backdrop-blur-[28px] backdrop-saturate-150 sm:px-8 sm:pt-10',
+    base: 'mx-auto flex w-full max-w-[1104px] flex-col rounded-[18px] bg-shell [--color-muted:var(--color-shell-muted)] px-4 pt-8 pb-12 text-surface shadow-[0_0_0_1px_var(--color-shell-border),var(--float-shadow)] backdrop-blur-[28px] backdrop-saturate-150 sm:px-8 sm:pt-10',
     variants: { list: { true: 'mx-0 mt-3 max-w-none flex-1 md:mt-0' } }
   })
 } as const
