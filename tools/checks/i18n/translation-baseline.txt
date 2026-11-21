@@ -18,6 +18,8 @@ de:code.editorDesignLabel
 de:code.sourceDesignJSX
 de:code.sourceHTMLCSS
 de:code.sourceTailwindJSX
+de:collaboration.planPro
+de:collaboration.planTeam
 de:collaboration.serverRoleAdmin
 de:collaboration.serverTab
 de:collaboration.teamGroup
@@ -103,6 +105,8 @@ es:code.editorDesignLabel
 es:code.sourceDesignJSX
 es:code.sourceHTMLCSS
 es:code.sourceTailwindJSX
+es:collaboration.planPro
+es:collaboration.planTeam
 es:collaboration.serverRoleEditor
 es:common.tokens
 es:diagnostics.categoryMCP
@@ -162,6 +166,8 @@ fr:code.editorDesignLabel
 fr:code.sourceDesignJSX
 fr:code.sourceHTMLCSS
 fr:code.sourceTailwindJSX
+fr:collaboration.planPro
+fr:collaboration.planTeam
 fr:common.ok
 fr:designCheck.scopeDocument
 fr:designCheck.scopePage
@@ -265,6 +271,8 @@ it:code.editorDesignLabel
 it:code.sourceDesignJSX
 it:code.sourceHTMLCSS
 it:code.sourceTailwindJSX
+it:collaboration.planPro
+it:collaboration.planTeam
 it:collaboration.serverEmail
 it:collaboration.serverPassword
 it:collaboration.serverRoleEditor
@@ -323,6 +331,8 @@ ja:code.editorDesignLabel
 ja:code.sourceDesignJSX
 ja:code.sourceHTMLCSS
 ja:code.sourceTailwindJSX
+ja:collaboration.planPro
+ja:collaboration.planTeam
 ja:collaboration.serverAddressPlaceholder
 ja:diagnostics.categoryAI
 ja:diagnostics.categoryMCP
@@ -356,6 +366,8 @@ pl:code.editorDesignLabel
 pl:code.sourceDesignJSX
 pl:code.sourceHTMLCSS
 pl:code.sourceTailwindJSX
+pl:collaboration.planPro
+pl:collaboration.planTeam
 pl:collaboration.serverRoleAdmin
 pl:common.ok
 pl:diagnostics.categoryAI
@@ -405,6 +417,8 @@ ru:code.editorDesignLabel
 ru:code.sourceDesignJSX
 ru:code.sourceHTMLCSS
 ru:code.sourceTailwindJSX
+ru:collaboration.planPro
+ru:collaboration.planTeam
 ru:collaboration.serverAddressPlaceholder
 ru:diagnostics.categoryMCP
 ru:panels.ai
@@ -430,6 +444,8 @@ zh-cn:code.editorDesignLabel
 zh-cn:code.sourceDesignJSX
 zh-cn:code.sourceHTMLCSS
 zh-cn:code.sourceTailwindJSX
+zh-cn:collaboration.planPro
+zh-cn:collaboration.planTeam
 zh-cn:collaboration.serverAddressPlaceholder
 zh-cn:diagnostics.categoryAI
 zh-cn:diagnostics.categoryMCP
