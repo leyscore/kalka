@@ -1,0 +1,2 @@
+# Typed once to create the first administrator account. Generate with: openssl rand -hex 16
+KALKA_SETUP_CODE=change-me

@@ -1,0 +1,18 @@
+# Render Blueprint: https://render.com/deploy?repo=https://github.com/leyscore/kalka-server
+# Render keeps data only on a disk, which needs a paid instance type.
+services:
+  - type: web
+    name: kalka-server
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    healthCheckPath: /healthz
+    disk:
+      name: kalka-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: KALKA_SETUP_CODE
+        generateValue: true
+      - key: KALKA_SERVER_NAME
+        value: Kalka

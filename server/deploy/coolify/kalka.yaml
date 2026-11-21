@@ -1,0 +1,26 @@
+# documentation: https://github.com/leyscore/kalka-server
+# slogan: Self-hosted server for the Kalka design editor: shared files and real-time collaboration.
+# tags: design,editor,collaboration,figma,html,css
+# logo: svgs/kalka.svg
+# port: 8787
+
+services:
+  kalka:
+    image: ghcr.io/leyscore/kalka-server:latest
+    environment:
+      - SERVICE_FQDN_KALKA_8787
+      - KALKA_PUBLIC_URL=${SERVICE_FQDN_KALKA}
+      - KALKA_SETUP_CODE=${SERVICE_PASSWORD_SETUP}
+      - KALKA_SERVER_NAME=${KALKA_SERVER_NAME:-Kalka}
+      - KALKA_SMTP_HOST=${KALKA_SMTP_HOST}
+      - KALKA_SMTP_PORT=${KALKA_SMTP_PORT:-587}
+      - KALKA_SMTP_USER=${KALKA_SMTP_USER}
+      - KALKA_SMTP_PASSWORD=${KALKA_SMTP_PASSWORD}
+      - KALKA_SMTP_FROM=${KALKA_SMTP_FROM}
+    volumes:
+      - kalka-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8787/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 10

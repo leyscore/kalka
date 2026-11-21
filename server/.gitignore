@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+src/ee/module.ts
+data/
+src/ee/ee.js
+src/console/bundle.ts
