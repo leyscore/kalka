@@ -22,7 +22,7 @@ test('Settings has an address that Back, Forward and a typed link follow', async
   await expect(settings).toBeVisible()
   await expect(page.getByTestId('settings-ai-panel')).toBeVisible()
 
-  await page.getByTestId('app-settings-done').click()
+  await page.getByTestId('app-settings-back').click()
   await expect(settings).toBeHidden()
   await expect(page).not.toHaveURL(/\/settings/)
 

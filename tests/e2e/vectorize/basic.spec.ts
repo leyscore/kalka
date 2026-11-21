@@ -112,7 +112,7 @@ test('missing key opens Media settings and saves through the credential manager'
   await dialog.getByTestId('provider-settings-api-key').fill('test-recraft-key')
   await dialog.getByRole('button', { name: 'Save', exact: true }).click()
   await expect(vectorizeRow).toBeVisible()
-  await editor.page.getByTestId('app-settings-done').click()
+  await editor.page.getByTestId('app-settings-back').click()
   await expect(editor.page.getByTestId('app-settings')).toHaveCount(0)
   expect(
     await editor.page.evaluate((id) => window.kalka?.getStore?.().graph.getNode(id)?.type, nodeId)

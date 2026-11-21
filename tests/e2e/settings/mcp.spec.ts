@@ -4,8 +4,8 @@ import { CanvasHelper } from '#tests/helpers/canvas'
 
 async function selectMCPSection(page: Page, mobile: boolean) {
   if (mobile) {
-    await page.getByRole('combobox', { name: 'Settings', exact: true }).click()
-    await page.getByRole('option', { name: 'MCP', exact: true }).click()
+    await page.getByTestId('app-settings').getByTestId('shell-menu').click()
+    await page.getByRole('tab', { name: 'MCP', exact: true }).click()
   } else {
     await page.getByTestId('settings-section-mcp').click()
   }
@@ -47,7 +47,9 @@ for (const viewport of [
     await page.getByRole('button', { name: 'Token', exact: true }).click()
     await expect(page.getByLabel('Bearer token', { exact: true })).toHaveValue('')
     await page.getByRole('button', { name: 'Cancel', exact: true }).click()
-    await page.getByTestId('app-settings-done').click()
+    await page
+      .getByTestId(viewport.width < 640 ? 'app-settings-close' : 'app-settings-back')
+      .click()
     await page.reload()
     await canvas.waitForInit()
     await page.keyboard.press(process.platform === 'darwin' ? 'Meta+,' : 'Control+,')

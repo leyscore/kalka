@@ -27,7 +27,7 @@ test('OpenRouter accepts a custom model ID from Settings', async ({ configuredCh
   const input = chat.page.getByTestId('provider-settings-custom-model')
   await input.fill(customModel)
   await chat.page.getByRole('button', { name: 'Save model' }).click()
-  await chat.page.getByTestId('app-settings-done').click()
+  await chat.page.getByTestId('app-settings-back').click()
 
   await expect(chat.profileTrigger).toContainText('Claude Sonnet')
 })
@@ -89,7 +89,7 @@ test('a key replaced in Settings is used when asking again', async ({ page }) =>
   await page.locator('[data-model-id]').first().click()
   await chat.apiKeyInput.fill('sk-or-valid')
   await page.getByRole('button', { name: 'Save model' }).click()
-  await page.getByTestId('app-settings-done').click()
+  await page.getByTestId('app-settings-back').click()
 
   await chat.assistantMessage().getByTestId('chat-regenerate').click()
   await expect(chat.assistantMessage()).toContainText('Hello again')

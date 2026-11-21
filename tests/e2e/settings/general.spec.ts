@@ -51,7 +51,7 @@ test('general snapping preferences persist and apply to editor sessions', async 
     .poll(() => page.evaluate(() => window.kalka?.getStore?.().state.snappingPreferences ?? null))
     .toEqual({ geometry: false, objects: false, pixelGrid: false })
 
-  await page.getByTestId('app-settings-done').click()
+  await page.getByTestId('app-settings-back').click()
   await page.reload()
   await canvas.waitForInit()
   await page.getByTestId('app-settings-trigger').click()
@@ -147,7 +147,7 @@ test('settings shortcut preserves the last visited section', async ({ page }) =>
 
   await page.getByTestId('app-settings-trigger').click()
   await page.getByTestId('settings-section-media').click()
-  await page.getByTestId('app-settings-done').click()
+  await page.getByTestId('app-settings-back').click()
 
   await page.keyboard.press(process.platform === 'darwin' ? 'Meta+,' : 'Control+,')
   await expect(page.getByTestId('settings-media-panel')).toBeVisible()

@@ -1,10 +1,21 @@
 <script setup lang="ts">
 import { tryOnScopeDispose } from '@vueuse/core'
-import { AlertDialogCancel, DialogClose } from 'reka-ui'
+import { AlertDialogCancel, DialogDescription, DialogTitle } from 'reka-ui'
 import { computed } from 'vue'
+import IconActivity from '~icons/hugeicons/activity-01'
+import IconChart from '~icons/hugeicons/chart-no-axes-combined'
+import IconCloud from '~icons/hugeicons/cloud'
+import IconImage from '~icons/hugeicons/image-01'
+import IconPlug from '~icons/hugeicons/plug'
+import IconServer from '~icons/hugeicons/server-stack-01'
+import IconSettings from '~icons/hugeicons/settings-01'
+import IconSliders from '~icons/hugeicons/sliders-horizontal'
+import IconSparkles from '~icons/hugeicons/sparkles'
 
-import { useI18n, useViewportKind } from '@kalka/vue'
+import { useI18n } from '@kalka/vue'
 
+import { useCollabIdentity } from '@/app/collab/identity'
+import { serverAccount } from '@/app/collab/server/account'
 import { provideSettingsNavigation } from '@/app/settings/navigation/use'
 import {
   settingsOpen,
@@ -16,6 +27,8 @@ import ChatSettingsSection from '@/components/settings/chat/ChatSettingsSection.
 import DiagnosticsSettingsPanel from '@/components/settings/diagnostics/DiagnosticsSettingsPanel.vue'
 import GeneralSettingsPanel from '@/components/settings/general/GeneralSettingsPanel.vue'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
+import SettingsSidebar from '@/components/settings/layout/SettingsSidebar.vue'
+import type { SettingsSidebarGroup } from '@/components/settings/layout/sidebar'
 import MCPWorkspacePanel from '@/components/settings/mcp/MCPWorkspacePanel.vue'
 import MediaSettingsPanel from '@/components/settings/media/MediaSettingsPanel.vue'
 import ModelsPanel from '@/components/settings/models/ModelsPanel.vue'
@@ -23,6 +36,8 @@ import ServerSettingsPanel from '@/components/settings/server/ServerSettingsPane
 import StorageSettingsPanel from '@/components/settings/storage/StorageSettingsPanel.vue'
 import ToolAccessSettingsPanel from '@/components/settings/tool-access/ToolAccessSettingsPanel.vue'
 import UsageSettingsPanel from '@/components/settings/usage/UsageSettingsPanel.vue'
+import ShellFrame from '@/components/shell/ShellFrame.vue'
+import { initialsOf } from '@/components/shell/sidebar'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import {
   AppAlertDialogRoot,
@@ -30,152 +45,152 @@ import {
   AppDialogHeader,
   AppDialogRoot
 } from '@/components/ui/dialog'
-import AppSelect from '@/components/ui/select/AppSelect.vue'
 import AppTabsContent from '@/components/ui/tabs/AppTabsContent.vue'
-import AppTabsList from '@/components/ui/tabs/AppTabsList.vue'
 import AppTabsRoot from '@/components/ui/tabs/AppTabsRoot.vue'
-import AppTabsTrigger from '@/components/ui/tabs/AppTabsTrigger.vue'
+import { settingsShell } from '@/theme/settings/shell'
 
-const { isMobile } = useViewportKind()
-const { settings, common, collaboration } = useI18n()
+/**
+ * Settings, a page at `/settings/<section>` in the app's shell: the sidebar holds the way back,
+ * the person and the sections; the section itself sits on a frosted panel beside it.
+ */
+const { settings, common, collaboration, files } = useI18n()
+const identity = useCollabIdentity()
 const navigation = provideSettingsNavigation()
 tryOnScopeDispose(registerSettingsNavigation(navigation.request))
 const { editing, confirming } = navigation
-const sections = computed(
-  () =>
-    [
-      { value: 'general', label: settings.value.general },
-      { value: 'ai', label: settings.value.aiAndAgents },
-      { value: 'usage', label: settings.value.usage },
-      { value: 'diagnostics', label: settings.value.diagnostics },
-      { value: 'mcp', label: settings.value.mcp },
-      { value: 'tools', label: settings.value.toolAccess },
-      { value: 'media', label: settings.value.media },
-      { value: 'storage', label: settings.value.storage },
-      { value: 'server', label: collaboration.value.serverTab }
-    ] satisfies { value: SettingsSection; label: string }[]
+const ui = settingsShell()
+
+const groups = computed<SettingsSidebarGroup[]>(() => [
+  {
+    id: 'app',
+    label: settings.value.groupApp,
+    sections: [
+      { value: 'general', label: settings.value.general, icon: IconSettings },
+      { value: 'storage', label: settings.value.storage, icon: IconCloud },
+      { value: 'server', label: collaboration.value.serverTab, icon: IconServer },
+      { value: 'media', label: settings.value.media, icon: IconImage },
+      { value: 'diagnostics', label: settings.value.diagnostics, icon: IconActivity }
+    ]
+  },
+  {
+    id: 'ai',
+    label: settings.value.groupAI,
+    sections: [
+      { value: 'ai', label: settings.value.aiAndAgents, icon: IconSparkles },
+      { value: 'mcp', label: settings.value.mcp, icon: IconPlug },
+      { value: 'tools', label: settings.value.toolAccess, icon: IconSliders },
+      { value: 'usage', label: settings.value.usage, icon: IconChart }
+    ]
+  }
+])
+const sections = computed(() => groups.value.flatMap((group) => group.sections))
+const sectionLabel = computed(
+  () => sections.value.find((section) => section.value === settingsSection.value)?.label ?? ''
 )
-function onSectionChange(section: string | number): void {
-  const match = sections.value.find((item) => item.value === section)
-  if (!match || match.value === settingsSection.value) return
+
+const profile = computed(() => {
+  const account = serverAccount.value
+  const name = identity.hasChosenName.value ? identity.name.value : account?.user.name
+  const detail = account?.user.email ?? files.value.thisComputer
+  if (!name) return { name: detail, initials: 'K' }
+  return { name, detail, initials: initialsOf(name) }
+})
+
+function isSection(value: string): value is SettingsSection {
+  return sections.value.some((section) => section.value === value)
+}
+function onSectionChange(section: string): void {
+  if (!isSection(section) || section === settingsSection.value) return
   navigation.request(() => {
-    settingsSection.value = match.value
+    settingsSection.value = section
+  })
+}
+function close(): void {
+  navigation.request(() => {
+    settingsOpen.value = false
   })
 }
 function onOpenChange(open: boolean): void {
   if (open) settingsOpen.value = true
-  else
-    navigation.request(() => {
-      settingsOpen.value = false
-    })
+  else close()
 }
 </script>
 
 <template>
   <AppDialogRoot
     :open="settingsOpen"
-    size="page"
+    size="shell"
     data-test-id="app-settings"
     @update:open="onOpenChange"
   >
-    <AppDialogHeader
-      :heading="settings.title"
-      :description="settings.description"
-      :show-close="false"
-    >
-      <template #actions>
-        <DialogClose v-if="!editing" as-child>
-          <AppButton color="primary" variant="solid" data-test-id="app-settings-done">
-            {{ common.done }}
-          </AppButton>
-        </DialogClose>
-      </template>
-    </AppDialogHeader>
-
+    <DialogTitle class="sr-only">{{ settings.title }}</DialogTitle>
+    <DialogDescription class="sr-only">{{ settings.description }}</DialogDescription>
     <AppTabsRoot
       :model-value="settingsSection"
+      orientation="vertical"
+      :ui="{ root: 'flex-col' }"
       @update:model-value="onSectionChange"
-      :orientation="isMobile ? 'horizontal' : 'vertical'"
     >
-      <div v-if="isMobile" class="shrink-0 border-b border-hairline p-3">
-        <AppSelect
-          :model-value="settingsSection"
-          :options="sections"
-          :label="settings.title"
-          :ui="{ trigger: 'w-full' }"
-          @update:model-value="onSectionChange"
-        />
-      </div>
-      <AppTabsList v-show="!isMobile" :label="settings.title">
-        <AppTabsTrigger value="general" data-test-id="settings-section-general">
-          <template #leading><icon-hugeicons-settings-01 class="size-4" /></template>
-          {{ settings.general }}
-        </AppTabsTrigger>
-        <AppTabsTrigger value="ai" data-test-id="settings-section-ai">
-          <template #leading><icon-hugeicons-sparkles class="size-4" /></template>
-          {{ settings.aiAndAgents }}
-        </AppTabsTrigger>
-        <AppTabsTrigger value="usage" data-test-id="settings-section-usage">
-          <template #leading><icon-hugeicons-chart-no-axes-combined class="size-4" /></template>
-          {{ settings.usage }}
-        </AppTabsTrigger>
-        <AppTabsTrigger value="diagnostics" data-test-id="settings-section-diagnostics">
-          <template #leading><icon-hugeicons-activity-01 class="size-4" /></template>
-          {{ settings.diagnostics }}
-        </AppTabsTrigger>
-        <AppTabsTrigger value="mcp" data-test-id="settings-section-mcp">
-          <template #leading><icon-hugeicons-plug class="size-4" /></template>
-          {{ settings.mcp }}
-        </AppTabsTrigger>
-        <AppTabsTrigger value="tools" data-test-id="settings-section-tools">
-          <template #leading><icon-hugeicons-sliders-horizontal class="size-4" /></template>
-          {{ settings.toolAccess }}
-        </AppTabsTrigger>
-        <AppTabsTrigger value="media" data-test-id="settings-section-media">
-          <template #leading><icon-hugeicons-image-01 class="size-4" /></template>
-          {{ settings.media }}
-        </AppTabsTrigger>
-        <AppTabsTrigger value="storage" data-test-id="settings-section-storage">
-          <template #leading><icon-hugeicons-cloud class="size-4" /></template>
-          {{ settings.storage }}
-        </AppTabsTrigger>
-        <AppTabsTrigger value="server" data-test-id="settings-section-server">
-          <template #leading><icon-hugeicons-server-stack-01 class="size-4" /></template>
-          {{ collaboration.serverTab }}
-        </AppTabsTrigger>
-      </AppTabsList>
+      <ShellFrame :label="settings.title" :menu-label="files.openMenu">
+        <template #sidebar>
+          <SettingsSidebar
+            :groups="groups"
+            :profile="profile"
+            :label="settings.title"
+            :back-label="common.back"
+            :can-leave="!editing"
+            @back="close"
+          />
+        </template>
+        <template #phoneTitle>
+          <span :class="ui.phoneTitle()">{{ sectionLabel }}</span>
+          <button
+            v-if="!editing"
+            type="button"
+            :class="ui.phoneClose()"
+            :aria-label="common.close"
+            data-test-id="app-settings-close"
+            @click="close"
+          >
+            <icon-hugeicons-cancel-01 class="size-5" aria-hidden="true" />
+          </button>
+        </template>
 
-      <AppTabsContent value="general" as-child>
-        <SettingsPage><GeneralSettingsPanel /></SettingsPage>
-      </AppTabsContent>
-      <AppTabsContent value="ai" as-child>
-        <section class="flex min-h-0 min-w-0 flex-1 flex-col" data-test-id="settings-ai-panel">
-          <ModelsPanel>
-            <ChatSettingsSection />
-          </ModelsPanel>
-        </section>
-      </AppTabsContent>
-      <AppTabsContent value="usage" as-child>
-        <SettingsPage><UsageSettingsPanel /></SettingsPage>
-      </AppTabsContent>
-      <AppTabsContent value="diagnostics" as-child>
-        <SettingsPage><DiagnosticsSettingsPanel /></SettingsPage>
-      </AppTabsContent>
-      <AppTabsContent value="mcp" as-child>
-        <MCPWorkspacePanel />
-      </AppTabsContent>
-      <AppTabsContent value="tools" as-child>
-        <ToolAccessSettingsPanel />
-      </AppTabsContent>
-      <AppTabsContent value="media" as-child>
-        <MediaSettingsPanel />
-      </AppTabsContent>
-      <AppTabsContent value="storage" as-child>
-        <StorageSettingsPanel />
-      </AppTabsContent>
-      <AppTabsContent value="server" as-child>
-        <SettingsPage><ServerSettingsPanel /></SettingsPage>
-      </AppTabsContent>
+        <div :class="ui.panel()" data-test-id="settings-panel">
+          <h1 :class="ui.heading()">{{ sectionLabel }}</h1>
+          <AppTabsContent value="general" as-child>
+            <SettingsPage><GeneralSettingsPanel /></SettingsPage>
+          </AppTabsContent>
+          <AppTabsContent value="ai" as-child>
+            <section class="flex min-h-0 min-w-0 flex-1 flex-col" data-test-id="settings-ai-panel">
+              <ModelsPanel>
+                <ChatSettingsSection />
+              </ModelsPanel>
+            </section>
+          </AppTabsContent>
+          <AppTabsContent value="usage" as-child>
+            <SettingsPage><UsageSettingsPanel /></SettingsPage>
+          </AppTabsContent>
+          <AppTabsContent value="diagnostics" as-child>
+            <SettingsPage><DiagnosticsSettingsPanel /></SettingsPage>
+          </AppTabsContent>
+          <AppTabsContent value="mcp" as-child>
+            <MCPWorkspacePanel />
+          </AppTabsContent>
+          <AppTabsContent value="tools" as-child>
+            <ToolAccessSettingsPanel />
+          </AppTabsContent>
+          <AppTabsContent value="media" as-child>
+            <MediaSettingsPanel />
+          </AppTabsContent>
+          <AppTabsContent value="storage" as-child>
+            <StorageSettingsPanel />
+          </AppTabsContent>
+          <AppTabsContent value="server" as-child>
+            <SettingsPage><ServerSettingsPanel /></SettingsPage>
+          </AppTabsContent>
+        </div>
+      </ShellFrame>
     </AppTabsRoot>
   </AppDialogRoot>
   <AppAlertDialogRoot :open="confirming" @update:open="!$event && navigation.keepEditing()">

@@ -13,8 +13,8 @@ for (const width of [1280, 390]) {
     async function open() {
       await page.keyboard.press(process.platform === 'darwin' ? 'Meta+,' : 'Control+,')
       if (width < 640) {
-        await page.getByRole('combobox', { name: 'Settings', exact: true }).click()
-        await page.getByRole('option', { name: 'Tool access', exact: true }).click()
+        await page.getByTestId('app-settings').getByTestId('shell-menu').click()
+        await page.getByRole('tab', { name: 'Tool access', exact: true }).click()
       } else await page.getByRole('tab', { name: 'Tool access', exact: true }).click()
     }
     await open()

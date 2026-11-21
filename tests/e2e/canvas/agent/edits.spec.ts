@@ -183,7 +183,7 @@ test('Reduce agent animations shows the edit at once, with nothing left hidden',
   await open(page)
   await page.getByTestId('app-settings-trigger').click()
   await page.getByRole('switch', { name: 'Reduce agent animations' }).click()
-  await page.getByTestId('app-settings-done').click()
+  await page.getByTestId('app-settings-back').click()
 
   await renderAsAgent(page, 40)
   const artboard = page.locator('iframe[data-kalka-artboard]').contentFrame()
