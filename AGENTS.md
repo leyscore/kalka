@@ -24,6 +24,7 @@ This file holds the repository map and the rules that apply everywhere. Rules fo
 | `server` | Self-hosted Kalka server (AGPL-3.0): Cloudflare Worker and Docker image, its own npm package with its own tests (`npm test` against a running server); the root checks do not cover it, `.github/workflows/server.yml` builds and smoke-tests its image | `server/README.md` |
 | `src` | Vue/Vite app: services and state in `src/app/**`, views in `src/views/**`, UI in `src/components/**`; desktop APIs come through `@tauri-apps/*` imports that `vite/aliases.ts` points at Electron implementations in `src/app/platform/tauri` | `src/AGENTS.md` |
 | `electron` | Electron shell: window and `kalka-app://` protocol, IPC handlers, bundled MCP server, packaging | `electron/AGENTS.md` |
+| `extension` | Kalka Snapshot, the Chrome extension that inspects a web page and copies an element as Kalka layers or HTML and CSS | `extension/AGENTS.md` |
 | `tests`                | Central app, integration, E2E, native, and Figma acceptance tests                                                                                                                                 | `tests/AGENTS.md`                 |
 | `tools`, `.github`     | Private repo tooling, CI classification, releases, brand generation                                                                                                                               | `tools/AGENTS.md`                 |
 | `skills/kalka` | Installable agent skill | `packages/core/AGENTS.md` (Tools) |

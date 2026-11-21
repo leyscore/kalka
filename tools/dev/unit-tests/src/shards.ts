@@ -29,7 +29,7 @@ export const UNIT_TEST_GROUPS = {
     'tests/engine/tauri'
   ],
   cli: ['packages/cli/tests', 'tests/engine/cli'],
-  desktop: ['electron/tests'],
+  desktop: ['electron/tests', 'extension/tests'],
   core: [
     'packages/core/tests',
     'tests/engine/clipboard',

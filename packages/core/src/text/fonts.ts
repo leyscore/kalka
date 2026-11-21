@@ -741,23 +741,33 @@ export class FontManager {
 
   /** Makes a face available to the page's own text, such as fields over canvas labels. */
   registerFontInBrowser(family: string, style: string, data: ArrayBuffer) {
-    if (!IS_BROWSER) return
     const weight = styleToWeight(style)
     const italic = style.toLowerCase().includes('italic') ? 'italic' : 'normal'
-    if (!this.browserFaces.some((known) => known.data === data && known.family === family)) {
-      const known: BrowserFontFace = { family, weight: String(weight), style: italic, data }
-      this.browserFaces.push(known)
-      for (const listener of this.browserFaceListeners) listener(known)
+    this.addBrowserFace({ family, weight: String(weight), style: italic, data })
+  }
+
+  /**
+   * Hands a face to the browser as it is: `weight` may be a range, such as a variable font's
+   * `200 900`, so text draws at the exact weight it asks for. Artboards receive it too.
+   */
+  addBrowserFace(face: BrowserFontFace) {
+    if (!IS_BROWSER) return
+    // One file can be several faces: a variable font serves each weight it covers.
+    const same = (known: BrowserFontFace) =>
+      known.data === face.data &&
+      known.family === face.family &&
+      known.weight === face.weight &&
+      known.style === face.style
+    if (!this.browserFaces.some(same)) {
+      this.browserFaces.push(face)
+      for (const listener of this.browserFaceListeners) listener(face)
     }
-    const face = new FontFace(family, data, {
-      weight: String(weight),
-      style: italic
-    })
-    face
+    const loaded = new FontFace(face.family, face.data, { weight: face.weight, style: face.style })
+    loaded
       .load()
-      .then(() => document.fonts.add(face))
+      .then(() => document.fonts.add(loaded))
       .catch(() => {
-        console.warn(`Failed to load font "${family}" (${style})`)
+        console.warn(`Failed to load font "${face.family}" (${face.weight} ${face.style})`)
       })
   }
 }

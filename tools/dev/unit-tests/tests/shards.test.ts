@@ -21,6 +21,7 @@ test('every app, engine, desktop and package-local test belongs to exactly one s
   const discovered = [
     ...(await discover('tests/app/**/*.test.ts')),
     ...(await discover('electron/tests/**/*.test.ts')),
+    ...(await discover('extension/tests/**/*.test.ts')),
     ...(await discover('tests/integration/**/*.test.ts')),
     ...(await discover('tests/engine/**/*.test.ts')),
     ...(await discover('packages/*/tests/**/*.test.ts'))

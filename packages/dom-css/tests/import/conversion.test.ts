@@ -181,6 +181,17 @@ describe('@kalka/dom-css conversion', () => {
     expect(card.computedStyle?.['border-radius']).toBe('16px')
   })
 
+  it('hides a text layer whose element is hidden', async () => {
+    const graph = await htmlToSceneGraph(
+      '<div><p style="visibility: hidden">Away</p><p>Here</p></div>',
+      { runtime: createHeadlessCSSRuntime() }
+    )
+    const texts = [...graph.getAllNodes()].filter((node) => node.type === 'TEXT')
+    expect(texts.map((node) => [node.name, node.visible])).toEqual([
+      ['Away', false],
+      ['Here', true]
+    ])
+  })
   it('converts HTML and CSS to a scene graph with one API call', async () => {
     const graph = await htmlToSceneGraph(cardHTML, {
       cssText: cardCSS,
