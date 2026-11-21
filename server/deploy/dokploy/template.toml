@@ -1,0 +1,14 @@
+[variables]
+main_domain = "${domain}"
+setup_code = "${password:32}"
+
+[config]
+[[config.domains]]
+serviceName = "kalka"
+port = 8787
+host = "${main_domain}"
+
+[config.env]
+KALKA_SETUP_CODE = "${setup_code}"
+KALKA_PUBLIC_URL = "https://${main_domain}"
+KALKA_SERVER_NAME = "Kalka"

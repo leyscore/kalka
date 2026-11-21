@@ -1,0 +1,15 @@
+services:
+  kalka:
+    image: ghcr.io/leyscore/kalka-server:latest
+    restart: unless-stopped
+    expose:
+      - 8787
+    environment:
+      - KALKA_SETUP_CODE=${KALKA_SETUP_CODE}
+      - KALKA_PUBLIC_URL=${KALKA_PUBLIC_URL}
+      - KALKA_SERVER_NAME=${KALKA_SERVER_NAME}
+    volumes:
+      - kalka-data:/data
+
+volumes:
+  kalka-data:

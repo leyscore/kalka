@@ -1,0 +1,15 @@
+# docker compose up -d   (settings in .env, see .env.example)
+services:
+  kalka:
+    image: ghcr.io/leyscore/kalka-server:latest
+    # Or build it here: comment out "image" and uncomment "build".
+    # build: .
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    env_file: .env
+    volumes:
+      - kalka-data:/data
+
+volumes:
+  kalka-data:
