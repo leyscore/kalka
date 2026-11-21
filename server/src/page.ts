@@ -3,6 +3,12 @@ import { CONSOLE_JS, ICONS_JS, KIT_CSS, KIT_JS } from './console/bundle'
 /** The Kalka K on its blue tile, for the browser tab. */
 const ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#2F5BEA"/><svg x="14" y="14" width="72" height="72" viewBox="14 14 72 72"><rect x="14" y="14" width="22" height="72" fill="#EFEFEC"/><path d="M40 50 L86 14 L86 50 Z" fill="#EFEFEC"/><path d="M40 50 A46 36 0 0 0 86 86 L86 50 Z" fill="#EFEFEC"/></svg></svg>`
 
+/**
+ * Sets the theme before the first paint, as the console kit's `applyTheme` does once it runs, so a
+ * dark page does not flash the day sky on load. Shared with Kalka Cloud's pages.
+ */
+export const THEME_BOOT = `(function(){var t=null;try{t=localStorage.getItem('kalka-theme')}catch(e){}var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light'})()`
+
 function escapeHtml(text: string): string {
   return text.replace(/[<>&"]/g, (char) => `&#${char.charCodeAt(0)};`)
 }
@@ -18,6 +24,7 @@ export function consolePage(serverName: string): string {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="color-scheme" content="light dark">
+<script>${THEME_BOOT}</script>
 <title>${escapeHtml(serverName)}</title>
 <link rel="icon" href="data:image/svg+xml,${encodeURIComponent(ICON)}">
 <link rel="preload" href="/assets/geist.woff2" as="font" type="font/woff2" crossorigin>
