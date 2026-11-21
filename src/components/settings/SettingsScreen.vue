@@ -7,10 +7,10 @@ import IconChart from '~icons/hugeicons/chart-no-axes-combined'
 import IconCloud from '~icons/hugeicons/cloud'
 import IconImage from '~icons/hugeicons/image-01'
 import IconPlug from '~icons/hugeicons/plug'
-import IconServer from '~icons/hugeicons/server-stack-01'
 import IconSettings from '~icons/hugeicons/settings-01'
 import IconSliders from '~icons/hugeicons/sliders-horizontal'
 import IconSparkles from '~icons/hugeicons/sparkles'
+import IconUser from '~icons/hugeicons/user'
 
 import { useI18n } from '@kalka/vue'
 
@@ -25,6 +25,7 @@ import {
 } from '@/app/settings/open'
 import ChatSettingsSection from '@/components/settings/chat/ChatSettingsSection.vue'
 import DiagnosticsSettingsPanel from '@/components/settings/diagnostics/DiagnosticsSettingsPanel.vue'
+import CollaborationNameSection from '@/components/settings/general/CollaborationNameSection.vue'
 import GeneralSettingsPanel from '@/components/settings/general/GeneralSettingsPanel.vue'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
 import SettingsSidebar from '@/components/settings/layout/SettingsSidebar.vue'
@@ -47,13 +48,13 @@ import {
 } from '@/components/ui/dialog'
 import AppTabsContent from '@/components/ui/tabs/AppTabsContent.vue'
 import AppTabsRoot from '@/components/ui/tabs/AppTabsRoot.vue'
-import { settingsShell } from '@/theme/settings/shell'
+import { settingsColumn, settingsShell } from '@/theme/settings/shell'
 
 /**
  * Settings, a page at `/settings/<section>` in the app's shell: the sidebar holds the way back,
  * the person and the sections; the section itself sits on a frosted panel beside it.
  */
-const { settings, common, collaboration, files } = useI18n()
+const { settings, common, files } = useI18n()
 const identity = useCollabIdentity()
 const navigation = provideSettingsNavigation()
 tryOnScopeDispose(registerSettingsNavigation(navigation.request))
@@ -62,14 +63,19 @@ const ui = settingsShell()
 
 const groups = computed<SettingsSidebarGroup[]>(() => [
   {
-    id: 'app',
-    label: settings.value.groupApp,
+    id: 'account',
+    label: settings.value.account,
     sections: [
-      { value: 'general', label: settings.value.general, icon: IconSettings },
+      { value: 'server', label: settings.value.account, icon: IconUser },
+      { value: 'general', label: settings.value.preferences, icon: IconSettings }
+    ]
+  },
+  {
+    id: 'workspace',
+    label: settings.value.groupWorkspace,
+    sections: [
       { value: 'storage', label: settings.value.storage, icon: IconCloud },
-      { value: 'server', label: collaboration.value.serverTab, icon: IconServer },
-      { value: 'media', label: settings.value.media, icon: IconImage },
-      { value: 'diagnostics', label: settings.value.diagnostics, icon: IconActivity }
+      { value: 'media', label: settings.value.media, icon: IconImage }
     ]
   },
   {
@@ -81,8 +87,25 @@ const groups = computed<SettingsSidebarGroup[]>(() => [
       { value: 'tools', label: settings.value.toolAccess, icon: IconSliders },
       { value: 'usage', label: settings.value.usage, icon: IconChart }
     ]
+  },
+  {
+    id: 'advanced',
+    label: settings.value.groupAdvanced,
+    sections: [{ value: 'diagnostics', label: settings.value.diagnostics, icon: IconActivity }]
   }
 ])
+/** A sentence under each section's name, saying what it is for. */
+const descriptions = computed<Record<SettingsSection, string>>(() => ({
+  server: settings.value.accountDescription,
+  general: settings.value.preferencesDescription,
+  storage: settings.value.storageDescription,
+  media: settings.value.mediaDescription,
+  ai: settings.value.aiDescription,
+  mcp: settings.value.mcpDescription,
+  tools: settings.value.toolsDescription,
+  usage: settings.value.usageDescription,
+  diagnostics: settings.value.diagnosticsDescription
+}))
 const sections = computed(() => groups.value.flatMap((group) => group.sections))
 const sectionLabel = computed(
   () => sections.value.find((section) => section.value === settingsSection.value)?.label ?? ''
@@ -157,7 +180,12 @@ function onOpenChange(open: boolean): void {
         </template>
 
         <div :class="ui.panel()" data-test-id="settings-panel">
-          <h1 :class="ui.heading()">{{ sectionLabel }}</h1>
+          <header :class="ui.header()">
+            <div :class="settingsColumn">
+              <h1 :class="ui.heading()">{{ sectionLabel }}</h1>
+              <p :class="ui.description()">{{ descriptions[settingsSection] }}</p>
+            </div>
+          </header>
           <AppTabsContent value="general" as-child>
             <SettingsPage><GeneralSettingsPanel /></SettingsPage>
           </AppTabsContent>
@@ -187,7 +215,12 @@ function onOpenChange(open: boolean): void {
             <StorageSettingsPanel />
           </AppTabsContent>
           <AppTabsContent value="server" as-child>
-            <SettingsPage><ServerSettingsPanel /></SettingsPage>
+            <SettingsPage>
+              <div class="flex flex-col gap-6" data-test-id="settings-account-panel">
+                <CollaborationNameSection />
+                <ServerSettingsPanel />
+              </div>
+            </SettingsPage>
           </AppTabsContent>
         </div>
       </ShellFrame>
