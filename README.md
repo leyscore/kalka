@@ -25,18 +25,49 @@
 </p>
 
 <p align="center">
-  <sub>macOS (Apple silicon or <a href="https://kalka.design/api/download/mac-x64">Intel</a>), Windows and Linux. Free and open source, MIT. Beta: builds are not signed yet, see <a href="#install">Install</a>.</sub>
+  <sub>macOS (Apple silicon or <a href="https://kalka.design/api/download/mac-x64">Intel</a>), Windows and Linux. Free and open source. Beta: builds are not signed yet, see <a href="#install">Install</a>.</sub>
 </p>
 
 <p align="center">
   <a href="https://github.com/leyscore/kalka/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/leyscore/kalka?include_prereleases&style=flat-square&labelColor=121214&color=2F5BEA&label=release"></a>
   <a href="https://github.com/leyscore/kalka/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/leyscore/kalka?style=flat-square&labelColor=121214&color=2F5BEA&logo=github"></a>
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-2F5BEA?style=flat-square&labelColor=121214"></a>
+  <a href="LICENSE"><img alt="App license: MIT" src="https://img.shields.io/badge/app-MIT-2F5BEA?style=flat-square&labelColor=121214"></a>
+  <a href="server/LICENSE"><img alt="Server license: AGPL-3.0" src="https://img.shields.io/badge/server-AGPL--3.0-2F5BEA?style=flat-square&labelColor=121214"></a>
+  <a href="https://kalka.design/docs"><img alt="Docs in nine languages" src="https://img.shields.io/badge/docs-9%20languages-2F5BEA?style=flat-square&labelColor=121214"></a>
   <a href="https://x.com/bedleybuilds"><img alt="Follow on X" src="https://img.shields.io/badge/follow-@bedleybuilds-2F5BEA?style=flat-square&labelColor=121214&logo=x"></a>
   <img alt="Status: beta" src="https://img.shields.io/badge/status-beta-2F5BEA?style=flat-square&labelColor=121214">
 </p>
 
 <p align="center"><img src="assets/screenshots/demo.gif" width="100%" alt="The Kalka editor: the layers panel, a canvas made of real HTML and the properties panel, editing the Learn the basics page"></p>
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="#the-app"><picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/readme/card-app-dark.webp">
+    <img src="assets/readme/card-app.webp" width="100%" alt="The app: design in real HTML, with your agent. Free, MIT.">
+  </picture></a>
+      <br /><a href="https://kalka.design/api/download/mac-arm64">Download</a> &nbsp; <a href="#the-app">How it works</a>
+    </td>
+    <td width="50%" valign="top">
+      <a href="#the-server"><picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/readme/card-server-dark.webp">
+    <img src="assets/readme/card-server.webp" width="100%" alt="The server: your team edits together, on your own hosting. AGPL.">
+  </picture></a>
+      <br /><a href="https://deploy.workers.cloudflare.com/?url=https://github.com/leyscore/kalka/tree/main/server">Deploy in one click</a> &nbsp; <a href="./server/README.md">Server guide</a>
+    </td>
+  </tr>
+</table>
+
+<br />
+
+<h2 id="the-app" align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/readme/part-app-dark.webp">
+    <img src="assets/readme/part-app.webp" width="100%" alt="The app. Design in real HTML: a desktop and web editor whose canvas is the browser itself. Your agent drafts, you finish, and the result is already code.">
+  </picture>
+</h2>
+
 
 <br />
 
@@ -109,6 +140,54 @@
 
 <br />
 
+<br />
+
+<h2 id="the-server" align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/readme/part-server-dark.webp">
+    <img src="assets/readme/part-server.webp" width="100%" alt="The server. Your team, on your own hosting: keep your files in one place and edit them together in real time.">
+  </picture>
+</h2>
+
+<p align="center">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/leyscore/kalka/tree/main/server"><img src="https://deploy.workers.cloudflare.com/button" height="32" alt="Deploy to Cloudflare"></a>
+</p>
+
+<p align="center"><sub>One click on Cloudflare's free plan, or a template for your host:</sub></p>
+
+<p align="center">
+  <a href="server/README.md#run-with-docker"><img alt="Docker" src="https://img.shields.io/badge/Docker-ghcr.io%2Fleyscore%2Fkalka--server-2496ED?style=flat-square&logo=docker&logoColor=white"></a>
+  <a href="server/docker-compose.yml"><img alt="Docker Compose" src="https://img.shields.io/badge/Docker%20Compose-one%20file-1D63ED?style=flat-square&logo=docker&logoColor=white"></a>
+  <a href="server/deploy/coolify/kalka.yaml"><img alt="Coolify" src="https://img.shields.io/badge/Coolify-template-6B16ED?style=flat-square"></a>
+  <a href="server/deploy/dokploy"><img alt="Dokploy" src="https://img.shields.io/badge/Dokploy-template-0F172A?style=flat-square"></a>
+  <a href="server/README.md#one-click-platforms"><img alt="Railway" src="https://img.shields.io/badge/Railway-from%20repo-0B0D0E?style=flat-square&logo=railway&logoColor=white"></a>
+  <a href="server/render.yaml"><img alt="Render" src="https://img.shields.io/badge/Render-blueprint-46E3B7?style=flat-square&logo=render&logoColor=black"></a>
+  <a href="server/fly.toml"><img alt="Fly.io" src="https://img.shields.io/badge/Fly.io-fly%20launch-7B3BE2?style=flat-square&logo=flydotio&logoColor=white"></a>
+  <a href="server/README.md#one-click-platforms"><img alt="Hostinger VPS and other Docker hosts" src="https://img.shields.io/badge/Hostinger%20VPS-docker%20compose-673DE6?style=flat-square&logo=hostinger&logoColor=white"></a>
+</p>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/readme/server-console-dark.webp">
+    <img src="assets/readme/server-console.webp" width="100%" alt="The server console: files, people with their roles, and settings">
+  </picture>
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><strong>Real-time collaboration.</strong><br />Edit together, even when the person who shared a file is offline. Kalka keeps a copy on each computer, so files open without a connection.</td>
+    <td width="50%"><strong>Single sign-on.</strong><br />Google Workspace, Microsoft Entra ID, Keycloak, Authentik, Authelia or any OpenID Connect provider, free for up to five people.</td>
+  </tr>
+  <tr>
+    <td><strong>Files, not a database.</strong><br />WebDAV for Nextcloud and sync clients, and an export of every file as <code>.kalka</code>.</td>
+    <td><strong>No telemetry.</strong><br />Configured with environment variables; the server never calls home.</td>
+  </tr>
+</table>
+
+<p align="center">Then open <strong>Settings › Server</strong> in Kalka. The <a href="./server/README.md">server guide</a> covers every host; plans for larger teams are on <a href="https://kalka.design/pricing">kalka.design/pricing</a>.</p>
+
+<br />
+
 ## Install
 
 Download the latest build for your system with the buttons above, or from [Releases](https://github.com/leyscore/kalka/releases): the `.dmg` on macOS, the `.exe` installer on Windows, the `.AppImage` on Linux. The app updates itself from the same page.
@@ -166,7 +245,7 @@ bun run test:unit     # Engine and unit tests
 <details>
 <summary><strong>Is it free?</strong></summary>
 <br />
-Yes. The desktop app and its local MCP server are free and MIT licensed. A paid hosted version for syncing and team sharing is planned; nothing in the app depends on it.
+Yes. The desktop app and its local MCP server are free and MIT licensed, and the self-hosted server is free and AGPL licensed, with single sign-on for up to five people. Larger teams can buy a Business plan, and a hosted Kalka Cloud is in preparation; nothing in the app depends on either.
 </details>
 
 <details>
@@ -200,16 +279,6 @@ Builds are not signed, macOS is the most tested platform, and complex <code>.fig
 </details>
 
 <br />
-
-## Self-hosted server for teams
-
-[`server/`](./server) is the Kalka server: your team keeps its files in one place and edits them together in real time, with single sign-on and WebDAV. Deploy it to Cloudflare's free plan in one click, or run it anywhere with Docker:
-
-<p>
-  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/leyscore/kalka/tree/main/server"><img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare"></a>
-</p>
-
-Then open **Settings › Server** in Kalka. The [server guide](./server/README.md) covers Docker, Coolify, Dokploy, Railway, Render and Fly.io; plans for larger teams are on [kalka.design/pricing](https://kalka.design/pricing).
 
 ## In this repository
 
@@ -249,3 +318,9 @@ Thank you to everyone who built OpenPencil.
 ## License
 
 Kalka's desktop app and local MCP server are licensed under the [MIT License](./LICENSE). The self-hosted server in [`server/`](./server) is licensed under the [GNU Affero General Public License v3](./server/LICENSE).
+
+<br />
+
+<p align="center">
+  <a href="https://kalka.design"><img src="assets/readme/footer.webp" width="100%" alt="kalka, made by Pixelers"></a>
+</p>
