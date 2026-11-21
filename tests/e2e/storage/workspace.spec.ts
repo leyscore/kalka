@@ -180,7 +180,7 @@ test('Save to storage uploads the open document and lists it in the workspace', 
   await panel.getByLabel('Access key ID').fill('access-key')
   await panel.getByLabel('Secret access key').fill('secret-key')
   await page.getByRole('button', { name: 'Save', exact: true }).click()
-  await page.getByTestId('app-settings-done').click()
+  await page.getByTestId('app-settings-back').click()
 
   file = await openAppMenu(page, 'File')
   await file.getByRole('menuitem', { name: 'Save to storage…' }).click()

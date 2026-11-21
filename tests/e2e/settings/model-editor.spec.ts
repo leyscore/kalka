@@ -18,7 +18,7 @@ test('model editing keeps the Settings shell stable and isolates the form', asyn
   await expect(editor).toBeVisible()
   await expect(dialog.getByText('Chat', { exact: true })).not.toBeVisible()
   await expect(dialog.getByRole('button', { name: 'Back', exact: true })).toHaveCount(0)
-  await expect(page.getByTestId('app-settings-done')).toHaveCount(0)
+  await expect(page.getByTestId('app-settings-back')).toHaveCount(0)
   expect(await dialog.boundingBox()).toEqual(before)
 
   // Accidental dismissal must not throw away an in-progress profile.
@@ -29,7 +29,7 @@ test('model editing keeps the Settings shell stable and isolates the form', asyn
   await expect(editor).toBeVisible()
   await editor.getByRole('button', { name: 'Cancel', exact: true }).click()
   await expect(editor).toHaveCount(0)
-  await expect(page.getByTestId('app-settings-done')).toBeVisible()
+  await expect(page.getByTestId('app-settings-back')).toBeVisible()
   expect(await dialog.boundingBox()).toEqual(before)
 })
 
@@ -54,7 +54,7 @@ for (const reducedMotion of ['reduce', 'no-preference'] as const) {
       await expect(add).toBeFocused()
       await expect(dialog.getByRole('tabpanel')).toHaveCount(1)
     }
-    await page.getByTestId('app-settings-done').click()
+    await page.getByTestId('app-settings-back').click()
     await expect(dialog).not.toBeVisible()
   })
 }

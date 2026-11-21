@@ -32,7 +32,7 @@ test('storage settings keep secrets behind the credential manager', async ({ pag
   await expect(secret).toHaveAttribute('placeholder', /Key saved/)
   await page.getByRole('button', { name: 'Clear', exact: true }).click()
   await save.click()
-  await page.getByTestId('app-settings-done').click()
+  await page.getByTestId('app-settings-back').click()
   await page.reload()
   await canvas.waitForInit()
   await page.getByTestId('app-settings-trigger').click()
@@ -66,7 +66,7 @@ test('MCP connections keep bearer tokens out of ordinary settings', async ({ pag
   await expect(section).toContainText('Enabled')
   await expect(section).not.toContainText('secret-mcp-token')
 
-  await page.getByTestId('app-settings-done').click()
+  await page.getByTestId('app-settings-back').click()
   await page.reload()
   await canvas.waitForInit()
   await page.getByTestId('app-settings-trigger').click()
@@ -181,7 +181,7 @@ test('model library keeps reusable profiles and role assignments', async ({ page
   await page.getByRole('option', { name: 'Fast model' }).click()
   await page.getByTestId('settings-model-assignment-vision').click()
   await page.getByRole('option', { name: 'Vision model' }).click()
-  await page.getByTestId('app-settings-done').click()
+  await page.getByTestId('app-settings-back').click()
 
   await page.reload()
   await canvas.waitForInit()
@@ -212,7 +212,7 @@ test('remembered browser credentials survive reload and clear centrally', async 
   await page.getByLabel('Name').fill('Claude Sonnet')
   await page.getByTestId('provider-settings-api-key').fill('sk-or-remembered-test-key')
   await page.getByRole('button', { name: 'Save model' }).click()
-  await page.getByTestId('app-settings-done').click()
+  await page.getByTestId('app-settings-back').click()
   await expect(page.getByTestId('chat-input')).toBeVisible()
 
   await page.reload()
@@ -230,7 +230,7 @@ test('remembered browser credentials survive reload and clear centrally', async 
     .click()
   await page.getByTestId('settings-section-general').click()
   await remember.click()
-  await page.getByTestId('app-settings-done').click()
+  await page.getByTestId('app-settings-back').click()
 
   await page.reload()
   await canvas.waitForInit()
@@ -252,5 +252,5 @@ test('browser credential preferences live in General, not the footer', async ({ 
   await expect(remember).toHaveAttribute('aria-checked', 'true')
   await expect(panel.getByText('Keys are kept only until you close this session.')).toBeHidden()
   await expect(page.getByText('system credential store', { exact: false })).toHaveCount(0)
-  await page.getByTestId('app-settings-done').click()
+  await page.getByTestId('app-settings-back').click()
 })

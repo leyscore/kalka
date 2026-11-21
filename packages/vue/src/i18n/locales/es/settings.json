@@ -11,6 +11,8 @@
   "title": "Ajustes",
   "description": "Gestiona integraciones y preferencias de la aplicación.",
   "general": "General",
+  "groupApp": "Aplicación",
+  "groupAI": "IA",
   "languageDescription": "Elige el idioma de la interfaz de la aplicación.",
   "editing": "Edición",
   "snappingDescription": "Controla la alineación al editar trazados y al mover o redimensionar capas.",

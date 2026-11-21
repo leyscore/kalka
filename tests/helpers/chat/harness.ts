@@ -50,7 +50,7 @@ export class ChatHarness {
     await this.page.getByLabel('Name').fill('Claude Sonnet')
     await this.apiKeyInput.fill(apiKey)
     await this.page.getByRole('button', { name: 'Save model' }).click()
-    await this.page.getByTestId('app-settings-done').click()
+    await this.page.getByTestId('app-settings-back').click()
     await this.input.waitFor()
   }
 

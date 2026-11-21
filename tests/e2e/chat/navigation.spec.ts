@@ -25,7 +25,7 @@ test('saving an API key in Settings opens the chat interface', async ({ chat }) 
   await chat.page.getByLabel('Name').fill('Claude Sonnet')
   await chat.apiKeyInput.fill('sk-or-test-key-12345')
   await chat.page.getByRole('button', { name: 'Save model' }).click()
-  await chat.page.getByTestId('app-settings-done').click()
+  await chat.page.getByTestId('app-settings-back').click()
 
   await expect(chat.input).toBeVisible()
   await expect(chat.page.getByText('Describe what you want to create or change.')).toBeVisible()

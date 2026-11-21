@@ -47,7 +47,7 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     await expect(page.getByRole('switch', { name: 'get_selection', exact: true })).toBeVisible()
     await trigger.click()
     await expect(page.getByRole('switch', { name: 'get_selection', exact: true })).toBeHidden()
-    await expect(page.getByTestId('app-settings-done')).toBeVisible()
+    await expect(page.getByTestId('app-settings-back')).toBeVisible()
   })
 }
 

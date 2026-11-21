@@ -15,7 +15,11 @@ import { openSettings } from '@/app/settings/open'
 import { openExternalLink } from '@/app/shell/ui'
 import BrandMark from '@/components/brand/BrandMark.vue'
 import ShellSidebar from '@/components/shell/ShellSidebar.vue'
-import type { ShellSidebarGroup, ShellSidebarItem } from '@/components/shell/sidebar'
+import {
+  initialsOf,
+  type ShellSidebarGroup,
+  type ShellSidebarItem
+} from '@/components/shell/sidebar'
 import { docsURL } from '@/constants'
 import { shellSidebar } from '@/theme/shell/sidebar'
 
@@ -53,16 +57,6 @@ const selected = computed(() => {
   if (route.path === '/') return 'home'
   return filesListFromPath(route.path) ?? undefined
 })
-
-function initialsOf(name: string): string {
-  const parts = name
-    .trim()
-    .split(/\s+/)
-    .filter((part) => part.length > 0)
-  const letters =
-    parts.length > 1 ? `${parts[0]?.[0]}${parts.at(-1)?.[0]}` : name.trim().slice(0, 2)
-  return letters.toUpperCase() || 'K'
-}
 
 const account = computed(() => {
   const name = identity.hasChosenName.value ? identity.name.value : serverAccount.value?.user.name
