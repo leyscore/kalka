@@ -8,6 +8,7 @@
 - Connect Kalka to a self-hosted Kalka server in Settings › Server, signing in with a password or the server's single sign-on. Save on <server> in the Share panel puts a file on the server, where teammates open it from the new Server tab on Home and edit it together in real time, even when the person who shared it is offline; Kalka also keeps a Kalka file of each server document up to date for the server's export. A `kalka://server?url=…` link, such as the one a server's invitation carries, opens Settings › Server with the address filled in. Each server document has its own address, `/design/<id>/<name>`, which reopens it after a reload and opens it for a signed-in teammate; `?node-id=` shows one layer.
 - In the browser, Back and Forward move between the documents you opened in tabs, as they do between pages.
 - The web editor opens from a Kalka Cloud workspace already signed in to it, on one of its files or on a new file saved there, which can start from a frame size or a request to the AI agent.
+- Kalka Snapshot, a Chrome extension, inspects any web page: hover to see an element's size, type, colors and layout, click to select it, ↑ for its parent, then ⌘C to copy it as layers that paste into Kalka with their styles, fonts, images and class names, or ⌥⌘C to copy it as HTML and CSS.
 
 ### Changed
 

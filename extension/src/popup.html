@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kalka Snapshot</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<main class="pop">
+  <header class="head">
+    <img src="icons/icon-32.png" alt="" width="28" height="28">
+    <b>Kalka Snapshot</b>
+  </header>
+  <button type="button" class="big" id="inspect">
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m5 3l14 7l-6 2l-2 6z"/></svg>
+    <span>Inspect this page</span>
+    <span class="k">⌥⇧K</span>
+  </button>
+  <p class="error" id="error" hidden>This page cannot be inspected: the browser keeps its own pages and the extension store out of reach.</p>
+  <fieldset class="group">
+    <legend class="lbl">COPY AS</legend>
+    <div class="seg" role="radiogroup" aria-label="Copy as">
+      <label><input type="radio" name="format" value="kalka" checked><span>Kalka layers</span></label>
+      <label><input type="radio" name="format" value="html"><span>HTML and CSS</span></label>
+    </div>
+  </fieldset>
+  <p class="hint" id="hint">Select an element, then ⌘C. Paste it into any Kalka file with ⌘V.</p>
+  <footer class="foot">
+    <span>Send straight to your files</span>
+    <span class="soon">Kalka Cloud soon</span>
+  </footer>
+</main>
+<script type="module" src="popup.js"></script>
+</body>
+</html>
