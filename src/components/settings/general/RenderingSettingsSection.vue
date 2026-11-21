@@ -53,7 +53,7 @@ function setTiledRendering(enabled: boolean): void {
           @update:model-value="setDocumentPageColor"
         />
       </SettingsRow>
-      <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
+      <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
         <span>
           <span class="flex flex-wrap items-center gap-2 text-xs text-surface">
             {{ rendering.progressiveTiled }}
@@ -61,7 +61,7 @@ function setTiledRendering(enabled: boolean): void {
               rendering.experimental
             }}</AppBadge>
           </span>
-          <span class="block text-[11px] text-muted">{{
+          <span class="mt-0.5 block text-xs text-muted">{{
             rendering.progressiveTiledDescription
           }}</span>
         </span>
