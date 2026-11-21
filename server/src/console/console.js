@@ -74,7 +74,13 @@
       async (values) => { const result = await api('POST', '/api/auth/reset', { code, password: values.password }); history.replaceState(null, '', '/'); signedIn(result) }), foot())
   }
 
-  function viewInvite(code) {
+  async function viewInvite(code) {
+    // The invitation is checked before the form, so nobody fills it in for nothing.
+    let offer
+    try { offer = await api('POST', '/api/auth/invite', { invite: code }) } catch (e) {
+      screen('This invitation does not work', e.message + ' Ask whoever invited you for a new link.', el('a', { href: '#/', class: 'btn soft', onclick: () => history.replaceState(null, '', '/') }, 'Go to sign in'), foot())
+      return
+    }
     const sso = ssoButton()
     const card = []
     if (sso) card.push(sso)
@@ -82,12 +88,12 @@
       if (sso) card.push(el('div', { class: 'or' }, 'or create a password'))
       card.push(form([
         { name: 'name', label: 'Your name', autocomplete: 'name' },
-        { name: 'email', label: 'Email', type: 'email', autocomplete: 'username', placeholder: 'you@company.com' },
+        { name: 'email', label: 'Email', type: 'email', autocomplete: 'username', placeholder: 'you@company.com', value: offer.email || undefined, readonly: Boolean(offer.email) },
         { name: 'password', label: 'Password', type: 'password', autocomplete: 'new-password', hint: '10 characters or more.' }
       ], el('button', { type: 'submit', class: 'btn', style: { height: '42px' } }, 'Create my account'),
       async (values) => { const result = await api('POST', '/api/auth/register', { ...values, invite: code }); history.replaceState(null, '', '/'); signedIn(result) }))
     }
-    screen('Join ' + server.name, 'You were invited to design together on this Kalka server.', card, foot())
+    screen('Join ' + server.name, 'You were invited to design together on this Kalka server, as ' + ROLES[offer.role].label.toLowerCase() + '.', card, foot())
   }
 
   function viewSetup() {
@@ -106,9 +112,14 @@
     function render() {
       let body
       if (state.step === 0) {
-        body = form([{ name: 'code', label: 'The KALKA_SETUP_CODE you chose when deploying', type: 'password', value: state.code, autocomplete: 'off' }],
+        body = form([{ name: 'code', label: 'Setup code', type: 'password', value: state.code, autocomplete: 'off', hint: 'The code you chose when you deployed the server (KALKA_SETUP_CODE).' }],
           el('button', { type: 'submit', class: 'btn', style: { height: '42px' } }, 'Continue'),
-          async (values) => { if (!values.code.trim()) throw new Error('Type the setup code.'); state.code = values.code; state.step = 1; render() })
+          async (values) => {
+            if (!values.code.trim()) throw new Error('Type the setup code.')
+            // Checked here, so a wrong code is said on this step, not after the account.
+            await api('POST', '/api/setup/check', { code: values.code })
+            state.code = values.code; state.step = 1; render()
+          })
       } else if (state.step === 1) {
         const account = state.account || {}
         body = form([
@@ -229,10 +240,19 @@
         doc.live ? el('span', { class: 'pill ok', title: doc.live + ' open now' }, el('span', { class: 'live' }), String(doc.live)) : null))
   }
 
+  /** The file's address in the web editor the server names, which asks to sign in here if needed. */
+  function fileLink(doc) {
+    const slug = doc.name.normalize('NFKD').replace(/\p{Mn}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 60).replace(/^-+|-+$/g, '') || 'untitled'
+    return server.editor.replace(/\/+$/, '') + '/design/' + doc.id + '/' + slug + '?server=' + encodeURIComponent(location.origin)
+  }
+
   function fileMenu(anchor, doc) {
     const items = [
       el('div', { class: 'head' }, el('span', {}, doc.name), el('span', {}, doc.live ? doc.live + ' open now' : 'Edited ' + when(doc.updatedAt).toLowerCase())),
-      el('button', { type: 'button', role: 'menuitem', onclick: () => { closePop(); openConnect() } }, icon('plug-01'), 'Open in Kalka'),
+      ...(server.editor
+        ? [el('a', { role: 'menuitem', href: fileLink(doc), target: '_blank', rel: 'noopener', onclick: closePop }, icon('plug-01'), 'Open in Kalka'),
+            el('button', { type: 'button', role: 'menuitem', onclick: () => { closePop(); copy(fileLink(doc), 'Link copied') } }, icon('link-01'), 'Copy link')]
+        : [el('button', { type: 'button', role: 'menuitem', onclick: () => { closePop(); openConnect() } }, icon('plug-01'), 'Connect Kalka')]),
       el('button', { type: 'button', role: 'menuitem', onclick: () => { closePop(); download(doc) } }, icon('download-01'), 'Download .kalka')
     ]
     if (canEdit()) {
@@ -261,6 +281,7 @@
   }
 
   function emptyFiles() {
+    if (!canEdit()) return el('div', { class: 'empty' }, el('h2', {}, 'No files yet'), el('p', {}, 'Files your team saves here will appear.'))
     return el('div', { class: 'empty' }, el('h2', {}, 'No files yet'),
       el('p', {}, 'Connect Kalka to this server, then open Share and choose Save on ' + server.name + '.'),
       el('button', { type: 'button', class: 'btn', onclick: openConnect }, icon('plug-01'), 'Connect Kalka'))
@@ -301,7 +322,7 @@
 
   function greeting() {
     const hour = new Date().getHours()
-    return hour < 5 ? 'Good night' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
+    return hour < 5 ? 'Good evening' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
   }
 
   function daysLeft(date) {
@@ -327,7 +348,7 @@
         seats(license.usedSeats, license.seats)))
       if (license.expiresAt) cards.push(stat({ label: 'License', value: daysLeft(license.expiresAt), sub: 'days left, until ' + new Date(license.expiresAt + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }), tip: license.customer ? 'Licensed to ' + license.customer + '.' : 'The free Community key renews by itself every year.' }))
     }
-    const methods = [server.auth.password ? 'PASSWORD' : null, server.auth.sso ? server.auth.sso.label.toUpperCase() : null].filter(Boolean)
+    const methods = [server.auth.password ? 'SIGN-IN: PASSWORD' : null, server.auth.sso ? server.auth.sso.label.toUpperCase() : null].filter(Boolean)
     frame('home', today, greeting() + ', ' + me.name.split(/\s+/)[0],
       el('a', { href: '#/files', class: 'search sky', style: { textDecoration: 'none' } }, icon('search-01', 14), el('span', {}, 'Search files')), [
         el('section', { class: 'stats' }, cards),
@@ -418,7 +439,7 @@
         el('div', { style: { display: 'flex', alignItems: 'flex-end', gap: '12px' } }, px(license.usedSeats, 60), el('span', { class: 'sub mono', style: { paddingBottom: '6px' } }, 'of ' + license.seats)),
         seats(license.usedSeats, license.seats)))
     }
-    frame('people', plural(users.length, 'person').replace('persons', 'people'), 'People', el('button', { type: 'button', class: 'btn white', onclick: () => openInvite(settings) }, icon('user-add-01'), 'Invite people'), [
+    frame('people', plural(active.length, 'person').replace('persons', 'people') + (users.length > active.length ? ', ' + (users.length - active.length) + ' disabled' : ''), 'People', el('button', { type: 'button', class: 'btn white', onclick: () => openInvite(settings) }, icon('user-add-01'), 'Invite people'), [
       el('section', { class: 'stats' }, cards),
       el('section', { class: 'glass list' }, el('div', { class: 'list-head' }, el('h2', {}, 'Members')), rows),
       el('section', { class: 'glass list' }, el('div', { class: 'list-head' }, el('h2', {}, 'Invitations')),
@@ -448,15 +469,27 @@
       send.disabled = count === 0
       send.lastChild.textContent = count > 1 ? 'Send ' + count + ' invitations' : 'Send'
     })
-    const link = el('button', { type: 'button', class: 'btn ghost', style: { marginRight: 'auto' }, onclick: async () => {
+    const createLink = async () => {
       try {
         const invite = await api('POST', '/api/invites', { role })
         linkDialog('Invitation link', 'Send it to one person. It works once, for 7 days, as ' + ROLES[role].label.toLowerCase() + '.', invite.url, route)
       } catch (e) { error.textContent = e.message }
-    } }, icon('link-01'), 'Copy a link instead')
+    }
+    const roleField = el('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', color: 'var(--sub)' } }, 'Role', dropdown({ value: role, wide: true, label: 'Role', options: roleOptions(), onChange: (value) => { role = value } }))
+    // Without email, a link is the only way: it becomes the main action, and the emails box goes.
+    if (!settings.emailReady) {
+      dialog('Invite people', 'Create a link and send it yourself. It works once, for 7 days.', [
+        roleField,
+        el('p', { style: { margin: 0, color: 'var(--faint)', fontSize: '12px' } }, 'Set up email under Server › Email to send invitations from here.'),
+        error
+      ], [el('button', { type: 'button', class: 'btn ghost', onclick: closeDialog }, 'Cancel'),
+        el('button', { type: 'button', class: 'btn', onclick: createLink }, icon('link-01'), 'Create a link')])
+      return
+    }
+    const link = el('button', { type: 'button', class: 'btn ghost', style: { marginRight: 'auto' }, onclick: createLink }, icon('link-01'), 'Copy a link instead')
     dialog('Invite people', 'Each person gets an email with a link that works once, for 7 days.', [
       el('label', { class: 'stack' }, 'Emails', emails, el('span', { style: { color: 'var(--faint)', fontSize: '12px' } }, 'Separate them with commas or new lines.')),
-      el('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', color: 'var(--sub)' } }, 'Role', dropdown({ value: role, wide: true, label: 'Role', options: roleOptions(), onChange: (value) => { role = value } })),
+      roleField,
       error
     ], [link, el('button', { type: 'button', class: 'btn ghost', onclick: closeDialog }, 'Cancel'), send])
   }
@@ -643,7 +676,7 @@
 
   async function viewServer(focus) {
     const settings = await api('GET', '/api/settings')
-    const jump = el('div', { class: 'seg', role: 'navigation', 'aria-label': 'Sections', style: { alignSelf: 'flex-start' } }, [['general', 'General'], ['single-sign-on', 'Single sign-on'], ['email', 'Email'], ['license', 'License']].map(([id, label]) =>
+    const jump = el('div', { class: 'seg sky', role: 'navigation', 'aria-label': 'Sections', style: { alignSelf: 'flex-start' } }, [['general', 'General'], ['single-sign-on', 'Single sign-on'], ['email', 'Email'], ['license', 'License']].map(([id, label]) =>
       el('button', { type: 'button', onclick: () => { const node = document.getElementById('section-' + id); if (node) node.scrollIntoView({ behavior: 'smooth', block: 'start' }) } }, label)))
     frame('server', 'Kalka Server ' + server.version, 'Server', serverTabs('settings'), [jump, generalSection(settings), ssoSection(settings), emailSection(settings), licenseSection(settings)])
     if (focus) { const node = document.getElementById('section-' + focus); if (node) node.scrollIntoView({ block: 'start' }) }
@@ -782,13 +815,14 @@
   function openConnect() {
     dialog('Connect Kalka', 'Open ' + server.name + '’s files in the Kalka app and edit them together.', [
       el('ol', { class: 'steps' },
-        el('li', {}, 'Open in Kalka fills in this server’s address in Settings, Server. Or open them yourself and paste the address below.'),
+        el('li', {}, 'Click Open in Kalka. Or, in Kalka, open Settings › Server and paste the address below.'),
         el('li', {}, 'Sign in.'),
         el('li', {}, 'The server’s files appear on Home, in the Server tab. To share a file, open Share and choose Save on ' + server.name + '.')),
-      el('div', { class: 'copyline' }, el('code', {}, location.origin), el('button', { type: 'button', class: 'btn soft small', onclick: () => copy(location.origin, 'Address copied') }, icon('copy-01', 14), 'Copy'))
+      el('div', { class: 'copyline' }, el('code', {}, location.origin), el('button', { type: 'button', class: 'btn soft small', onclick: () => copy(location.origin, 'Address copied') }, icon('copy-01', 14), 'Copy')),
+      el('p', { style: { margin: 0, color: 'var(--faint)', fontSize: '12px' } }, 'Nothing happened when you clicked Open in Kalka? The app is not installed: get it from kalka.design.')
     ], [el('a', { class: 'btn ghost', href: 'https://kalka.design', target: '_blank', rel: 'noopener', style: { marginRight: 'auto' } }, 'Get Kalka'),
       el('button', { type: 'button', class: 'btn ghost', onclick: closeDialog }, 'Done'),
-      el('a', { class: 'btn', href: 'kalka://server?url=' + encodeURIComponent(location.origin), onclick: () => setTimeout(closeDialog, 300) }, icon('plug-01'), 'Open in Kalka')])
+      el('a', { class: 'btn', href: 'kalka://server?url=' + encodeURIComponent(location.origin) }, icon('plug-01'), 'Open in Kalka')])
   }
 
   function openAccount() {
@@ -1023,6 +1057,8 @@
           if (sub === 'scim') return await viewScim()
           return await viewServer(sub === 'sso' ? 'single-sign-on' : sub)
         }
+        // A page this account may not see shows Home, at Home's own address.
+        if (page && page !== 'home') history.replaceState(null, '', '#/home')
         return await viewHome()
       } catch (e) {
         if (!me) return viewSignIn()
