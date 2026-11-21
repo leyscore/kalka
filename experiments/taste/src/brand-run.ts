@@ -206,3 +206,5 @@ try {
   await closeBrowser()
   console.log(`$${ledgerTotal().cost.toFixed(2)} so far`)
 }
+// A page that keeps a connection open (a CDN stylesheet) must not keep the harness alive.
+process.exit(0)
