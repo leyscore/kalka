@@ -20,6 +20,7 @@ de:code.sourceHTMLCSS
 de:code.sourceTailwindJSX
 de:collaboration.serverRoleAdmin
 de:collaboration.serverTab
+de:collaboration.teamGroup
 de:common.ok
 de:diagnostics.categoryMCP
 de:diagnostics.categoryRenderer
@@ -268,6 +269,7 @@ it:collaboration.serverEmail
 it:collaboration.serverPassword
 it:collaboration.serverRoleEditor
 it:collaboration.serverTab
+it:collaboration.teamGroup
 it:common.ok
 it:diagnostics.categoryMCP
 it:diagnostics.categoryRenderer
