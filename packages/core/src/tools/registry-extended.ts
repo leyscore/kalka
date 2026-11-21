@@ -57,6 +57,7 @@ import {
   pageBounds,
   queryNodes,
   searchDesignSystem,
+  searchLibraryComponents,
   selectNodes,
   switchPage
 } from './read'
@@ -124,6 +125,7 @@ export const EXTENDED_TOOLS: ToolDef[] = [
   queryNodes,
   getComponents,
   listLibraries,
+  searchLibraryComponents,
   insertLibraryComponent,
   switchPage,
   pageBounds,

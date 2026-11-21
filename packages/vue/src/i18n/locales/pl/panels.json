@@ -390,6 +390,7 @@
   "disableLibrary": "Wyłącz bibliotekę",
   "noLibraries": "Brak opublikowanych bibliotek",
   "libraryAssetCount": "{count} zasobów",
+  "builtInLibrary": "Wbudowana w Kalka, z podaniem źródeł",
   "libraryInstanceCount": "Instancje: {count}",
   "libraryUpdateAvailable": "Dostępna aktualizacja",
   "applyLibraryUpdate": "Zastosuj aktualizację",

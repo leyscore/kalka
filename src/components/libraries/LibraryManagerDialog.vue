@@ -4,7 +4,12 @@ import { nextTick, watch } from 'vue'
 import { useI18n, useViewportKind } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
-import { openLibraryReview, openPublishLibraryDialog, useLibraryService } from '@/app/libraries'
+import {
+  isBuiltinLibrary,
+  openLibraryReview,
+  openPublishLibraryDialog,
+  useLibraryService
+} from '@/app/libraries'
 import { useLibraryManager } from '@/components/libraries/useLibraryManager'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
@@ -119,6 +124,13 @@ function reviewUpdate(group: (typeof visibleUpdateGroups.value)[number]) {
               <p class="truncate text-xs text-surface">{{ library.name }}</p>
               <p class="text-[10px] text-muted">
                 {{ panels.libraryAssetCount({ count: library.assetCount }) }}
+              </p>
+              <p
+                v-if="isBuiltinLibrary(library.libraryId)"
+                data-test-id="built-in-library"
+                class="text-[10px] text-muted"
+              >
+                {{ panels.builtInLibrary }}
               </p>
             </div>
             <IconButton

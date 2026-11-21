@@ -210,6 +210,7 @@ ja:menu.importClaudeDesign
 ja:menu.toggleUI
 ja:panels.behaviourAddVariants
 ja:panels.breakpointOf
+ja:panels.builtInLibrary
 ja:panels.colorHintHsb
 ja:panels.colorHintHsl
 ja:panels.colorHintOkhcl
@@ -511,6 +512,7 @@ zh-cn:menu.exportSelectionAsSVG
 zh-cn:menu.importClaudeDesign
 zh-cn:panels.behaviourAddVariants
 zh-cn:panels.breakpointOf
+zh-cn:panels.builtInLibrary
 zh-cn:panels.colorHintHsb
 zh-cn:panels.colorHintHsl
 zh-cn:panels.colorHintOkhcl

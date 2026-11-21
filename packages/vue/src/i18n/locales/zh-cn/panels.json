@@ -374,6 +374,7 @@
   "disableLibrary": "禁用库",
   "noLibraries": "没有发布的库",
   "libraryAssetCount": "{count} 个资源",
+  "builtInLibrary": "Kalka 内置，注明来源",
   "libraryInstanceCount": "实例：{count}",
   "libraryUpdateAvailable": "有可用更新",
   "applyLibraryUpdate": "应用更新",

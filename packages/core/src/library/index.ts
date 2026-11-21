@@ -1,6 +1,7 @@
 export * from './asset-keys'
 export * from './definitions'
 export * from './diff'
+export * from './fresh'
 export * from './hash'
 export * from './identity'
 export * from './instance-updates'

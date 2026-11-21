@@ -21,6 +21,7 @@ Renderer, layout, editor, Figma API, tools, clipboard, vector conversion, and do
 ## Components and instances
 
 - Component types use `#9747ff`.
+- Kalka Fresh, the built-in library, is built from HTML definitions in `packages/core/src/library/fresh/` into one fixed revision (`FRESH_LIBRARY_REVISION`, bumped by hand when a component changes). A component paints only with the colour roles of `colors.ts`, names its permissive source, and ships that source's licence and notice files in `licenses/` and a line in `CREDITS.md` (`packages/core/tests/library/fresh/catalog.test.ts`).
 - Component edits propagate through editor component sync in `packages/core/src/editor/components/`; never hand-copy properties in app UI. Use Scene Graph copy helpers for nested values.
 
 ## Vector conversion

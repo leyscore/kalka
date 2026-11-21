@@ -390,6 +390,7 @@
   "disableLibrary": "ライブラリを無効にする",
   "noLibraries": "公開されたライブラリはありません",
   "libraryAssetCount": "アセット {count} 件",
+  "builtInLibrary": "Kalka に内蔵、出典をクレジット",
   "libraryInstanceCount": "インスタンス: {count}",
   "libraryUpdateAvailable": "利用可能なアップデート",
   "applyLibraryUpdate": "更新を適用",

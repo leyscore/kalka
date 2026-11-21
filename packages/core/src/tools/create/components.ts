@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 
 import type { FigmaComponentNode, FigmaNodeProxy } from '#core/figma-api'
-import { toolNumber } from '#core/tools/input'
+import { insertIndexInput, toolNumber } from '#core/tools/input'
 import { defineTool, nodeSummary, requireNodes } from '#core/tools/schema'
 
 export const createComponent = defineTool({
@@ -29,9 +29,7 @@ export const createInstance = defineTool({
   input: v.strictObject({
     component_id: v.pipe(v.string(), v.description('Component node ID')),
     parent_id: v.optional(v.pipe(v.string(), v.description('Frame or page to put it in'))),
-    insert_index: v.optional(
-      toolNumber(v.pipe(v.number(), v.description('Position among siblings (0 = first)')))
-    ),
+    insert_index: insertIndexInput,
     x: v.optional(toolNumber(v.pipe(v.number(), v.description('Left edge, in its parent')))),
     y: v.optional(toolNumber(v.pipe(v.number(), v.description('Top edge, in its parent'))))
   }),
