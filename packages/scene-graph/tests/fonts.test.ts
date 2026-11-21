@@ -117,7 +117,7 @@ describe('SceneGraph fonts', () => {
   test('adding and removing a family tells listeners', () => {
     const graph = new SceneGraph()
     const changes: string[] = []
-    graph.emitter.on('fonts:changed', (family) => changes.push(family))
+    graph.onNodeEvents({ fontsChanged: (family) => changes.push(family) })
     graph.setProjectFont(sampleFont())
     expect(graph.fonts.has('Inter Tight')).toBe(true)
     expect(graph.removeProjectFont('Inter Tight')).toBe(true)

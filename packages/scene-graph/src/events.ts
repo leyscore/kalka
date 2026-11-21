@@ -13,7 +13,8 @@ export function bindNodeEvents(
     handlers.styleGaveWay ? emitter.on('node:styleGaveWay', handlers.styleGaveWay) : null,
     handlers.deleted ? emitter.on('node:deleted', handlers.deleted) : null,
     handlers.reparented ? emitter.on('node:reparented', handlers.reparented) : null,
-    handlers.reordered ? emitter.on('node:reordered', handlers.reordered) : null
+    handlers.reordered ? emitter.on('node:reordered', handlers.reordered) : null,
+    handlers.fontsChanged ? emitter.on('fonts:changed', handlers.fontsChanged) : null
   ].filter((unbind): unbind is () => void => !!unbind)
 
   return () => {

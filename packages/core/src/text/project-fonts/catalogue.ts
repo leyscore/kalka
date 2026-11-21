@@ -183,7 +183,7 @@ export async function findCatalogueFont(
 }
 
 /** Scripts every download covers, as the families that have them name them. */
-const BASE_SUBSETS = [
+const BASE_SUBSETS = new Set([
   'latin',
   'latin-ext',
   'vietnamese',
@@ -191,7 +191,7 @@ const BASE_SUBSETS = [
   'cyrillic-ext',
   'greek',
   'greek-ext'
-]
+])
 
 function rangeCovers(unicodeRange: string, codePoint: number): boolean {
   return unicodeRange.split(',').some((part) => {
@@ -215,7 +215,7 @@ function rangeOf(details: Details, subset: string): string | undefined {
 function chosenSubsets(details: Details, available: readonly string[], characters: string) {
   const codePoints = [...new Set(characters)].flatMap((char) => char.codePointAt(0) ?? [])
   return available.filter((subset) => {
-    if (subset === details.defSubset || BASE_SUBSETS.includes(subset)) return true
+    if (subset === details.defSubset || BASE_SUBSETS.has(subset)) return true
     const range = rangeOf(details, subset)
     return !!range && codePoints.some((codePoint) => rangeCovers(range, codePoint))
   })
@@ -261,7 +261,7 @@ async function licenseText(
 /** The axis files a variable family is served as: the weight axis alone, or every axis. */
 async function variableAxis(fetcher: WebFontFetch, id: string, signal?: AbortSignal) {
   const { axes } = await readJSON(fetcher, `${API}/variable/${id}`, AxesSchema, signal)
-  const wght = axes.wght
+  const wght = Object.hasOwn(axes, 'wght') ? axes.wght : undefined
   const others = Object.keys(axes).filter((axis) => axis !== 'wght' && axis !== 'ital')
   return {
     file: others.length > 0 || !wght ? 'standard' : 'wght',
@@ -282,7 +282,7 @@ async function variableFaces(
   if (!axis) return null
   const faces: ProjectFontFace[] = []
   for (const style of ['normal', 'italic'] as const) {
-    const anyWeight = Object.values(details.variants).find((styles) => styles[style])
+    const anyWeight = Object.values(details.variants).find((styles) => Object.hasOwn(styles, style))
     if (!anyWeight) continue
     for (const subset of chosenSubsets(details, Object.keys(anyWeight[style]), characters)) {
       const file = `${subset}-${axis.file}-${style}.woff2`
@@ -314,9 +314,10 @@ async function staticFaces(
     for (const [style, subsets] of Object.entries(styles)) {
       if (!v.is(StyleSchema, style)) continue
       for (const subset of chosenSubsets(details, Object.keys(subsets), characters)) {
-        const url = subsets[subset].url.woff2 ?? subsets[subset].url.woff
+        const { woff2, woff, ttf } = subsets[subset].url
+        const url = woff2 ?? woff ?? ttf
         if (!url) continue
-        const extension = url.endsWith('.woff') ? 'woff' : 'woff2'
+        const extension = woff2 ? 'woff2' : woff ? 'woff' : 'ttf'
         const range = rangeOf(details, subset)
         faces.push({
           file: `${subset}-${weight}-${style}.${extension}`,

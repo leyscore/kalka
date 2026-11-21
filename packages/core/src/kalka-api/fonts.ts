@@ -1,3 +1,5 @@
+import { uniq } from 'es-toolkit/array'
+
 import type { ProjectFont, SceneGraph } from '@kalka/scene-graph'
 
 import { fontManager } from '#core/text/fonts'
@@ -39,10 +41,10 @@ export function documentFontInfo(font: ProjectFont): DocumentFontInfo {
     family: font.family,
     source: font.source,
     license: font.license,
-    weights: [...new Set(font.faces.map((face) => face.weight))].sort(
-      (a, b) => Number.parseInt(a) - Number.parseInt(b)
+    weights: uniq(font.faces.map((face) => face.weight)).sort(
+      (a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10)
     ),
-    styles: [...new Set(font.faces.map((face) => face.style))].sort(),
+    styles: uniq(font.faces.map((face) => face.style)).sort(),
     files: font.faces.length
   }
 }

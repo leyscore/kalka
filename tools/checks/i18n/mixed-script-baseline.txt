@@ -189,6 +189,9 @@ ja:files.importHTMLCSS
 ja:files.importHTMLCSSDescription
 ja:files.notRespondingTitle
 ja:fonts.downloadFallbackPacksDescription
+ja:fonts.dropFonts
+ja:fonts.filesRejected
+ja:fonts.searchCataloguePlaceholder
 ja:fonts.unsupportedFormat
 ja:media.getPexelsAPIKey
 ja:media.getUnsplashAccessKey
@@ -492,6 +495,9 @@ zh-cn:files.importHTMLCSS
 zh-cn:files.importHTMLCSSDescription
 zh-cn:files.notRespondingTitle
 zh-cn:fonts.downloadFallbackPacksDescription
+zh-cn:fonts.dropFonts
+zh-cn:fonts.filesRejected
+zh-cn:fonts.searchCataloguePlaceholder
 zh-cn:fonts.unsupportedFormat
 zh-cn:media.getPexelsAPIKey
 zh-cn:media.getUnsplashAccessKey

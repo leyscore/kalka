@@ -228,7 +228,7 @@ export function deserializeSceneGraph(data: SerializedSceneGraph): SceneGraph {
   graph.documentColorSpace = data.documentColorSpace
   if (data.interVersion) graph.interVersion = data.interVersion
   graph.enabledLibraries = data.enabledLibraries ? new Map(data.enabledLibraries) : new Map()
-  graph.fonts = new Map(data.fonts ?? [])
+  graph.fonts = data.fonts ? new Map(data.fonts) : new Map()
 
   return graph
 }

@@ -8,6 +8,7 @@ import { net } from 'electron'
 import { registerAll, type CallContext } from '../ipc'
 import { credentialCommands } from './credentials'
 import { buildFigFile } from './fig'
+import { installFonts, type InstalledFontFile } from './fonts'
 import { createHttpStreams, type HttpStreamRequest } from './http-stream'
 import { loginShellPath } from './login-env'
 import { BUNDLED_MCP_HTTP, bundledMCPScript } from './mcp/bundled'
@@ -236,7 +237,8 @@ const commands: Record<string, (args: never) => unknown> = {
     renderHTMLPage({ ...request, format: request.format === 'JPG' ? 'JPG' : 'PNG' }),
   render_html_pdf: ({ request }: { request: Omit<RenderHTMLRequest, 'format' | 'scale'> }) =>
     renderHTMLPage({ ...request, scale: 1, format: 'PDF' }),
-  build_fig_file: (input: Parameters<typeof buildFigFile>[0]) => buildFigFile(input)
+  build_fig_file: (input: Parameters<typeof buildFigFile>[0]) => buildFigFile(input),
+  install_fonts: ({ files }: { files: InstalledFontFile[] }) => installFonts({ files })
 }
 
 export function registerCommandHandlers(): void {

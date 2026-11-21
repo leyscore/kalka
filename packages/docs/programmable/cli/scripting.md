@@ -110,6 +110,20 @@ kalka eval design.fig -w -c '
 
 Names the component does not have fail with an error that lists the ones it has.
 
+A document can carry its own fonts, saved with it in a `fonts/` folder with each family's licence, so it draws the same offline and on a teammate's computer. Families come from the free catalogue (every Google Fonts family and other open-licence ones, through Fontsource); only open licences are downloaded:
+
+```sh
+kalka eval design.fig -w -c '
+  const [display] = await kalka.searchFonts("fraunces")
+  await kalka.addFont(display.family)   // downloads it, with its licence, into the document
+  kalka.fonts                           // [{ family: "Fraunces", license: "OFL-1.1", weights: ["100 900"], ... }]
+'
+```
+
+- `kalka.searchFonts(query, { limit })` lists open-licence families whose name holds `query`, the closest first, with their category, licence, weights, styles, and whether the document carries them.
+- `kalka.addFont(family)` downloads a family into the document and loads it; a name the catalogue lacks fails with close names.
+- `kalka.fonts` lists the families the document carries; `kalka.removeFont(family)` stops carrying one.
+
 ## Supported API surface
 
 The API is intentionally close to Figma's Plugin API, but it maps to Kalka's scene graph and file format.
