@@ -165,14 +165,15 @@ if (!WITH_MAIL) {
   process.exit(0)
 }
 const sink = startSmtpSink(2525)
-const emailInvite = await call('POST', '/api/invites', { role: 'editor', email: 'new@example.com' }, token)
-assert.equal(emailInvite.emailed, true, 'invitation emailed')
-assert.ok(sink.messages.some((m) => m.to.includes('new@example.com') && m.body.includes(emailInvite.url)))
-assert.ok(sink.messages.some((m) => m.to.includes('new@example.com') && m.body.includes(`kalka://server?url=${encodeURIComponent(BASE)}`)), 'the invitation opens the server in Kalka')
+// An invitation sent to an address works for that address only.
 const editorEmail = `editor-${Date.now()}@example.com`
+const emailInvite = await call('POST', '/api/invites', { role: 'editor', email: editorEmail }, token)
+assert.equal(emailInvite.emailed, true, 'invitation emailed')
+assert.ok(sink.messages.some((m) => m.to.includes(editorEmail) && m.body.includes(emailInvite.url)))
+assert.ok(sink.messages.some((m) => m.to.includes(editorEmail) && m.body.includes(`kalka://server?url=${encodeURIComponent(BASE)}`)), 'the invitation opens the server in Kalka')
 const editor = await call('POST', '/api/auth/register', { invite: emailInvite.code, email: editorEmail, name: 'Editor', password: 'first password 123' })
 await call('POST', '/api/auth/forgot', { email: editorEmail })
-const resetMail = sink.messages.find((m) => m.to.includes(editorEmail))
+const resetMail = sink.messages.find((m) => m.to.includes(editorEmail) && m.body.includes('#reset='))
 const resetCode = /#reset=([a-f0-9]+)/.exec(resetMail?.body ?? '')?.[1]
 assert.ok(resetCode, 'reset email has a link')
 await call('POST', '/api/auth/reset', { code: resetCode, password: 'second password 456' })

@@ -41,6 +41,7 @@ import { FONTS } from './assets/fonts'
 import { consolePage } from './page'
 import { directoryName } from './names'
 import { PROTOCOL_VERSION } from './protocol'
+import { enterpriseRoute } from './signin'
 
 export { Directory } from './directory'
 export { DocumentRoom } from './room'
@@ -68,6 +69,7 @@ const SettingsChange = v.object({
 })
 const Register = v.object({ ...Account.entries, invite: v.string() })
 const Code = v.object({ code: v.string() })
+const Exchange = v.object({ code: v.string(), verifier: v.optional(v.pipe(v.string(), v.regex(/^[A-Za-z0-9._~-]{43,128}$/))) })
 const InviteCheck = v.object({ invite: v.string() })
 const InviteRequest = v.object({
   role: v.picklist(ROLES),
@@ -112,13 +114,19 @@ async function limit(env: Env, checks: [key: string, max: number, windowMs: numb
 }
 
 /**
- * Per address; behind no proxy (a bare Docker container) every request looks alike, so only the
- * per-account limits apply there.
+ * Per address. When the address is unknown (Docker with no KALKA_TRUSTED_PROXIES) every request
+ * looks alike, so only the per-account limits apply there.
  */
-function ipLimit(request: Request): [string, number, number] {
-  const ip = clientIp(request)
+function ipLimit(env: Env, request: Request): [string, number, number] {
+  const ip = clientIp(request, env)
   return ip === 'unknown' ? ['ip:unknown', Number.MAX_SAFE_INTEGER, MINUTE] : [`ip:${ip}`, 60, 15 * MINUTE]
 }
+
+/**
+ * Guesses at the setup code, from every address together: setup needs no per-address precision,
+ * and no address can be trusted before an operator has configured the proxy in front.
+ */
+const SETUP_LIMIT: [string, number, number] = ['setup', 20, MINUTE]
 
 /** The environment as deployed, before console settings; kept on the merged one. */
 const RAW_ENV = Symbol('raw environment')
@@ -292,7 +300,7 @@ async function api(env: Env, request: Request, path: string): Promise<Response> 
 
   // Lets the first setup screen say at once whether the code is right, before the account.
   if (path === '/api/setup/check' && method === 'POST') {
-    await limit(env, [ipLimit(request)])
+    await limit(env, [ipLimit(env, request), SETUP_LIMIT])
     const { code } = await body(request, Code)
     const expected = setting(env, 'KALKA_SETUP_CODE')
     if (!expected) throw new HttpError(503, 'Set KALKA_SETUP_CODE on the server first.')
@@ -302,7 +310,7 @@ async function api(env: Env, request: Request, path: string): Promise<Response> 
   }
 
   if (path === '/api/setup' && method === 'POST') {
-    await limit(env, [ipLimit(request)])
+    await limit(env, [ipLimit(env, request), SETUP_LIMIT])
     const input = await body(request, Setup)
     const expected = setting(env, 'KALKA_SETUP_CODE')
     if (!expected) throw new HttpError(503, 'Set KALKA_SETUP_CODE on the server first.')
@@ -322,7 +330,7 @@ async function api(env: Env, request: Request, path: string): Promise<Response> 
     const failedLogin = (reason: string) =>
       log(null, 'auth.login_failed', null, { method: 'password', email: email.slice(0, 254), reason })
     try {
-      await limit(env, [ipLimit(request), [accountKey, 10, 15 * MINUTE]])
+      await limit(env, [ipLimit(env, request), [accountKey, 10, 15 * MINUTE]])
     } catch (error) {
       await failedLogin('too many attempts')
       throw error
@@ -346,29 +354,29 @@ async function api(env: Env, request: Request, path: string): Promise<Response> 
   }
   if (path === '/api/auth/register' && method === 'POST') {
     if (!localLoginEnabled(env)) throw new HttpError(403, 'Sign in with single sign-on.')
-    await limit(env, [ipLimit(request)])
+    await limit(env, [ipLimit(env, request)])
     const result = unwrap(await directory.register(await body(request, Register))) as { token: string; user: User }
     await log(result.user, 'user.created', result.user.id, { email: result.user.email, role: result.user.role, via: 'invitation' })
     return json(result)
   }
   // What an invitation offers before anyone fills in the form: its role and its address.
   if (path === '/api/auth/invite' && method === 'POST') {
-    await limit(env, [ipLimit(request)])
+    await limit(env, [ipLimit(env, request)])
     const { invite } = await body(request, InviteCheck)
     const offer = await directory.checkInvite(invite)
     if (!offer) throw new HttpError(400, 'This invitation is invalid or has expired.')
     return json(offer)
   }
   if (path === '/api/auth/exchange' && method === 'POST') {
-    await limit(env, [ipLimit(request)])
-    const { code } = await body(request, Code)
-    const result = unwrap(await directory.exchangeLoginCode(code)) as { token: string; user: User }
+    await limit(env, [ipLimit(env, request)])
+    const { code, verifier } = await body(request, Exchange)
+    const result = unwrap(await directory.exchangeLoginCode(code, verifier)) as { token: string; user: User }
     await log(result.user, 'auth.login', result.user.id, { method: 'sso' })
     return json(result)
   }
   if (path === '/api/auth/forgot' && method === 'POST') {
     const { email } = await body(request, Forgot)
-    await limit(env, [ipLimit(request), [`forgot:${email.toLowerCase()}`, 3, 60 * MINUTE]])
+    await limit(env, [ipLimit(env, request), [`forgot:${email.toLowerCase()}`, 3, 60 * MINUTE]])
     if (!canSendMail(env)) {
       throw new HttpError(503, 'Email is not set up on this server. Ask an administrator for a reset link.')
     }
@@ -386,7 +394,7 @@ async function api(env: Env, request: Request, path: string): Promise<Response> 
     return json({ sent: true })
   }
   if (path === '/api/auth/reset' && method === 'POST') {
-    await limit(env, [ipLimit(request)])
+    await limit(env, [ipLimit(env, request)])
     const { code, password } = await body(request, Reset)
     const result = unwrap(await directory.resetPassword(code, password)) as { token: string; user: User }
     await log(result.user, 'user.password_reset', result.user.id)
@@ -605,7 +613,7 @@ export default {
       Object.defineProperty(env, RAW_ENV, { value: raw })
       // Single sign-on and what the license adds are the enterprise module's.
       if (ENTERPRISE_PREFIXES.some((prefix) => path.startsWith(prefix) || path === prefix.slice(0, -1))) {
-        const response = enterprise ? await enterprise.handle(request, enterpriseHost(env, request)) : null
+        const response = await enterpriseRoute(env, request, path, enterpriseHost(env, request))
         if (response) return response
         if (path.startsWith('/api/')) throw new HttpError(404, 'This server does not include that feature.')
         return new Response(path.startsWith('/auth/') ? 'Single sign-on is not available on this server.' : 'Not found', { status: 404 })

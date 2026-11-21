@@ -17,7 +17,7 @@ export interface EnterpriseHost {
   directory: DurableObjectStub<Directory>
   /** The server's public address, without a trailing slash. */
   publicUrl: string
-  /** The license key: KALKA_LICENSE_KEY at run time, or the one the build was made with. */
+  /** The license key: KALKA_LICENSE_KEY at run time, or, on Cloudflare's own builds only, the one the build was made with. */
   licenseKey: string | null
   /** The directory's name, which rooms keep with a file (`putFile`). */
   directoryName: string

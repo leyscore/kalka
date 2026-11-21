@@ -4,8 +4,11 @@
 #   docker build -t kalka-server .
 #   docker run -p 8787:8787 -v kalka-data:/data -e KALKA_SETUP_CODE=… kalka-server
 #
-# With single sign-on, pass the license key as a build secret so it never lands in the image:
+# With single sign-on, pass the license key as a build secret: the build uses it only to
+# download the enterprise module, and the key never lands in the image. The server reads it at
+# run time, so pass it to the container too:
 #   docker build --secret id=kalka_license,env=KALKA_LICENSE_KEY -t kalka-server .
+#   docker run … -e KALKA_LICENSE_KEY=… kalka-server
 
 FROM node:22-bookworm-slim AS build
 WORKDIR /app

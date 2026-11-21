@@ -128,7 +128,7 @@ async function signIn(env: Env, request: Request): Promise<User | Response> {
   const at = decoded.indexOf(':')
   const email = at < 0 ? decoded : decoded.slice(0, at)
   const password = at < 0 ? '' : decoded.slice(at + 1)
-  const ip = clientIp(request)
+  const ip = clientIp(request, env)
   const result = await directory.appPasswordSignIn(email, password, `dav:${ip === 'unknown' ? email.toLowerCase() : ip}`)
   if (result === 'limited') return text(429, 'Too many attempts. Wait a few minutes and try again.')
   if (!result) return text(401, 'Wrong email or app password. Create an app password in the console, under Your account.', challenge)

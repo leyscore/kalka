@@ -43,6 +43,8 @@ Or with Docker Compose: copy `.env.example` to `.env`, fill it in, then `docker 
 
 Put the container behind your reverse proxy (Caddy, Traefik, nginx) for HTTPS, and pass WebSocket upgrades through. Everything the server keeps is in `/data`: back up that volume.
 
+**Behind a proxy, set `KALKA_TRUSTED_PROXIES`** to the number of proxies in front of the server (`1` for a single Caddy, Traefik or nginx; `2` for Cloudflare in front of it). Rate limits on sign-in, setup, registration and password reset count per address, and the server takes the client's address from the `X-Forwarded-For` entry the nearest proxy appended. Your proxy must append to that header, as Caddy, Traefik and nginx's `$proxy_add_x_forwarded_for` do. Without the setting, the server trusts no forwarded header: it uses the address that connects to it when that address is public, and when it is private (a proxy on the same network) every client looks alike and only the per-account limits apply. Never set it on a server people reach directly, or anyone could pick their own address.
+
 ### One-click platforms
 
 | Platform | How |
@@ -65,6 +67,7 @@ Most settings can be changed in the console, under Settings. Each one can also b
 | `KALKA_PUBLIC_URL` | The server's public address, used in invitation, reset and room links. Without it, the server keeps the address it was set up at, or that its first administrator signs in at. |
 | `KALKA_APP_ORIGINS` | Web addresses of Kalka editors allowed to sign in through single sign-on, comma-separated. The desktop app and the server's own page are always allowed. |
 | `KALKA_LOCAL_LOGIN` | `false` turns off email and password sign-in, once single sign-on works. |
+| `KALKA_TRUSTED_PROXIES` | Docker only: how many reverse proxies stand in front of the server, so rate limits see each client's address. See [Run with Docker](#run-with-docker). Ignored on Cloudflare, which gives the address itself. |
 | `KALKA_SMTP_HOST`, `KALKA_SMTP_PORT`, `KALKA_SMTP_SECURE`, `KALKA_SMTP_USER`, `KALKA_SMTP_PASSWORD`, `KALKA_SMTP_FROM` | Email for invitations, password resets and seat warnings. `KALKA_SMTP_SECURE` is `starttls` (port 587, the default), `tls` (port 465) or `none`. |
 | `KALKA_LICENSE_KEY` | License for single sign-on. See below. |
 | `KALKA_OIDC_*` | Single sign-on. See below. |
@@ -96,7 +99,8 @@ Single sign-on is part of the Kalka enterprise module, which needs a license key
 **Add the key.**
 
 - Cloudflare: in the Worker, open **Settings › Build › Variables and secrets**, add `KALKA_LICENSE_KEY`, then redeploy (Deployments › Retry, or push to your repository). The build adds the module.
-- Docker: build the image with the key as a build secret, which never lands in the image: `docker build --secret id=kalka_license,env=KALKA_LICENSE_KEY -t kalka-server .`, and also pass `KALKA_LICENSE_KEY` to the container.
+- Docker: build the image with the key as a build secret, `docker build --secret id=kalka_license,env=KALKA_LICENSE_KEY -t kalka-server .`. The build uses it only to download the module, and the image does not contain it, so pass `KALKA_LICENSE_KEY` to the container as well: the server reads it from the environment at run time.
+- Deploying from your own machine with `npm run deploy`: set the key in your shell for the build, and add it to the Worker as a secret (`npx wrangler secret put KALKA_LICENSE_KEY`), since only Cloudflare's own builds keep it in the bundle.
 
 **Register Kalka with your identity provider** as a confidential web application, with the redirect URI `https://<your server>/auth/oidc/callback`, then set:
 
@@ -110,7 +114,8 @@ Single sign-on is part of the Kalka enterprise module, which needs a license key
 | `KALKA_OIDC_DEFAULT_ROLE` | Role for people in none of the groups above. Default `editor`. |
 | `KALKA_OIDC_GROUPS_CLAIM` | Claim that lists groups. Default `groups`. |
 | `KALKA_OIDC_SCOPES` | Default `openid email profile`; add `groups` where your provider needs it. |
-| `KALKA_OIDC_TRUST_EMAIL` | `true` links an existing password account by email even when the provider does not mark the email as verified. |
+| `KALKA_OIDC_LINK_LOCAL_ACCOUNTS` | `true` lets a single sign-on link to an existing password account, administrators included, with the same verified email. The account then takes its role from the provider's groups, or `KALKA_OIDC_DEFAULT_ROLE`. Off by default, so someone who can choose their email at the provider cannot take over an account; environment only, not in the console. |
+| `KALKA_OIDC_TRUST_EMAIL` | `true` treats every email the provider sends as verified. Only for providers where people cannot choose or change their own address: with `KALKA_OIDC_LINK_LOCAL_ACCOUNTS`, it lets the provider's users take over the password accounts that share their address. |
 | `KALKA_OIDC_TOKEN_AUTH` | `basic` (default) or `post`, how the server sends its client secret. |
 
 Provider notes:
@@ -118,12 +123,14 @@ Provider notes:
 - **Authentik**: issuer `https://authentik.example.com/application/o/<slug>/`. Groups come in the `groups` claim.
 - **Keycloak**: issuer `https://keycloak.example.com/realms/<realm>`. Add a “Group Membership” mapper with full path off to send `groups`.
 - **Authelia**: issuer `https://auth.example.com`; add the `groups` scope.
-- **Google Workspace**: issuer `https://accounts.google.com`. Google sends no groups: use `KALKA_OIDC_DEFAULT_ROLE`, and restrict the OAuth app to your organization in Google Cloud.
+- **Google Workspace**: issuer `https://accounts.google.com`. Google sends no groups: use `KALKA_OIDC_DEFAULT_ROLE`, and make the OAuth app Internal (your organization only) in Google Cloud; an External app lets any Google account sign in.
 - **Microsoft Entra ID**: issuer `https://login.microsoftonline.com/<tenant-id>/v2.0` (a tenant ID, not `common`). Turn on the groups claim in Token configuration; Entra sends group object IDs, so list IDs in the `*_GROUPS` variables.
 
 On Cloudflare, the identity provider must be reachable from the internet, or through a Cloudflare Tunnel. In Docker, it can be on your private network.
 
-The license counts editors and administrators who signed in through single sign-on in the last 90 days; viewers are free. When every seat is taken, people who already signed in keep working and new people are refused with a clear message; administrators get an email at 80 % and 100 % when email is set up. After the license ends, single sign-on keeps working for 30 more days, then people sign in with passwords again. No data is ever lost.
+The license counts editors and administrators who signed in through single sign-on in the last 90 days; viewers are free. When every seat is taken, people who already signed in keep working and new people are refused with a clear message, and a viewer cannot be made an editor or administrator, from the console or by their groups, until a seat is free; administrators get an email at 80 % and 100 % when email is set up.
+
+An existing account links to single sign-on by email only when the identity provider created it through user provisioning, or with `KALKA_OIDC_LINK_LOCAL_ACCOUNTS=true`; otherwise someone whose single sign-on email matches a password account is told to sign in with the password. After the license ends, single sign-on keeps working for 30 more days, then people sign in with passwords again. No data is ever lost.
 
 ## Business features
 
@@ -167,7 +174,9 @@ Identity providers create, update and deactivate accounts, and push groups, thro
 ## Security
 
 - Passwords are hashed with PBKDF2-SHA256; session, invitation and reset tokens are stored only as hashes.
-- Sign-in, registration and password reset are rate limited per account and per address.
+- Sign-in, registration and password reset are rate limited per account and per address; the setup code is limited to 20 guesses a minute for the whole server. On Docker, addresses come from forwarded headers only with `KALKA_TRUSTED_PROXIES`.
+- Disabling, deleting or changing the role of someone closes the files they have open at once: they reconnect with their new role, or not at all.
+- A password reset or change signs out every session and revokes the account's app passwords.
 - App passwords are random (120 bits) and stored as hashes; WebDAV sign-in failures are rate limited per address.
 - Rooms open with a one-time ticket valid for a minute, so session tokens never appear in WebSocket addresses.
 - Viewers follow edits live; anything they change stays on their device.
@@ -182,6 +191,10 @@ npm install
 cp .dev.vars.example .dev.vars   # set KALKA_SETUP_CODE
 npm run dev                      # wrangler dev on http://localhost:8787
 npm test                         # end-to-end tests against the running server
+KALKA_EE_PATH=test/fixtures/ee-stub.js npm run dev   # with a stand-in enterprise module, then:
+npm run test:sso                 # single sign-on linking, seats, and sign-in binding
+KALKA_TRUSTED_PROXIES=1 npm run workerd              # then, against workerd:
+npm run test:proxy               # rate limits behind a proxy
 npm run workerd                  # the Docker runtime, without Docker
 ```
 

@@ -12,6 +12,8 @@ services:
       - KALKA_PUBLIC_URL=${SERVICE_FQDN_KALKA}
       - KALKA_SETUP_CODE=${SERVICE_PASSWORD_SETUP}
       - KALKA_SERVER_NAME=${KALKA_SERVER_NAME:-Kalka}
+      # Coolify's Traefik stands in front: rate limits read the address it forwards.
+      - KALKA_TRUSTED_PROXIES=${KALKA_TRUSTED_PROXIES:-1}
       - KALKA_SMTP_HOST=${KALKA_SMTP_HOST}
       - KALKA_SMTP_PORT=${KALKA_SMTP_PORT:-587}
       - KALKA_SMTP_USER=${KALKA_SMTP_USER}

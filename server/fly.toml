@@ -5,6 +5,10 @@ primary_region = "cdg"
 [build]
   dockerfile = "Dockerfile"
 
+# Fly's proxy stands in front and appends the client's address to X-Forwarded-For.
+[env]
+  KALKA_TRUSTED_PROXIES = "1"
+
 [http_service]
   internal_port = 8787
   force_https = true

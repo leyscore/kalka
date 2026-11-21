@@ -105,7 +105,7 @@ async function emitWith(
 ): Promise<void> {
   if (!enterprise?.event) return
   try {
-    const ip = request ? clientIp(request) : null
+    const ip = request ? clientIp(request, host.env) : null
     await enterprise.event(host, {
       at: Date.now(),
       action,

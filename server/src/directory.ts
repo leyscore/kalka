@@ -3,8 +3,9 @@ import { DurableObject } from 'cloudflare:workers'
 import enterprise from './ee/module'
 import type { EnterpriseHost } from './ee/types'
 import { enterpriseHost, serverUrl } from './enterprise'
-import { hashPassword, hashToken, randomId, randomToken, verifyPassword } from './crypto'
+import { challengeOf, hashPassword, hashToken, randomId, randomToken, sameSecret, verifyPassword } from './crypto'
 import { withStoredSettings, type DocumentInfo, type Env, type Role, type User } from './env'
+import { roomName } from './names'
 
 const DAY = 24 * 60 * 60 * 1000
 const SESSION_MS = 30 * DAY
@@ -12,6 +13,8 @@ const INVITE_MS = 7 * DAY
 const TICKET_MS = 60 * 1000
 const LOGIN_CODE_MS = 2 * 60 * 1000
 const RESET_MS = 60 * 60 * 1000
+/** Someone counts toward the license's seats when they signed in through single sign-on this recently. */
+const SEAT_ACTIVE_MS = 90 * DAY
 /** How often a user's last activity is written, so every request does not write. */
 const SEEN_EVERY_MS = 60 * 1000
 
@@ -478,13 +481,22 @@ export class Directory extends DurableObject<Env> {
     return this.all<UserRow>('SELECT * FROM users ORDER BY created_at').map(toUser)
   }
 
-  updateUser(id: string, change: { role?: Role; disabled?: boolean }): Result<User> {
+  async updateUser(id: string, change: { role?: Role; disabled?: boolean }): Promise<Result<User>> {
     const row = this.userById(id)
     if (!row) return failure(404, 'No such user.')
     const losesAdmin =
       row.role === 'admin' && ((change.role && change.role !== 'admin') || change.disabled)
     if (losesAdmin && !this.hasOtherActiveAdmin(id)) {
       return failure(409, 'The server needs at least one administrator.')
+    }
+    // A single sign-on account that starts counting toward the license, raised from viewer or
+    // enabled again, needs a free seat; one provisioned but never signed in takes none yet.
+    const counts = (change.role ?? row.role) !== 'viewer' && !(change.disabled ?? row.disabled === 1)
+    if (row.source === 'sso' && row.last_seen !== null && !this.holdsSeat(row) && counts) {
+      const left = await this.seatsLeft()
+      if (left !== null && left <= 0) {
+        return failure(403, 'Every single sign-on seat of the license is taken. Add seats, or make someone else a viewer first.')
+      }
     }
     if (change.role) this.sql.exec('UPDATE users SET role = ? WHERE id = ?', change.role, id)
     if (change.disabled !== undefined) {
@@ -493,7 +505,27 @@ export class Directory extends DurableObject<Env> {
     }
     const updated = this.userById(id)
     if (!updated) return failure(404, 'No such user.')
+    if (updated.disabled) await this.revokeInRooms(id, null)
+    else if (updated.role !== row.role) await this.revokeInRooms(id, updated.role)
     return toUser(updated)
+  }
+
+  /**
+   * Tells every room open now that someone lost access (`role` null) or has a new role, so the
+   * sockets they already have stop carrying their edits.
+   */
+  private async revokeInRooms(userId: string, role: Role | null): Promise<void> {
+    const tenant = this.getFlag('tenant') || undefined
+    const live = this.all<{ id: string }>('SELECT id FROM documents WHERE live > 0 AND deleted_at IS NULL')
+    await Promise.all(
+      live.map(async ({ id }) => {
+        try {
+          await this.env.ROOMS.get(this.env.ROOMS.idFromName(roomName(tenant, id))).revokeUser(userId, role)
+        } catch (error) {
+          console.error('[kalka] Could not close a room socket', error)
+        }
+      })
+    )
   }
 
   listDocuments(): DocumentInfo[] {
@@ -700,6 +732,22 @@ export class Directory extends DurableObject<Env> {
     return row && row.expires_at >= Date.now() ? row.value : null
   }
 
+  /** A one-time value kept under a key the caller chose, such as a sign-in's state. */
+  async putBound(kind: string, key: string, value: string, ttlMs: number): Promise<void> {
+    this.sql.exec('DELETE FROM secrets WHERE expires_at < ?', Date.now())
+    this.sql.exec(
+      'INSERT OR REPLACE INTO secrets (hash, kind, value, expires_at) VALUES (?, ?, ?, ?)',
+      await hashToken(`${kind}:${key}`),
+      kind,
+      value,
+      Date.now() + ttlMs
+    )
+  }
+
+  takeBound(kind: string, key: string): Promise<string | null> {
+    return this.takeSecret(kind, `${kind}:${key}`)
+  }
+
   /** A one-minute, one-use pass into a room, so session tokens never go in WebSocket URLs. */
   async createTicket(userId: string, documentId: string): Promise<string> {
     return this.putSecret('ticket', JSON.stringify({ userId, documentId }), TICKET_MS)
@@ -719,8 +767,19 @@ export class Directory extends DurableObject<Env> {
     return this.putSecret('login', userId, LOGIN_CODE_MS)
   }
 
-  async exchangeLoginCode(code: string): Promise<Result<{ token: string; user: User }>> {
+  /**
+   * Trades a login code for a session. A code whose sign-in was started with a PKCE challenge
+   * needs its verifier, and a verifier needs such a code: a code caught on its way to Kalka, or
+   * slipped into a sign-in Kalka started, is refused.
+   */
+  async exchangeLoginCode(code: string, verifier?: string): Promise<Result<{ token: string; user: User }>> {
+    const challenge = await this.takeBound('sign-in-code', code)
     const userId = await this.takeSecret('login', code)
+    if (challenge !== null || verifier !== undefined) {
+      if (!challenge || !verifier || !(await sameSecret(await challengeOf(verifier), challenge))) {
+        return failure(400, 'This sign-in was not started here. Try again.')
+      }
+    }
     const row = userId ? this.userById(userId) : undefined
     if (!row || row.disabled) return failure(400, 'This sign-in link has expired. Try again.')
     return { token: await this.newSession(row.id), user: toUser(row) }
@@ -749,10 +808,16 @@ export class Directory extends DurableObject<Env> {
   }
 
   /**
-   * Finds or creates the account for someone the identity provider vouched for. A new account
-   * is refused when `seatsLeft` is 0; an existing one keeps working.
+   * Finds or creates the account for someone the identity provider vouched for. A new account,
+   * or a raise from viewer, needs a seat (`seatsLeft`); people who already have one keep it.
+   *
+   * An existing account with the same email links only when the identity provider made it
+   * (user provisioning), or, with KALKA_OIDC_LINK_LOCAL_ACCOUNTS=true, for a verified email:
+   * otherwise anyone the provider lets choose an address could take over a password account or
+   * an administrator. A password account that links takes its role from the provider, not the
+   * one it had.
    */
-  ssoSignIn(input: {
+  async ssoSignIn(input: {
     subject: string
     email: string
     emailVerified: boolean
@@ -760,52 +825,92 @@ export class Directory extends DurableObject<Env> {
     role: Role | null
     defaultRole: Role
     seatsLeft: number
-  }): Result<User> {
+  }): Promise<Result<User>> {
     const now = Date.now()
+    const seatTaken = () =>
+      failure(403, 'This server has reached the number of single sign-on users its license allows. Ask an administrator.')
     let row = this.one<UserRow>('SELECT * FROM users WHERE subject = ?', input.subject)
-    // Accounts the identity provider provisioned are its own: they link by email.
-    const provisioned = row ? undefined : this.one<UserRow>('SELECT * FROM users WHERE email = ? AND provisioned = 1 AND subject IS NULL', input.email)
-    if (!row && (input.emailVerified || provisioned)) {
-      row = this.one<UserRow>('SELECT * FROM users WHERE email = ?', input.email)
-      if (row?.subject) row = undefined
-      if (row) {
-        this.sql.exec(
-          "UPDATE users SET subject = ?, source = 'sso' WHERE id = ?",
-          input.subject,
-          row.id
-        )
+    if (row) {
+      // Group membership in the identity provider decides the role at every sign-in; a raise
+      // from viewer takes a seat, and without one the person keeps working as a viewer.
+      const raise = row.role === 'viewer' && input.role !== null && input.role !== 'viewer'
+      if (input.role && input.role !== row.role && !(raise && input.seatsLeft <= 0) && this.keepsAnAdmin(row, input.role)) {
+        this.sql.exec('UPDATE users SET role = ? WHERE id = ?', input.role, row.id)
+        await this.revokeInRooms(row.id, input.role)
       }
-    }
-    if (!row) {
-      if (this.one('SELECT id FROM users WHERE email = ?', input.email)) {
-        return failure(
-          409,
-          'An account with this email already exists; ask an administrator to link it.'
-        )
+    } else {
+      const existing = this.one<UserRow>('SELECT * FROM users WHERE email = ?', input.email)
+      if (existing) {
+        const provisioned = existing.provisioned === 1 && existing.subject === null
+        const linkable =
+          existing.subject === null &&
+          ((provisioned && (input.emailVerified || existing.role !== 'admin')) ||
+            (input.emailVerified && this.linksLocalAccounts()))
+        if (!linkable) {
+          return failure(
+            409,
+            'An account with this email already exists on this server. Sign in with its password, or ask an administrator.'
+          )
+        }
+        // A provisioned account already has the role the provider gave it; a password account
+        // takes the provider's role, or the default one, never the one it had.
+        const role = provisioned ? (input.role ?? existing.role) : (input.role ?? input.defaultRole)
+        const next = this.keepsAnAdmin(existing, role) ? role : existing.role
+        if (next !== 'viewer' && !this.holdsSeat(existing, now) && input.seatsLeft <= 0) return seatTaken()
+        this.sql.exec("UPDATE users SET subject = ?, source = 'sso', role = ? WHERE id = ?", input.subject, next, existing.id)
+        if (next !== existing.role) await this.revokeInRooms(existing.id, next)
+        row = existing
+      } else {
+        const role = input.role ?? input.defaultRole
+        if (input.seatsLeft <= 0 && role !== 'viewer') return seatTaken()
+        row = this.insertUser({
+          email: input.email,
+          name: input.name || input.email,
+          password: null,
+          role,
+          source: 'sso',
+          subject: input.subject
+        })
       }
-      if (input.seatsLeft <= 0 && (input.role ?? input.defaultRole) !== 'viewer') {
-        return failure(
-          403,
-          'This server has reached the number of single sign-on users its license allows. Ask an administrator.'
-        )
-      }
-      row = this.insertUser({
-        email: input.email,
-        name: input.name || input.email,
-        password: null,
-        role: input.role ?? input.defaultRole,
-        source: 'sso',
-        subject: input.subject
-      })
-    } else if (input.role && input.role !== row.role) {
-      // Group membership in the identity provider decides the role at every sign-in.
-      this.sql.exec('UPDATE users SET role = ? WHERE id = ?', input.role, row.id)
     }
     if (row.disabled) return failure(403, 'This account is disabled.')
     this.sql.exec('UPDATE users SET last_seen = ? WHERE id = ?', now, row.id)
     const updated = this.userById(row.id)
     if (!updated) return failure(500, 'Account was not saved.')
     return toUser(updated)
+  }
+
+  /** Whether an existing account may link to a single sign-on identity by its email. */
+  private linksLocalAccounts(): boolean {
+    return this.env.KALKA_OIDC_LINK_LOCAL_ACCOUNTS === 'true'
+  }
+
+  /** Whether giving `row` this role still leaves the server an active administrator. */
+  private keepsAnAdmin(row: UserRow, role: Role): boolean {
+    return row.role !== 'admin' || role === 'admin' || row.disabled === 1 || this.hasOtherActiveAdmin(row.id)
+  }
+
+  /** Whether the license already counts this account: single sign-on, active, not a viewer. */
+  private holdsSeat(row: UserRow, now = Date.now()): boolean {
+    return (
+      row.source === 'sso' &&
+      row.disabled === 0 &&
+      row.role !== 'viewer' &&
+      row.last_seen !== null &&
+      row.last_seen >= now - SEAT_ACTIVE_MS
+    )
+  }
+
+  /** Seats a single sign-on account may still take, from the license; null when none applies. */
+  private async seatsLeft(): Promise<number | null> {
+    if (!enterprise) return null
+    try {
+      const { license } = await enterprise.status(this.selfHost())
+      return license.valid ? Math.max(0, license.seats - license.usedSeats) : null
+    } catch (error) {
+      console.error('[kalka] License check failed', error)
+      return null
+    }
   }
 
   /**
@@ -882,8 +987,10 @@ export class Directory extends DurableObject<Env> {
     const row = userId ? this.userById(userId) : undefined
     if (!row || row.disabled) return failure(400, 'This link is invalid or has expired.')
     this.sql.exec('UPDATE users SET password = ? WHERE id = ?', await hashPassword(password), row.id)
-    // Everyone signed in with the old password is signed out.
+    // Everyone signed in with the old password is signed out, and the app passwords made
+    // with it stop working: whoever made them may be why the password was reset.
     this.sql.exec('DELETE FROM sessions WHERE user_id = ?', row.id)
+    this.sql.exec('DELETE FROM app_passwords WHERE user_id = ?', row.id)
     return { token: await this.newSession(row.id), user: toUser(row) }
   }
 
@@ -896,6 +1003,7 @@ export class Directory extends DurableObject<Env> {
     if (password.length > 1024) return failure(400, 'That password is too long.')
     this.sql.exec('UPDATE users SET password = ? WHERE id = ?', await hashPassword(password), userId)
     this.sql.exec('DELETE FROM sessions WHERE user_id = ?', userId)
+    this.sql.exec('DELETE FROM app_passwords WHERE user_id = ?', userId)
     return { token: await this.newSession(userId) }
   }
 
@@ -907,7 +1015,7 @@ export class Directory extends DurableObject<Env> {
   }
 
   /** Deletes an account and its sessions; the documents it made stay with the team. */
-  deleteUser(id: string): Result<{ deleted: true }> {
+  async deleteUser(id: string): Promise<Result<{ deleted: true }>> {
     const row = this.userById(id)
     if (!row) return failure(404, 'No such user.')
     if (row.role === 'admin' && !this.hasOtherActiveAdmin(id)) {
@@ -916,6 +1024,7 @@ export class Directory extends DurableObject<Env> {
     this.sql.exec('DELETE FROM sessions WHERE user_id = ?', id)
     this.sql.exec('DELETE FROM app_passwords WHERE user_id = ?', id)
     this.sql.exec('DELETE FROM users WHERE id = ?', id)
+    await this.revokeInRooms(id, null)
     return { deleted: true }
   }
 }
