@@ -11,12 +11,13 @@
 
 ### Changed
 
-- Home's lists of files have their own addresses, `/files/recent`, `/files/storage` and `/files/server`, so a link or a reload opens Home on that list; `/storage` still opens the storage workspace.
-- The welcome is a page at `/welcome` with a few optional questions after the name: what you do, your company, position and team size, what you will design first and how you heard of Kalka, then connecting your AI or leaving it for later. Answers stay on this device.
-- Settings is a page of its own at `/settings/<section>`, filling the window instead of a dialog: Back closes it, a reload or a link opens it on that section, and the open documents stay as they were behind it.
+- Home's lists of files have their own addresses, `/files/recent`, `/files/storage` and `/files/server`, so a link or a reload opens Home on that list, in the web editor too; `/storage` still opens the storage workspace.
+- The welcome is a page at `/welcome` with a few optional questions after the name: what you do, your company, position and team size, what you will design first and how you heard of Kalka, then connecting your AI or leaving it for later. Answers stay on this device and are sent nowhere. A link that opens Settings, such as a server invitation's, opens it and leaves the welcome for the next launch.
+- Settings is a page of its own at `/settings/<section>`, filling the window instead of a dialog, with its content kept to a readable width: Back closes it, a reload or a link opens it on that section, and the open documents stay as they were behind it.
 
 ### Fixed
 
+- An address that names no page, such as `/files` or a mistyped one, opens Home instead of an empty window.
 - On the Variables page, moving from one variable to the next no longer blanks the inspector for a moment: it shows the new variable in place.
 
 ## 0.2.0-beta.4 — 2026-11-20
