@@ -10,6 +10,8 @@ const router = createRouter({
     IS_DEMO_SITE ? { path: '/', redirect: '/demo' } : { path: '/', component: WorkspaceView },
     // The lists of files on Home, each with its address; `/storage` is the older one for Storage.
     { path: '/files/:list', component: WorkspaceView },
+    // The team's pages, for an administrator signed in to a server or Cloud workspace.
+    { path: '/team/:page', component: WorkspaceView },
     { path: '/storage', redirect: (to) => ({ path: '/files/storage', query: to.query }) },
     { path: '/demo', component: WorkspaceView, meta: { demo: true } },
     { path: '/share/:roomId', component: WorkspaceView },

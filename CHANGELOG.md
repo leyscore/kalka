@@ -5,6 +5,7 @@
 ### Added
 
 - On Kalka Cloud, opening app.kalka.design signed in shows Home with your workspace's files, without going through the console.
+- An administrator signed in to a Kalka server or Cloud workspace manages the team from Home's sidebar: People lists everyone with their role, which they change in place, and lets them disable or remove an account, send a password link, invite people by email or with a link to share, and revoke a waiting invitation; Team settings changes the team's name and whether people may sign in with a password, and opens the server's console for the rest.
 
 ### Changed
 

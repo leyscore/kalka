@@ -62,6 +62,7 @@ import {
   type Tab
 } from '@/app/tabs'
 import { isTauri } from '@/app/tauri/env'
+import { teamPageFromPath } from '@/app/team/route'
 import ColorSpaceBanner from '@/components/canvas/ColorSpaceBanner.vue'
 import CommandPalette from '@/components/commands/CommandPalette.vue'
 import FileApiBanner from '@/components/FileApiBanner.vue'
@@ -86,6 +87,7 @@ const opensHome =
   route.path === '/' ||
   isWelcomePath(route.path) ||
   filesListFromPath(route.path) !== null ||
+  teamPageFromPath(route.path) !== null ||
   settingsSectionFromPath(route.path) !== null
 /** Kalka Cloud serves the app at the address of the server it signed in to: Home comes first. */
 function servedByOwnServer(): boolean {
@@ -100,6 +102,7 @@ const shouldCreateHome =
   (isTauri() ||
     appRuntimeConfig.recentFiles ||
     filesListFromPath(route.path) !== null ||
+    teamPageFromPath(route.path) !== null ||
     servedByOwnServer())
 const { collaboration } = useI18n()
 
