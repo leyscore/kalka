@@ -1,0 +1,47 @@
+{
+  "axis": "signature",
+  "question": "What one detail could only belong to this subject?",
+  "rule": "Pick a kind, then write the specific detail from the brief's own facts. It appears in at most two places and is built from the vocabulary only.",
+  "kinds": [
+    {
+      "id": "index-numbers",
+      "use": "real identifiers the subject already uses: route numbers, lot numbers, version tags, table numbers"
+    },
+    {
+      "id": "ruled-list",
+      "use": "a ruled list with a value aligned right: menu and price, lot and estimate, plan and limit"
+    },
+    {
+      "id": "big-figure",
+      "use": "one real number from the brief set at display size with its unit and its meaning"
+    },
+    {
+      "id": "label-tag",
+      "use": "a small label like the subject's own tags: specimen label, price card, luggage tag, wall caption"
+    },
+    {
+      "id": "schedule",
+      "use": "times and days as a timetable: opening hours, departures, release dates"
+    },
+    {
+      "id": "margin-notes",
+      "use": "short notes in a side column next to the main text, like annotations on a proof"
+    },
+    {
+      "id": "stamp",
+      "use": "one mark like a stamp or seal: a date, a status, a grade, set in the support colour"
+    },
+    {
+      "id": "coordinates",
+      "use": "place and position: address, coordinates, floor, gate, set as data"
+    },
+    {
+      "id": "spec-table",
+      "use": "a small table of specifications or parts with units"
+    },
+    {
+      "id": "crop-marks",
+      "use": "the edges of the medium showing: frame numbers, registration marks as plain rules and small text"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "axis": "motion",
+  "question": "How should the page answer the hand?",
+  "options": [
+    {
+      "id": "still",
+      "classes": [],
+      "use": "nothing moves; states change at once"
+    },
+    {
+      "id": "quick",
+      "classes": [
+        "transition-colors",
+        "duration-150"
+      ],
+      "use": "colours change in 150 ms on hover and focus, nothing travels"
+    },
+    {
+      "id": "measured",
+      "classes": [
+        "transition-colors",
+        "transition-opacity",
+        "duration-300",
+        "ease-out"
+      ],
+      "use": "300 ms ease-out on colour and opacity; one thing at a time"
+    }
+  ]
+}

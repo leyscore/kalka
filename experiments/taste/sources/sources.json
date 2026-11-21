@@ -1,0 +1,415 @@
+{
+  "note": "Raw material for the genome. Each source was read to abstract layout rules and part recipes; none of its markup is shipped. Licence texts are kept in licences/ so the attribution survives even though nothing is redistributed.",
+  "used": [
+    {
+      "id": "hyperui",
+      "repository": "https://github.com/markmead/hyperui",
+      "name": "markmead/hyperui",
+      "licence": "MIT",
+      "copyright": "Copyright (c) Mark Mead",
+      "commit": "74af2a5200c9ac330306a5d8189dfc7162909e91",
+      "licenceFile": "licences/hyperui.txt",
+      "clone": "markmead_hyperui",
+      "paths": [
+        "public/examples"
+      ],
+      "what": "Plain HTML Tailwind components and page templates",
+      "decomposedInto": "split and table patterns, details lists, stats rows, timelines, inbox and analytics templates → ruled-index, strip-rows, table-led, rail-table, master-detail; button, table, tag, field, fact atoms",
+      "shipped": "nothing: no markup, class list or text from this source is in the repository"
+    },
+    {
+      "id": "flowbite",
+      "repository": "https://github.com/themesberg/flowbite",
+      "name": "themesberg/flowbite",
+      "licence": "MIT",
+      "copyright": "Copyright (c) 2023 Bergside Inc.",
+      "commit": "232ebdb33a9e37b31b293b9988d89b862ee121e5",
+      "licenceFile": "licences/flowbite.txt",
+      "clone": "themesberg_flowbite",
+      "paths": [
+        "content/components"
+      ],
+      "what": "Component documentation with HTML examples",
+      "decomposedInto": "tables, forms, badges, gallery, bottom navigation, drawer → table, field, tag, figure, tab-bar atoms; sheet-detail",
+      "shipped": "nothing: no markup, class list or text from this source is in the repository"
+    },
+    {
+      "id": "flowbite-admin",
+      "repository": "https://github.com/themesberg/flowbite-admin-dashboard",
+      "name": "themesberg/flowbite-admin-dashboard",
+      "licence": "MIT",
+      "copyright": "Copyright (c) 2023 Bergside Inc.",
+      "commit": "229df7ff25808ab2bbda65f03f2397a05f7b4288",
+      "licenceFile": "licences/flowbite-admin.txt",
+      "clone": "themesberg_flowbite-admin-dashboard",
+      "paths": [
+        "content"
+      ],
+      "what": "Admin dashboard pages",
+      "decomposedInto": "CRUD tables, settings pages on col-span grids, mailing layout → rail-table, ledger-tabs, master-detail",
+      "shipped": "nothing: no markup, class list or text from this source is in the repository"
+    },
+    {
+      "id": "landwind",
+      "repository": "https://github.com/themesberg/landwind",
+      "name": "themesberg/landwind",
+      "licence": "MIT",
+      "copyright": "Copyright (c) 2022 Themesberg",
+      "commit": "f8be851cc8b4b44ff9d842ca8f5149d7911af88c",
+      "licenceFile": "licences/landwind.txt",
+      "clone": "themesberg_landwind",
+      "paths": [
+        "index.html"
+      ],
+      "what": "One landing page template",
+      "decomposedInto": "7/5 hero split on a 12-column grid, band sequence → split-asym, banded; footer atom",
+      "shipped": "nothing: no markup, class list or text from this source is in the repository"
+    },
+    {
+      "id": "astrowind",
+      "repository": "https://github.com/arthelokyo/astrowind",
+      "name": "arthelokyo/astrowind (formerly onwidget/astrowind)",
+      "licence": "MIT",
+      "copyright": "Copyright (c) 2023 onWidget",
+      "commit": "14e1a691f80548dcc36370847b1a02c0d0b12821",
+      "licenceFile": "licences/astrowind.txt",
+      "clone": "arthelokyo_astrowind",
+      "paths": [
+        "src/components"
+      ],
+      "what": "Astro site template with widget components",
+      "decomposedInto": "HeroText, Content, Steps2, Comparison, Bento, Projects, Stats widgets → poster, measured-column, ruled-index, table-led, uneven-bento, strip-rows; nav, quote, fact atoms",
+      "shipped": "nothing: no markup, class list or text from this source is in the repository"
+    },
+    {
+      "id": "tailadmin",
+      "repository": "https://github.com/TailAdmin/tailadmin-free-tailwind-dashboard-template",
+      "name": "TailAdmin/tailadmin-free-tailwind-dashboard-template",
+      "licence": "MIT",
+      "copyright": "Copyright (c) 2023 TailAdmin",
+      "commit": "edc46adc78e44ff8ffa6d9d72c8554aff2eb9440",
+      "licenceFile": "licences/tailadmin.txt",
+      "clone": "TailAdmin_tailadmin-free-tailwind-dashboard-template",
+      "paths": [
+        "src"
+      ],
+      "what": "Tailwind HTML dashboard template",
+      "decomposedInto": "12-column dashboard grid with 7/5 splits, tables, chart panels → rail-table, ledger-tabs, split-asym",
+      "shipped": "nothing: no markup, class list or text from this source is in the repository"
+    },
+    {
+      "id": "merakiui",
+      "repository": "https://github.com/merakiuilabs/merakiui",
+      "name": "merakiuilabs/merakiui",
+      "licence": "MIT",
+      "copyright": "Copyright (c) 2021 Khatab Wedaa",
+      "commit": "fe0472efe93f6cd275424ecbdfa7f6cb8da6f908",
+      "licenceFile": "licences/merakiui.txt",
+      "clone": "merakiuilabs_merakiui",
+      "paths": [
+        "components"
+      ],
+      "what": "Tailwind HTML components",
+      "decomposedInto": "heroes, portfolio and button variants → split-asym, strip-rows; button-quiet atom",
+      "shipped": "nothing: no markup, class list or text from this source is in the repository"
+    },
+    {
+      "id": "tailblocks",
+      "repository": "https://github.com/mertJF/tailblocks",
+      "name": "mertJF/tailblocks",
+      "licence": "MIT",
+      "copyright": "Copyright (c) 2020 Mert Cukuren",
+      "commit": "34943e63da6a2d45a55a076ea18312a1c1098957",
+      "licenceFile": "licences/tailblocks.txt",
+      "clone": "mertJF_tailblocks",
+      "paths": [
+        "src/blocks"
+      ],
+      "what": "Tailwind blocks (as JS strings)",
+      "decomposedInto": "fractional splits and band sequences → banded; read mostly as the catalogue of what to avoid (identical thirds)",
+      "shipped": "nothing: no markup, class list or text from this source is in the repository"
+    },
+    {
+      "id": "tailwindtoolbox",
+      "repository": "https://github.com/tailwindtoolbox/Landing-Page",
+      "name": "tailwindtoolbox/Landing-Page",
+      "licence": "MIT",
+      "copyright": "Copyright (c) 2019 Tailwind Toolbox",
+      "commit": "545f89eb26e0997d7cdd15fe77dda35df73e575a",
+      "licenceFile": "licences/tailwindtoolbox.txt",
+      "clone": "tailwindtoolbox_Landing-Page",
+      "paths": [
+        "index.html"
+      ],
+      "what": "One landing page template",
+      "decomposedInto": "alternating full-bleed bands → banded",
+      "shipped": "nothing: no markup, class list or text from this source is in the repository"
+    },
+    {
+      "id": "konsta",
+      "repository": "https://github.com/konstaui/konsta",
+      "name": "konstaui/konsta",
+      "licence": "MIT",
+      "copyright": "Copyright (c) 2021 Vladimir Kharlampidi",
+      "commit": "5b8e54d35ba7ace274cca450f808af570d258f57",
+      "licenceFile": "licences/konsta.txt",
+      "clone": "konstaui_konsta",
+      "paths": [
+        "kitchen-sink"
+      ],
+      "what": "Mobile UI components (iOS and Material)",
+      "decomposedInto": "List, ListItem, Navbar, Tabbar, Sheet, Card, Stepper → list-led, card-stack, sheet-detail; row, tab-bar, panel atoms",
+      "shipped": "nothing: no markup, class list or text from this source is in the repository"
+    },
+    {
+      "id": "taxonomy",
+      "repository": "https://github.com/shadcn-ui/taxonomy",
+      "name": "shadcn-ui/taxonomy",
+      "licence": "MIT",
+      "copyright": "Copyright (c) 2022 shadcn",
+      "commit": "298a8857c7128a0d121e7f699dfd729f23b3966d",
+      "licenceFile": "licences/taxonomy.txt",
+      "clone": "shadcn-ui_taxonomy",
+      "paths": [
+        "app",
+        "components"
+      ],
+      "what": "Next.js application template",
+      "decomposedInto": "docs and marketing shells → measured-column; link atom",
+      "shipped": "nothing: no markup, class list or text from this source is in the repository"
+    },
+    {
+      "id": "precedent",
+      "repository": "https://github.com/steven-tey/precedent",
+      "name": "steven-tey/precedent",
+      "licence": "MIT",
+      "copyright": "Copyright (c) 2023 Steven Tey",
+      "commit": "3be40205d7cdf56082cd284f07f12251b9208f79",
+      "licenceFile": "licences/precedent.txt",
+      "clone": "steven-tey_precedent",
+      "paths": [
+        "app",
+        "components"
+      ],
+      "what": "Next.js starter template",
+      "decomposedInto": "page shell and section sequence → measured-column",
+      "shipped": "nothing: no markup, class list or text from this source is in the repository"
+    },
+    {
+      "id": "shadcn",
+      "repository": "https://github.com/shadcn-ui/ui",
+      "name": "shadcn-ui/ui",
+      "licence": "MIT",
+      "copyright": "Copyright (c) 2023 shadcn",
+      "commit": "654a6d78ea6754b9c98444cf7bbf5dfe2bf546ce",
+      "licenceFile": "licences/shadcn.txt",
+      "clone": "shadcn-ui_ui",
+      "paths": [
+        "apps/v4/registry/new-york-v4/ui",
+        "apps/v4/registry/new-york-v4/blocks/dashboard-01"
+      ],
+      "what": "React components and the dashboard-01 block",
+      "decomposedInto": "semantic colour roles (background, foreground, muted, border…) mapped to the genome roles in the gate; button, card, input variants → atoms; dashboard-01 → rail-table",
+      "shipped": "nothing: no markup, class list or text from this source is in the repository"
+    },
+    {
+      "id": "daisyui",
+      "repository": "https://github.com/saadeghi/daisyui",
+      "name": "saadeghi/daisyui",
+      "licence": "MIT",
+      "copyright": "Copyright (c) 2020 Pouya Saadeghi",
+      "commit": "43bc54e9ea25a0f26d85392c169dae6b9839d6e5",
+      "licenceFile": "licences/daisyui.txt",
+      "clone": "saadeghi_daisyui",
+      "paths": [
+        "packages/daisyui/src/components"
+      ],
+      "what": "Component CSS",
+      "decomposedInto": "semantic colour names (base-100, base-content, primary-content) mapped in the gate; badge and dock → tag, tab-bar atoms",
+      "shipped": "nothing: no markup, class list or text from this source is in the repository"
+    }
+  ],
+  "fonts": [
+    {
+      "family": "Archivo",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "IBM Plex Sans",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Bricolage Grotesque",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Figtree",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Familjen Grotesk",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Work Sans",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Barlow Condensed",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Barlow",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Newsreader",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Public Sans",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Red Hat Display",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Red Hat Text",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Gloock",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Karla",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Chivo",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Atkinson Hyperlegible",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "EB Garamond",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Albert Sans",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Young Serif",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Outfit",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Onest",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Big Shoulders Display",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    },
+    {
+      "family": "Hanken Grotesk",
+      "licence": "SIL Open Font License 1.1",
+      "source": "Google Fonts, loaded by link at render time; no font file is in the repository"
+    }
+  ],
+  "datasets": [
+    {
+      "name": "WebSight (HuggingFaceM4/WebSight)",
+      "licence": "CC BY 4.0",
+      "use": "3,000 screenshots already on this machine, read as a second \"average generated page\" pole for the image singularity check. Not redistributed, not used for training."
+    },
+    {
+      "name": "openai/clip-vit-base-patch32",
+      "licence": "MIT",
+      "use": "image embeddings for the singularity and diversity measures; inference only"
+    }
+  ],
+  "excluded": [
+    {
+      "name": "Preline UI (htmlstreamofficial/preline)",
+      "reason": "Dual licence: MIT plus the \"Preline UI Fair Use License\", which forbids use in a product that competes with Preline UI and puts conditions on templates and page builders. A design editor with building blocks is too close to that line. Cloned to read the licence only; nothing studied or used."
+    },
+    {
+      "name": "Astroship (surjithctly/astroship)",
+      "reason": "GPL-3.0: copyleft, incompatible with shipping in an MIT application."
+    },
+    {
+      "name": "AstroSaaS (michael-andreuzza/astrosaas)",
+      "reason": "GPL-3.0."
+    },
+    {
+      "name": "Cruip tailwind-landing-page-template",
+      "reason": "No licence file detected by GitHub (NONE); Cruip free templates are historically GPL. Not used."
+    },
+    {
+      "name": "davidgrzyb/tailwind-admin-template",
+      "reason": "Licence not recognised by GitHub (NOASSERTION); not verified, not used."
+    },
+    {
+      "name": "withastro/astro example templates",
+      "reason": "GitHub reports NOASSERTION for the repository (MIT text with additional third-party notices). Not verified file by file, so not used; AstroWind (MIT) covers the Astro template case."
+    },
+    {
+      "name": "Radix Themes (radix-ui/themes)",
+      "reason": "MIT and usable, but not cloned or studied in this prototype, so it is not claimed as a source."
+    },
+    {
+      "name": "nextjs/saas-starter, vercel/commerce, Starlight, AstroPaper, accessible-astro-starter, Notus JS, Ionic",
+      "reason": "MIT according to GitHub; licence checked but not studied, so not claimed as sources."
+    },
+    {
+      "name": "Tailwind Plus (Tailwind UI) and its templates",
+      "reason": "Commercial licence that forbids redistribution and use in builders."
+    },
+    {
+      "name": "Figma Community files",
+      "reason": "Each file carries its own licence (often CC BY 4.0, sometimes none stated) and Figma's community terms; none was verified file by file, so none was used."
+    },
+    {
+      "name": "Mobbin",
+      "reason": "Paid, no licence to reuse; excluded by instruction."
+    },
+    {
+      "name": "Design galleries and crawled sites (Awwwards, Godly, Land-book, Dribbble, Behance…)",
+      "reason": "No licence to reuse, automated access forbidden by their terms; excluded by instruction. Nothing was crawled for this prototype."
+    },
+    {
+      "name": "Flowbite Blocks (flowbite.com/blocks)",
+      "reason": "The marketing blocks on the website are not in the MIT repository and their free/pro terms were not verified. Only the MIT repository documentation was read."
+    }
+  ]
+}

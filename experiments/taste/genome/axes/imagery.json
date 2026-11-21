@@ -1,0 +1,43 @@
+{
+  "axis": "imagery",
+  "question": "What does the subject have to show, and how should it be shown?",
+  "options": [
+    {
+      "id": "type-only",
+      "images": false,
+      "use": "nothing to photograph: type, numbers and rules carry the page",
+      "rule": "No img elements. The hero device is typographic or a table of real figures."
+    },
+    {
+      "id": "full-bleed",
+      "images": true,
+      "use": "one strong photograph worth the whole width",
+      "rule": "One image spans the full page width in the hero or directly under it; other images are rare."
+    },
+    {
+      "id": "framed-caption",
+      "images": true,
+      "use": "objects or works that deserve a label",
+      "rule": "Every image sits in a figure with a caption under it (what, where, when) in text-small or text-label."
+    },
+    {
+      "id": "strips",
+      "images": true,
+      "use": "many frames of the same kind: shots, screens, dishes",
+      "rule": "Images come in a row of three to six equal frames with no gap larger than 2 steps, each with a short number or name under it."
+    },
+    {
+      "id": "tonal",
+      "images": true,
+      "grayscale": true,
+      "use": "photographs as texture; colour belongs to the palette",
+      "rule": "All images are shown in greyscale; colour comes only from the palette."
+    },
+    {
+      "id": "product-figure",
+      "images": true,
+      "use": "a real screen or object explained part by part",
+      "rule": "Images are numbered figures (Fig. 1) placed beside the text that explains them, never floating decoration."
+    }
+  ]
+}

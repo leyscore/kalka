@@ -1,0 +1,74 @@
+{
+  "axis": "shape",
+  "question": "How do things separate from each other, and how hard are their corners?",
+  "options": [
+    {
+      "id": "square-ruled",
+      "radius": {
+        "sm": 0,
+        "md": 0,
+        "lg": 0
+      },
+      "separation": "rules",
+      "shadow": {},
+      "use": "hairline rules between rows and sections; no boxes at all"
+    },
+    {
+      "id": "square-surface",
+      "radius": {
+        "sm": 0,
+        "md": 0,
+        "lg": 0
+      },
+      "separation": "surfaces",
+      "shadow": {},
+      "use": "flat blocks of the surface and tint colours, square corners"
+    },
+    {
+      "id": "crisp-border",
+      "radius": {
+        "sm": 2,
+        "md": 4,
+        "lg": 6
+      },
+      "separation": "borders",
+      "shadow": {},
+      "use": "one-pixel borders and barely rounded corners: instruments and forms"
+    },
+    {
+      "id": "soft-surface",
+      "radius": {
+        "sm": 6,
+        "md": 14,
+        "lg": 28
+      },
+      "separation": "surfaces",
+      "shadow": {},
+      "use": "large rounded panels of surface colour, no borders"
+    },
+    {
+      "id": "pill",
+      "radius": {
+        "sm": 10,
+        "md": 18,
+        "lg": 28
+      },
+      "separation": "surfaces",
+      "shadow": {},
+      "use": "friendly rounded shapes and pill controls"
+    },
+    {
+      "id": "hard-shadow",
+      "radius": {
+        "sm": 0,
+        "md": 4,
+        "lg": 8
+      },
+      "separation": "borders",
+      "shadow": {
+        "print": "6px 6px 0 0 INK"
+      },
+      "use": "a hard offset shadow on the one key object, like a misregistered print"
+    }
+  ]
+}

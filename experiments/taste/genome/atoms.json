@@ -1,0 +1,147 @@
+{
+  "note": "Small parts as recipes in the genome's vocabulary. {r} is the shape axis radius for controls; the agent writes the element, the recipe says which classes make it one of the system's parts. Decomposed from the sources listed; no source markup is shipped.",
+  "atoms": [
+    {
+      "id": "button-primary",
+      "recipe": "inline-flex items-center justify-center px-6 py-3 text-small font-semibold bg-accent text-on-accent rounded-{r}",
+      "rule": "One per screen. A verb and its object (\"Book a table\"), never \"Get started\" or \"Learn more\".",
+      "sources": [
+        "hyperui:marketing/buttons",
+        "flowbite:components/buttons",
+        "shadcn:button"
+      ]
+    },
+    {
+      "id": "button-quiet",
+      "recipe": "inline-flex items-center px-6 py-3 text-small font-semibold text-ink border border-ink rounded-{r}",
+      "rule": "The second action, when there is one. No arrow glyph.",
+      "sources": [
+        "hyperui:marketing/buttons",
+        "merakiui:buttons"
+      ]
+    },
+    {
+      "id": "link",
+      "recipe": "underline underline-offset-4 decoration-1 text-ink",
+      "rule": "Links are underlined ink; colour alone never marks a link.",
+      "sources": [
+        "astrowind:Footer",
+        "taxonomy:nav"
+      ]
+    },
+    {
+      "id": "nav",
+      "recipe": "flex items-baseline justify-between py-6; name: text-h3 font-display; links: flex gap-8 text-small",
+      "rule": "The name as text, four links at most, the primary button at right.",
+      "sources": [
+        "hyperui:marketing/headers",
+        "astrowind:Header",
+        "flowbite:components/navbar"
+      ]
+    },
+    {
+      "id": "rule",
+      "recipe": "border-t border-line (or border-ink for a strong rule)",
+      "rule": "A rule separates; it replaces a box wherever the shape axis says rules.",
+      "sources": [
+        "hyperui:application/dividers"
+      ]
+    },
+    {
+      "id": "fact",
+      "recipe": "flex flex-col gap-1; value: text-h1 font-display tabular-nums; label: text-small text-muted",
+      "rule": "A real number from the brief with its unit. Never a card around it.",
+      "sources": [
+        "hyperui:application/stats",
+        "astrowind:Stats",
+        "flowbite-admin:dashboard"
+      ]
+    },
+    {
+      "id": "row",
+      "recipe": "grid grid-cols-12 gap-x-8 items-baseline py-4 border-t border-line",
+      "rule": "Name at left, facts in fixed columns, value right-aligned.",
+      "sources": [
+        "hyperui:application/details-list",
+        "konsta:ListItem"
+      ]
+    },
+    {
+      "id": "table",
+      "recipe": "w-full border-collapse text-small; th: text-left font-semibold py-3 border-b border-ink; td: py-3 border-b border-line",
+      "rule": "Numbers right-aligned, header row ruled in ink, no zebra stripes.",
+      "sources": [
+        "hyperui:application/tables",
+        "flowbite:components/tables",
+        "tailadmin:tables"
+      ]
+    },
+    {
+      "id": "tag",
+      "recipe": "inline-flex px-2 py-1 text-label bg-tint text-ink rounded-{r}",
+      "rule": "A fact about the thing it is on (a status, a category). Two per screen at most.",
+      "sources": [
+        "hyperui:application/badges",
+        "flowbite:components/badge",
+        "daisyui:badge"
+      ]
+    },
+    {
+      "id": "panel",
+      "recipe": "bg-surface p-8 rounded-{R}",
+      "rule": "Only when the shape axis separates by surfaces. Panels never nest.",
+      "sources": [
+        "hyperui:marketing/cards",
+        "konsta:Card",
+        "shadcn:card"
+      ]
+    },
+    {
+      "id": "figure",
+      "recipe": "figure: flex flex-col gap-3; img: w-full aspect-[4/3] object-cover rounded-{R}; figcaption: text-small text-muted",
+      "rule": "An image always states what it shows.",
+      "sources": [
+        "flowbite:components/gallery",
+        "astrowind:Gallery"
+      ]
+    },
+    {
+      "id": "field",
+      "recipe": "label: text-small font-semibold; input: w-full px-4 py-3 bg-ground border border-ink rounded-{r} text-body",
+      "rule": "Label above, visible border, no placeholder as label.",
+      "sources": [
+        "hyperui:application/inputs",
+        "flowbite:components/forms",
+        "shadcn:input"
+      ]
+    },
+    {
+      "id": "quote",
+      "recipe": "blockquote: text-h2 font-display max-w-[28ch]; cite: text-small text-muted not-italic",
+      "rule": "Only words the brief actually gives, with the real name. Otherwise leave it out.",
+      "sources": [
+        "hyperui:marketing/testimonials",
+        "astrowind:Quote"
+      ]
+    },
+    {
+      "id": "tab-bar",
+      "recipe": "grid grid-cols-4 border-t border-line; item: flex flex-col items-center py-3 text-label; current: bg-surface font-semibold",
+      "rule": "Words, three to five; the current one marked by fill or weight.",
+      "sources": [
+        "konsta:Tabbar",
+        "flowbite:components/bottom-navigation"
+      ]
+    },
+    {
+      "id": "footer",
+      "recipe": "border-t border-ink py-12 grid grid-cols-12 gap-x-8 text-small",
+      "rule": "Name, address or contact, three or four links, the year. No link farm.",
+      "sources": [
+        "hyperui:marketing/footers",
+        "astrowind:Footer",
+        "landwind:footer"
+      ]
+    }
+  ]
+}

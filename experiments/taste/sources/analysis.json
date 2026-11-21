@@ -1,0 +1,240 @@
+[
+  {
+    "id": "hyperui",
+    "files": 634,
+    "primitives": {
+      "equal columns (grid-cols-2/3/4)": 258,
+      "twelve-column grid": 0,
+      "uneven spans (col-span-5/7/8/9)": 4,
+      "fractional split (w-1/2, w-2/3…)": 8,
+      "ruled rows (divide-y)": 81,
+      "tables": 54,
+      "sticky rails and bars": 32,
+      "rounded-full pills": 538,
+      "soft shadows": 612,
+      "gradients": 10,
+      "centred text": 422
+    }
+  },
+  {
+    "id": "flowbite",
+    "files": 44,
+    "primitives": {
+      "equal columns (grid-cols-2/3/4)": 71,
+      "twelve-column grid": 0,
+      "uneven spans (col-span-5/7/8/9)": 0,
+      "fractional split (w-1/2, w-2/3…)": 5,
+      "ruled rows (divide-y)": 11,
+      "tables": 61,
+      "sticky rails and bars": 14,
+      "rounded-full pills": 530,
+      "soft shadows": 875,
+      "gradients": 54,
+      "centred text": 111
+    }
+  },
+  {
+    "id": "flowbite-admin",
+    "files": 17,
+    "primitives": {
+      "equal columns (grid-cols-2/3/4)": 33,
+      "twelve-column grid": 0,
+      "uneven spans (col-span-5/7/8/9)": 0,
+      "fractional split (w-1/2, w-2/3…)": 2,
+      "ruled rows (divide-y)": 45,
+      "tables": 6,
+      "sticky rails and bars": 2,
+      "rounded-full pills": 89,
+      "soft shadows": 133,
+      "gradients": 0,
+      "centred text": 86
+    }
+  },
+  {
+    "id": "landwind",
+    "files": 1,
+    "primitives": {
+      "equal columns (grid-cols-2/3/4)": 9,
+      "twelve-column grid": 1,
+      "uneven spans (col-span-5/7/8/9)": 2,
+      "fractional split (w-1/2, w-2/3…)": 0,
+      "ruled rows (divide-y)": 0,
+      "tables": 0,
+      "sticky rails and bars": 0,
+      "rounded-full pills": 1,
+      "soft shadows": 3,
+      "gradients": 0,
+      "centred text": 13
+    }
+  },
+  {
+    "id": "astrowind",
+    "files": 67,
+    "primitives": {
+      "equal columns (grid-cols-2/3/4)": 28,
+      "twelve-column grid": 2,
+      "uneven spans (col-span-5/7/8/9)": 2,
+      "fractional split (w-1/2, w-2/3…)": 5,
+      "ruled rows (divide-y)": 1,
+      "tables": 1,
+      "sticky rails and bars": 12,
+      "rounded-full pills": 31,
+      "soft shadows": 40,
+      "gradients": 1,
+      "centred text": 30
+    }
+  },
+  {
+    "id": "tailadmin",
+    "files": 158,
+    "primitives": {
+      "equal columns (grid-cols-2/3/4)": 20,
+      "twelve-column grid": 1,
+      "uneven spans (col-span-5/7/8/9)": 4,
+      "fractional split (w-1/2, w-2/3…)": 3,
+      "ruled rows (divide-y)": 6,
+      "tables": 6,
+      "sticky rails and bars": 2,
+      "rounded-full pills": 134,
+      "soft shadows": 294,
+      "gradients": 0,
+      "centred text": 20
+    }
+  },
+  {
+    "id": "merakiui",
+    "files": 228,
+    "primitives": {
+      "equal columns (grid-cols-2/3/4)": 102,
+      "twelve-column grid": 0,
+      "uneven spans (col-span-5/7/8/9)": 0,
+      "fractional split (w-1/2, w-2/3…)": 135,
+      "ruled rows (divide-y)": 10,
+      "tables": 5,
+      "sticky rails and bars": 3,
+      "rounded-full pills": 342,
+      "soft shadows": 99,
+      "gradients": 3,
+      "centred text": 137
+    }
+  },
+  {
+    "id": "tailblocks",
+    "files": 127,
+    "primitives": {
+      "equal columns (grid-cols-2/3/4)": 0,
+      "twelve-column grid": 0,
+      "uneven spans (col-span-5/7/8/9)": 0,
+      "fractional split (w-1/2, w-2/3…)": 686,
+      "ruled rows (divide-y)": 2,
+      "tables": 2,
+      "sticky rails and bars": 0,
+      "rounded-full pills": 214,
+      "soft shadows": 4,
+      "gradients": 0,
+      "centred text": 180
+    }
+  },
+  {
+    "id": "tailwindtoolbox",
+    "files": 1,
+    "primitives": {
+      "equal columns (grid-cols-2/3/4)": 0,
+      "twelve-column grid": 0,
+      "uneven spans (col-span-5/7/8/9)": 0,
+      "fractional split (w-1/2, w-2/3…)": 19,
+      "ruled rows (divide-y)": 0,
+      "tables": 0,
+      "sticky rails and bars": 0,
+      "rounded-full pills": 9,
+      "soft shadows": 34,
+      "gradients": 0,
+      "centred text": 16
+    }
+  },
+  {
+    "id": "konsta",
+    "files": 150,
+    "primitives": {
+      "equal columns (grid-cols-2/3/4)": 112,
+      "twelve-column grid": 0,
+      "uneven spans (col-span-5/7/8/9)": 0,
+      "fractional split (w-1/2, w-2/3…)": 0,
+      "ruled rows (divide-y)": 0,
+      "tables": 0,
+      "sticky rails and bars": 21,
+      "rounded-full pills": 42,
+      "soft shadows": 0,
+      "gradients": 0,
+      "centred text": 40
+    }
+  },
+  {
+    "id": "taxonomy",
+    "files": 94,
+    "primitives": {
+      "equal columns (grid-cols-2/3/4)": 6,
+      "twelve-column grid": 0,
+      "uneven spans (col-span-5/7/8/9)": 0,
+      "fractional split (w-1/2, w-2/3…)": 9,
+      "ruled rows (divide-y)": 2,
+      "tables": 1,
+      "sticky rails and bars": 5,
+      "rounded-full pills": 15,
+      "soft shadows": 28,
+      "gradients": 0,
+      "centred text": 20
+    }
+  },
+  {
+    "id": "precedent",
+    "files": 25,
+    "primitives": {
+      "equal columns (grid-cols-2/3/4)": 2,
+      "twelve-column grid": 0,
+      "uneven spans (col-span-5/7/8/9)": 0,
+      "fractional split (w-1/2, w-2/3…)": 0,
+      "ruled rows (divide-y)": 0,
+      "tables": 0,
+      "sticky rails and bars": 3,
+      "rounded-full pills": 8,
+      "soft shadows": 9,
+      "gradients": 3,
+      "centred text": 7
+    }
+  },
+  {
+    "id": "shadcn",
+    "files": 71,
+    "primitives": {
+      "equal columns (grid-cols-2/3/4)": 5,
+      "twelve-column grid": 0,
+      "uneven spans (col-span-5/7/8/9)": 0,
+      "fractional split (w-1/2, w-2/3…)": 4,
+      "ruled rows (divide-y)": 0,
+      "tables": 1,
+      "sticky rails and bars": 1,
+      "rounded-full pills": 18,
+      "soft shadows": 63,
+      "gradients": 1,
+      "centred text": 12
+    }
+  },
+  {
+    "id": "daisyui",
+    "files": 61,
+    "primitives": {
+      "equal columns (grid-cols-2/3/4)": 1,
+      "twelve-column grid": 0,
+      "uneven spans (col-span-5/7/8/9)": 0,
+      "fractional split (w-1/2, w-2/3…)": 0,
+      "ruled rows (divide-y)": 0,
+      "tables": 0,
+      "sticky rails and bars": 5,
+      "rounded-full pills": 15,
+      "soft shadows": 106,
+      "gradients": 0,
+      "centred text": 6
+    }
+  }
+]

@@ -1,0 +1,312 @@
+{
+  "axis": "structure",
+  "question": "What is the reader here to do, and which arrangement makes that the obvious thing?",
+  "note": "A grammar is a set of layout rules, not markup. The agent writes the HTML; the rules say where things may go.",
+  "options": [
+    {
+      "id": "ruled-index",
+      "surface": "web",
+      "use": "reference-like content the reader scans: features, plans, schedules, specs",
+      "rules": [
+        "Every section is a 12-column grid: a narrow index column (3 columns) holds the section name or number, the content takes the other 9.",
+        "Sections are separated by one full-width rule, never by boxes.",
+        "All text is left-aligned; nothing is centred.",
+        "Repeated items are rows with a rule between them, not cards."
+      ],
+      "recipe": "section: grid grid-cols-12 gap-x-8 border-t border-line; index: col-span-3; content: col-span-9; rows: divide-y divide-line",
+      "avoid": [
+        "card grids",
+        "centred headings"
+      ],
+      "sources": [
+        "hyperui:application/details-list",
+        "hyperui:application/tables",
+        "flowbite-admin:settings",
+        "astrowind:Steps2"
+      ]
+    },
+    {
+      "id": "split-asym",
+      "surface": "web",
+      "use": "one claim with one proof beside it: product page, service, restaurant",
+      "rules": [
+        "Sections are two unequal columns (7/5 or 8/4), and the wide side alternates between text and proof down the page.",
+        "The narrow column is never decoration: it holds facts, a list, a figure or a form.",
+        "The hero uses the same split; its headline is left-aligned in the wide column.",
+        "At most one section in the page breaks the split to run full width."
+      ],
+      "recipe": "section: grid grid-cols-12 gap-x-12; wide: col-span-7 or col-span-8; narrow: col-span-5 or col-span-4; alternate with order-*",
+      "avoid": [
+        "50/50 splits",
+        "three equal columns"
+      ],
+      "sources": [
+        "landwind:index (col-span-7 / col-span-5)",
+        "tailadmin:dashboard (col-span-7 / col-span-5)",
+        "hyperui:marketing/sections",
+        "merakiui:heroes"
+      ]
+    },
+    {
+      "id": "poster",
+      "surface": "web",
+      "use": "a statement: launch, event, portfolio cover, campaign",
+      "rules": [
+        "The first screen is type only: the headline runs the full container width at display size, on at most three lines.",
+        "Supporting facts sit in a single row of two to four short columns under a rule, like the small print of a poster.",
+        "Each later section opens with one line at h1 size across the width, then its content in columns below.",
+        "No more than five sections."
+      ],
+      "recipe": "hero: min-h-screen flex flex-col justify-between; headline: text-display max-w-none; small print: grid grid-cols-4 gap-8 border-t border-ink pt-4",
+      "avoid": [
+        "centred hero with two buttons",
+        "feature card grids"
+      ],
+      "sources": [
+        "astrowind:HeroText",
+        "hyperui:templates/portfolio",
+        "hyperui:marketing/banners"
+      ]
+    },
+    {
+      "id": "measured-column",
+      "surface": "web",
+      "use": "an argument or a story read top to bottom: manifesto, case study, long pricing explanation",
+      "rules": [
+        "One text column of 60 to 70 characters, set on the left third-line of the page (columns 3 to 9), not centred.",
+        "Facts, figures and notes hang in the margin column to its right, aligned to the paragraph they belong to.",
+        "Images and tables may break out to the full container width; text never does.",
+        "Headings are in the same column as the text."
+      ],
+      "recipe": "section: grid grid-cols-12 gap-x-8; text: col-start-3 col-span-6 max-w-[68ch]; margin: col-span-3; breakout: col-span-12",
+      "avoid": [
+        "centred narrow column",
+        "sidebars with navigation"
+      ],
+      "sources": [
+        "astrowind:Content",
+        "hyperui:marketing/blog-cards",
+        "taxonomy:docs layout",
+        "precedent:page shell"
+      ]
+    },
+    {
+      "id": "strip-rows",
+      "surface": "web",
+      "use": "many comparable things: works, dishes, releases, team, cases",
+      "rules": [
+        "The page is a stack of full-width rows; each row is one item: a name at left, two or three facts in fixed columns, an image or figure at right.",
+        "Columns keep the same width in every row so facts line up down the page.",
+        "Rows are separated by a rule; the hovered or featured row is filled with the surface colour.",
+        "The hero is itself the first row, larger."
+      ],
+      "recipe": "row: grid grid-cols-12 items-baseline gap-x-8 py-6 border-t border-line; name: col-span-4; facts: col-span-2 each; media: col-span-4",
+      "avoid": [
+        "masonry",
+        "carousels"
+      ],
+      "sources": [
+        "hyperui:application/tables",
+        "hyperui:marketing/product-collections",
+        "astrowind:Projects",
+        "merakiui:portfolio"
+      ]
+    },
+    {
+      "id": "uneven-bento",
+      "surface": "web",
+      "use": "a product with a few very unequal strengths",
+      "rules": [
+        "One grid of 12 columns and rows of equal height; cells span 3, 4, 5, 6, 7 or 8 columns and one or two rows, and no two neighbouring cells have the same span.",
+        "Exactly one cell is dominant (at least 7 columns and 2 rows) and holds the main proof.",
+        "Cells differ in content type: a figure, a number, a quote from the brief, a list; never icon plus heading plus line repeated.",
+        "At most seven cells."
+      ],
+      "recipe": "grid grid-cols-12 auto-rows-[minmax(11rem,auto)] gap-4; dominant: col-span-7 row-span-2; others: col-span-5, col-span-4, col-span-3, col-span-8",
+      "avoid": [
+        "three equal cards",
+        "every cell with an icon"
+      ],
+      "sources": [
+        "astrowind:Bento",
+        "hyperui:application/grids",
+        "flowbite:components/gallery",
+        "tailadmin:dashboard grid"
+      ]
+    },
+    {
+      "id": "table-led",
+      "surface": "web",
+      "use": "a decision between options: pricing, comparison, plans, specs",
+      "rules": [
+        "The main object of the page is one real table: options as columns, criteria as ruled rows, values in cells, with the recommended column marked by the tint fill.",
+        "The hero is short (headline and one sentence) so the table starts in the first screen.",
+        "Below the table: the questions a buyer asks, as a two-column list of question and answer, open, not an accordion.",
+        "Prices and numbers are right-aligned or centred in their column with tabular figures."
+      ],
+      "recipe": "table: w-full border-collapse; th/td: text-left py-4 px-4 border-b border-line; recommended column cells: bg-tint; faq: grid grid-cols-12 with question col-span-4 and answer col-span-8",
+      "avoid": [
+        "three floating price cards with a \"Most popular\" badge",
+        "accordion FAQ"
+      ],
+      "sources": [
+        "astrowind:Comparison",
+        "astrowind:Pricing",
+        "hyperui:marketing/pricing",
+        "hyperui:application/tables",
+        "flowbite:components/tables"
+      ]
+    },
+    {
+      "id": "banded",
+      "surface": "web",
+      "use": "a page with distinct chapters for distinct readers",
+      "rules": [
+        "Each section is a full-bleed band with its own fill, cycling ground, surface, ink (with ground-coloured text) and at most one accent or tint band.",
+        "Inside a band the layout differs from the band before: columns, then a list, then a single statement, then a table.",
+        "Bands meet edge to edge with no gap and no rule.",
+        "The ink band holds the one thing the page most wants read."
+      ],
+      "recipe": "band: w-full py-24; inner: max-w-7xl mx-auto px-8; dark band: bg-ink text-ground",
+      "avoid": [
+        "the same layout in every band",
+        "gradient transitions between bands"
+      ],
+      "sources": [
+        "landwind:index",
+        "tailwindtoolbox:Landing-Page",
+        "hyperui:marketing/ctas",
+        "tailblocks:blocks"
+      ]
+    },
+    {
+      "id": "rail-table",
+      "surface": "dashboard",
+      "use": "working through records: orders, tickets, shipments, invoices",
+      "rules": [
+        "A fixed left rail (about 220 px) with plain text navigation; the current item is marked by a fill, not an icon.",
+        "The main area starts with one line: page title at left, the primary action at right.",
+        "Below it a row of three or four figures separated by vertical rules (not cards), then one dense table that fills the rest.",
+        "Table rows are 40 to 48 px high; status is a word with a small dot, not a coloured pill for every row."
+      ],
+      "recipe": "shell: grid grid-cols-[220px_1fr] min-h-screen; figures: grid grid-cols-4 divide-x divide-line border-y border-line; table: w-full text-small",
+      "avoid": [
+        "a card for every number",
+        "icon-only navigation"
+      ],
+      "sources": [
+        "hyperui:templates/analytics-dashboard",
+        "flowbite-admin:crud/products",
+        "tailadmin:tables",
+        "shadcn:dashboard-01"
+      ]
+    },
+    {
+      "id": "ledger-tabs",
+      "surface": "dashboard",
+      "use": "reading results over time: analytics, finance, usage",
+      "rules": [
+        "No rail: a top bar with the product name, three to five text tabs and the period selector.",
+        "The first band is one large figure with its change and a plain chart area drawn with divs or an inline SVG polyline in ink and accent only.",
+        "Under it, two unequal columns (8/4): a ruled breakdown table and a short ranked list.",
+        "Every number has its unit and its period beside it."
+      ],
+      "recipe": "top: flex items-baseline justify-between border-b border-line; body: grid grid-cols-12 gap-x-8; main: col-span-8; side: col-span-4",
+      "avoid": [
+        "four equal stat cards",
+        "donut charts for two values"
+      ],
+      "sources": [
+        "hyperui:application/stats",
+        "hyperui:application/charts",
+        "flowbite-admin:dashboard",
+        "tailadmin:charts"
+      ]
+    },
+    {
+      "id": "master-detail",
+      "surface": "dashboard",
+      "use": "triage: inbox, support queue, review, approvals",
+      "rules": [
+        "Three columns: a narrow rail of views, a list of items (about 360 px), and the open item filling the rest.",
+        "List rows show sender or title, one line of preview and a time; the open row is filled with surface.",
+        "The detail column has a header with the item title and two actions at most, then content at a readable measure.",
+        "Nothing floats: no modals, no cards with shadows."
+      ],
+      "recipe": "grid grid-cols-[200px_360px_1fr] h-screen; list: divide-y divide-line overflow-hidden; detail: p-8 max-w-[72ch]",
+      "avoid": [
+        "centred empty states with illustrations"
+      ],
+      "sources": [
+        "hyperui:templates/support-inbox",
+        "flowbite-admin:mailing",
+        "konsta:List"
+      ]
+    },
+    {
+      "id": "list-led",
+      "surface": "mobile",
+      "use": "a phone app whose home is a list: tasks, orders, bookings, messages",
+      "rules": [
+        "Each screen is 390 px wide: a large left-aligned title at the top, then full-width rows separated by rules, edge to edge.",
+        "A row is at least 56 px high with one primary line, one secondary line and one trailing value or chevron.",
+        "The primary action is a single full-width button pinned at the bottom of the screen, above the tab bar when there is one.",
+        "No cards inside lists."
+      ],
+      "recipe": "screen: w-[390px] min-h-[844px] flex flex-col; rows: divide-y divide-line; row: flex items-center justify-between px-5 py-4 min-h-14",
+      "avoid": [
+        "card per row with shadow",
+        "floating action button plus bottom button"
+      ],
+      "sources": [
+        "konsta:List",
+        "konsta:Navbar",
+        "hyperui:application/vertical-menu"
+      ]
+    },
+    {
+      "id": "card-stack",
+      "surface": "mobile",
+      "use": "a phone app about a few rich objects: trips, recipes, accounts, plants",
+      "rules": [
+        "Each screen is 390 px wide with 20 px side padding; objects are large panels stacked vertically, each showing an image or figure and three facts.",
+        "The first panel is taller and holds today's or the current object.",
+        "A bottom tab bar with three to five text labels; the current tab is marked by a fill or a rule, not colour alone.",
+        "One panel style only; panels do not nest."
+      ],
+      "recipe": "screen: w-[390px] min-h-[844px] flex flex-col px-5 gap-4; panel: rounded-lg bg-surface p-5; tab bar: mt-auto grid grid-cols-4 border-t border-line",
+      "avoid": [
+        "horizontal carousels of small cards",
+        "nested cards"
+      ],
+      "sources": [
+        "konsta:Card",
+        "konsta:Tabbar",
+        "daisyui:dock",
+        "flowbite:components/bottom-navigation"
+      ]
+    },
+    {
+      "id": "sheet-detail",
+      "surface": "mobile",
+      "use": "a phone flow with one decision per screen: checkout, booking, onboarding step, detail view",
+      "rules": [
+        "Each screen is 390 px wide: a back row, a title, the object or the question in the upper half, and the decision controls in a sheet rising from the bottom on the surface colour.",
+        "The sheet has a 4 px grab rule, one primary button of full width and at most one secondary text action.",
+        "Summary values are a ruled two-column list (label left, value right).",
+        "Progress, when shown, is words (\"Step 2 of 3\"), not dots."
+      ],
+      "recipe": "screen: w-[390px] min-h-[844px] flex flex-col; sheet: mt-auto rounded-t-lg bg-surface p-5; summary: divide-y divide-line",
+      "avoid": [
+        "modal dialogs",
+        "progress dots"
+      ],
+      "sources": [
+        "konsta:Sheet",
+        "konsta:Stepper",
+        "flowbite:components/drawer",
+        "hyperui:marketing/carts"
+      ]
+    }
+  ]
+}

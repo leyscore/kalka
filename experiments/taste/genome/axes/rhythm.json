@@ -1,0 +1,85 @@
+{
+  "axis": "rhythm",
+  "question": "How much does the reader need to take in per screen?",
+  "options": [
+    {
+      "id": "compact-4",
+      "grid": 4,
+      "steps": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        12,
+        16
+      ],
+      "section": [
+        8,
+        12
+      ],
+      "use": "tools people work in all day: dense rows, small gaps"
+    },
+    {
+      "id": "regular-4",
+      "grid": 4,
+      "steps": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        12,
+        16,
+        24
+      ],
+      "section": [
+        16,
+        24
+      ],
+      "use": "most product pages: tight inside a group, clear between groups"
+    },
+    {
+      "id": "regular-8",
+      "grid": 8,
+      "steps": [
+        2,
+        4,
+        6,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "section": [
+        24,
+        32
+      ],
+      "use": "strict grid pages: every gap is a multiple of 8"
+    },
+    {
+      "id": "airy-8",
+      "grid": 8,
+      "steps": [
+        2,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32,
+        40,
+        48
+      ],
+      "section": [
+        32,
+        48
+      ],
+      "use": "few things per screen, each given room: portfolios, luxury, statements"
+    }
+  ]
+}

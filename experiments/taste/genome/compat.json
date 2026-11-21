@@ -1,0 +1,227 @@
+{
+  "note": "Pairs that may not be chosen together, and what an option requires. The resolver refuses a genome that breaks one and says why.",
+  "forbid": [
+    [
+      "type.treatment:caps-poster",
+      "type.genre:book-serif",
+      "classical serifs lose their shapes in poster capitals"
+    ],
+    [
+      "type.treatment:caps-poster",
+      "type.genre:display-serif",
+      "a high-contrast serif in capitals at poster size reads as a wedding invitation"
+    ],
+    [
+      "type.treatment:caps-poster",
+      "structure:measured-column",
+      "a reading column cannot open under a poster headline"
+    ],
+    [
+      "type.treatment:caps-poster",
+      "structure:table-led",
+      "the table must start in the first screen"
+    ],
+    [
+      "type.treatment:light-large",
+      "type.genre:condensed",
+      "condensed faces have no light cut here"
+    ],
+    [
+      "type.treatment:light-large",
+      "type.genre:display-serif",
+      "single-weight display serifs cannot go light"
+    ],
+    [
+      "type.treatment:light-large",
+      "colour.strategy:saturated-ground",
+      "thin strokes break up on a saturated ground"
+    ],
+    [
+      "type.treatment:heavy-tight",
+      "type.genre:book-serif",
+      "book serifs are loaded in regular weights only"
+    ],
+    [
+      "type.treatment:heavy-tight",
+      "type.genre:display-serif",
+      "single-weight display serifs have no heavier cut"
+    ],
+    [
+      "type.ratio:1.414",
+      "structure:rail-table",
+      "a poster ratio wastes a working screen"
+    ],
+    [
+      "type.ratio:1.414",
+      "structure:master-detail",
+      "a poster ratio wastes a working screen"
+    ],
+    [
+      "type.ratio:1.414",
+      "rhythm:compact-4",
+      "large type needs room around it"
+    ],
+    [
+      "type.ratio:1.2",
+      "structure:poster",
+      "a poster needs contrast between headline and small print"
+    ],
+    [
+      "shape:hard-shadow",
+      "colour.strategy:dark-field",
+      "an ink-coloured offset shadow disappears on a dark ground"
+    ],
+    [
+      "shape:hard-shadow",
+      "colour.strategy:monochrome-mark",
+      "the shadow would be the only loud thing on a quiet page"
+    ],
+    [
+      "shape:pill",
+      "colour.strategy:monochrome-mark",
+      "round friendly shapes contradict a strict monochrome page"
+    ],
+    [
+      "shape:pill",
+      "structure:ruled-index",
+      "pills float; a ruled index hangs everything on lines"
+    ],
+    [
+      "shape:square-ruled",
+      "structure:uneven-bento",
+      "a bento needs filled or bordered cells"
+    ],
+    [
+      "shape:square-ruled",
+      "structure:card-stack",
+      "stacked panels need a surface"
+    ],
+    [
+      "shape:square-ruled",
+      "structure:banded",
+      "bands are fills; rules would double the separation"
+    ],
+    [
+      "shape:soft-surface",
+      "structure:ruled-index",
+      "large soft panels fight hairline rules"
+    ],
+    [
+      "imagery:type-only",
+      "structure:strip-rows",
+      "strip rows are built around a frame per row"
+    ],
+    [
+      "imagery:type-only",
+      "structure:card-stack",
+      "stacked panels each show their object"
+    ],
+    [
+      "imagery:strips",
+      "structure:measured-column",
+      "a strip of frames breaks a reading column apart"
+    ],
+    [
+      "imagery:strips",
+      "structure:table-led",
+      "the table is the object; strips compete with it"
+    ],
+    [
+      "imagery:full-bleed",
+      "structure:rail-table",
+      "a working screen has no room for a full-width photograph"
+    ],
+    [
+      "imagery:full-bleed",
+      "structure:master-detail",
+      "a working screen has no room for a full-width photograph"
+    ],
+    [
+      "imagery:full-bleed",
+      "structure:ledger-tabs",
+      "a working screen has no room for a full-width photograph"
+    ],
+    [
+      "imagery:full-bleed",
+      "structure:list-led",
+      "a list screen starts with its list"
+    ],
+    [
+      "rhythm:airy-8",
+      "structure:rail-table",
+      "dense records need small gaps"
+    ],
+    [
+      "rhythm:airy-8",
+      "structure:master-detail",
+      "dense records need small gaps"
+    ],
+    [
+      "rhythm:compact-4",
+      "structure:poster",
+      "a poster needs room"
+    ],
+    [
+      "rhythm:compact-4",
+      "structure:measured-column",
+      "reading needs air between paragraphs and sections"
+    ],
+    [
+      "motion:measured",
+      "structure:rail-table",
+      "tools answer at once"
+    ],
+    [
+      "motion:measured",
+      "structure:master-detail",
+      "tools answer at once"
+    ]
+  ],
+  "surface": {
+    "web": [
+      "ruled-index",
+      "split-asym",
+      "poster",
+      "measured-column",
+      "strip-rows",
+      "uneven-bento",
+      "table-led",
+      "banded"
+    ],
+    "dashboard": [
+      "rail-table",
+      "ledger-tabs",
+      "master-detail"
+    ],
+    "mobile": [
+      "list-led",
+      "card-stack",
+      "sheet-detail"
+    ]
+  },
+  "surfaceRules": {
+    "dashboard": {
+      "type.ratio": [
+        "1.2",
+        "1.25"
+      ],
+      "imagery": [
+        "type-only",
+        "product-figure",
+        "tonal",
+        "framed-caption"
+      ]
+    },
+    "mobile": {
+      "type.ratio": [
+        "1.2",
+        "1.25",
+        "1.333"
+      ],
+      "rhythm": [
+        "compact-4",
+        "regular-4"
+      ]
+    }
+  }
+}

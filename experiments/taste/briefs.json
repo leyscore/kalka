@@ -1,0 +1,142 @@
+[
+  {
+    "id": "saas-freight",
+    "kind": "saas-landing",
+    "surface": "web",
+    "title": "Portside",
+    "prompt": "Landing page for Portside, a web app that lets small freight forwarders track ocean containers across 40 carriers in one list and emails their customers when an ETA slips. Audience: forwarders with 5 to 50 staff who do this today in spreadsheets. Plans start at 89 € per month for 200 containers. Main action: start a 14-day trial. Facts: 1,300 forwarders use it; average ETA update lag 22 minutes; integrates with CargoWise and Magaya."
+  },
+  {
+    "id": "saas-devtool",
+    "kind": "saas-landing",
+    "surface": "web",
+    "title": "Flakewatch",
+    "prompt": "Landing page for Flakewatch, a CI plugin that finds flaky tests: it reruns failures, scores each test by flake rate and opens a pull request that quarantines the worst ones. For engineering teams of 10 to 200 using GitHub Actions or Buildkite. Free for open source, 12 $ per developer per month otherwise. Facts: median team recovers 4.2 hours of CI time per developer per month; setup is one YAML line. Main action: install the GitHub app."
+  },
+  {
+    "id": "saas-clinic",
+    "kind": "saas-landing",
+    "surface": "web",
+    "title": "Sillon",
+    "prompt": "Landing page for Sillon, appointment software for independent physiotherapy clinics in France: online booking, SMS reminders, invoices with the Carte Vitale flow. Audience: clinic owners with 1 to 6 practitioners, not technical. 39 € per practitioner per month, no commitment. Facts: no-shows fall by 38% on average after three months; data hosted in France (HDS certified). Main action: book a 20-minute demo."
+  },
+  {
+    "id": "saas-accounting",
+    "kind": "saas-landing",
+    "surface": "web",
+    "title": "Tally & Co",
+    "prompt": "Landing page for Tally & Co, bookkeeping for UK freelancers: connects the bank account, sorts transactions, prepares the Self Assessment and files it with HMRC. 15 £ per month. Audience: designers, developers and tradespeople who dread January. Facts: Making Tax Digital ready; average user spends 11 minutes a week; 23,000 returns filed last year. Main action: connect your bank."
+  },
+  {
+    "id": "saas-research",
+    "kind": "saas-landing",
+    "surface": "web",
+    "title": "Quorum Notes",
+    "prompt": "Landing page for Quorum Notes, a tool for user researchers: upload interview recordings, get transcripts, tag quotes, and build an evidence board that links every insight to the clips behind it. Teams of 2 to 30. 29 $ per editor per month, viewers free. Facts: supports 31 languages; SOC 2 Type II; exports to Notion and Jira. Main action: try it with one recording, no account."
+  },
+  {
+    "id": "portfolio-architect",
+    "kind": "portfolio",
+    "surface": "web",
+    "title": "Atelier Ines Okafor",
+    "prompt": "Portfolio home page for Ines Okafor, an architect in Lyon working on timber housing and school refurbishments. Six projects to show, each with a name, place, year, floor area and a short line: Les Granges (Annecy, 2025, 1,240 m²), École Jean-Macé (Villeurbanne, 2024, 3,100 m²), Maison Sève (Lyon 4e, 2023, 186 m²), Halle Confluence (Lyon 2e, 2023, 2,450 m²), Refuge du Col (Vercors, 2022, 94 m²), Logements Bellecombe (Lyon 6e, 2021, 4,800 m²). Contact: studio@inesokafor.example, 14 rue Dumenge."
+  },
+  {
+    "id": "portfolio-photographer",
+    "kind": "portfolio",
+    "surface": "web",
+    "title": "Tomás Rivas",
+    "prompt": "Portfolio page for Tomás Rivas, a documentary and sports photographer based in Bilbao. He shoots cycling races and harbour workers; clients include Rouleur, El País Semanal and Orbea. Show three series: Itzulia 2025 (24 frames), Night Shift at Santurtzi (18 frames), Pelota (12 frames). He is available for commissions from March 2027. Contact by email tomas@rivas.example."
+  },
+  {
+    "id": "portfolio-designer",
+    "kind": "portfolio",
+    "surface": "web",
+    "title": "Mina Sato",
+    "prompt": "Portfolio page for Mina Sato, a product designer with nine years of experience, last at a payments company where she led the redesign of the merchant dashboard. Four case studies: Merchant dashboard (2025, checkout errors down 31%), Onboarding in 4 steps (2024, completion up from 52% to 71%), Design tokens for 6 products (2023), Receipt printer app (2022). She is looking for staff-level roles, remote from Osaka. Contact mina@sato.example."
+  },
+  {
+    "id": "restaurant-bistro",
+    "kind": "restaurant",
+    "surface": "web",
+    "title": "Chez Lune",
+    "prompt": "Website home page for Chez Lune, a 32-seat neighbourhood bistro in Nantes cooking a short seasonal menu that changes every Thursday. Lunch menu 24 € (starter, main), dinner menu 42 € (three courses). This week: leeks vinaigrette with egg mimosa; pollock, beurre blanc, new potatoes; rhubarb tart. Open Tuesday to Saturday, 12:00–14:00 and 19:30–22:00. 8 rue Kervégan. Bookings by phone 02 40 00 00 00 or online. Natural wines from the Loire."
+  },
+  {
+    "id": "restaurant-ramen",
+    "kind": "restaurant",
+    "surface": "web",
+    "title": "Kogane Ramen",
+    "prompt": "Website home page for Kogane Ramen, a 14-seat counter in Manchester serving four bowls: shoyu (13 £), shio (13 £), spicy miso (14.5 £), vegan tantan (13.5 £); extras: ajitama egg 2 £, extra chashu 3.5 £. No bookings, queue at the door, the queue is usually 20 minutes at 19:00. Broth is made daily from 04:30 and when it runs out they close. Open Wednesday to Sunday 12:00–15:00, 17:30–21:30. 41 Tib Street."
+  },
+  {
+    "id": "restaurant-bakery",
+    "kind": "restaurant",
+    "surface": "web",
+    "title": "Four & Farine",
+    "prompt": "Website home page for Four & Farine, a sourdough bakery and café in Montréal. Loaves: country loaf 8 $, seeded rye 9 $, buckwheat 9.5 $, brioche (weekends) 11 $. Bread comes out at 7:30 and 15:00. Pre-order for pickup before 18:00 the day before. They mill 40% of their flour on site from Québec grain. Café seats 18. Open daily 7:00–18:00, 5201 rue Saint-Denis."
+  },
+  {
+    "id": "pricing-analytics",
+    "kind": "pricing",
+    "surface": "web",
+    "title": "Lumen Metrics",
+    "prompt": "Pricing page for Lumen Metrics, privacy-friendly web analytics. Three plans: Starter 9 € per month (100k pageviews, 3 sites, 1 year of data), Team 29 € per month (1M pageviews, 20 sites, 3 years, 5 seats, email reports), Scale 99 € per month (10M pageviews, unlimited sites and seats, 5 years, SSO, raw export). Yearly billing gives two months free. All plans: no cookies, EU hosting, 30-day trial without a card. Common questions: what happens over the limit (no cut-off, we email you), can I import Google Analytics (yes, UA and GA4)."
+  },
+  {
+    "id": "pricing-coworking",
+    "kind": "pricing",
+    "surface": "web",
+    "title": "La Verrière",
+    "prompt": "Pricing page for La Verrière, a coworking space in a former glasshouse in Bordeaux. Day pass 22 €; Flex (10 days per month) 160 €; Resident desk 320 € per month with a locker and 24/7 access; Studio for 4 people 1,250 € per month. Meeting rooms 18 € per hour, 4 hours included for residents. All prices before VAT. Fibre 1 Gb, coffee from a local roaster, bike parking for 40. Visits on Tuesdays and Thursdays at 12:30."
+  },
+  {
+    "id": "pricing-api",
+    "kind": "pricing",
+    "surface": "web",
+    "title": "Parcel API",
+    "prompt": "Pricing page for Parcel API, an address validation and geocoding API for logistics developers. Pay as you go: 0.004 $ per validation, first 2,500 free every month. Volume: 500 $ per month for 200k, 1,800 $ for 1M. Enterprise: custom, with a 99.99% SLA and on-premise option. Coverage 240 countries and territories, median latency 38 ms, rate limit 100 requests per second on volume plans. Include a small cost calculator table for 10k, 100k and 1M requests."
+  },
+  {
+    "id": "dashboard-fleet",
+    "kind": "dashboard",
+    "surface": "dashboard",
+    "title": "Portside Ops",
+    "prompt": "Dashboard screen for Portside Ops, the operations view of a container-tracking tool. The user is a freight coordinator who starts the day by checking what is late. Show: containers in transit (412), arriving this week (57), delayed (19), awaiting customs (8); a table of the delayed containers with container number, vessel, port of discharge, original ETA, new ETA, days late, customer; filters by carrier and port. Use realistic data: vessels such as MSC Aurora and CMA CGM Tage, ports Rotterdam, Le Havre, Antwerp."
+  },
+  {
+    "id": "dashboard-finance",
+    "kind": "dashboard",
+    "surface": "dashboard",
+    "title": "Tally & Co Overview",
+    "prompt": "Dashboard screen for Tally & Co, a bookkeeping app for a freelance designer. Period: tax year 2026–27 to date. Show income 48,210 £, expenses 9,874 £, estimated tax due 8,420 £ with the payment date 31 January 2027; income per month April to November; expenses by category (software 2,140 £, travel 1,930 £, equipment 3,204 £, other 2,600 £); a list of 8 transactions that still need a category."
+  },
+  {
+    "id": "dashboard-support",
+    "kind": "dashboard",
+    "surface": "dashboard",
+    "title": "Sillon Inbox",
+    "prompt": "Dashboard screen for the support team of Sillon, appointment software for physiotherapy clinics: an inbox of clinic tickets. Views: Mine (6), Unassigned (14), Waiting on clinic (9), Solved. Ticket list with clinic name, subject, plan and time since last reply. One ticket is open: Cabinet Kiné Bastille reports that SMS reminders were sent twice on Monday; the thread has three messages; the right side shows clinic details (4 practitioners, plan Pro, customer since 2023)."
+  },
+  {
+    "id": "mobile-transit",
+    "kind": "mobile",
+    "surface": "mobile",
+    "title": "Ligne",
+    "prompt": "Three screens of Ligne, a phone app for bus riders in a mid-size city: (1) Home with the next departures at the two saved stops (Hôtel de Ville: line 3 in 2 min, line 7 in 6 min; Gare Sud: line 12 in 4 min), (2) a line screen for line 3 with its stops and live position of the bus, (3) a ticket screen with a 1-hour ticket at 1.70 €, valid until 14:52, and a button to buy another."
+  },
+  {
+    "id": "mobile-plants",
+    "kind": "mobile",
+    "surface": "mobile",
+    "title": "Sprout",
+    "prompt": "Three screens of Sprout, a phone app that reminds people to water their houseplants: (1) Today, with the plants that need water today (Monstera, living room; Calathea, bedroom) and the ones that are fine, (2) a plant screen for the Monstera: last watered 6 days ago, every 7 days, light medium, a short watering history, (3) add a plant: name, room, how often, with a list of common species to choose from."
+  },
+  {
+    "id": "mobile-banking",
+    "kind": "mobile",
+    "surface": "mobile",
+    "title": "Coin",
+    "prompt": "Three screens of Coin, a phone bank for teenagers with a parent-approved allowance: (1) Home with the balance 46.20 €, the weekly allowance of 12 € arriving Friday and the last five payments, (2) a savings goal screen: \"Bike lights\" 18 € of 35 €, with a button to move money, (3) a send-money screen to a friend with amount 5.00 €, a note field and a confirm button; payments over 20 € need a parent to approve."
+  }
+]

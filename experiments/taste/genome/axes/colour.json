@@ -1,0 +1,313 @@
+{
+  "axis": "colour",
+  "question": "Where do this subject's colours already exist in the world, and how much colour can the page carry?",
+  "strategies": {
+    "paper-signal": "near-white ground, dark ink, one signal colour used once per screen",
+    "tinted-ground": "the whole page sits on a pale tint of the subject's colour",
+    "two-ink": "two flat inks that meet in blocks, as in two-colour printing",
+    "dark-field": "a dark coloured ground (never neutral grey-black) with light ink and one warm mark",
+    "saturated-ground": "a strong colour is the page itself; ink and one contrast colour sit on it",
+    "monochrome-mark": "black, white and greys, with a single small coloured mark"
+  },
+  "palette": [
+    {
+      "id": "signal-red",
+      "strategy": "paper-signal",
+      "world": "railway boards and warning signs",
+      "fits": [
+        "transport",
+        "logistics",
+        "infrastructure",
+        "fintech",
+        "developer",
+        "news"
+      ],
+      "colors": {
+        "ground": "#FFFFFF",
+        "surface": "#F2F2EF",
+        "ink": "#0E0E10",
+        "muted": "#5C5C60",
+        "line": "#D6D6D2",
+        "accent": "#D52B1E",
+        "on-accent": "#FFFFFF",
+        "tint": "#FBE9E7",
+        "support": "#FFCC00",
+        "on-support": "#0E0E10"
+      }
+    },
+    {
+      "id": "bank-green",
+      "strategy": "paper-signal",
+      "world": "ledgers, banknotes, annual reports",
+      "fits": [
+        "finance",
+        "legal",
+        "insurance",
+        "consulting",
+        "b2b",
+        "pricing"
+      ],
+      "colors": {
+        "ground": "#FAFAF7",
+        "surface": "#F0F0EA",
+        "ink": "#15202B",
+        "muted": "#56616C",
+        "line": "#D9D9D0",
+        "accent": "#0B5D3B",
+        "on-accent": "#FFFFFF",
+        "tint": "#DDEBE3",
+        "support": "#B4232A",
+        "on-support": "#FFFFFF"
+      }
+    },
+    {
+      "id": "safety-orange",
+      "strategy": "paper-signal",
+      "world": "workshop manuals and safety signage",
+      "fits": [
+        "hardware",
+        "manufacturing",
+        "developer",
+        "construction",
+        "tools"
+      ],
+      "colors": {
+        "ground": "#F4F4F0",
+        "surface": "#E7E7E1",
+        "ink": "#161616",
+        "muted": "#5A5A55",
+        "line": "#C9C9C1",
+        "accent": "#F04E00",
+        "on-accent": "#161616",
+        "tint": "#FCE3D4",
+        "support": "#1F4E8C",
+        "on-support": "#FFFFFF"
+      }
+    },
+    {
+      "id": "leaf",
+      "strategy": "tinted-ground",
+      "world": "glasshouses, plant labels, seed packets",
+      "fits": [
+        "wellness",
+        "food",
+        "sustainability",
+        "gardening",
+        "education",
+        "outdoors"
+      ],
+      "colors": {
+        "ground": "#EFF3EA",
+        "surface": "#E2E9DB",
+        "ink": "#14291C",
+        "muted": "#4F6354",
+        "line": "#C7D2C0",
+        "accent": "#1E6B43",
+        "on-accent": "#F4F8EF",
+        "tint": "#D5E5CF",
+        "support": "#E8B931",
+        "on-support": "#14291C"
+      }
+    },
+    {
+      "id": "clinic-teal",
+      "strategy": "tinted-ground",
+      "world": "hospital wayfinding and patient leaflets",
+      "fits": [
+        "health",
+        "insurance",
+        "public",
+        "wellness",
+        "education",
+        "care"
+      ],
+      "colors": {
+        "ground": "#F5F9FA",
+        "surface": "#E6F0F2",
+        "ink": "#0E2A36",
+        "muted": "#4E6772",
+        "line": "#C9DADF",
+        "accent": "#0A6C7E",
+        "on-accent": "#FFFFFF",
+        "tint": "#D5EAEE",
+        "support": "#F2A65A",
+        "on-support": "#0E2A36"
+      }
+    },
+    {
+      "id": "harbour",
+      "strategy": "tinted-ground",
+      "world": "harbour signage: navy hull paint and signal yellow",
+      "fits": [
+        "travel",
+        "transport",
+        "logistics",
+        "sport",
+        "events",
+        "maritime"
+      ],
+      "colors": {
+        "ground": "#F3F6F9",
+        "surface": "#E3EAF1",
+        "ink": "#0A2540",
+        "muted": "#4A6078",
+        "line": "#C5D1DD",
+        "accent": "#F5B700",
+        "on-accent": "#0A2540",
+        "tint": "#FDF1C7",
+        "support": "#C8102E",
+        "on-support": "#FFFFFF"
+      }
+    },
+    {
+      "id": "riso-blue-pink",
+      "strategy": "two-ink",
+      "world": "risograph proofs: federal blue and fluorescent pink on newsprint",
+      "fits": [
+        "agency",
+        "culture",
+        "events",
+        "education",
+        "community",
+        "music"
+      ],
+      "colors": {
+        "ground": "#EDEDE8",
+        "surface": "#DFDFD9",
+        "ink": "#19191D",
+        "muted": "#55555C",
+        "line": "#C4C4BC",
+        "accent": "#1B3FE0",
+        "on-accent": "#FFFFFF",
+        "tint": "#D9DEF7",
+        "support": "#FF5C8A",
+        "on-support": "#19191D"
+      }
+    },
+    {
+      "id": "night-sky",
+      "strategy": "dark-field",
+      "world": "star charts and instrument panels",
+      "fits": [
+        "developer",
+        "science",
+        "security",
+        "ai",
+        "data",
+        "astronomy"
+      ],
+      "colors": {
+        "ground": "#0D1424",
+        "surface": "#151E33",
+        "ink": "#E8ECF4",
+        "muted": "#9AA6BD",
+        "line": "#26324D",
+        "accent": "#F4C95D",
+        "on-accent": "#0D1424",
+        "tint": "#1D2742",
+        "support": "#E86A5E",
+        "on-support": "#0D1424"
+      }
+    },
+    {
+      "id": "bottle-green",
+      "strategy": "dark-field",
+      "world": "trattoria menus, wine labels, enamel signs",
+      "fits": [
+        "restaurant",
+        "hospitality",
+        "food",
+        "wine",
+        "heritage",
+        "retail"
+      ],
+      "colors": {
+        "ground": "#17382B",
+        "surface": "#1F4636",
+        "ink": "#F4ECDC",
+        "muted": "#B9C2B0",
+        "line": "#2F5A47",
+        "accent": "#E9B44C",
+        "on-accent": "#17382B",
+        "tint": "#24503D",
+        "support": "#EF7B55",
+        "on-support": "#17382B"
+      }
+    },
+    {
+      "id": "stall-yellow",
+      "strategy": "saturated-ground",
+      "world": "market price cards and fruit crates",
+      "fits": [
+        "food",
+        "retail",
+        "consumer",
+        "community",
+        "kids",
+        "restaurant"
+      ],
+      "colors": {
+        "ground": "#FFDF6B",
+        "surface": "#FFF3BF",
+        "ink": "#1F1A12",
+        "muted": "#5E5440",
+        "line": "#D9B94A",
+        "accent": "#D4351C",
+        "on-accent": "#FFFFFF",
+        "tint": "#FFF3BF",
+        "support": "#1E6B4E",
+        "on-support": "#FFFFFF"
+      }
+    },
+    {
+      "id": "white-cube",
+      "strategy": "monochrome-mark",
+      "world": "gallery walls with one ultramarine label",
+      "fits": [
+        "art",
+        "architecture",
+        "fashion",
+        "luxury",
+        "portfolio",
+        "design"
+      ],
+      "colors": {
+        "ground": "#FFFFFF",
+        "surface": "#F5F5F5",
+        "ink": "#0A0A0A",
+        "muted": "#666666",
+        "line": "#E2E2E2",
+        "accent": "#1F33D6",
+        "on-accent": "#FFFFFF",
+        "tint": "#E4E7FB",
+        "support": "#0A0A0A",
+        "on-support": "#FFFFFF"
+      }
+    },
+    {
+      "id": "grease-pencil",
+      "strategy": "monochrome-mark",
+      "world": "contact sheets with a red grease-pencil mark",
+      "fits": [
+        "photography",
+        "film",
+        "music",
+        "portfolio",
+        "fashion",
+        "editorial"
+      ],
+      "colors": {
+        "ground": "#E9E9E6",
+        "surface": "#DCDCD8",
+        "ink": "#0C0C0C",
+        "muted": "#53534F",
+        "line": "#BDBDB7",
+        "accent": "#0C0C0C",
+        "on-accent": "#F4F4F2",
+        "tint": "#D0D0CB",
+        "support": "#E0301E",
+        "on-support": "#FFFFFF"
+      }
+    }
+  ]
+}

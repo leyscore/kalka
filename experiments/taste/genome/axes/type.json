@@ -1,0 +1,348 @@
+{
+  "axis": "type",
+  "question": "Which voice does this subject speak in, and how loud is the headline next to the text?",
+  "pairing": [
+    {
+      "id": "archivo-plex",
+      "display": {
+        "family": "Archivo",
+        "google": "Archivo:wght@400;500;700;800",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "text": {
+        "family": "IBM Plex Sans",
+        "google": "IBM+Plex+Sans:wght@400;500;600",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "genre": "grotesque",
+      "displayWeights": [
+        400,
+        700,
+        800
+      ],
+      "use": "a sturdy grotesque over a technical humanist sans: timetables, tools, infrastructure"
+    },
+    {
+      "id": "bricolage-figtree",
+      "display": {
+        "family": "Bricolage Grotesque",
+        "google": "Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "text": {
+        "family": "Figtree",
+        "google": "Figtree:wght@400;500;600",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "genre": "grotesque",
+      "displayWeights": [
+        400,
+        500,
+        700
+      ],
+      "use": "a grotesque with quirks over a friendly geometric: products with a human voice"
+    },
+    {
+      "id": "familjen-work",
+      "display": {
+        "family": "Familjen Grotesk",
+        "google": "Familjen+Grotesk:wght@400;500;700",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "text": {
+        "family": "Work Sans",
+        "google": "Work+Sans:wght@400;500;600",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "genre": "grotesque",
+      "displayWeights": [
+        400,
+        500,
+        700
+      ],
+      "use": "a print-shop grotesque over a workhorse sans: studios, events, culture"
+    },
+    {
+      "id": "barlow",
+      "display": {
+        "family": "Barlow Condensed",
+        "google": "Barlow+Condensed:wght@500;600;700",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "text": {
+        "family": "Barlow",
+        "google": "Barlow:wght@400;500;600",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "genre": "condensed",
+      "displayWeights": [
+        500,
+        600,
+        700
+      ],
+      "use": "condensed signage capitals over their own text cut: travel, transport, sport"
+    },
+    {
+      "id": "newsreader-public",
+      "display": {
+        "family": "Newsreader",
+        "google": "Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600",
+        "fallback": "serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "text": {
+        "family": "Public Sans",
+        "google": "Public+Sans:wght@400;500;600",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "genre": "book-serif",
+      "displayWeights": [
+        400,
+        500,
+        600
+      ],
+      "use": "a newspaper serif over a civic sans: finance, law, reports, long reading"
+    },
+    {
+      "id": "redhat",
+      "display": {
+        "family": "Red Hat Display",
+        "google": "Red+Hat+Display:wght@500;700;900",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "text": {
+        "family": "Red Hat Text",
+        "google": "Red+Hat+Text:wght@400;500;600",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "genre": "geometric",
+      "displayWeights": [
+        500,
+        700,
+        900
+      ],
+      "use": "a round engineered display over its text cut: developer tools, science"
+    },
+    {
+      "id": "gloock-karla",
+      "display": {
+        "family": "Gloock",
+        "google": "Gloock",
+        "fallback": "serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "text": {
+        "family": "Karla",
+        "google": "Karla:wght@400;500;700",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "genre": "display-serif",
+      "displayWeights": [
+        400
+      ],
+      "use": "a high-contrast shop-sign serif over a quirky grotesque: food, hospitality, retail"
+    },
+    {
+      "id": "chivo-atkinson",
+      "display": {
+        "family": "Chivo",
+        "google": "Chivo:wght@400;500;700;900",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "text": {
+        "family": "Atkinson Hyperlegible",
+        "google": "Atkinson+Hyperlegible:wght@400;700",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "genre": "grotesque",
+      "displayWeights": [
+        400,
+        700,
+        900
+      ],
+      "use": "a heavy headline grotesque over a legibility face: manuals, hardware, public service"
+    },
+    {
+      "id": "garamond-albert",
+      "display": {
+        "family": "EB Garamond",
+        "google": "EB+Garamond:wght@400;500",
+        "fallback": "serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "text": {
+        "family": "Albert Sans",
+        "google": "Albert+Sans:wght@400;500;600",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "genre": "book-serif",
+      "displayWeights": [
+        400,
+        500
+      ],
+      "use": "a classical book serif over a quiet sans: galleries, architecture, luxury"
+    },
+    {
+      "id": "youngserif-outfit",
+      "display": {
+        "family": "Young Serif",
+        "google": "Young+Serif",
+        "fallback": "serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "text": {
+        "family": "Outfit",
+        "google": "Outfit:wght@400;500;600",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "genre": "display-serif",
+      "displayWeights": [
+        400
+      ],
+      "use": "a warm sturdy serif over a round sans: markets, consumer goods, community"
+    },
+    {
+      "id": "onest",
+      "display": {
+        "family": "Onest",
+        "google": "Onest:wght@400;500;600;700",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "text": {
+        "family": "Onest",
+        "google": "Onest:wght@400;500;600;700",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "genre": "geometric",
+      "displayWeights": [
+        400,
+        600,
+        700
+      ],
+      "use": "one plain, open family for everything: health, public information, calm products"
+    },
+    {
+      "id": "bigshoulders-hanken",
+      "display": {
+        "family": "Big Shoulders Display",
+        "google": "Big+Shoulders+Display:wght@600;800",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "text": {
+        "family": "Hanken Grotesk",
+        "google": "Hanken+Grotesk:wght@400;500;700",
+        "fallback": "sans-serif",
+        "licence": "OFL-1.1",
+        "source": "Google Fonts"
+      },
+      "genre": "condensed",
+      "displayWeights": [
+        600,
+        800
+      ],
+      "use": "poster capitals over a neutral grotesque: film, music, photography, sport"
+    }
+  ],
+  "ratio": [
+    {
+      "id": "1.2",
+      "value": 1.2,
+      "use": "dense products and dashboards: many levels close together, still each visibly distinct"
+    },
+    {
+      "id": "1.25",
+      "value": 1.25,
+      "use": "balanced pages: clear levels without drama"
+    },
+    {
+      "id": "1.333",
+      "value": 1.333,
+      "use": "editorial pages: strong contrast between headline and text"
+    },
+    {
+      "id": "1.414",
+      "value": 1.414,
+      "use": "posters and portfolios: the headline is the image"
+    }
+  ],
+  "treatment": [
+    {
+      "id": "plain",
+      "use": "the headline is simply the largest thing; right when content and data lead",
+      "displayBoost": 1.25,
+      "weight": "mid",
+      "tracking": -0.015,
+      "leading": 1.04,
+      "caps": false
+    },
+    {
+      "id": "heavy-tight",
+      "use": "heaviest weight, tight leading: confident, product-like",
+      "displayBoost": 1.4,
+      "weight": "max",
+      "tracking": -0.03,
+      "leading": 0.96,
+      "caps": false
+    },
+    {
+      "id": "light-large",
+      "use": "lightest weight at a very large size: quiet, expensive, cultural",
+      "displayBoost": 1.6,
+      "weight": "min",
+      "tracking": -0.025,
+      "leading": 1.0,
+      "caps": false
+    },
+    {
+      "id": "caps-poster",
+      "use": "capitals at poster size: signage, events, sport; short headlines only",
+      "displayBoost": 1.8,
+      "weight": "max",
+      "tracking": 0.0,
+      "leading": 0.9,
+      "caps": true
+    }
+  ]
+}
