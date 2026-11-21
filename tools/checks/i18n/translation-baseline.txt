@@ -298,6 +298,7 @@ it:panels.htmlTagDefault
 it:panels.layout
 it:panels.shader
 it:rendering.settingsTitle
+it:settings.account
 it:settings.mcp
 it:settings.media
 it:storage.bucket
@@ -334,6 +335,7 @@ ja:panels.html
 ja:panels.htmlClassesPlaceholder
 ja:settings.groupAI
 ja:settings.mcp
+ja:settings.navKalkaAI
 ja:storage.providerAmazonS3
 ja:storage.providerBackblaze
 ja:storage.providerR2
@@ -440,6 +442,7 @@ zh-cn:panels.htmlClassesPlaceholder
 zh-cn:panels.maskTypeAlpha
 zh-cn:settings.groupAI
 zh-cn:settings.mcp
+zh-cn:settings.navKalkaAI
 zh-cn:storage.providerAmazonS3
 zh-cn:storage.providerBackblaze
 zh-cn:storage.providerR2
