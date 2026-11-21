@@ -180,6 +180,14 @@ async function rememberPublicUrl(env: Env, request: Request): Promise<void> {
   await directoryOf(env).setSettings({ KALKA_PUBLIC_URL: new URL(request.url).origin })
 }
 
+/** Erases the documents whose time in the trash is over. */
+async function emptyExpiredTrash(env: Env): Promise<void> {
+  const directory = directoryOf(env)
+  for (const id of await directory.expiredTrash()) {
+    if (await directory.purgeDocument(id)) await roomOf(env, id).destroy()
+  }
+}
+
 async function serverInfo(env: Env, request: Request) {
   const status = await enterpriseStatus(env, request)
   return {
@@ -225,10 +233,11 @@ async function documentRoute(
   if (rest === '' && method === 'DELETE') {
     const user = await requireUser(env, request, ['admin', 'editor'])
     const before = await directory.getDocument(documentId)
-    if (!(await directory.deleteDocument(documentId))) throw new HttpError(404, 'No such document.')
-    await roomOf(env, documentId).destroy()
-    await log(user, 'document.deleted', { name: before?.name })
-    return json({ deleted: true })
+    if (!(await directory.deleteDocument(documentId, user.id))) throw new HttpError(404, 'No such document.')
+    // To the trash: the people in it leave, its content stays until it is restored or erased.
+    await roomOf(env, documentId).closeAll()
+    await log(user, 'document.trashed', { name: before?.name })
+    return json({ deleted: true, trashed: true })
   }
   if (rest === '' && method === 'GET') {
     await requireUser(env, request)
@@ -544,6 +553,30 @@ async function api(env: Env, request: Request, path: string): Promise<Response> 
       throw new HttpError(502, error instanceof Error ? error.message : 'The mail server refused the email.')
     }
     return json({ sent: true, to: admin.email })
+  }
+
+  if (path === '/api/trash' && method === 'GET') {
+    await requireUser(env, request, ['admin', 'editor'])
+    await emptyExpiredTrash(env)
+    return json(await directory.listTrash())
+  }
+  const trashMatch = /^\/api\/trash\/([^/]+)(\/restore)?$/.exec(path)
+  if (trashMatch?.[1] && trashMatch[2] && method === 'POST') {
+    const user = await requireUser(env, request, ['admin', 'editor'])
+    const document = await directory.restoreDocument(trashMatch[1])
+    if (!document) throw new HttpError(404, 'This document is not in the trash.')
+    await emit(env, request, user, 'document.restored', document.id, { name: document.name })
+    return json(document)
+  }
+  if (trashMatch?.[1] && !trashMatch[2] && method === 'DELETE') {
+    const user = await requireUser(env, request, ['admin', 'editor'])
+    const trashed = (await directory.listTrash()).find((item) => item.id === trashMatch[1])
+    if (!trashed || !(await directory.purgeDocument(trashed.id))) {
+      throw new HttpError(404, 'This document is not in the trash.')
+    }
+    await roomOf(env, trashed.id).destroy()
+    await emit(env, request, user, 'document.deleted', trashed.id, { name: trashed.name })
+    return json({ deleted: true })
   }
 
   if (path === '/api/documents' && method === 'GET') {

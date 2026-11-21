@@ -29,6 +29,7 @@ import DocumentEntry from '@/components/home/document/DocumentEntry.vue'
 import HomeSampleTile from '@/components/home/learn/HomeSampleTile.vue'
 import HomeSearchField from '@/components/home/search/HomeSearchField.vue'
 import HomeServerDocuments from '@/components/home/server/HomeServerDocuments.vue'
+import HomeServerTrash from '@/components/home/server/HomeServerTrash.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
@@ -50,6 +51,7 @@ const openError = ref<string | null>(null)
 const storageConfigured = ref(storagePreferencesComplete(activeStorageProviderID.value))
 const inStorage = computed(() => place === 'files' && homeFilesTab.value === 'storage')
 const inServer = computed(() => place === 'files' && homeFilesTab.value === 'server')
+const inTrash = computed(() => place === 'files' && homeFilesTab.value === 'trash')
 const serverList = useTemplateRef<{ refresh: () => Promise<void> }>('serverList')
 
 const workspace = useDocumentWorkspace<RecentDocument>({
@@ -130,6 +132,7 @@ const heading = computed(() => {
   if (place === 'home') return files.value.recentTab
   if (inStorage.value) return storage.value.tab
   if (inServer.value) return serverAccount.value?.serverName ?? collaboration.value.serverTab
+  if (inTrash.value) return files.value.trashPlace
   return files.value.localFiles
 })
 const hasRecentFiles = computed(() => documents.value.length > 0)
@@ -137,6 +140,7 @@ const noSearchMatches = computed(
   () =>
     Boolean(normalizedQuery.value) &&
     !inServer.value &&
+    !inTrash.value &&
     (inStorage.value ? filteredStorageDocuments.value : filteredRecentFiles.value).length === 0
 )
 /** The file that leads the grid: the last one opened, while nothing is being searched. */
@@ -205,7 +209,7 @@ function formattedDate(updatedAt: string): string {
           </span>
         </span>
       </div>
-      <div class="flex w-full items-center gap-1.5 sm:w-auto">
+      <div v-if="!inTrash" class="flex w-full items-center gap-1.5 sm:w-auto">
         <template v-if="inStorage">
           <IconButton
             :label="common.refresh"
@@ -274,6 +278,8 @@ function formattedDate(updatedAt: string): string {
       >
         {{ files.noMatchingFiles({ query: query.trim() }) }}
       </p>
+
+      <HomeServerTrash v-else-if="inTrash" />
 
       <HomeServerDocuments
         v-else-if="inServer"

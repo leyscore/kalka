@@ -260,8 +260,8 @@
         el('hr'),
         el('button', { type: 'button', role: 'menuitem', class: 'danger', onclick: async () => {
           closePop()
-          if (!(await confirmDialog('Delete ' + doc.name + '?', 'Everyone loses it, in the app too. This cannot be undone.', 'Delete', true))) return
-          try { await api('DELETE', '/api/documents/' + doc.id); toast('Deleted'); route() } catch (e) { toast(e.message) }
+          if (!(await confirmDialog('Move ' + doc.name + ' to the trash?', 'Everyone loses it, in the app too. It can be restored from the trash in Kalka for 30 days.', 'Move to trash', true))) return
+          try { await api('DELETE', '/api/documents/' + doc.id); toast('Moved to the trash'); route() } catch (e) { toast(e.message) }
         } }, icon('delete-02'), 'Delete'))
     }
     menu(anchor, items)
@@ -699,7 +699,9 @@
     'invite.revoked': ['revoked an invitation', 'cancel-01'],
     'document.created': ['created a file', 'file-01'],
     'document.renamed': ['renamed a file', 'edit-02'],
-    'document.deleted': ['deleted a file', 'delete-02'],
+    'document.trashed': ['moved a file to the trash', 'delete-02'],
+    'document.restored': ['restored a file', 'refresh'],
+    'document.deleted': ['deleted a file for good', 'delete-02'],
     'document.exported': ['exported a file', 'download-01'],
     'document.uploaded': ['uploaded a new version', 'share-01'],
     'settings.changed': ['changed settings', 'settings-02'],
@@ -720,7 +722,7 @@
     { value: 'auth.', label: 'Sign-ins', desc: 'Sign-ins and failed attempts' },
     { value: 'user.', label: 'People', desc: 'Accounts, roles and passwords' },
     { value: 'invite.', label: 'Invitations' },
-    { value: 'document.', label: 'Files', desc: 'Created, renamed, deleted, exported' },
+    { value: 'document.', label: 'Files', desc: 'Created, renamed, trashed, restored, deleted, exported' },
     { value: 'settings.', label: 'Settings' },
     { value: 'app_password.', label: 'App passwords' },
     { value: 'backup.', label: 'Backups' },

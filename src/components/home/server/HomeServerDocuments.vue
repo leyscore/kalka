@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import { useIntervalFn } from '@vueuse/core'
+import {
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuRoot,
+  DropdownMenuTrigger
+} from 'reka-ui'
 import { computed, onMounted, ref } from 'vue'
 
 import { useI18n } from '@kalka/vue'
@@ -10,14 +17,18 @@ import {
   openServerDocument,
   refreshServerDocuments,
   serverDocuments,
-  serverDocumentsLoading
+  serverDocumentsLoading,
+  trashServerDocument
 } from '@/app/collab/server/documents'
 import { serverProblem, type ServerProblem } from '@/app/collab/server/problem'
 import { openSettings } from '@/app/settings/open'
+import { toast } from '@/app/shell/ui'
 import DocumentEntry from '@/components/home/document/DocumentEntry.vue'
 import { serverProblemText } from '@/components/settings/server/problemText'
 import AppButton from '@/components/ui/button/AppButton.vue'
+import IconButton from '@/components/ui/button/IconButton.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
+import { menuItem, useMenuUI } from '@/components/ui/menu/menu'
 
 /** The files on the signed-in Kalka server; opening one joins its room in a tab of its own. */
 const { query, view } = defineProps<{ query: string; view: 'grid' | 'list' }>()
@@ -28,6 +39,19 @@ const error = computed(() =>
 )
 
 const signedIn = computed(() => serverAccount.value !== null && !serverSessionExpired.value)
+/** Viewers cannot delete; editors and administrators move files to the trash. */
+const canDelete = computed(() => serverAccount.value?.user.role !== 'viewer')
+const menu = useMenuUI()
+const item = menuItem()
+
+async function moveToTrash(document: ServerDocument) {
+  try {
+    await trashServerDocument(document.id)
+    toast.info(files.value.movedToTrash({ name: document.name }))
+  } catch (reason) {
+    toast.error(reason instanceof Error ? reason.message : String(reason))
+  }
+}
 const filtered = computed(() =>
   query
     ? serverDocuments.value.filter((document) =>
@@ -99,7 +123,27 @@ const LIST = 'overflow-hidden rounded-[14px] bg-card'
       :name="document.name"
       :metadata="formattedDate(document.updatedAt)"
       @open="open(document)"
-    />
+    >
+      <template v-if="canDelete" #actions>
+        <DropdownMenuRoot>
+          <DropdownMenuTrigger as-child>
+            <IconButton
+              :label="files.fileActions({ name: document.name })"
+              class="bg-white/90 shadow-sm"
+            >
+              <icon-hugeicons-more-horizontal class="size-4" />
+            </IconButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuContent align="end" :side-offset="6" :class="menu.content">
+              <DropdownMenuItem :class="item" @select="moveToTrash(document)">
+                {{ files.moveToTrash }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
+        </DropdownMenuRoot>
+      </template>
+    </DocumentEntry>
   </div>
 
   <p

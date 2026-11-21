@@ -31,6 +31,10 @@ export const documentEntry = tv({
   variants: {
     view: {
       grid: {
+        root: 'relative',
+        /** Over the preview's top corner, shown on hover or focus, as a frame's own controls. */
+        actions:
+          'absolute top-8 right-2 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 has-[[data-state=open]]:opacity-100',
         trigger: 'flex h-full flex-col gap-[7px]',
         body: 'flex flex-none items-baseline gap-2 px-px',
         name: 'min-w-0 flex-1',

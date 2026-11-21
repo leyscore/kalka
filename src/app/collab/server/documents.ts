@@ -13,6 +13,7 @@ import { IS_BROWSER, IS_TAURI } from '@/constants'
 
 import { refreshServerAccount, serverAccount, updateServerUser, withServerSession } from './account'
 import { serverAPI, type ServerDocument } from './api'
+import { trashAPI, type TrashedDocument } from './trash-api'
 
 /** Rooms this app opened through the server, so the room panel can say where they live. */
 export const serverRoomIds = shallowRef<ReadonlySet<string>>(new Set())
@@ -39,6 +40,32 @@ export async function refreshServerDocuments(): Promise<void> {
   } finally {
     serverDocumentsLoading.value = false
   }
+}
+
+/** The documents in the server's trash, newest first, for editors and administrators. */
+export const trashedDocuments = shallowRef<readonly TrashedDocument[]>([])
+
+export async function refreshTrash(): Promise<void> {
+  trashedDocuments.value = await withServerSession((url, token) => trashAPI.list(url, token))
+}
+
+/** Moves a document to the trash: it leaves the list, and the people in it, until restored. */
+export async function trashServerDocument(id: string): Promise<void> {
+  await withServerSession((url, token) => trashAPI.moveToTrash(url, token, id))
+  serverDocuments.value = serverDocuments.value.filter((document) => document.id !== id)
+}
+
+/** Brings a document back from the trash into the server's list. */
+export async function restoreServerDocument(id: string): Promise<void> {
+  const document = await withServerSession((url, token) => trashAPI.restore(url, token, id))
+  trashedDocuments.value = trashedDocuments.value.filter((item) => item.id !== id)
+  serverDocuments.value = [document, ...serverDocuments.value]
+}
+
+/** Erases a document in the trash for good. */
+export async function eraseServerDocument(id: string): Promise<void> {
+  await withServerSession((url, token) => trashAPI.erase(url, token, id))
+  trashedDocuments.value = trashedDocuments.value.filter((item) => item.id !== id)
 }
 
 /** Joins a server room: each (re)connection asks the server for a fresh one-time ticket. */
