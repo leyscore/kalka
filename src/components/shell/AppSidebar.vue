@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import IconCloud from '~icons/hugeicons/cloud'
 import IconComputer from '~icons/hugeicons/computer'
+import IconPlan from '~icons/hugeicons/credit-card'
 import IconTrash from '~icons/hugeicons/delete-02'
 import IconHome from '~icons/hugeicons/home-01'
 import IconServer from '~icons/hugeicons/server-stack-01'
@@ -14,6 +15,7 @@ import { useI18n } from '@kalka/vue'
 import { useAvatar } from '@/app/collab/avatar'
 import { useCollabIdentity } from '@/app/collab/identity'
 import { serverAccount } from '@/app/collab/server/account'
+import { cloudWorkspaceOf } from '@/app/collab/server/cloud-billing'
 import { filesListFromPath, filesPath } from '@/app/home/files-route'
 import { openSettings } from '@/app/settings/open'
 import { openExternalLink } from '@/app/shell/ui'
@@ -67,6 +69,10 @@ const groups = computed<ShellSidebarGroup[]>(() => {
       label: collaboration.value.teamGroup,
       items: [
         { id: 'team:people', label: collaboration.value.teamPeople, icon: IconTeam },
+        // Plans and billing are Kalka Cloud's; a self-hosted server has a license instead.
+        ...(cloudWorkspaceOf(account.url)
+          ? [{ id: 'team:plan', label: collaboration.value.teamPlan, icon: IconPlan }]
+          : []),
         { id: 'team:settings', label: collaboration.value.teamSettings, icon: IconSettings }
       ]
     })
@@ -94,11 +100,9 @@ const account = computed(() => {
 })
 
 function select(id: string): void {
-  if (id === 'team:people' || id === 'team:settings') {
-    void router.push({
-      path: teamPath(id === 'team:people' ? 'people' : 'settings'),
-      query: route.query
-    })
+  const team = id.startsWith('team:') ? teamPageFromPath(`/team/${id.slice(5)}`) : null
+  if (team) {
+    void router.push({ path: teamPath(team), query: route.query })
     return
   }
   if (id === 'home') {

@@ -5,6 +5,7 @@
 ### Added
 
 - On Kalka Cloud, opening app.kalka.design signed in shows Home with your workspace's files, without going through the console.
+- On Kalka Cloud, Plan and billing under Team shows the workspace's plan, its renewal or end date and what it uses (editors, files, storage), lets a free workspace choose Pro or Team, monthly or yearly, through Stripe Checkout, and opens Stripe's billing portal once it pays; in the desktop app it opens billing on Kalka Cloud in the browser.
 - Deleted files on a Kalka server or Cloud workspace go to the trash for 30 days instead of being erased at once: Move to trash from a file's menu on Home, then Trash under Files lists them with who deleted them, to restore them or delete them for good. Deleting over WebDAV and from the server's console moves files to the trash too.
 - An administrator signed in to a Kalka server or Cloud workspace manages the team from Home's sidebar: People lists everyone with their role, which they change in place, and lets them disable or remove an account, send a password link, invite people by email or with a link to share, and revoke a waiting invitation; Team settings changes the team's name and whether people may sign in with a password, and opens the server's console for the rest.
 
