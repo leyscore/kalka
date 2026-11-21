@@ -51,7 +51,7 @@ describe('room tab status', () => {
 })
 
 describe('server room status', () => {
-  const server = { loaded: false, settling: false, gone: false }
+  const server = { loaded: false, settling: false, gone: false, signInNeeded: false }
 
   test('opens from the server without waiting for anyone, however long the load takes', () => {
     const connected = { ...base, connectedFor: DISCOVERY_MS * 3, server }

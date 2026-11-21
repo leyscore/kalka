@@ -1,6 +1,7 @@
 import { shallowRef } from 'vue'
 
 import type { SceneGraph } from '@kalka/scene-graph'
+import { panelMessages } from '@kalka/vue'
 
 import { joinRoom, roomForStore, shareDocument } from '@/app/collab/rooms'
 import type { RoomSession } from '@/app/collab/session'
@@ -56,16 +57,25 @@ export function openServerDocument(
   return joinRoom(document.id, { tabName: document.name, transport: serverTransport })
 }
 
+/** The server a `/design` link named, by document, for someone who must sign in to open it. */
+export const linkedServers = shallowRef<ReadonlyMap<string, string>>(new Map())
+
 /**
- * Opens a server document from its address, before the server's list has loaded. Null when no
- * server is signed in. The tab shows `fallbackName` until the document brings its own name.
+ * Opens a server document from its address, before the server's list has loaded. Someone not
+ * signed in gets the tab too, at the same address, which asks them to sign in to `server` (the
+ * one the link named) and opens the file once they have. Null when the id is not a room's.
+ * The tab shows `fallbackName` until the document brings its own name.
  */
-export function openServerDocumentById(id: string, fallbackName: string): RoomSession | null {
-  if (!serverAccount.value) return null
+export function openServerDocumentById(
+  id: string,
+  fallbackName: string,
+  server: string | null = null
+): RoomSession | null {
+  if (server) linkedServers.value = new Map([...linkedServers.value, [id, server]])
   const known = serverDocuments.value.find((document) => document.id === id)
   const session = openServerDocument({ id, name: known?.name ?? fallbackName })
   // The server's name wins over the one guessed from the address, which a new document takes.
-  if (session && !known) {
+  if (session && !known && serverAccount.value) {
     withServerSession((url, token) => serverAPI.document(url, token, id))
       .then((document) => {
         serverDocuments.value = [
@@ -84,7 +94,7 @@ export function openServerDocumentById(id: string, fallbackName: string): RoomSe
 export async function shareToServer(store: EditorStore): Promise<RoomSession> {
   const existing = roomForStore(store)
   if (existing) return existing
-  const name = store.state.documentName || 'Untitled'
+  const name = store.state.documentName || panelMessages.get().untitled
   const document = await withServerSession((url, token) =>
     serverAPI.createDocument(url, token, name)
   )
@@ -142,7 +152,10 @@ export async function takePendingVersion(roomId: string): Promise<SceneGraph | n
 export function serverDocumentLink(roomId: string, name: string): string | null {
   if (IS_TAURI || !IS_BROWSER) return null
   const path = addressPath({ kind: 'design', id: roomId, slug: documentSlug(name) })
-  return `${window.location.origin}${path}`
+  // The link names its server, so a teammate who is not signed in knows where to sign in.
+  const server = serverAccount.value?.url
+  const query = server ? `?server=${encodeURIComponent(server)}` : ''
+  return `${window.location.origin}${path}${query}`
 }
 
 /** Whether a room lives on the signed-in server rather than between peers. */

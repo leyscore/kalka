@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 
 import { useDocumentWorkspace, useI18n, useViewportKind } from '@kalka/vue'
 
 import { serverAccount } from '@/app/collab/server/account'
-import { refreshServerDocuments } from '@/app/collab/server/documents'
 import { homeFilesTab } from '@/app/home/files-tab'
 import {
   activeStorageProviderID,
@@ -31,6 +30,7 @@ import HomeSearchField from '@/components/home/search/HomeSearchField.vue'
 import HomeServerDocuments from '@/components/home/server/HomeServerDocuments.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
+import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
 import { filesTab, storageChip } from '@/theme/home/start'
 
@@ -46,6 +46,7 @@ const openError = ref<string | null>(null)
 const storageConfigured = ref(storagePreferencesComplete(activeStorageProviderID.value))
 const inStorage = computed(() => homeFilesTab.value === 'storage')
 const inServer = computed(() => homeFilesTab.value === 'server')
+const serverList = useTemplateRef<{ refresh: () => Promise<void> }>('serverList')
 const inRecent = computed(() => !inStorage.value && !inServer.value)
 
 const workspace = useDocumentWorkspace<RecentDocument>({
@@ -212,7 +213,7 @@ function formattedDate(updatedAt: string): string {
           data-test-id="home-tab-server"
           @click="homeFilesTab = 'server'"
         >
-          {{ collaboration.serverTab }}
+          {{ serverAccount?.serverName ?? collaboration.serverTab }}
         </button>
         <span v-if="inStorage && storageConfigured" :class="storageChip">
           <span class="size-[7px] shrink-0 rounded-full bg-success" aria-hidden="true" />
@@ -243,7 +244,7 @@ function formattedDate(updatedAt: string): string {
           <IconButton
             :label="common.refresh"
             class="size-10 sm:size-8"
-            @click="refreshServerDocuments"
+            @click="serverList?.refresh()"
           >
             <icon-hugeicons-refresh-cw class="size-3.5" />
           </IconButton>
@@ -291,7 +292,7 @@ function formattedDate(updatedAt: string): string {
       "
       class="flex flex-col gap-3"
     >
-      <p v-if="openError" class="text-xs text-danger" role="alert">{{ openError }}</p>
+      <AppAlert v-if="openError" tone="error" :heading="openError" />
       <p
         v-if="noSearchMatches"
         class="rounded-[14px] bg-card px-4 py-8 text-center text-xs text-muted"
@@ -299,7 +300,12 @@ function formattedDate(updatedAt: string): string {
         {{ files.noMatchingFiles({ query: query.trim() }) }}
       </p>
 
-      <HomeServerDocuments v-else-if="inServer" :query="normalizedQuery" :view="view" />
+      <HomeServerDocuments
+        v-else-if="inServer"
+        ref="serverList"
+        :query="normalizedQuery"
+        :view="view"
+      />
 
       <template v-else-if="!inStorage">
         <!-- With nothing opened yet, the sample file stands in for the recent files. -->
@@ -353,10 +359,10 @@ function formattedDate(updatedAt: string): string {
 
         <div
           v-else-if="storageError && storageDocuments.length === 0"
-          class="rounded-[14px] border border-danger/40 px-4 py-6 text-center"
+          class="rounded-[14px] border border-error-border px-4 py-6 text-center"
           role="alert"
         >
-          <p class="text-xs text-danger">{{ storageError }}</p>
+          <p class="text-xs text-error">{{ storageError }}</p>
           <AppButton variant="outline" class="mt-3" @click="storageWorkspace.refresh">
             {{ common.refresh }}
           </AppButton>

@@ -11,7 +11,8 @@
  * - `alone`: the room's file is here, from this device's copy, and nobody else is;
  * - `missing`: the room is a server document the server does not have, or no longer;
  * - `empty`: the room is a server document with nothing in it yet, and this person cannot
- *   start it, as a viewer cannot.
+ *   start it, as a viewer cannot;
+ * - `signed-out`: the room is a server document and this person must sign in to the server.
  */
 export type RoomStatus =
   | 'connecting'
@@ -23,6 +24,7 @@ export type RoomStatus =
   | 'alone'
   | 'missing'
   | 'empty'
+  | 'signed-out'
 
 /** The states a room tab shows its own screen for, until the room's file arrives. */
 export type PendingRoomStatus = Exclude<RoomStatus, 'live' | 'alone'>
@@ -54,10 +56,13 @@ export interface ServerRoomState {
   settling: boolean
   /** The server does not have the document. */
   gone: boolean
+  /** The server needs this person to sign in before it lets them in. */
+  signInNeeded: boolean
 }
 
 export function deriveRoomStatus(input: RoomStatusInput): RoomStatus {
   if (input.server?.gone) return 'missing'
+  if (input.server?.signInNeeded && !input.hasDocument) return 'signed-out'
   if (input.hasDocument) return input.peerCount > 0 ? 'live' : 'alone'
   if (!input.savedCopyLoaded) return 'connecting'
   // A server keeps the document, so nobody needs to be online: it is loading, or empty.

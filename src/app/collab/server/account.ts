@@ -6,7 +6,6 @@ import { IS_TAURI } from '@kalka/core/constants'
 
 import { createDeferred } from '@/app/runtime/deferred'
 import { appCredentialServices } from '@/app/settings/credentials/app'
-import { credentialRef } from '@/app/settings/credentials/reference'
 import { openExternalLink } from '@/app/shell/ui'
 
 import {
@@ -18,13 +17,14 @@ import {
   type ServerSession,
   type ServerUser
 } from './api'
+import { SERVER_TOKEN_REF } from './credential'
 
 /**
  * The Kalka server this app is signed in to: its address and the account in local storage, the
  * session token in the credential store (the system keychain on desktop).
  */
 
-const TOKEN_REF = credentialRef('kalka-server', 'token')
+const TOKEN_REF = SERVER_TOKEN_REF
 const SIGN_IN_TIMEOUT_MS = 10 * 60 * 1000
 const BROWSER_CALLBACK_PATH = '/oauth/server.html'
 const BROWSER_CALLBACK_CHANNEL = 'kalka:server-oauth'
@@ -54,6 +54,17 @@ let cachedToken: string | null = null
 export async function serverToken(): Promise<string | null> {
   cachedToken ??= await appCredentialServices.resolver.resolve(TOKEN_REF)
   return cachedToken
+}
+
+// A browser that keeps credentials for the session only has no token after a reload, while the
+// account stays: the person must sign in again, and Settings and Home say so from the start.
+if (storedAccount.value) {
+  serverToken()
+    .then((token) => {
+      if (!token && storedAccount.value) serverSessionExpired.value = true
+      return undefined
+    })
+    .catch(() => undefined)
 }
 
 async function remember(url: string, info: ServerInfo, session: ServerSession) {
@@ -189,7 +200,12 @@ export async function withServerSession<T>(
 ): Promise<T> {
   const account = storedAccount.value
   const token = await serverToken()
-  if (!account || !token) throw new ServerRequestError(401, 'signed-out')
+  if (!account || !token) {
+    // An account whose token is gone, as a browser keeping credentials for the session only
+    // loses it on reload, must sign in again: say so rather than claim it is signed in.
+    if (account) serverSessionExpired.value = true
+    throw new ServerRequestError(401, 'signed-out')
+  }
   try {
     return await run(account.url, token)
   } catch (error) {

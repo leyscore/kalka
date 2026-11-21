@@ -27,6 +27,7 @@ type Connection = {
   receivers: Map<string, CollabActionReceiver[]>
   joinHandlers: ((peerId: string) => void)[]
   goneHandlers: (() => void)[]
+  signInHandlers: ((needed: boolean) => void)[]
 }
 
 /**
@@ -56,7 +57,8 @@ function createServerRoom() {
       role,
       receivers: new Map(),
       joinHandlers: [],
-      goneHandlers: []
+      goneHandlers: [],
+      signInHandlers: []
     }
     queueMicrotask(() => {
       const others = [...connections]
@@ -75,6 +77,8 @@ function createServerRoom() {
       server: true,
       role: () => role,
       onGone: (handler) => void self.goneHandlers.push(handler),
+      onSignInNeeded: (handler) => void self.signInHandlers.push(handler),
+      retryNow: () => undefined,
       makeAction(namespace) {
         return [
           (data, target) => {
@@ -116,6 +120,12 @@ function createServerRoom() {
       const taken = pending
       pending = null
       return taken?.graph ?? null
+    },
+    /** The session ended on the server: open windows must sign in to come back. */
+    signOut(needed: boolean) {
+      for (const connection of connections) {
+        for (const handler of connection.signInHandlers) handler(needed)
+      }
     },
     deleteDocument() {
       for (const connection of connections) for (const handler of connection.goneHandlers) handler()
@@ -261,6 +271,49 @@ describe('server documents', () => {
       await settle()
       server.deleteDocument()
       expect(editor.session.status.value).toBe('missing')
+    })
+  })
+
+  test('someone not signed in is asked to sign in, and an open file stays open', async () => {
+    await withServer(async (open, server) => {
+      const editor = open('editor')
+      await settle()
+      server.signOut(true)
+      expect(editor.session.status.value).toBe('alone')
+
+      const store = newStore()
+      let needSignIn: (needed: boolean) => void = () => undefined
+      // A server that refuses the ticket: nothing loads until the person signs in.
+      const signedOut: ServerRoomTransport = {
+        server: true,
+        role: () => null,
+        onGone: () => undefined,
+        onSignInNeeded: (handler) => {
+          needSignIn = handler
+        },
+        retryNow: () => undefined,
+        makeAction: () => [() => undefined, () => undefined],
+        onPeerJoin: () => undefined,
+        onPeerLeave: () => undefined,
+        signalingConnected: () => false,
+        discoveryMs: 0,
+        leave: async () => undefined
+      }
+      const session = openRoomSession({
+        roomId: 'dddddddddddddddddddddddddddddddd',
+        store,
+        origin: 'joined',
+        openSavedCopy: noSavedCopy,
+        joinRoom: () => signedOut
+      })
+      try {
+        await settle()
+        needSignIn(true)
+        expect(session.status.value).toBe('signed-out')
+      } finally {
+        session.dispose()
+        store.preparationController.dispose()
+      }
     })
   })
 

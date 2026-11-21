@@ -21,6 +21,7 @@ const room = useRoomActions()
     @copy-link="room.copyLink"
     @leave="room.leave"
     @rename="room.rename"
+    @sign-in="room.signIn"
   />
   <LeftRoomNotice v-else-if="room.leftRoom.value" @dismiss="room.dismissLeftRoomNote" />
 </template>

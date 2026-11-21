@@ -5,6 +5,8 @@
 // The fragment never reaches a server log. The editor signs in to that server with the code,
 // then opens the document, or creates a new one there. Only servers this app trusts by
 // address may sign it in, so a link from elsewhere cannot point it at someone else's server.
+import { panelMessages } from '@kalka/vue'
+
 import { isRoomId } from '@/app/collab/room/id'
 
 import { describeServer, signInWithCode } from './account'
@@ -43,7 +45,7 @@ function parseStart(params: URLSearchParams): ServerLaunchStart {
     const width = Number(size[1])
     const height = Number(size[2])
     if (width >= 1 && height >= 1 && width <= MAX_FRAME_SIDE && height <= MAX_FRAME_SIDE) {
-      const name = (params.get('name') ?? '').trim().slice(0, 60) || 'Frame'
+      const name = (params.get('name') ?? '').trim().slice(0, 60) || panelMessages.get().frame
       start.frame = { name, width, height }
     }
   }
@@ -79,10 +81,15 @@ export function parseServerLaunch(hash: string, ownOrigin: string): ServerLaunch
   return { url, code, open: target, start: target === 'new' ? parseStart(params) : {} }
 }
 
+/** Why a launch link did not open its file: signing in failed, or the file is gone. */
+export type ServerLaunchFailure = 'sign-in' | 'missing'
+
 export interface ServerLaunchActions {
   openDocument: (document: ServerDocument) => void
   createDocument: (start: ServerLaunchStart) => Promise<void>
-  notify: (message: string, level: 'info' | 'error') => void
+  /** The launch is under way, until the returned function is called. */
+  started: () => () => void
+  failed: (failure: ServerLaunchFailure, serverURL: string) => void
 }
 
 /** Signs in from the launch link in `hash`, strips it from the address, then opens or creates. */
@@ -97,6 +104,7 @@ export async function launchFromServerLink(
   // The code works once: drop it from the address whatever happens next.
   strip()
   if (!launch) return false
+  const done = actions.started()
   try {
     const { info } = await describeServer(launch.url)
     await signInWithCode(launch.url, info, launch.code)
@@ -106,15 +114,14 @@ export async function launchFromServerLink(
     } else if (launch.open) {
       const document = serverDocuments.value.find((item) => item.id === launch.open)
       if (document) actions.openDocument(document)
-      else actions.notify('This file is no longer on the server.', 'error')
+      else actions.failed('missing', launch.url)
     }
     return true
   } catch (error) {
     console.error('[Server launch]', error)
-    actions.notify(
-      'Signing in to Kalka Cloud did not work. Open the editor again from your workspace.',
-      'error'
-    )
+    actions.failed('sign-in', launch.url)
     return false
+  } finally {
+    done()
   }
 }

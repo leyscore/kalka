@@ -31,6 +31,15 @@ export interface ServerRoomTransport extends CollabRoomTransport {
   role(): ServerRole | null
   /** Runs once the server says the document does not exist, or no longer; it stops trying. */
   onGone(handler: () => void): void
+  /** Runs when the room needs this person to sign in to the server, or no longer does. */
+  onSignInNeeded(handler: (needed: boolean) => void): void
+  /** Tries again at once, as after signing in, instead of waiting for the next retry. */
+  retryNow(): void
+}
+
+/** Whether a failed ticket request means nobody is signed in to the server, or not any more. */
+function isSignedOut(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && 'status' in error && error.status === 401
 }
 
 /** Whether a failed ticket request means the document is not on the server. */
@@ -63,7 +72,9 @@ function joinServerRoom(
   const joinHandlers: ((peerId: string) => void)[] = []
   const leaveHandlers: ((peerId: string) => void)[] = []
   const goneHandlers: (() => void)[] = []
+  const signInHandlers: ((needed: boolean) => void)[] = []
   let gone = false
+  let signInNeeded = false
   const peers = new Set<string>()
   let socket: WebSocket | null = null
   let welcomed = false
@@ -116,6 +127,12 @@ function joinServerRoom(
     for (const handler of goneHandlers) handler()
   }
 
+  function setSignInNeeded(needed: boolean) {
+    if (signInNeeded === needed) return
+    signInNeeded = needed
+    for (const handler of signInHandlers) handler(needed)
+  }
+
   function scheduleReconnect() {
     if (left) return
     clearTimeout(retryTimer)
@@ -133,11 +150,14 @@ function joinServerRoom(
         markGone()
         return
       }
-      console.warn('[Kalka server] Could not get a room ticket', error)
+      setSignInNeeded(isSignedOut(error))
+      // Not being signed in is shown on the tab; anything else is worth a line in the console.
+      if (!signInNeeded) console.warn('[Kalka server] Could not get a room ticket', error)
       scheduleReconnect()
       return
     }
     if (hasLeft()) return
+    setSignInNeeded(false)
     role = pass.role
     const ws = new WebSocket(pass.url)
     ws.binaryType = 'arraybuffer'
@@ -179,6 +199,13 @@ function joinServerRoom(
     },
     onPeerJoin: (handler) => void joinHandlers.push(handler),
     onPeerLeave: (handler) => void leaveHandlers.push(handler),
+    onSignInNeeded: (handler) => void signInHandlers.push(handler),
+    retryNow() {
+      if (left || socket) return
+      clearTimeout(retryTimer)
+      retryMs = RECONNECT_MIN_MS
+      void connect()
+    },
     onGone: (handler) => {
       if (gone) handler()
       else goneHandlers.push(handler)
@@ -188,6 +215,7 @@ function joinServerRoom(
     async leave() {
       left = true
       goneHandlers.length = 0
+      signInHandlers.length = 0
       clearTimeout(retryTimer)
       watchdog.pause()
       socket?.close(1000, 'Left')

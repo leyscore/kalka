@@ -13,7 +13,7 @@ import { useCollabIdentity } from '@/app/collab/identity'
 import { publishLocalAgents } from '@/app/collab/local-awareness'
 import { connectCollabRoom } from '@/app/collab/room/connection'
 import { deriveRoomStatus, type RoomStatus, type ServerRoomState } from '@/app/collab/room/status'
-import { serverAccount } from '@/app/collab/server/account'
+import { serverAccount, serverSessionExpired } from '@/app/collab/server/account'
 import {
   renameServerDocument,
   saveServerFile,
@@ -289,9 +289,12 @@ export function openRoomSession({
   if (serverRoom) {
     keepRecoveryElsewhere(store.state, true)
     void store.discardRecovery()
-    serverState.value = { loaded: false, settling: false, gone: false }
+    serverState.value = { loaded: false, settling: false, gone: false, signInNeeded: false }
     serverRoom.onGone(() => {
       if (serverState.value) serverState.value.gone = true
+    })
+    serverRoom.onSignInNeeded((needed) => {
+      if (serverState.value) serverState.value.signInNeeded = needed
     })
   }
   const stopServerPeer = serverRoom
@@ -330,6 +333,13 @@ export function openRoomSession({
   }, tickMs)
 
   const stopNameWatch = watch([identity.name, serverAccount], broadcastIdentity)
+  // Signing in, or again, lets a room that was waiting for it in at once.
+  const stopSignInWatch = watch(
+    () => serverAccount.value !== null && !serverSessionExpired.value,
+    (signedIn) => {
+      if (signedIn) serverRoom?.retryNow()
+    }
+  )
   // The server keeps a server document: once it is here, there is nothing left to save.
   const stopSavedWatch = watch(
     () => serverRoom !== null && hasDocument.value && store.hasUnsavedChanges(),
@@ -406,6 +416,7 @@ export function openRoomSession({
       stopNameWatch()
       stopRenameWatch()
       stopSavedWatch()
+      stopSignInWatch()
       stopZoomWatch()
       stopAgentSync()
       stopAgentPreviews()
