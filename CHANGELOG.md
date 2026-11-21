@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Fixed
+
+- File lists, the trash and the team pages fill the space beside the sidebar, as Settings does, instead of sitting in a centered panel.
+- In the browser, Home and its pages start at the top of the window: the tab bar appears once a document is open, since the space it kept was for the desktop app's window controls.
+
 ## 0.2.0-beta.6 — 2026-11-21
 
 ### Added

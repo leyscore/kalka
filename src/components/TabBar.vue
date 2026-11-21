@@ -19,6 +19,12 @@ const { tabs, activeTabId, switchTab, closeTab } = useTabsStore()
 const tabBarStyles = tv(tabBarTheme)
 const baseStyles = tabBarStyles()
 
+// The desktop app keeps the bar as its title bar, where the window controls sit. In the browser
+// the address bar already moves between pages, so the bar only appears once a document is open.
+const shown = computed(() =>
+  IS_TAURI ? tabs.value.length > 0 : tabs.value.some((tab) => !tab.isHome)
+)
+
 const scroller = useTemplateRef<HTMLElement>('scroller')
 const { overflowing, overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(scroller)
 
@@ -63,7 +69,7 @@ function onClose(e: MouseEvent, tabId: string) {
 
 <template>
   <TabsRoot
-    v-if="tabs.length > 0"
+    v-if="shown"
     v-model="modelValue"
     data-slot="tab-bar"
     :data-title-bar="IS_TAURI || undefined"
