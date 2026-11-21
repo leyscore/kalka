@@ -162,7 +162,7 @@ test('Open storage workspace navigates from the File menu', async () => {
 
   await expect(editor.page).toHaveURL(/\/files\/storage/)
   await expect(editor.page.getByTestId('recent-files-home')).toBeVisible()
-  await expect(editor.page.getByRole('tab', { name: 'Storage' })).toHaveAttribute(
+  await expect(editor.page.getByRole('tab', { name: 'Cloud storage' })).toHaveAttribute(
     'aria-selected',
     'true'
   )

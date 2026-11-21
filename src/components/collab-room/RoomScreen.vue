@@ -45,6 +45,7 @@ const emit = defineEmits<{
   copyLink: []
   leave: []
   rename: [name: string]
+  signIn: []
 }>()
 
 const messages = useCollaborationMessages()
@@ -111,6 +112,43 @@ const progress = computed(() => {
         >
           {{ messages.leave }}
         </AppButton>
+      </template>
+    </AppPlaceholder>
+
+    <AppPlaceholder
+      v-else-if="status === 'signed-out'"
+      size="page"
+      label-as="h2"
+      :label="messages.serverSignInToOpenTitle"
+      :description="
+        serverName
+          ? messages.serverSignInToOpenDescription({ server: serverName })
+          : messages.serverSignInToOpenAnyDescription
+      "
+      :ui="{ label: ui.title(), description: ui.description() }"
+    >
+      <template #icon>
+        <icon-hugeicons-lock-key class="size-5" />
+      </template>
+      <template #action>
+        <div :class="ui.buttons()">
+          <AppButton
+            color="primary"
+            variant="solid"
+            data-test-id="room-screen-sign-in"
+            @click="emit('signIn')"
+          >
+            {{ messages.serverSignIn }}
+          </AppButton>
+          <AppButton
+            color="neutral"
+            variant="ghost"
+            data-test-id="room-screen-leave"
+            @click="emit('leave')"
+          >
+            {{ messages.serverCloseFile }}
+          </AppButton>
+        </div>
       </template>
     </AppPlaceholder>
 

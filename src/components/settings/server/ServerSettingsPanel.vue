@@ -11,14 +11,22 @@ import {
   signInWithSSO,
   signOutOfServer
 } from '@/app/collab/server/account'
-import { ServerRequestError, type ServerInfo } from '@/app/collab/server/api'
+import type { ServerInfo } from '@/app/collab/server/api'
 import { refreshServerDocuments } from '@/app/collab/server/documents'
 import { linkedServerURL } from '@/app/collab/server/links'
+import { serverProblem, type ServerProblem } from '@/app/collab/server/problem'
+import { showHomeFiles } from '@/app/home/show'
+import { closeSettings } from '@/app/settings/open'
 import { openExternalLink } from '@/app/shell/ui'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
+import SettingsLink from '@/components/settings/layout/SettingsLink.vue'
 import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
+import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
+import { SERVER_GUIDE_URL } from '@/constants'
+
+import { serverProblemText } from './problemText'
 
 /**
  * Connects Kalka to a Kalka server: its address, then signing in with a password or the
@@ -31,7 +39,10 @@ const email = ref(serverAccount.value?.user.email ?? '')
 const password = ref('')
 const busy = ref(false)
 const waitingForBrowser = ref(false)
-const error = ref<string | null>(null)
+const problem = ref<ServerProblem | null>(null)
+const error = computed(() =>
+  problem.value ? serverProblemText(messages.value, problem.value) : null
+)
 
 const signedIn = computed(() => serverAccount.value !== null && !serverSessionExpired.value)
 const roleLabel = computed(() => {
@@ -41,27 +52,13 @@ const roleLabel = computed(() => {
   return messages.value.serverRoleEditor
 })
 
-function explain(reason: unknown): string {
-  if (!(reason instanceof ServerRequestError)) return messages.value.serverUnreachable
-  if (
-    reason.message === 'not-a-kalka-server' ||
-    reason.message === 'invalid-url' ||
-    reason.status === 404
-  ) {
-    return messages.value.serverNotKalka
-  }
-  if (reason.message === 'unreachable') return messages.value.serverUnreachable
-  if (reason.message === 'popup-blocked') return messages.value.serverPopupBlocked
-  return reason.message
-}
-
 async function run(task: () => Promise<unknown>) {
   busy.value = true
-  error.value = null
+  problem.value = null
   try {
     await task()
   } catch (reason) {
-    error.value = explain(reason)
+    problem.value = serverProblem(reason)
   } finally {
     busy.value = false
     waitingForBrowser.value = false
@@ -103,9 +100,10 @@ function signOut() {
   })
 }
 
-function reconnect() {
-  address.value = serverAccount.value?.url ?? address.value
-  lookUp()
+/** Home on the server's list of files, where the team's files are. */
+function seeFiles() {
+  closeSettings()
+  showHomeFiles('server')
 }
 
 // A `kalka://server` link fills in the address and looks the server up; signing in stays manual.
@@ -130,7 +128,10 @@ function openServerPage(url: string) {
 <template>
   <SettingsSection data-test-id="settings-server">
     <template #title>{{ messages.serverSettingsTitle }}</template>
-    <template #description>{{ messages.serverSettingsDescription }}</template>
+    <template #description>
+      {{ messages.serverSettingsDescription }}
+      <SettingsLink :href="SERVER_GUIDE_URL">{{ messages.serverWhatIs }}</SettingsLink>
+    </template>
 
     <SettingsGroup v-if="signedIn && serverAccount">
       <div class="flex flex-wrap items-center justify-between gap-3 px-3.5 py-3">
@@ -161,32 +162,66 @@ function openServerPage(url: string) {
           </AppButton>
         </div>
       </div>
+      <div
+        class="flex flex-wrap items-center justify-between gap-3 border-t border-hairline px-3.5 py-3"
+      >
+        <p class="min-w-0 flex-1 text-xs text-surface">
+          {{ messages.serverFilesWhere({ server: serverAccount.serverName }) }}
+        </p>
+        <AppButton
+          color="primary"
+          variant="solid"
+          data-test-id="server-see-files"
+          @click="seeFiles"
+        >
+          {{ messages.serverSeeFiles }}
+        </AppButton>
+      </div>
       <p class="px-3.5 pb-3 text-[11px] text-muted">{{ messages.serverOpenPageDescription }}</p>
     </SettingsGroup>
 
     <SettingsGroup v-else>
       <div class="flex flex-col gap-3 px-3.5 py-3">
-        <p v-if="serverSessionExpired" class="text-xs text-warning" role="status">
-          {{ messages.serverSessionExpired }}
-        </p>
-        <div v-if="!server" class="flex flex-wrap items-center gap-1.5">
-          <AppInput
-            v-model="address"
-            data-test-id="server-address"
-            class="min-w-0 flex-1 sm:max-w-80"
-            :aria-label="messages.serverAddress"
-            :placeholder="messages.serverAddressPlaceholder"
-            @enter="lookUp"
-          />
-          <AppButton
-            color="primary"
-            variant="solid"
-            :disabled="busy || !address.trim()"
-            data-test-id="server-continue"
-            @click="serverSessionExpired ? reconnect() : lookUp()"
-          >
-            {{ messages.serverContinue }}
-          </AppButton>
+        <AppAlert
+          v-if="serverSessionExpired && serverAccount"
+          tone="warning"
+          :heading="messages.serverSessionExpired"
+          :description="serverAccount.url"
+        >
+          <template #actions>
+            <AppButton
+              variant="outline"
+              :disabled="busy"
+              data-test-id="server-sign-out"
+              @click="signOut"
+            >
+              {{ messages.serverSignOut }}
+            </AppButton>
+          </template>
+        </AppAlert>
+        <div v-if="!server" class="flex flex-col gap-1">
+          <label for="server-address-input" class="text-xs text-muted">
+            {{ messages.serverAddress }}
+          </label>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <AppInput
+              id="server-address-input"
+              v-model="address"
+              data-test-id="server-address"
+              class="min-w-0 flex-1 sm:max-w-80"
+              :placeholder="messages.serverAddressPlaceholder"
+              @enter="lookUp"
+            />
+            <AppButton
+              color="primary"
+              variant="solid"
+              :disabled="busy || !address.trim()"
+              data-test-id="server-continue"
+              @click="lookUp"
+            >
+              {{ messages.serverContinue }}
+            </AppButton>
+          </div>
         </div>
 
         <template v-else>
@@ -200,12 +235,13 @@ function openServerPage(url: string) {
             </AppButton>
           </div>
 
-          <div v-if="server.info.setupRequired" class="flex flex-wrap items-center gap-2">
-            <p class="text-xs text-muted">{{ messages.serverSetupRequired }}</p>
-            <AppButton variant="outline" @click="openServerPage(server.url)">
-              {{ messages.serverOpenPage }}
-            </AppButton>
-          </div>
+          <AppAlert v-if="server.info.setupRequired" :heading="messages.serverSetupRequired">
+            <template #actions>
+              <AppButton variant="outline" @click="openServerPage(server.url)">
+                {{ messages.serverOpenPage }}
+              </AppButton>
+            </template>
+          </AppAlert>
 
           <template v-else>
             <AppButton
@@ -224,20 +260,24 @@ function openServerPage(url: string) {
               class="flex flex-col gap-2 sm:max-w-80"
               @submit.prevent="signIn"
             >
+              <label for="server-email-input" class="text-xs text-muted">
+                {{ messages.serverEmail }}
+              </label>
               <AppInput
+                id="server-email-input"
                 v-model="email"
                 autocomplete="username"
                 data-test-id="server-email"
-                :aria-label="messages.serverEmail"
-                :placeholder="messages.serverEmail"
               />
+              <label for="server-password-input" class="text-xs text-muted">
+                {{ messages.serverPassword }}
+              </label>
               <AppInput
+                id="server-password-input"
                 v-model="password"
                 type="password"
                 autocomplete="current-password"
                 data-test-id="server-password"
-                :aria-label="messages.serverPassword"
-                :placeholder="messages.serverPassword"
                 @enter="signIn"
               />
               <AppButton
@@ -254,12 +294,8 @@ function openServerPage(url: string) {
           </template>
         </template>
 
-        <p v-if="waitingForBrowser" class="text-xs text-muted" role="status">
-          {{ messages.serverWaitingForBrowser }}
-        </p>
-        <p v-if="error" class="text-xs text-danger" role="alert" data-test-id="server-error">
-          {{ error }}
-        </p>
+        <AppAlert v-if="waitingForBrowser" :heading="messages.serverWaitingForBrowser" />
+        <AppAlert v-if="error" tone="error" :heading="error" data-test-id="server-error" />
       </div>
     </SettingsGroup>
   </SettingsSection>

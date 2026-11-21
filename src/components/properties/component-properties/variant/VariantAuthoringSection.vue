@@ -74,7 +74,7 @@ function commitSelectedValue(propertyId: string) {
       <p
         v-if="selectedHasConflict"
         role="alert"
-        class="rounded bg-danger/10 px-2 py-1.5 text-[10px] leading-4 text-danger"
+        class="rounded bg-error-bg px-2 py-1.5 text-[10px] leading-4 text-error"
       >
         {{ panels.duplicateVariantValues }}. {{ panels.variantConflictHelp }}.
       </p>

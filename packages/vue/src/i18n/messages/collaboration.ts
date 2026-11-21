@@ -31,7 +31,6 @@ export const collaborationMessageDefaults = {
   agentIdle: 'Idle',
   sharedFile: 'Shared file',
   invalidRoomLink: 'That isn’t a room link or ID.',
-  serverFileNeedsSignIn: 'Sign in to the Kalka server to open this file.',
   joiningTitle: 'Joining the room…',
   connectingDescription: 'Connecting to the room’s servers.',
   lookingDescription: 'Looking for people in this room.',
@@ -86,7 +85,9 @@ export const collaborationMessageDefaults = {
   serverPopupBlocked:
     'Your browser blocked the sign-in window. Allow pop-ups for Kalka and try again.',
   serverWaitingForBrowser: 'Finish signing in in your browser…',
-  serverNoDocuments: params('No files on {server} yet. Share a file to put it here.'),
+  serverNoDocuments: params(
+    'No files on {server} yet. To put one here, open it, then Share › Save on {server}.'
+  ),
   serverNotSignedIn: 'Sign in to a Kalka server to see its files.',
   serverShareOn: params('Save on {server}'),
   serverShareOnDescription: 'Your team can open it any time, even when you’re offline.',
@@ -109,7 +110,29 @@ export const collaborationMessageDefaults = {
   shareThisFileDescription: 'A live link that works while you keep this file open.',
   serverSavedLinkCopied: params('Saved on {server}. Link copied.'),
   serverStatusLive: params('{count} people here, saved on {server}'),
-  serverCopyFileLink: 'Copy link to this file'
+  serverCopyFileLink: 'Copy link to this file',
+  serverSignInToOpenTitle: 'Sign in to open this file',
+  serverSignInToOpenDescription: params(
+    'This file is on {server}. Sign in to it in Kalka, and the file opens here.'
+  ),
+  serverSignInToOpenAnyDescription:
+    'This file is on a Kalka server. Sign in to it in Kalka, and the file opens here.',
+  serverWrongCredentials: 'Wrong email or password.',
+  serverAccountDisabled: 'This account is turned off on the server. Ask an administrator.',
+  serverUseSSO: 'This server signs people in with single sign-on.',
+  serverTooManyAttempts: 'Too many attempts. Wait a few minutes and try again.',
+  serverRequestFailed: 'The server could not do this. Try again in a moment.',
+  serverWhatIs: 'What is a Kalka server?',
+  serverFilesWhere: params(
+    'Your team’s files are on Home, in the {server} tab. To add one, open it, then Share › Save on {server}.'
+  ),
+  serverSeeFiles: 'See the files',
+  serverLoadingFiles: 'Loading the files…',
+  serverLaunchOpening: 'Opening your file from Kalka Cloud…',
+  serverLaunchFailed:
+    'Signing in to Kalka Cloud did not work. Open the editor again from your workspace.',
+  serverLaunchFileGone: 'This file is no longer on the server.',
+  serverBackToWorkspace: 'Back to my workspace'
 } as const
 
 export const collaborationMessages = i18n('collaboration', collaborationMessageDefaults)

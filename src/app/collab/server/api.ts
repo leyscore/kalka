@@ -51,13 +51,20 @@ export class ServerRequestError extends Error {
   }
 }
 
-/** `kalka.acme.com` or `https://kalka.acme.com/` as `https://kalka.acme.com`; null if not a URL. */
+/**
+ * `kalka.acme.com` or `https://kalka.acme.com/` as `https://kalka.acme.com`, and `localhost:8787`
+ * as `http://localhost:8787`; null if not a URL.
+ */
 export function normalizeServerURL(input: string): string | null {
   const trimmed = input.trim()
   if (!trimmed) return null
   // Another scheme (ftp:, javascript:) is refused, not taken for a host; `host:8787` is a port.
   if (/^[a-z][a-z0-9+.-]*:(?!\d)/i.test(trimmed) && !/^https?:\/\//i.test(trimmed)) return null
-  const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+  // Without a scheme, a server on this machine is plain HTTP, as development servers are.
+  const local = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?(\/|$)/i.test(trimmed)
+  const withScheme = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `${local ? 'http' : 'https'}://${trimmed}`
   try {
     const url = new URL(withScheme)
     if (url.protocol !== 'https:' && url.protocol !== 'http:') return null
