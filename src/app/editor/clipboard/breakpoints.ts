@@ -84,7 +84,10 @@ function applyCopy(
 async function importCopy(html: string): Promise<{ graph: SceneGraph; root: SceneNode } | null> {
   const { browserHTMLToSceneGraph } = await import('@kalka/dom-css/browser')
   const graph = await browserHTMLToSceneGraph(html, { pageName: 'Pasted HTML' })
-  const root = graph.getPages().flatMap((page) => graph.getChildren(page.id)).at(0)
+  const root = graph
+    .getPages()
+    .flatMap((page) => graph.getChildren(page.id))
+    .at(0)
   return root ? { graph, root } : null
 }
 
