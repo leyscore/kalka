@@ -34,5 +34,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s CMD curl -fsS http://
 LABEL org.opencontainers.image.title="Kalka server" \
       org.opencontainers.image.description="Self-hosted server for the Kalka design editor: shared files and real-time collaboration." \
       org.opencontainers.image.licenses="AGPL-3.0-only" \
-      org.opencontainers.image.source="https://github.com/leyscore/kalka-server"
+      org.opencontainers.image.source="https://github.com/leyscore/kalka"
 ENTRYPOINT ["/srv/kalka/workerd", "serve", "config.capnp", "--experimental"]

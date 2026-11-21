@@ -1,9 +1,8 @@
 # Kalka server
 
-The self-hosted server for [Kalka](https://kalka.design), the design editor whose canvas is real HTML and CSS. Your team keeps its files in one place and edits them together in real time, even when the person who shared a file is offline.
+The self-hosted server for [Kalka](https://kalka.design), the design editor whose canvas is real HTML and CSS. It lives in the [`server/`](https://github.com/leyscore/kalka/tree/main/server) folder of the [Kalka repository](https://github.com/leyscore/kalka), next to the app it serves. Your team keeps its files in one place and edits them together in real time, even when the person who shared a file is offline.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/leyscore/kalka-server)
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/leyscore/kalka-server)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/leyscore/kalka/tree/main/server)
 
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io%2Fleyscore%2Fkalka--server-2496ED?logo=docker&logoColor=white)](#run-with-docker)
 [![Coolify](https://img.shields.io/badge/Coolify-one%20compose%20file-6B16ED)](#one-click-platforms)
@@ -24,7 +23,7 @@ The self-hosted server for [Kalka](https://kalka.design), the design editor whos
 
 1. Click **Deploy to Cloudflare** above and sign in to Cloudflare (the free plan is enough).
 2. Keep or change the names Cloudflare suggests. In **KALKA_SETUP_CODE**, type a code of your own (for example the output of `openssl rand -hex 16`) and keep it.
-3. Click **Create and deploy**. Cloudflare copies this repository to your GitHub account, creates the server and gives it an address such as `https://kalka-server.your-name.workers.dev`.
+3. Click **Create and deploy**. Cloudflare copies the `server/` folder into a repository of your own GitHub account, creates the server and gives it an address such as `https://kalka-server.your-name.workers.dev`.
 4. Open that address, enter the setup code, and create the first administrator.
 5. In Kalka, open **Settings › Server**, enter the address and sign in.
 
@@ -50,9 +49,9 @@ Put the container behind your reverse proxy (Caddy, Traefik, nginx) for HTTPS, a
 | --- | --- |
 | Coolify | New resource › Docker Compose, paste `deploy/coolify/kalka.yaml`. Coolify generates the setup code and the domain. |
 | Dokploy | Create a Compose service from `deploy/dokploy/docker-compose.yml`, with the variables of `deploy/dokploy/template.toml`. |
-| Railway | New project › Deploy from GitHub repo; `railway.json` builds the image. Add a volume mounted at `/data` and set `KALKA_SETUP_CODE`. |
-| Render | [Deploy to Render](https://render.com/deploy?repo=https://github.com/leyscore/kalka-server) with `render.yaml`. Render keeps data only on a disk, which needs a paid instance. |
-| Fly.io | `fly launch --copy-config`, `fly volumes create kalka_data --size 1`, `fly deploy`. |
+| Railway | New project › Deploy from GitHub repo, with `server` as the root directory; `railway.json` builds the image. Add a volume mounted at `/data` and set `KALKA_SETUP_CODE`. |
+| Render | New › Blueprint on a fork of this repository, with `server/render.yaml` as the Blueprint file. Render keeps data only on a disk, which needs a paid instance. |
+| Fly.io | From `server/`: `fly launch --copy-config`, `fly volumes create kalka_data --size 1`, `fly deploy`. |
 | Hostinger VPS and other Docker hosts | Use `docker-compose.yml` in the host's Docker manager. |
 
 ## Configuration

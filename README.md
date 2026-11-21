@@ -201,6 +201,26 @@ Builds are not signed, macOS is the most tested platform, and complex <code>.fig
 
 <br />
 
+## Self-hosted server for teams
+
+[`server/`](./server) is the Kalka server: your team keeps its files in one place and edits them together in real time, with single sign-on and WebDAV. Deploy it to Cloudflare's free plan in one click, or run it anywhere with Docker:
+
+<p>
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/leyscore/kalka/tree/main/server"><img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare"></a>
+</p>
+
+Then open **Settings › Server** in Kalka. The [server guide](./server/README.md) covers Docker, Coolify, Dokploy, Railway, Render and Fly.io; plans for larger teams are on [kalka.design/pricing](https://kalka.design/pricing).
+
+## In this repository
+
+| Folder | What it is | License |
+| --- | --- | --- |
+| [`src/`](./src), [`packages/`](./packages), [`electron/`](./electron) | The Kalka app: desktop, web and the local MCP server | MIT |
+| [`server/`](./server) | The self-hosted Kalka server | AGPL-3.0 |
+| [`packages/docs/`](./packages/docs) | Contributor documentation | MIT |
+
+User documentation, in nine languages, lives at [kalka.design/docs](https://kalka.design/docs). Kalka Cloud, the hosted version, is in preparation.
+
 ## Credits
 
 Kalka is a fork of [OpenPencil](https://github.com/open-pencil/open-pencil) by Danila Poyarkov and its contributors, taken on 9 October 2026. Most of the code in this repository is theirs. Here is what each side brought.
@@ -228,4 +248,4 @@ Thank you to everyone who built OpenPencil.
 
 ## License
 
-Kalka's desktop app and local MCP server are licensed under the [MIT License](./LICENSE).
+Kalka's desktop app and local MCP server are licensed under the [MIT License](./LICENSE). The self-hosted server in [`server/`](./server) is licensed under the [GNU Affero General Public License v3](./server/LICENSE).

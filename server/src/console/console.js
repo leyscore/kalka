@@ -537,7 +537,7 @@
         el('p', {}, 'Single sign-on comes with a Kalka license key, free for up to 5 people. Add the key as the build variable KALKA_LICENSE_KEY, then redeploy the server: the build adds single sign-on.'),
         el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
           el('a', { class: 'btn', href: 'https://kalka.design/pricing#kp-self', target: '_blank', rel: 'noopener' }, icon('key-01'), 'Get a key'),
-          el('a', { class: 'btn soft', href: 'https://github.com/leyscore/kalka-server#single-sign-on', target: '_blank', rel: 'noopener' }, 'How to add it'))), null,
+          el('a', { class: 'btn soft', href: 'https://github.com/leyscore/kalka/tree/main/server#single-sign-on', target: '_blank', rel: 'noopener' }, 'How to add it'))), null,
       el('span', { class: 'pill' }, 'NOT INSTALLED'))
     }
     const draft = {}

@@ -1,9 +1,10 @@
-# Render Blueprint: https://render.com/deploy?repo=https://github.com/leyscore/kalka-server
+# Render Blueprint: in Render, New › Blueprint on a fork of leyscore/kalka, Blueprint file server/render.yaml.
 # Render keeps data only on a disk, which needs a paid instance type.
 services:
   - type: web
     name: kalka-server
     runtime: docker
+    rootDir: server
     dockerfilePath: ./Dockerfile
     plan: starter
     healthCheckPath: /healthz
