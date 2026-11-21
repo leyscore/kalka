@@ -13,6 +13,7 @@ export {
   compressFigDataSync,
   figArchiveMetaJSON,
   FigArchiveMetaSchema,
+  KALKA_ARCHIVE_PREFIX,
   parseFigBuffer,
   readFigArchiveMeta,
   renameFigArchive,

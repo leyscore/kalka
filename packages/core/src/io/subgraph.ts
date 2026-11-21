@@ -56,6 +56,8 @@ function cloneIntoGraph(
   graph.figSchemaDeflated = source.figSchemaDeflated
   graph.documentColorSpace = source.documentColorSpace
   graph.interVersion = source.interVersion
+  // Fonts are replaced whole, never changed in place, so a copy shares their files.
+  graph.fonts = new Map(source.fonts)
 
   includeReferencedStyles(source, ids)
 

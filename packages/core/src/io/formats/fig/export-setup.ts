@@ -2,7 +2,7 @@ import type { CanvasKit } from 'canvaskit-wasm'
 import { deflateSync, inflateSync } from 'fflate'
 import { toUint8Array } from 'js-base64'
 
-import { figArchiveMetaJSON, pngSize } from '@kalka/fig'
+import { figArchiveMetaJSON, KALKA_ARCHIVE_PREFIX, pngSize } from '@kalka/fig'
 import {
   buildComponentPropIndex,
   exportCanvasGuides,
@@ -16,6 +16,7 @@ import type { NodeChange } from '@kalka/kiwi/fig/codec'
 import { decodeBinarySchema, compileSchema, ByteBuffer } from '@kalka/kiwi/schema-runtime'
 import {
   ownsSlotContent,
+  projectFontFiles,
   readBehaviour,
   renameBehaviourProperties,
   withBehaviour,
@@ -558,5 +559,14 @@ export async function figFileExtras(
     renderCoordinates: drawn.region,
     exportedAt: new Date()
   })
-  return { thumbnailPNG: drawn.png, metaJSON, images: figImageEntries(graph.images, imageNames) }
+  // Kalka keeps the document's fonts under `kalka/`, which Figma does not read.
+  const fonts = projectFontFiles(graph.fonts).map((file) => ({
+    name: `${KALKA_ARCHIVE_PREFIX}${file.path}`,
+    data: file.content
+  }))
+  return {
+    thumbnailPNG: drawn.png,
+    metaJSON,
+    images: [...figImageEntries(graph.images, imageNames), ...fonts]
+  }
 }

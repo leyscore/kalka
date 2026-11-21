@@ -124,3 +124,55 @@ export function namedInstanceVariations(data: ArrayBuffer, style: string): FontV
   if (!weight) return []
   return [{ axis: 'wght', value: Math.min(weight.max, Math.max(weight.min, styleToWeight(style))) }]
 }
+
+/** What a font file says of itself: its family, and the weight and slant its faces have. */
+export interface FontFileDescription {
+  family: string
+  /** A weight such as `700`, or a variable font's range, such as `100 900`. */
+  weight: string
+  style: 'normal' | 'italic'
+}
+
+const OS2_WEIGHT_CLASS = 4
+const OS2_FS_SELECTION = 62
+const ITALIC_BIT = 1
+
+/**
+ * A TrueType or OpenType file's family, weight and slant, from its `name`, `OS/2` and `fvar`
+ * tables: the typographic family when it names one, as design tools list it. Null for a file
+ * that is not an uncompressed font, such as WOFF2.
+ */
+export function describeFontFile(data: ArrayBuffer): FontFileDescription | null {
+  const view = new DataView(data)
+  const name = sfntTable(view, 'name')
+  if (!name) return null
+  const family = fontName(view, name, 16) ?? fontName(view, name, 1)
+  if (!family?.trim()) return null
+  const subfamily = fontName(view, name, 17) ?? fontName(view, name, 2) ?? ''
+  const os2 = sfntTable(view, 'OS/2')
+  const weightClass =
+    os2 && os2.length > OS2_WEIGHT_CLASS + 1 ? view.getUint16(os2.offset + OS2_WEIGHT_CLASS) : 0
+  const italic =
+    /italic|oblique/i.test(subfamily) ||
+    (!!os2 &&
+      os2.length > OS2_FS_SELECTION + 1 &&
+      (view.getUint16(os2.offset + OS2_FS_SELECTION) & ITALIC_BIT) !== 0)
+  let weight = String(
+    weightClass >= 1 && weightClass <= 1000 ? weightClass : styleToWeight(subfamily)
+  )
+  const fvar = sfntTable(view, 'fvar')
+  if (fvar && fvar.length >= FVAR_HEADER_SIZE) {
+    const axesOffset = fvar.offset + view.getUint16(fvar.offset + 4)
+    const axisCount = view.getUint16(fvar.offset + 8)
+    const axisSize = view.getUint16(fvar.offset + 10)
+    for (let index = 0; index < axisCount; index++) {
+      const axis = axesOffset + index * axisSize
+      if (axis + AXIS_RECORD_SIZE > fvar.offset + fvar.length) break
+      let tag = ''
+      for (let c = 0; c < 4; c++) tag += String.fromCharCode(view.getUint8(axis + c))
+      if (tag === 'wght')
+        weight = `${Math.round(fixed(view, axis + 4))} ${Math.round(fixed(view, axis + 12))}`
+    }
+  }
+  return { family: family.trim(), weight, style: italic ? 'italic' : 'normal' }
+}

@@ -8,7 +8,8 @@ export interface FontInfo {
 }
 
 export type LocalFontAccessState = 'unsupported' | 'prompt' | 'granted' | 'denied'
-export type FontFamilySource = 'local' | 'bundled' | 'fallback' | WebFontProviderId
+/** `project`: a font the document carries itself, saved with it. */
+export type FontFamilySource = 'local' | 'bundled' | 'fallback' | 'project' | WebFontProviderId
 export type FontLoadedSource = FontFamilySource | 'cache' | 'registered'
 
 export interface FontFamilyOption {

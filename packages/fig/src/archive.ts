@@ -24,10 +24,15 @@ export interface WriteFigArchiveInput {
   figKiwiVersion?: number
 }
 
+/** Where an archive keeps files of Kalka's own, such as a document's fonts; Figma ignores them. */
+export const KALKA_ARCHIVE_PREFIX = 'kalka/'
+
 export interface FigParseResult {
   nodeChanges: NodeChange[]
   blobs: Uint8Array[]
   images: Array<[string, Uint8Array]>
+  /** Files under `kalka/`, by their path below it, such as `fonts/fonts.json`. */
+  kalkaFiles: Array<[string, Uint8Array]>
   figKiwiVersion: number
   /** Deflated Kiwi schema bytes from the original file, retained for round-trip fidelity. */
   figSchemaDeflated: Uint8Array
@@ -37,7 +42,19 @@ export interface FigParseResult {
 
 function isLikelyAsset(name: string): boolean {
   const lower = name.toLowerCase()
-  return lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.json')
+  return (
+    lower.startsWith(KALKA_ARCHIVE_PREFIX) ||
+    lower.endsWith('.png') ||
+    lower.endsWith('.jpg') ||
+    lower.endsWith('.json')
+  )
+}
+
+/** An archive's entries under `kalka/`, by their path below it. */
+function kalkaEntries(archive: Unzipped): Array<[string, Uint8Array]> {
+  return Object.entries(archive)
+    .filter(([name]) => name.startsWith(KALKA_ARCHIVE_PREFIX) && !name.endsWith('/'))
+    .map(([name, data]) => [name.slice(KALKA_ARCHIVE_PREFIX.length), data])
 }
 
 function findCanvasData(entries: Partial<Record<string, Uint8Array>>): Uint8Array | null {
@@ -66,7 +83,7 @@ function parseRawFigKiwi(
 
   const decoded = decodeFigKiwiCanvas(bytes, onPages, headers)
   const thumbnailPNG = chunks.slice(2).find(hasPNGSignature) ?? null
-  return { ...decoded, images: [], thumbnailPNG, metaJSON: null }
+  return { ...decoded, images: [], kalkaFiles: [], thumbnailPNG, metaJSON: null }
 }
 
 /**
@@ -108,6 +125,7 @@ export function parseFigBuffer(
   return {
     ...decoded,
     images,
+    kalkaFiles: kalkaEntries(archive),
     thumbnailPNG: archive['thumbnail.png'] ?? null,
     metaJSON: Object.hasOwn(archive, 'meta.json') ? new TextDecoder().decode(metaBytes) : null
   }

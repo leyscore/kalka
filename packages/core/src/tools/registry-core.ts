@@ -33,14 +33,14 @@ import {
   updateNode
 } from './modify'
 import { askUser, finishWorkingOnNodes, getDesignGuide, setStatus } from './presence'
-import { diffJSX, findNodes, getJSX, getNode, getSelection } from './read'
+import { addFont, diffJSX, findNodes, getJSX, getNode, getSelection, searchFonts } from './read'
 import type { ToolDef } from './schema'
 import { stockPhoto } from './stock-photo'
 import { batchUpdate, deleteNode, nodeResize, reparentNode } from './structure'
 import { viewportZoomToFit } from './vector'
 
 /**
- * Core tools registered by default in AI chat (36 tools, ~6.3K schema tokens).
+ * Core tools registered by default in AI chat (38 tools, ~6.6K schema tokens).
  * Covers 90%+ of design sessions: render and HTML, describe, modify, structure, and diff checks.
  */
 export const CORE_TOOLS: ToolDef[] = [
@@ -78,6 +78,9 @@ export const CORE_TOOLS: ToolDef[] = [
   batchUpdate,
   // Stock photos
   stockPhoto,
+  // Fonts
+  searchFonts,
+  addFont,
   // Inspect & utility
   describe,
   diffChanges,

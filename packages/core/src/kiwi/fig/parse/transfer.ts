@@ -1,7 +1,7 @@
 import { isEmptyObject } from 'es-toolkit/predicate'
 
 import { createDefaultNode, SceneGraph } from '@kalka/scene-graph'
-import type { EnabledLibraryBinding, NodeType, SceneNode } from '@kalka/scene-graph'
+import type { EnabledLibraryBinding, NodeType, ProjectFont, SceneNode } from '@kalka/scene-graph'
 
 import type { PortableSceneGraphData } from '#core/kiwi/fig/parse/portable-data'
 
@@ -23,6 +23,8 @@ export interface SerializedSceneGraph extends Omit<PortableSceneGraphData, 'node
   figKiwiVersion: number | null
   figSchemaDeflated: Uint8Array | null
   enabledLibraries?: Array<[string, EnabledLibraryBinding]>
+  /** Fonts the document carries; absent from readers that came before them. */
+  fonts?: Array<[string, ProjectFont]>
 }
 
 /** A new layer of a type, which serialized layers are told apart from. */
@@ -143,7 +145,8 @@ export function serializeSceneGraph(graph: SceneGraph): SerializedSceneGraph {
     figSchemaDeflated: graph.figSchemaDeflated,
     documentColorSpace: graph.documentColorSpace,
     interVersion: graph.interVersion,
-    enabledLibraries: [...graph.enabledLibraries]
+    enabledLibraries: [...graph.enabledLibraries],
+    fonts: [...graph.fonts]
   }
 }
 
@@ -194,6 +197,7 @@ export function cloneSceneGraphForFigExport(graph: SceneGraph): SceneGraph {
   cloned.documentColorSpace = graph.documentColorSpace
   cloned.interVersion = graph.interVersion
   cloned.enabledLibraries = new Map(graph.enabledLibraries)
+  cloned.fonts = new Map(graph.fonts)
 
   return cloned
 }
@@ -224,6 +228,7 @@ export function deserializeSceneGraph(data: SerializedSceneGraph): SceneGraph {
   graph.documentColorSpace = data.documentColorSpace
   if (data.interVersion) graph.interVersion = data.interVersion
   graph.enabledLibraries = data.enabledLibraries ? new Map(data.enabledLibraries) : new Map()
+  graph.fonts = new Map(data.fonts ?? [])
 
   return graph
 }

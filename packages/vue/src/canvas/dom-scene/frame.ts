@@ -161,7 +161,8 @@ export function addArtboardFont(doc: Document, face: ArtboardFontFace): void {
   if (!view) return
   const fontFace = new view.FontFace(face.family, face.data, {
     weight: face.weight,
-    style: face.style
+    style: face.style,
+    ...(face.unicodeRange ? { unicodeRange: face.unicodeRange } : {})
   })
   doc.fonts.add(fontFace)
   void fontFace.load().catch(() => doc.fonts.delete(fontFace))

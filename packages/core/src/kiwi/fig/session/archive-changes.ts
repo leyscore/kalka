@@ -31,6 +31,8 @@ interface ArchiveChanges {
   variables: Map<string, Variable>
   collections: CollectionsSnapshot
   settings: SettingsSnapshot
+  /** The fonts the document carried, which are replaced whole rather than changed in place. */
+  fonts: ReadonlyMap<string, unknown>
 }
 
 /** The document's own settings, which its record holds rather than any layer. */
@@ -81,7 +83,8 @@ export function trackArchiveChanges(graph: SceneGraph): void {
       [...graph.variables].map(([id, variable]) => [id, structuredClone(variable)])
     ),
     collections: collectionsSnapshot(graph),
-    settings: settingsSnapshot(graph)
+    settings: settingsSnapshot(graph),
+    fonts: new Map(graph.fonts)
   }
   const touch = (id: string) => {
     if (!graph.isApplyingImportedState && !graph.isApplyingDerivedLayout) entry.touched.add(id)
@@ -124,6 +127,11 @@ export interface ArchiveChangeSummary {
   documentChanged: boolean
 }
 
+/** Whether the document carries other fonts than it did: one added, removed or replaced. */
+function fontsChanged(before: ReadonlyMap<string, unknown>, now: ReadonlyMap<string, unknown>) {
+  return before.size !== now.size || [...now].some(([family, font]) => before.get(family) !== font)
+}
+
 export function archiveChanges(graph: SceneGraph): ArchiveChangeSummary | undefined {
   const entry = changes.get(graph)
   if (!entry) return undefined
@@ -136,7 +144,8 @@ export function archiveChanges(graph: SceneGraph): ArchiveChangeSummary | undefi
     resourceIds: entry.resourceIds,
     changedVariables,
     collectionsChanged: !isEqual(entry.collections, collectionsSnapshot(graph)),
-    documentChanged: !isEqual(entry.settings, settingsSnapshot(graph))
+    documentChanged:
+      !isEqual(entry.settings, settingsSnapshot(graph)) || fontsChanged(entry.fonts, graph.fonts)
   }
 }
 

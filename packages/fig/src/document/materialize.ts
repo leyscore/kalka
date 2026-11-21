@@ -4,6 +4,7 @@ import {
   FIGMA_INTER_VERSION,
   generateId,
   KALKA_PLUGIN_DATA,
+  readProjectFontFiles,
   SceneGraph,
   type SceneNode
 } from '@kalka/scene-graph'
@@ -68,8 +69,13 @@ export function materializeFigArchive(
   bytes: ArrayBuffer,
   options: DocumentAssemblyOptions = {}
 ): AssemblyState {
-  const { reader, blobs, images } = createArchiveDocumentReader(bytes, options.pageIds)
-  return materializeReader(reader, blobs, { ...options, images: options.images ?? new Map(images) })
+  const { reader, blobs, images, kalkaFiles } = createArchiveDocumentReader(bytes, options.pageIds)
+  const state = materializeReader(reader, blobs, {
+    ...options,
+    images: options.images ?? new Map(images)
+  })
+  state.graph.fonts = readProjectFontFiles(new Map(kalkaFiles))
+  return state
 }
 
 export interface AssemblyState {
@@ -157,6 +163,8 @@ export function createFigDocumentSession(
     : materializeReader(archive.reader, archive.blobs, sessionOptions)
   state.graph.figKiwiVersion = archive.figKiwiVersion
   state.graph.figSchemaDeflated = archive.figSchemaDeflated
+  // A resumed session's graph kept its fonts, which may have changed since the archive was read.
+  if (!resume) state.graph.fonts = readProjectFontFiles(new Map(archive.kalkaFiles))
   const loaded = new Set<string>(resume?.checkpoint.loadedPageIds)
   const edits = watchGraphEdits(state.graph, resume !== undefined)
   let recordInfo: FigArchiveRecordInfo | undefined

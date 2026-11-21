@@ -3,7 +3,7 @@ import * as v from 'valibot'
 import { KALKA_PROJECT_FILE, zipKalkaFiles, type KalkaFile } from '@kalka/core/io/formats/kalka'
 
 /** Folders a Kalka document owns and rewrites on every save; files in them that are no longer saved go. */
-const OWNED_FOLDERS = ['pages', 'assets/images']
+const OWNED_FOLDERS = ['pages', 'assets/images', 'fonts']
 
 /** A path inside a folder, with the separators the folder's own path uses. */
 export function joinFolderPath(folder: string, path: string): string {
@@ -27,8 +27,8 @@ export function isKalkaFolderPath(path: string | null): boolean {
 
 /**
  * Whether a document may be saved into a folder as a Kalka folder: an empty one, or a Kalka
- * folder already. Saving rewrites `pages/` and `assets/images/` and removes what it did not
- * write there, so a folder holding other files, such as a website project, is refused. Hidden
+ * folder already. Saving rewrites `pages/`, `assets/images/` and `fonts/` and removes what it
+ * did not write there, so a folder holding other files, such as a website project, is refused. Hidden
  * files, such as `.git`, do not count.
  */
 export async function canHoldKalkaFolder(folder: string): Promise<boolean> {
@@ -76,7 +76,7 @@ export async function readKalkaFolderAsFile(folder: string): Promise<File> {
 const STAGING_FOLDER = '.kalka-save'
 /**
  * Written once every file of a save is staged, listing them all: from then on the save is
- * finished, not dropped, and the list says which earlier pages and images it no longer has.
+ * finished, not dropped, and the list says which earlier pages, images and fonts it no longer has.
  */
 const STAGING_MANIFEST = '.complete'
 
@@ -85,7 +85,7 @@ const StagedSave = v.object({ files: v.array(v.string()) })
 /**
  * Saves a document into its folder without ever leaving it half saved. Every file goes into a
  * hidden staging folder first; once all are there, a manifest says so and each is moved into
- * place, then the pages and images an earlier save left that this one no longer has go, and the
+ * place, then the pages, images and fonts an earlier save left that this one no longer has go, and the
  * instructions folder is added when there is none yet. A crash before the manifest leaves the
  * last save as it was; a crash after it is finished when the folder next opens. Other files in
  * the folder, such as a README or `.git`, stay as they are.
@@ -134,7 +134,7 @@ export async function finishInterruptedFolderSave(folder: string): Promise<void>
 }
 
 /**
- * Moves a complete staged save into place, removes the pages and images it no longer has, then
+ * Moves a complete staged save into place, removes the pages, images and fonts it no longer has, then
  * the staging folder. A save resumed after a crash finds some files moved already.
  */
 async function moveStagedSave(folder: string, files: readonly string[]): Promise<void> {

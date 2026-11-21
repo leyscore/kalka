@@ -61,6 +61,8 @@ export function createArchiveDocumentReader(bytes: ArrayBuffer, pageIds?: Readon
     reader: createScopedReader(archiveRecords(parsed.nodeChanges), pageIds),
     blobs: parsed.blobs,
     images: parsed.images,
+    /** Kalka's own files the archive keeps, such as the document's fonts. */
+    kalkaFiles: parsed.kalkaFiles,
     /** The archive's record headers, which carry the identities patching numbers from. */
     records: parsed.nodeChanges
   }

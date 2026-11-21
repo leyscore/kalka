@@ -28,6 +28,8 @@ export interface SceneGraphEvents {
     index: number,
     previousParentId: string | null
   ) => void
+  /** A font the document carries was added, replaced or removed. */
+  'fonts:changed': (family: string) => void
 }
 
 export type SceneGraphEventHandlers = Partial<{
