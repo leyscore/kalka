@@ -9,7 +9,7 @@ test('settings tabs associate panels and support vertical keyboard navigation', 
   await new CanvasHelper(page).waitForInit()
   await page.getByTestId('app-settings-trigger').click()
   const dialog = page.getByTestId('app-settings')
-  const general = dialog.getByRole('tab', { name: 'General', exact: true })
+  const general = dialog.getByRole('tab', { name: 'Preferences', exact: true })
   for (const tab of await dialog.getByRole('tab').all()) {
     await expect(tab).toHaveCSS('cursor', 'pointer')
   }
@@ -27,9 +27,10 @@ test('settings tabs associate panels and support vertical keyboard navigation', 
     (await storage.getAttribute('id')) ?? ''
   )
   await storage.press('Home')
-  await expect(general).toBeFocused()
-  await expect(page.getByTestId('settings-general-panel')).toBeVisible()
-  await general.press('End')
+  const account = page.getByTestId('settings-section-server')
+  await expect(account).toBeFocused()
+  await expect(page.getByTestId('settings-account-panel')).toBeVisible()
+  await account.press('End')
   await expect(dialog.getByRole('tab').last()).toBeFocused()
   await page.getByTestId('app-settings-back').click()
   await expect(dialog).not.toBeVisible()
