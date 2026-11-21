@@ -5,6 +5,7 @@ import * as awarenessProtocol from 'y-protocols/awareness'
 import * as Y from 'yjs'
 
 import type { SceneGraph } from '@kalka/scene-graph'
+import { collaborationMessages } from '@kalka/vue'
 
 import { shareAgentPreviews } from '@/app/collab/agent-preview'
 import { buildRemotePeers } from '@/app/collab/awareness'
@@ -40,6 +41,7 @@ import { keepRecoveryElsewhere } from '@/app/document/recovery/kept-elsewhere'
 import type { EditorStore } from '@/app/editor/active-store'
 import { recordPeerActivity } from '@/app/presence/activity'
 import { setPeers } from '@/app/presence/registry'
+import { toast } from '@/app/shell/ui'
 import { ROOM_STATUS_TICK_MS, ROOM_UNREACHABLE_MS } from '@/constants'
 
 /** How a tab came to be in a room: by sharing its own document, or by joining someone's. */
@@ -87,10 +89,23 @@ export interface RoomSessionOptions {
   saveServerFile?: (roomId: string, store: EditorStore) => Promise<void>
   /** For a server room: gives the server document its new name. */
   renameServerDocument?: (roomId: string, name: string) => Promise<void>
+  /** Tells a viewer that the edit they just made was put back. */
+  onViewOnlyEdit?: () => void
 }
 
 function openIndexedDBCopy(roomId: string, ydoc: Y.Doc): RoomSavedCopy {
   return new IndexeddbPersistence(`op-room-${roomId}`, ydoc)
+}
+
+const VIEW_ONLY_NOTICE_MS = 4000
+let lastViewOnlyNotice = 0
+
+/** Says a viewer's edit was put back, at most every few seconds while they keep trying. */
+function noticeViewOnlyEdit() {
+  const now = Date.now()
+  if (now - lastViewOnlyNotice < VIEW_ONLY_NOTICE_MS) return
+  lastViewOnlyNotice = now
+  toast.warning(collaborationMessages.get().serverViewOnlyEdit)
 }
 
 type CursorState = { x: number; y: number; pageId: string; zoom: number }
@@ -105,7 +120,8 @@ export function openRoomSession({
   tickMs = ROOM_STATUS_TICK_MS,
   takePendingVersion: takeVersion = takePendingVersion,
   saveServerFile: saveFile = saveServerFile,
-  renameServerDocument: renameOnServer = renameServerDocument
+  renameServerDocument: renameOnServer = renameServerDocument,
+  onViewOnlyEdit = noticeViewOnlyEdit
 }: RoomSessionOptions): RoomSession {
   const identity = useCollabIdentity()
   const ydoc = new Y.Doc()
@@ -237,6 +253,8 @@ export function openRoomSession({
   }
 
   const serverRoom = isServerTransport(room) ? room : null
+  /** Whether this person may only look: a server's viewer, whose changes the server drops. */
+  const isViewOnly = () => serverRoom?.role() === 'viewer'
   let loadedVersion: string | null = null
   let settling: Promise<void> = Promise.resolve()
   /** Read through a function: the session can close while a request is awaited. */
@@ -312,6 +330,14 @@ export function openRoomSession({
   }, tickMs)
 
   const stopNameWatch = watch([identity.name, serverAccount], broadcastIdentity)
+  // The server keeps a server document: once it is here, there is nothing left to save.
+  const stopSavedWatch = watch(
+    () => serverRoom !== null && hasDocument.value && store.hasUnsavedChanges(),
+    (unsaved) => {
+      if (unsaved) store.markDocumentSaved()
+    },
+    { immediate: true }
+  )
   // A rename in this tab names the room's document, and the server's.
   const stopRenameWatch = watch(
     () => store.state.documentName,
@@ -338,7 +364,22 @@ export function openRoomSession({
     getYdoc: () => (disposed ? null : ydoc),
     getYnodes: () => (disposed ? null : ynodes),
     getSuppressGraphSync: () => suppressGraphSync,
-    syncLocalEdit: sync.syncLocalEdit
+    syncLocalEdit: (edit) => {
+      if (!isViewOnly()) {
+        sync.syncLocalEdit(edit)
+        return
+      }
+      // A viewer's edit would stay on their screen only: it is put back, and they are told why.
+      suppressGraphSync = true
+      try {
+        sync.revertLocalEdit(edit)
+        store.undo.clear()
+        store.requestRender()
+      } finally {
+        suppressGraphSync = false
+      }
+      onViewOnlyEdit()
+    }
   })
 
   return {
@@ -364,6 +405,7 @@ export function openRoomSession({
       connectionTimer.pause()
       stopNameWatch()
       stopRenameWatch()
+      stopSavedWatch()
       stopZoomWatch()
       stopAgentSync()
       stopAgentPreviews()

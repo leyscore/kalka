@@ -82,7 +82,7 @@
   "serverShareOn": "Zapisz na {server}",
   "serverShareOnDescription": "Twój zespół może go otworzyć w każdej chwili, nawet gdy jesteś offline.",
   "serverRoomSaved": "Zapisano na {server}",
-  "serverViewOnly": "Tylko podgląd: twoje zmiany nie są zapisywane na serwerze.",
+  "serverViewOnly": "Tylko do odczytu: możesz oglądać ten plik i obserwować innych, ale nie możesz go zmieniać.",
   "serverShareFailed": "Nie udało się zapisać tego pliku na serwerze.",
   "serverRoleAdmin": "Administrator",
   "serverRoleEditor": "Edytor",
@@ -92,5 +92,11 @@
   "serverMissingDescription": "Został usunięty albo link jest niepełny. Poproś osobę, która go wysłała, o nowy link.",
   "serverEmptyTitle": "Ten plik jest jeszcze pusty",
   "serverEmptyDescription": "Otworzy się tutaj, gdy tylko edytor otworzy go w Kalce.",
-  "serverCloseFile": "Zamknij"
+  "serverCloseFile": "Zamknij",
+  "serverViewOnlyEdit": "Możesz tylko oglądać ten plik, więc zmiana została cofnięta. Poproś administratora o rolę edytora.",
+  "serverViewOnlyBadge": "Tylko do odczytu",
+  "shareThisFileDescription": "Link na żywo, który działa, dopóki ten plik jest otwarty.",
+  "serverSavedLinkCopied": "Zapisano na {server}. Skopiowano link.",
+  "serverStatusLive": "Osoby tutaj: {count}, zapisano na {server}",
+  "serverCopyFileLink": "Kopiuj link do tego pliku"
 }

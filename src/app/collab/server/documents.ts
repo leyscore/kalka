@@ -6,8 +6,10 @@ import { joinRoom, roomForStore, shareDocument } from '@/app/collab/rooms'
 import type { RoomSession } from '@/app/collab/session'
 import { serverRoomJoiner } from '@/app/collab/transport/server'
 import type { EditorStore } from '@/app/editor/active-store'
+import { addressPath, documentSlug } from '@/app/shell/address/path'
+import { IS_BROWSER, IS_TAURI } from '@/constants'
 
-import { serverAccount, withServerSession } from './account'
+import { refreshServerAccount, serverAccount, updateServerUser, withServerSession } from './account'
 import { serverAPI, type ServerDocument } from './api'
 
 /** Rooms this app opened through the server, so the room panel can say where they live. */
@@ -30,15 +32,21 @@ export async function refreshServerDocuments(): Promise<void> {
   serverDocumentsLoading.value = true
   try {
     serverDocuments.value = await withServerSession((url, token) => serverAPI.documents(url, token))
+    // The role may have changed since signing in; the list is a natural time to look again.
+    await refreshServerAccount().catch(() => undefined)
   } finally {
     serverDocumentsLoading.value = false
   }
 }
 
 /** Joins a server room: each (re)connection asks the server for a fresh one-time ticket. */
-export const serverTransport = serverRoomJoiner((roomId) =>
-  withServerSession((url, token) => serverAPI.ticket(url, token, roomId))
-)
+export const serverTransport = serverRoomJoiner(async (roomId) => {
+  const ticket = await withServerSession((url, token) => serverAPI.ticket(url, token, roomId))
+  // The ticket carries the role the server gives now, which the stored account may predate.
+  const user = serverAccount.value?.user
+  if (user && user.role !== ticket.role) updateServerUser({ ...user, role: ticket.role })
+  return ticket
+})
 
 /** Opens a server document in a tab of its own, or switches to the tab already showing it. */
 export function openServerDocument(
@@ -125,6 +133,16 @@ export async function takePendingVersion(roomId: string): Promise<SceneGraph | n
     serverAPI.dismissPending(url, token, roomId, pending.version)
   )
   return dismissed ? graph : null
+}
+
+/**
+ * The address of a server document in this web editor, to send to a teammate; null in the
+ * desktop app, whose own addresses mean nothing elsewhere.
+ */
+export function serverDocumentLink(roomId: string, name: string): string | null {
+  if (IS_TAURI || !IS_BROWSER) return null
+  const path = addressPath({ kind: 'design', id: roomId, slug: documentSlug(name) })
+  return `${window.location.origin}${path}`
 }
 
 /** Whether a room lives on the signed-in server rather than between peers. */

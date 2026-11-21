@@ -161,11 +161,13 @@ async function withServer(
       saveFile?: () => Promise<void>
     ) => { session: RoomSession; store: EditorStore },
     server: ReturnType<typeof createServerRoom>,
-    renames: readonly string[]
+    renames: readonly string[],
+    notices: { readonly viewOnly: number }
   ) => Promise<void>
 ) {
   const server = createServerRoom()
   const renames: string[] = []
+  const notices = { viewOnly: 0 }
   const opened: { session: RoomSession; store: EditorStore }[] = []
   try {
     await run(
@@ -181,13 +183,17 @@ async function withServer(
           saveServerFile: saveFile,
           renameServerDocument: async (_roomId, name) => {
             renames.push(name)
+          },
+          onViewOnlyEdit: () => {
+            notices.viewOnly += 1
           }
         })
         opened.push({ session, store })
         return { session, store }
       },
       server,
-      renames
+      renames,
+      notices
     )
   } finally {
     for (const { session, store } of opened) {
@@ -271,6 +277,35 @@ describe('server documents', () => {
       expect(other.store.state.documentName).toBe('Pricing page v2')
       expect(viewer.store.state.documentName).toBe('Pricing page v2')
       expect(renames).toEqual(['Pricing page v2'])
+    })
+  })
+
+  test("a viewer's edit is put back and they are told, while others never see it", async () => {
+    await withServer(async (open, server, _renames, notices) => {
+      server.upload(uploadedGraph('Shared card'))
+      const editor = open('editor')
+      await settle()
+      const viewer = open('viewer')
+      await settle()
+      const page = expectDefined(viewer.store.graph.getPages()[0], 'page')
+      viewer.store.graph.createNode('RECTANGLE', page.id, { name: 'Viewer box' })
+      const card = expectDefined(viewer.store.graph.getChildren(page.id)[0], 'card')
+      viewer.store.graph.updateNode(card.id, { name: 'Renamed by viewer' })
+      await settle()
+      expect(layerNames(viewer.store)).toEqual(['Shared card'])
+      expect(layerNames(editor.store)).toEqual(['Shared card'])
+      expect(notices.viewOnly).toBe(1)
+    })
+  })
+
+  test('a server document has nothing left to save once it is here', async () => {
+    await withServer(async (open) => {
+      const editor = open('editor')
+      await settle()
+      const page = expectDefined(editor.store.graph.getPages()[0], 'page')
+      editor.store.graph.createNode('RECTANGLE', page.id, { name: 'Saved at once' })
+      await settle()
+      expect(editor.store.hasUnsavedChanges()).toBe(false)
     })
   })
 

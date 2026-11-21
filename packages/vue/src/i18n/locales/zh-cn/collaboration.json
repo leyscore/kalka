@@ -82,7 +82,7 @@
   "serverShareOn": "保存到 {server}",
   "serverShareOnDescription": "即使你离线，团队也可以随时打开。",
   "serverRoomSaved": "已保存到 {server}",
-  "serverViewOnly": "仅查看：你的更改不会保存到服务器。",
+  "serverViewOnly": "仅查看：你可以查看此文件并跟随他人，但不能修改它。",
   "serverShareFailed": "无法将此文件保存到服务器。",
   "serverRoleAdmin": "管理员",
   "serverRoleEditor": "编辑者",
@@ -92,5 +92,11 @@
   "serverMissingDescription": "文件已被删除，或链接不完整。请向发送者索取新链接。",
   "serverEmptyTitle": "这个文件还是空的",
   "serverEmptyDescription": "编辑者在 Kalka 中打开后，它就会显示在这里。",
-  "serverCloseFile": "关闭"
+  "serverCloseFile": "关闭",
+  "serverViewOnlyEdit": "你只能查看此文件，因此你的修改已被撤销。请向管理员申请编辑者角色。",
+  "serverViewOnlyBadge": "仅查看",
+  "shareThisFileDescription": "实时链接，在你保持此文件打开时有效。",
+  "serverSavedLinkCopied": "已保存到 {server}。链接已复制。",
+  "serverStatusLive": "{count} 人在此，已保存到 {server}",
+  "serverCopyFileLink": "复制此文件的链接"
 }
