@@ -115,7 +115,7 @@ function submit() {
               @keydown.enter.prevent="submit"
             />
           </label>
-          <p v-if="preview.error" class="text-xs text-danger" role="alert">
+          <p v-if="preview.error" class="text-xs text-error" role="alert">
             {{ rename.invalidPattern }}
           </p>
         </div>

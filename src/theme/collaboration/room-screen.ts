@@ -15,7 +15,7 @@ export const roomScreen = tv({
     othersWaiting: 'mt-3 text-xs text-muted',
     actions: 'flex flex-col items-center gap-3',
     buttons: 'flex items-center justify-center gap-2',
-    footnote: 'flex flex-wrap items-center justify-center gap-1.5 text-[11px] text-muted',
+    footnote: 'flex flex-wrap items-center justify-center gap-3 text-[11px] text-muted',
     link: 'text-primary underline-offset-2 hover:underline focus-visible:underline focus-visible:outline-none'
   }
 })

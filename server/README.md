@@ -62,7 +62,7 @@ Most settings can be changed in the console, under Settings. Each one can also b
 | --- | --- |
 | `KALKA_SETUP_CODE` | Code typed once to create the first administrator. Required. |
 | `KALKA_SERVER_NAME` | Name people see in Kalka. Default `Kalka`. |
-| `KALKA_PUBLIC_URL` | The server's public address, when a proxy hides it. |
+| `KALKA_PUBLIC_URL` | The server's public address, used in invitation, reset and room links. Without it, the server keeps the address it was set up at, or that its first administrator signs in at. |
 | `KALKA_APP_ORIGINS` | Web addresses of Kalka editors allowed to sign in through single sign-on, comma-separated. The desktop app and the server's own page are always allowed. |
 | `KALKA_LOCAL_LOGIN` | `false` turns off email and password sign-in, once single sign-on works. |
 | `KALKA_SMTP_HOST`, `KALKA_SMTP_PORT`, `KALKA_SMTP_SECURE`, `KALKA_SMTP_USER`, `KALKA_SMTP_PASSWORD`, `KALKA_SMTP_FROM` | Email for invitations, password resets and seat warnings. `KALKA_SMTP_SECURE` is `starttls` (port 587, the default), `tls` (port 465) or `none`. |

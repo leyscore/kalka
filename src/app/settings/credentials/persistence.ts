@@ -1,6 +1,7 @@
 import { AI_PROVIDERS } from '@kalka/core/constants'
 
 import { aiModelSettings, modelConnectionCredentialRef } from '@/app/ai/models'
+import { SERVER_TOKEN_REF } from '@/app/collab/server/credential'
 import { VECTORIZE_CREDENTIAL_REFS } from '@/app/editor/vectorize/credentials'
 import { mcpConnectionSettings, mcpConnectionCredentialRef } from '@/app/integrations/mcp/store'
 import { storageCredentialRefs, storageProviderRegistry } from '@/app/integrations/storage'
@@ -37,7 +38,8 @@ export function appCredentialRefs(): CredentialRef[] {
     ...mcpConnectionSettings.value.connections.map((connection) =>
       mcpConnectionCredentialRef(connection.id)
     ),
-    ...storageCredentials
+    ...storageCredentials,
+    SERVER_TOKEN_REF
   ])
 }
 

@@ -5,8 +5,12 @@ import { useViewportKind } from '@kalka/vue'
 
 import { roomLinkURL } from '@/app/collab/room/links'
 import { showsRoomDocument, type PendingRoomStatus } from '@/app/collab/room/status'
+import { serverAccount } from '@/app/collab/server/account'
+import { isServerRoom, linkedServers } from '@/app/collab/server/documents'
+import { linkedServerURL } from '@/app/collab/server/links'
 import { DEFAULT_COLLAB_STATE, useCollabInjected } from '@/app/collab/use'
 import { useNotificationMessages } from '@/app/i18n/notifications'
+import { openSettings } from '@/app/settings/open'
 import { toast } from '@/app/shell/ui'
 import { DESKTOP_DOWNLOAD_URL, getShareURL, IS_BROWSER, IS_TAURI } from '@/constants'
 
@@ -31,10 +35,32 @@ export function useRoomActions() {
   const othersWaiting = computed(() =>
     state.value.peers.filter((peer) => !peer.hasFile).map((peer) => peer.name)
   )
-  // Browsers on a computer can hand the room to the desktop app; phones and the app cannot.
+  /** The server a link to this document named, for someone who must sign in to it. */
+  const linkedServer = computed(() => {
+    const roomId = state.value.roomId
+    return roomId ? (linkedServers.value.get(roomId) ?? null) : null
+  })
+  /** The server that keeps the room's document, for a server document: its name, or address. */
+  const serverName = computed(() => {
+    const roomId = state.value.roomId
+    if (!roomId || !isServerRoom(roomId)) return null
+    const account = serverAccount.value
+    const linked = linkedServer.value
+    if (account && (!linked || linked === account.url)) return account.serverName
+    return linked ? new URL(linked).host : null
+  })
+
+  /** Settings › Server, with the address of the server the link named filled in. */
+  function signIn() {
+    const server = linkedServer.value ?? serverAccount.value?.url ?? null
+    if (server) linkedServerURL.value = server
+    openSettings('server')
+  }
+  // Browsers on a computer can hand the room to the desktop app; phones and the app cannot. A
+  // server document is not a peer-to-peer room, which is all a `kalka://join` link opens.
   const desktopLink = computed(() => {
     const roomId = state.value.roomId
-    if (!roomId || !IS_BROWSER || IS_TAURI || isMobile.value) return null
+    if (!roomId || !IS_BROWSER || IS_TAURI || isMobile.value || isServerRoom(roomId)) return null
     return roomLinkURL(roomId)
   })
   /** Offered beside the desktop link, for people without the app. */
@@ -69,6 +95,8 @@ export function useRoomActions() {
     copied,
     desktopLink,
     downloadURL,
+    serverName,
+    signIn,
     copyLink,
     leave,
     rename,

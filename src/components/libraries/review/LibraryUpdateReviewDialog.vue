@@ -180,7 +180,7 @@ watch([request, currentInstanceId], () => void loadPreview(), { immediate: true 
     <div
       v-if="preview?.fallback"
       role="status"
-      class="border-b border-warning/40 bg-warning/10 px-4 py-2 text-xs text-warning"
+      class="border-b border-warning-border bg-warning-bg px-4 py-2 text-xs text-warning-text"
     >
       {{ panels.libraryVariantFallbackWarning }}
     </div>

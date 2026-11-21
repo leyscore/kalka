@@ -19,6 +19,11 @@ export const SERVER_PEER = 'server'
 export const SERVER_LOAD = 'srv-load'
 export const SERVER_COMPACT = 'srv-compact'
 export const SERVER_SNAPSHOT = 'srv-snap'
+/**
+ * A version uploaded outside Kalka (WebDAV, a restore) waits to be applied; the payload is its
+ * id. It comes before `srv-load`'s done item and whenever a new one arrives.
+ */
+export const SERVER_PENDING = 'srv-pending'
 
 /** `srv-load` items: the deflated snapshot's parts, then each update since, then done. */
 export const LOAD_SNAPSHOT_PART = 1

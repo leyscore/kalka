@@ -17,9 +17,11 @@ const room = useRoomActions()
     :copied="room.copied.value"
     :desktop-link="room.desktopLink.value"
     :downloadURL="room.downloadURL.value"
+    :server-name="room.serverName.value"
     @copy-link="room.copyLink"
     @leave="room.leave"
     @rename="room.rename"
+    @sign-in="room.signIn"
   />
   <LeftRoomNotice v-else-if="room.leftRoom.value" @dismiss="room.dismissLeftRoomNote" />
 </template>

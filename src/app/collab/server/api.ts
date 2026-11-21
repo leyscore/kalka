@@ -51,13 +51,20 @@ export class ServerRequestError extends Error {
   }
 }
 
-/** `kalka.acme.com` or `https://kalka.acme.com/` as `https://kalka.acme.com`; null if not a URL. */
+/**
+ * `kalka.acme.com` or `https://kalka.acme.com/` as `https://kalka.acme.com`, and `localhost:8787`
+ * as `http://localhost:8787`; null if not a URL.
+ */
 export function normalizeServerURL(input: string): string | null {
   const trimmed = input.trim()
   if (!trimmed) return null
   // Another scheme (ftp:, javascript:) is refused, not taken for a host; `host:8787` is a port.
   if (/^[a-z][a-z0-9+.-]*:(?!\d)/i.test(trimmed) && !/^https?:\/\//i.test(trimmed)) return null
-  const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+  // Without a scheme, a server on this machine is plain HTTP, as development servers are.
+  const local = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?(\/|$)/i.test(trimmed)
+  const withScheme = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `${local ? 'http' : 'https'}://${trimmed}`
   try {
     const url = new URL(withScheme)
     if (url.protocol !== 'https:' && url.protocol !== 'http:') return null
@@ -106,6 +113,32 @@ async function request<S extends v.GenericSchema>(
   return parsed.output
 }
 
+/** A version uploaded outside Kalka (WebDAV, a restore), waiting to be applied. */
+export interface PendingVersion {
+  data: Uint8Array
+  version: string
+}
+
+/** The waiting version of a document, or null when none waits. */
+async function pendingVersion(
+  base: string,
+  token: string,
+  id: string
+): Promise<PendingVersion | null> {
+  let response: Response
+  try {
+    response = await fetch(`${base}/api/documents/${id}/pending`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+  } catch {
+    throw new ServerRequestError(0, 'unreachable')
+  }
+  if (response.status === 404) return null
+  if (!response.ok) throw new ServerRequestError(response.status, `HTTP ${response.status}`)
+  const data = new Uint8Array(await response.arrayBuffer())
+  return { data, version: response.headers.get('X-Kalka-Version') ?? '' }
+}
+
 export const serverAPI = {
   info: (base: string) => request(base, '/api/server', { schema: serverInfoSchema }),
   signIn: (base: string, email: string, password: string) =>
@@ -142,6 +175,16 @@ export const serverAPI = {
       token,
       body: {},
       schema: ticketSchema
+    }),
+  document: (base: string, token: string, id: string) =>
+    request(base, `/api/documents/${id}`, { token, schema: serverDocumentSchema }),
+  pending: pendingVersion,
+  /** Dismisses a waiting version; `dismissed` is false when another window took it first. */
+  dismissPending: (base: string, token: string, id: string, version: string) =>
+    request(base, `/api/documents/${id}/pending?version=${encodeURIComponent(version)}`, {
+      method: 'DELETE',
+      token,
+      schema: v.object({ dismissed: v.boolean() })
     }),
   saveFile: (base: string, token: string, id: string, data: Uint8Array) =>
     request(base, `/api/documents/${id}/file`, {

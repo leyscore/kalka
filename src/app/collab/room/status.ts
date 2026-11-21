@@ -8,7 +8,11 @@
  * - `waiting`: nobody who has the file is online;
  * - `unreachable`: the service that introduces peers cannot be reached;
  * - `live`: the room's file is here and other people are too;
- * - `alone`: the room's file is here, from this device's copy, and nobody else is.
+ * - `alone`: the room's file is here, from this device's copy, and nobody else is;
+ * - `missing`: the room is a server document the server does not have, or no longer;
+ * - `empty`: the room is a server document with nothing in it yet, and this person cannot
+ *   start it, as a viewer cannot;
+ * - `signed-out`: the room is a server document and this person must sign in to the server.
  */
 export type RoomStatus =
   | 'connecting'
@@ -18,6 +22,9 @@ export type RoomStatus =
   | 'unreachable'
   | 'live'
   | 'alone'
+  | 'missing'
+  | 'empty'
+  | 'signed-out'
 
 /** The states a room tab shows its own screen for, until the room's file arrives. */
 export type PendingRoomStatus = Exclude<RoomStatus, 'live' | 'alone'>
@@ -38,11 +45,34 @@ export interface RoomStatusInput {
   peerCount: number
   /** Peers who have the room's file. */
   peersWithFile: number
+  /** For a room on a Kalka server, what the server said of its document. */
+  server?: ServerRoomState | null
+}
+
+export interface ServerRoomState {
+  /** The server has sent what it keeps of the document. */
+  loaded: boolean
+  /** A version uploaded outside Kalka is being applied, or the document is being started. */
+  settling: boolean
+  /** The server does not have the document. */
+  gone: boolean
+  /** The server needs this person to sign in before it lets them in. */
+  signInNeeded: boolean
 }
 
 export function deriveRoomStatus(input: RoomStatusInput): RoomStatus {
+  if (input.server?.gone) return 'missing'
+  if (input.server?.signInNeeded && !input.hasDocument) return 'signed-out'
   if (input.hasDocument) return input.peerCount > 0 ? 'live' : 'alone'
   if (!input.savedCopyLoaded) return 'connecting'
+  // A server keeps the document, so nobody needs to be online: it is loading, or empty.
+  if (input.server) {
+    if (input.server.loaded && !input.server.settling) {
+      return input.peersWithFile > 0 ? 'receiving' : 'empty'
+    }
+    if (input.connectedFor === null && input.openFor >= input.unreachableMs) return 'unreachable'
+    return 'connecting'
+  }
   if (input.peersWithFile > 0) return 'receiving'
   if (input.connectedFor === null) {
     return input.openFor >= input.unreachableMs ? 'unreachable' : 'connecting'

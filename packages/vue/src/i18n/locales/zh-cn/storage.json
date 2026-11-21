@@ -3,7 +3,7 @@
   "emptyStorageWorkspace": "暂无已存储的文档。",
   "loadingDocuments": "正在加载文档…",
   "workspace": "存储工作区",
-  "tab": "存储",
+  "tab": "云存储",
   "openWorkspace": "打开工作区",
   "loadingWorkspace": "正在加载存储工作区…",
   "notConfigured": "请先配置存储，再使用此工作区。",

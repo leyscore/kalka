@@ -421,6 +421,16 @@ export class Directory extends DurableObject<Env> {
     this.sql.exec('UPDATE documents SET live = ? WHERE id = ?', count, id)
   }
 
+  /** What an invitation offers, without using it: its role and the address it was sent to. */
+  async checkInvite(code: string): Promise<{ role: Role; email: string | null } | null> {
+    const invite = this.one<{ role: Role; expires_at: number; email: string | null }>(
+      'SELECT role, expires_at, email FROM invites WHERE hash = ?',
+      await hashToken(code)
+    )
+    if (!invite || invite.expires_at < Date.now()) return null
+    return { role: invite.role, email: invite.email }
+  }
+
   async register(input: {
     invite: string
     email: string
@@ -428,12 +438,16 @@ export class Directory extends DurableObject<Env> {
     password: string
   }): Promise<Result<{ token: string; user: User }>> {
     const hash = await hashToken(input.invite)
-    const invite = this.one<{ role: Role; expires_at: number }>(
-      'SELECT role, expires_at FROM invites WHERE hash = ?',
+    const invite = this.one<{ role: Role; expires_at: number; email: string | null }>(
+      'SELECT role, expires_at, email FROM invites WHERE hash = ?',
       hash
     )
     if (!invite || invite.expires_at < Date.now()) {
       return failure(400, 'This invitation is invalid or has expired.')
+    }
+    // An invitation sent to an address is for that address only, with the role it carries.
+    if (invite.email && invite.email.toLowerCase() !== input.email.trim().toLowerCase()) {
+      return failure(403, 'This invitation was sent to another email address.')
     }
     const invalid = checkAccount(input.email, input.name, input.password)
     if (invalid) return invalid
@@ -451,6 +465,15 @@ export class Directory extends DurableObject<Env> {
     return { token: await this.newSession(row.id), user: toUser(row) }
   }
 
+  /** Whether an active administrator other than `id` remains, whatever `id` itself is. */
+  private hasOtherActiveAdmin(id: string): boolean {
+    const others = this.one<{ count: number }>(
+      "SELECT COUNT(*) AS count FROM users WHERE role = 'admin' AND disabled = 0 AND id != ?",
+      id
+    )?.count
+    return (others ?? 0) > 0
+  }
+
   listUsers(): User[] {
     return this.all<UserRow>('SELECT * FROM users ORDER BY created_at').map(toUser)
   }
@@ -460,11 +483,8 @@ export class Directory extends DurableObject<Env> {
     if (!row) return failure(404, 'No such user.')
     const losesAdmin =
       row.role === 'admin' && ((change.role && change.role !== 'admin') || change.disabled)
-    if (losesAdmin) {
-      const admins = this.one<{ count: number }>(
-        "SELECT COUNT(*) AS count FROM users WHERE role = 'admin' AND disabled = 0"
-      )?.count
-      if ((admins ?? 0) <= 1) return failure(409, 'The server needs at least one administrator.')
+    if (losesAdmin && !this.hasOtherActiveAdmin(id)) {
+      return failure(409, 'The server needs at least one administrator.')
     }
     if (change.role) this.sql.exec('UPDATE users SET role = ? WHERE id = ?', change.role, id)
     if (change.disabled !== undefined) {
@@ -890,11 +910,8 @@ export class Directory extends DurableObject<Env> {
   deleteUser(id: string): Result<{ deleted: true }> {
     const row = this.userById(id)
     if (!row) return failure(404, 'No such user.')
-    if (row.role === 'admin') {
-      const admins = this.one<{ count: number }>(
-        "SELECT COUNT(*) AS count FROM users WHERE role = 'admin' AND disabled = 0"
-      )?.count
-      if ((admins ?? 0) <= 1) return failure(409, 'The server needs at least one administrator.')
+    if (row.role === 'admin' && !this.hasOtherActiveAdmin(id)) {
+      return failure(409, 'The server needs at least one administrator.')
     }
     this.sql.exec('DELETE FROM sessions WHERE user_id = ?', id)
     this.sql.exec('DELETE FROM app_passwords WHERE user_id = ?', id)
