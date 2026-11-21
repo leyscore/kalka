@@ -224,7 +224,13 @@
   }
   document.addEventListener('click', (event) => { if (pop && !pop.contains(event.target) && !(popAnchor && popAnchor.contains(event.target))) closePop() }, true)
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') { const anchor = popAnchor; closePop(); closeDialog(); if (anchor) anchor.focus() }
+    // Escape closes the open menu first, and the dialog only once no menu is open.
+    if (event.key === 'Escape') {
+      const anchor = popAnchor
+      if (pop) closePop()
+      else closeDialog()
+      if (anchor) anchor.focus()
+    }
     if (pop && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
       const items = [...pop.querySelectorAll('button, a')]
       const index = items.indexOf(document.activeElement)
@@ -314,9 +320,22 @@
       if (button) button.disabled = true
       try { await onSubmit(Object.fromEntries(new FormData(node))) } catch (e) { error.textContent = e.message } finally { if (button) button.disabled = false }
     } },
-    fields.map((f) => el('label', { class: 'stack' }, f.label,
-      el('input', { class: 'field' + (f.code ? ' code-input' : ''), name: f.name, type: f.type || 'text', value: f.value, placeholder: f.placeholder, autocomplete: f.autocomplete, inputmode: f.inputmode, maxlength: f.maxlength }),
-      f.hint ? el('span', { style: { color: 'var(--faint)', fontSize: '12px' } }, f.hint) : null)),
+    fields.map((f) => {
+      const input = el('input', { class: 'field' + (f.code ? ' code-input' : ''), name: f.name, type: f.type || 'text', value: f.value, placeholder: f.placeholder, autocomplete: f.autocomplete, inputmode: f.inputmode, maxlength: f.maxlength, readonly: f.readonly })
+      // A password can be shown, to check what was typed.
+      const reveal = f.type === 'password'
+        ? el('button', { type: 'button', class: 'reveal', 'aria-label': 'Show password', 'aria-pressed': 'false', onclick: (event) => {
+            const shown = input.type === 'password'
+            input.type = shown ? 'text' : 'password'
+            event.currentTarget.setAttribute('aria-pressed', String(shown))
+            event.currentTarget.setAttribute('aria-label', shown ? 'Hide password' : 'Show password')
+            event.currentTarget.replaceChildren(icon(shown ? 'view-off' : 'view', 16))
+          } }, icon('view', 16))
+        : null
+      return el('label', { class: 'stack' }, f.label,
+        reveal ? el('span', { class: 'field-wrap' }, input, reveal) : input,
+        f.hint ? el('span', { style: { color: 'var(--faint)', fontSize: '12px' } }, f.hint) : null)
+    }),
     error, submit)
     return node
   }
