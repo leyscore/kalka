@@ -169,7 +169,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/readme/server-console-dark.webp">
-    <img src="assets/readme/server-console.webp" width="100%" alt="The server console: files, people with their roles, and settings">
+    <img src="assets/readme/server-console.webp" width="100%" alt="The server console: the People page, with each member’s role and the invitations waiting">
   </picture>
 </p>
 
