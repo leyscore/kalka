@@ -1,4 +1,5 @@
 import type { CSSFontFaceRule } from '@acemir/cssom'
+import { fromUint8Array } from 'js-base64'
 import { parseFragment, type DefaultTreeAdapterTypes } from 'parse5'
 
 import { documentCSSClasses, normalizeFontFamily } from '@kalka/scene-graph'
@@ -48,7 +49,10 @@ export interface ExportHTMLBundleOptions {
    * and masks, stays in the page either way.
    */
   assets?: 'inline' | 'external'
-  /** Resolves font files to include with external assets; `none` includes no fonts. */
+  /**
+   * Resolves font files to include: files beside the page with external assets, embedded in its
+   * stylesheet with inline ones; `none` includes no fonts.
+   */
   fonts?: 'none' | WebFontFaceResolver
   assetBasePath?: string
   /**
@@ -249,8 +253,22 @@ function serializeFontWeight(weight: string | number | [number, number]): string
   return Array.isArray(weight) ? weight.join(' ') : String(weight)
 }
 
-/** A font's URL relative to the stylesheet's folder `from`, which the asset's path may start with. */
-function fontSourceValue(asset: WebFontFaceAsset, from: string): string {
+const FONT_MEDIA_TYPES: Record<WebFontFaceAsset['format'], string> = {
+  woff2: 'font/woff2',
+  woff: 'font/woff',
+  opentype: 'font/otf',
+  truetype: 'font/ttf'
+}
+
+/**
+ * A font's URL relative to the stylesheet's folder `from`, which the asset's path may start with,
+ * or its file as a `data:` URL when `inline`.
+ */
+function fontSourceValue(asset: WebFontFaceAsset, from: string, inline = false): string {
+  if (inline) {
+    const url = `data:${FONT_MEDIA_TYPES[asset.format]};base64,${fromUint8Array(asset.content)}`
+    return `url(${JSON.stringify(url)}) format(${JSON.stringify(asset.format)})`
+  }
   const path =
     from && asset.path.startsWith(`${from}/`) ? asset.path.slice(from.length + 1) : asset.path
   const url = new URL(path, 'file:///')
@@ -265,6 +283,8 @@ interface FontFaceCSSOptions {
   from: string
   /** `font-display` for every face, rather than each face's own. */
   display?: string
+  /** Each font's file in its rule, for a page that ships as one file. */
+  inline?: boolean
 }
 
 function fontFaceCSS(
@@ -274,7 +294,7 @@ function fontFaceCSS(
 ): string {
   const rule = new FontFaceRule()
   rule.style.setProperty('font-family', JSON.stringify(asset.family))
-  rule.style.setProperty('src', fontSourceValue(asset, options.from))
+  rule.style.setProperty('src', fontSourceValue(asset, options.from, options.inline))
   rule.style.setProperty('font-weight', serializeFontWeight(asset.weight))
   rule.style.setProperty('font-style', asset.style)
   rule.style.setProperty('font-display', options.display ?? asset.display ?? 'swap')
@@ -307,8 +327,11 @@ async function fontFaceAssets(
   document: DesignDocument,
   options: Required<ExportHTMLBundleOptions>
 ): Promise<{ css: string; files: ExportHTMLFile[] }> {
-  if (options.fonts === 'none' || options.assets !== 'external') return { css: '', files: [] }
+  if (options.fonts === 'none') return { css: '', files: [] }
   const assets = await options.fonts(designFontRequests(document), `${options.assetBasePath}/fonts`)
+  // A page that ships as one file carries its fonts in its own stylesheet.
+  if (options.assets !== 'external')
+    return { css: await fontFaceStylesheet(assets, { from: '', inline: true }), files: [] }
   // The stylesheet sits in the asset folder beside the font files.
   return {
     css: await fontFaceStylesheet(assets, { from: options.assetBasePath }),
@@ -398,6 +421,8 @@ async function exportStandaloneHTML(
     }
   }
 
+  const fonts = await fontFaceAssets(document, options)
+  css = `${fonts.css}${css}`
   const style = css ? [styleTag(cssText(css, options.pretty))] : []
   const html = pageHTML([...resetLink, ...style], body, options.pretty)
   return { entrypoint: 'index.html', files: [{ path: 'index.html', content: html }, ...resetFiles] }

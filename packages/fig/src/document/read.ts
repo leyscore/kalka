@@ -2,6 +2,7 @@ import type { NodeChange } from '@kalka/kiwi/fig/codec'
 import { guidToString } from '@kalka/kiwi/fig/guid'
 import { deduplicateNodeChangePluginData } from '@kalka/kiwi/fig/parse'
 import { decodeWhole } from '@kalka/kiwi/schema-runtime'
+import { readProjectFontFiles } from '@kalka/scene-graph'
 
 import { parseFigBuffer } from '../archive'
 import { createIndexedOccurrenceInterpreter } from '../instance-overrides/interpret'
@@ -61,6 +62,8 @@ export function createArchiveDocumentReader(bytes: ArrayBuffer, pageIds?: Readon
     reader: createScopedReader(archiveRecords(parsed.nodeChanges), pageIds),
     blobs: parsed.blobs,
     images: parsed.images,
+    /** The fonts the document carries, which Kalka keeps under `kalka/fonts/`. */
+    fonts: readProjectFontFiles(new Map(parsed.kalkaFiles)),
     /** The archive's record headers, which carry the identities patching numbers from. */
     records: parsed.nodeChanges
   }

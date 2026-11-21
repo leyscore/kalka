@@ -140,6 +140,7 @@ export function createGraphEventSubscription(options: GraphEventOptions) {
     unbindGraphEvents?.()
     options.responsive?.indexDocument()
     unbindGraphEvents = options.getGraph().onNodeEvents({
+      fontsChanged: (family) => options.emitEditorEvent('fonts:changed', family),
       updated: onNodeUpdated,
       previewUpdated: onNodePreviewUpdated,
       styleGaveWay: (id, previous) => options.emitEditorEvent('node:styleGaveWay', id, previous),

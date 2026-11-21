@@ -13,7 +13,7 @@ import type { ExportAsset, HTMLExportOptions } from '#core/io/types'
 import { fontManager } from '#core/text/fonts'
 import { exportWebFontFaceAssets } from '#core/text/web-font/assets'
 
-import { loadedFontFaceAssets } from './fonts'
+import { loadedFontFaceAssets, withProjectFonts } from './fonts'
 import { vectorElement } from './vectors'
 
 /** What places a layer inside its parent, which an exported page does not have. */
@@ -114,7 +114,7 @@ export async function renderNodesToHTML(
     html: options.html,
     style: options.style,
     assets: options.assets,
-    fonts: fontResolver(options.fonts, graph.interVersion),
+    fonts: withProjectFonts(graph.fonts, fontResolver(options.fonts, graph.interVersion)),
     assetBasePath: assetBasePath(fileName),
     reset: options.reset,
     pretty: options.pretty,

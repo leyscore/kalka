@@ -103,6 +103,13 @@ export function useFontPicker(options: UseFontPickerOptions) {
     }
   }
 
+  /** Lists the families again, now if the list is open or the next time it opens. */
+  async function refresh() {
+    cancelLoad()
+    families.value = []
+    if (open.value) await loadFamilies()
+  }
+
   function select(family: string) {
     options.modelValue.value = family
     options.onSelect?.(family)
@@ -117,6 +124,7 @@ export function useFontPicker(options: UseFontPickerOptions) {
     loading,
     accessState,
     requestAccess,
-    select
+    select,
+    refresh
   }
 }

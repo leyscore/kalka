@@ -21,6 +21,7 @@ import { createLayoutRunner } from '#core/layout/mutations'
 import { emitNavigationTrace } from '#core/profiler'
 import { TextEditor } from '#core/text/editor'
 import { fontManager } from '#core/text/fonts'
+import { registerProjectFont, registerProjectFonts } from '#core/text/project-fonts/register'
 import { fontResolver } from '#core/text/resolver'
 
 import { createAlignmentActions } from './alignment'
@@ -69,6 +70,8 @@ export { createDefaultEditorState } from './state'
 
 export function createEditor(options?: EditorOptions) {
   let _graph = options?.graph ?? new SceneGraph()
+  // A document's own fonts draw its text before any the computer has.
+  registerProjectFonts(_graph)
   const skipInitialGraphSetup = options?.skipInitialGraphSetup ?? false
   const styleJournal = createStyleJournal()
   const undo = new UndoManager({
@@ -93,6 +96,15 @@ export function createEditor(options?: EditorOptions) {
   const stopFontResolutionEvents = fontResolver.subscribe((event, snapshot) => {
     if (event === 'settled') pendingTextLayout.relayoutReady(_renderer)
     events.emit('font:resolution-changed', event, snapshot)
+  })
+
+  // A font the document now carries draws its text at once, and text that fell back redraws.
+  events.on('fonts:changed', (family) => {
+    const font = _graph.fonts.get(family)
+    if (font) registerProjectFont(font)
+    fontResolver.reset()
+    for (const renderer of _renderers) renderer.invalidateAllPictures()
+    requestRender()
   })
 
   void prefetchFigmaSchema()
@@ -325,6 +337,7 @@ export function createEditor(options?: EditorOptions) {
     nodes.cancelNodePreviews()
     undo.discardBatches()
     _graph = newGraph
+    registerProjectFonts(_graph)
     pendingTextLayout.clear()
     subscribeToGraph()
     const previousPageId = state.currentPageId

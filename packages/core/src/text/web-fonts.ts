@@ -285,6 +285,11 @@ export class WebFontResolver {
     }
   }
 
+  /** How font services are reached here: the host's fetch, which may bound or proxy it. */
+  fetcher(): WebFontFetch {
+    return this.remoteFetch ?? ((url, init) => fetch(url, init))
+  }
+
   private async fetchRemote(url: string, init?: RequestInit): Promise<Response> {
     if (this.remoteFetch) return this.remoteFetch(url, init)
     return fetch(url, init)

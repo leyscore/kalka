@@ -112,6 +112,7 @@ es:common.tokens
 es:diagnostics.categoryMCP
 es:diagnostics.durationMs
 es:diagnostics.runtimeError
+es:fonts.variable
 es:menu.variables
 es:panels.auto
 es:panels.blendModeColor
@@ -176,6 +177,8 @@ fr:diagnostics.categoryDocument
 fr:diagnostics.categoryMCP
 fr:diagnostics.durationMs
 fr:diagnostics.title
+fr:fonts.documentSource
+fr:fonts.variable
 fr:menu.documentation
 fr:menu.variables
 fr:pages.pageName

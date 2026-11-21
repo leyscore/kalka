@@ -68,6 +68,8 @@ export function createDocumentChanges(editor: Editor) {
     editor.onEditorEvent('node:reparented', contentChanged),
     editor.onEditorEvent('node:reordered', contentChanged),
     editor.onEditorEvent('graph:replaced', changed),
+    // A font the document carries is kept outside the history, as its file is.
+    editor.onEditorEvent('fonts:changed', changed),
     editor.onEditorEvent('history:changed', historyChanged)
   ]
 

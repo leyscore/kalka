@@ -23,15 +23,24 @@ import {
   type FontFamilyOption
 } from '#vue/primitives/FontPicker/useFontPicker'
 
-const { listFamilies, localFontAccess, ui, emptySearchText, emptyFontsText, emptyFontsHint } =
-  defineProps<{
-    listFamilies: () => Promise<string[] | FontFamilyOption[]>
-    localFontAccess?: FontAccessController
-    ui?: FontPickerUI
-    emptySearchText?: string
-    emptyFontsText?: string
-    emptyFontsHint?: string
-  }>()
+const {
+  listFamilies,
+  localFontAccess,
+  ui,
+  emptySearchText,
+  emptyFontsText,
+  emptyFontsHint,
+  refreshKey
+} = defineProps<{
+  listFamilies: () => Promise<string[] | FontFamilyOption[]>
+  localFontAccess?: FontAccessController
+  ui?: FontPickerUI
+  emptySearchText?: string
+  emptyFontsText?: string
+  emptyFontsHint?: string
+  /** Lists the families again when it changes, such as after a font is added. */
+  refreshKey?: unknown
+}>()
 
 const modelValue = defineModel<string>({ required: true })
 // `highlight` is the family under the pointer or keys while the list is open, and `null` once it
@@ -48,12 +57,21 @@ function focusSearchInput() {
   })
 }
 
-const { searchTerm, open, filtered, loading, accessState, requestAccess, select } = useFontPicker({
-  modelValue,
-  listFamilies,
-  localFontAccess,
-  onSelect: (family) => emit('select', family)
-})
+const { searchTerm, open, filtered, loading, accessState, requestAccess, select, refresh } =
+  useFontPicker({
+    modelValue,
+    listFamilies,
+    localFontAccess,
+    onSelect: (family) => emit('select', family)
+  })
+watch(
+  () => refreshKey,
+  () => void refresh()
+)
+
+function close() {
+  open.value = false
+}
 const { portalActive } = useRetainedPopup(open)
 
 /**
@@ -176,6 +194,7 @@ watch(open, (isOpen) => {
             </div>
           </div>
         </ComboboxViewport>
+        <slot name="footer" :search-term="searchTerm" :close="close" />
       </ComboboxContent>
     </ComboboxPortal>
   </ComboboxRoot>

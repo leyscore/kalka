@@ -182,6 +182,8 @@ kalka eval design.fig -w -c '
 
 `kalka.behaviourKinds` lists every kind with its values and parts; `kalka.getBehaviour(node)` reads one (a variant reads its set's); `kalka.createSlot(frame)` makes a frame a slot. The `set_behaviour`, `get_behaviour`, and `create_slot` tools do the same over MCP, and design JSX writes controls with Reka's element names (`Switch.Root`, `Switch.Thumb`).
 
+When you pick a typeface, keep it with the document: `kalka.searchFonts("grotesk")` lists open-licence families of the free catalogue (Google Fonts and Fontsource), and `await kalka.addFont("Space Grotesk")` downloads one with its licence into the document, so it draws the same offline, for teammates and in exported HTML. Over MCP, `search_fonts` and `add_font` do the same.
+
 ### Diff
 
 Compare nodes and documents, and apply patches:

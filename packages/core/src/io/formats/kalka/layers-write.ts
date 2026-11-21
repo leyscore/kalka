@@ -9,7 +9,13 @@ import {
   type DesignNode
 } from '@kalka/dom-css/export'
 import type { ClassRule } from '@kalka/dom-css/import'
-import { documentCSSClasses, SceneGraph, type SceneNode, type Vector } from '@kalka/scene-graph'
+import {
+  documentCSSClasses,
+  PROJECT_FONTS_STYLESHEET,
+  SceneGraph,
+  type SceneNode,
+  type Vector
+} from '@kalka/scene-graph'
 import { computeImageHash } from '@kalka/scene-graph/images'
 
 import { vectorElement } from '#core/io/formats/html/vectors'
@@ -187,13 +193,18 @@ function printNode(node: DesignNode, depth: number, lines: string[]): void {
   lines.push(`${indent}</${node.tagName}>`)
 }
 
-function printPage(page: SceneNode, layers: readonly DesignNode[]): string {
+function printPage(page: SceneNode, layers: readonly DesignNode[], fonts = false): string {
+  // A page opened as it is, in a browser, draws its text with the document's own fonts.
+  const fontLink = fonts
+    ? [`  <link rel="stylesheet" href="${pageRelativePath(PROJECT_FONTS_STYLESHEET)}">`]
+    : []
   const lines = [
     '<!doctype html>',
     '<html>',
     '<head>',
     '  <meta charset="utf-8">',
     `  <title>${escapeText(page.name)}</title>`,
+    ...fontLink,
     `  <link rel="stylesheet" href="${pageRelativePath(TOKENS_CSS_FILE)}">`,
     `  <link rel="stylesheet" href="${pageRelativePath(STYLES_FILE)}">`,
     '</head>',
@@ -249,5 +260,5 @@ export function writePageHTML(graph: SceneGraph, page: SceneNode, context: PageW
     const element = projector.elements.get(id)
     if (element) element.attrs[ATTR.props] = JSON.stringify(encodeValue(residual))
   }
-  return printPage(page, layers)
+  return printPage(page, layers, graph.fonts.size > 0)
 }

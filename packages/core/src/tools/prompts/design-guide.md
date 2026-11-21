@@ -43,7 +43,10 @@ Write a short brief in the conversation before drawing:
 - a palette with roles: one ground, one ink, one strong accent, two or three supporting tones
   taken from that place, with their hex values and enough contrast for text
 - two typefaces: a display face with character and a quiet text face, and a type scale with
-  strong contrast between display and labels (for example 72 / 48 / 28 / 18 / 16 / 13)
+  strong contrast between display and labels (for example 72 / 48 / 28 / 18 / 16 / 13). Find
+  them with search_fonts and keep each with the document with add_font before setting text in
+  it: the document then carries the files and their licence, so it draws the same offline, for
+  teammates and in exported HTML
 - before building, hold the palette and the typefaces against the generated look listed under
   Taste rules; if they match it, pick again from the product's own world
 - a spacing scale on a 4 px base (4, 8, 12, 16, 24, 32, 48, 64, 96, 128) and a radius scale

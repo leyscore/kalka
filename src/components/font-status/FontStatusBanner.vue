@@ -3,16 +3,41 @@ import { computed, ref } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
+import { useMissingDocumentFonts } from '@/app/editor/fonts/missing'
 import { useDocumentFontStatus } from '@/app/editor/fonts/status'
+import { toast } from '@/app/shell/ui'
+import FontPicker from '@/components/font-picker/FontPicker.vue'
+import MissingFontsPrompt from '@/components/font-status/MissingFontsPrompt.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'
 
 const { fonts } = useI18n()
 const expanded = ref(false)
 const { status, retrying, retry, selectAffectedNodes } = useDocumentFontStatus()
-const issues = computed(() => status.value.issues)
+const missing = useMissingDocumentFonts(status)
+// A family offered for download is not an issue to fix by hand while it is offered.
+const issues = computed(() =>
+  status.value.issues.filter((issue) => !missing.offered.value.includes(issue.family))
+)
+const unavailable = computed(() => new Set(missing.unavailable.value))
+
+async function addMissing() {
+  if (await missing.addAll()) toast.info(fonts.value.missingFontsAdded)
+}
+
+function replace(from: string, to: string) {
+  missing.replace(from, to)
+  toast.info(fonts.value.fontReplaced({ from, to }))
+}
 </script>
 
 <template>
+  <MissingFontsPrompt
+    :families="missing.offered.value"
+    :adding="missing.adding.value"
+    :error="missing.failed.value"
+    @add="addMissing"
+    @dismiss="missing.dismiss"
+  />
   <div
     v-if="issues.length > 0"
     data-test-id="font-status-banner"
@@ -78,6 +103,22 @@ const issues = computed(() => status.value.issues)
               : fonts.affectedLayerCount({ count: issue.nodeIds.length })
           }}
         </span>
+        <FontPicker
+          v-if="unavailable.has(issue.family)"
+          :model-value="issue.family"
+          :label="fonts.replaceFontWith({ family: issue.family })"
+          @select="replace(issue.family, $event)"
+        >
+          <template #trigger="{ label }">
+            <button
+              type="button"
+              :aria-label="label"
+              class="shrink-0 rounded-md px-1.5 py-0.5 font-medium text-warning-action transition-colors hover:bg-amber-500/20"
+            >
+              {{ fonts.replaceFont }}
+            </button>
+          </template>
+        </FontPicker>
       </div>
     </div>
   </div>

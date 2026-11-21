@@ -68,8 +68,11 @@ export function materializeFigArchive(
   bytes: ArrayBuffer,
   options: DocumentAssemblyOptions = {}
 ): AssemblyState {
-  const { reader, blobs, images } = createArchiveDocumentReader(bytes, options.pageIds)
-  return materializeReader(reader, blobs, { ...options, images: options.images ?? new Map(images) })
+  const archive = createArchiveDocumentReader(bytes, options.pageIds)
+  const images = options.images ?? new Map(archive.images)
+  const state = materializeReader(archive.reader, archive.blobs, { ...options, images })
+  state.graph.fonts = archive.fonts
+  return state
 }
 
 export interface AssemblyState {
@@ -93,30 +96,6 @@ export interface FigSessionCheckpoint {
   savedSizeNodeIds: string[]
   loadedPageIds: string[]
   components: Array<[string, ComponentCheckpoint]>
-}
-
-/**
- * The layer each archive record became, by record GUID: layers, pages, instances, and the
- * layers inside components down to the instances they nest, whose contents are no records.
- */
-export function figCheckpointRecords(checkpoint: FigSessionCheckpoint): Map<string, string> {
-  const records = new Map(checkpoint.sources)
-  for (const [componentId, component] of checkpoint.components) {
-    records.set(componentId, component.rootId)
-    const instances: string[][] = []
-    for (const entry of component.nodes) {
-      const sourceId = entry.path.at(-1)
-      if (!sourceId) continue
-      const inInstance = instances.some(
-        (prefix) =>
-          prefix.length < entry.path.length && prefix.every((id, index) => entry.path[index] === id)
-      )
-      if (inInstance) continue
-      records.set(sourceId, entry.nodeId)
-      if (entry.mainComponentId !== null) instances.push(entry.path)
-    }
-  }
-  return records
 }
 
 export interface FigSessionResume {
@@ -157,6 +136,8 @@ export function createFigDocumentSession(
     : materializeReader(archive.reader, archive.blobs, sessionOptions)
   state.graph.figKiwiVersion = archive.figKiwiVersion
   state.graph.figSchemaDeflated = archive.figSchemaDeflated
+  // A resumed session's graph kept its fonts, which may have changed since the archive was read.
+  if (!resume) state.graph.fonts = archive.fonts
   const loaded = new Set<string>(resume?.checkpoint.loadedPageIds)
   const edits = watchGraphEdits(state.graph, resume !== undefined)
   let recordInfo: FigArchiveRecordInfo | undefined

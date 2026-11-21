@@ -14,8 +14,16 @@ import {
   type BehaviourHandle,
   type NodeRef
 } from './behaviours'
+import {
+  addFont,
+  documentFontInfo,
+  searchFonts,
+  type DocumentFontInfo,
+  type FontSearchResult
+} from './fonts'
 
 export { BehaviourHandle, type NodeRef } from './behaviours'
+export type { DocumentFontInfo, FontSearchResult } from './fonts'
 
 /**
  * What Kalka adds to the Figma Plugin API for scripts, as the `kalka` global next to
@@ -47,5 +55,32 @@ export class KalkaAPI {
   /** Make a frame of a main component a slot, as Create slot does; returns the slot's name. */
   createSlot(frame: NodeRef): string {
     return makeSlot(this.figma.graph, frame)
+  }
+
+  /** The fonts the document carries, saved with it so its text draws the same everywhere. */
+  get fonts(): DocumentFontInfo[] {
+    return [...this.figma.graph.fonts.values()].map(documentFontInfo)
+  }
+
+  /**
+   * Open-licence families of the free font catalogue (Google Fonts and Fontsource) whose name
+   * holds `query`, the closest first; an empty query lists from the start of the alphabet.
+   */
+  searchFonts(query: string, options: { limit?: number } = {}): Promise<FontSearchResult[]> {
+    return searchFonts(this.figma.graph, query, options.limit)
+  }
+
+  /**
+   * Downloads an open-licence family into the document with its licence and loads it, so text
+   * set in it draws offline and for teammates. Throws, naming close families, when the catalogue
+   * has none of that name.
+   */
+  addFont(family: string): Promise<DocumentFontInfo> {
+    return addFont(this.figma.graph, family)
+  }
+
+  /** Stops carrying a family; text set in it then draws with what the computer has. */
+  removeFont(family: string): boolean {
+    return this.figma.graph.removeProjectFont(family)
   }
 }

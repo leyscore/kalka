@@ -5,6 +5,8 @@ import {
   createDefaultNode,
   DEFAULT_INTER_VERSION,
   generateId,
+  projectFontFiles,
+  readProjectFontFiles,
   SceneGraph,
   type EnabledLibraryBinding,
   type SceneNode
@@ -111,8 +113,8 @@ function settings(graph: SceneGraph): NonNullable<Project['settings']> {
 
 /**
  * The document as a Kalka folder: a page of HTML per page, `styles.css`, the variables as W3C
- * design tokens and the CSS variables they make, the images, and `project.json` tying them
- * together. Files come sorted by path, and saving an unchanged document writes the same bytes.
+ * design tokens and the CSS variables they make, the images, the fonts it carries with their
+ * licences, and `project.json` tying them together. Files come sorted by path, and saving an unchanged document writes the same bytes.
  */
 export async function writeKalkaFolder(graph: SceneGraph): Promise<KalkaFile[]> {
   const files: KalkaFile[] = []
@@ -140,6 +142,7 @@ export async function writeKalkaFolder(graph: SceneGraph): Promise<KalkaFile[]> 
 
   for (const [hash, bytes] of graph.images)
     files.push({ path: imageFilePath(hash, bytes), content: bytes })
+  files.push(...projectFontFiles(graph.fonts))
 
   const root = graph.getNode(graph.rootId)
   const variables = savedCollections(graph, readTokensFile(tokens), new SceneGraph())
@@ -221,6 +224,7 @@ export function readKalkaFolder(files: ReadonlyMap<string, Uint8Array>): SceneGr
     const hash = imageHashFromPath(path)
     if (hash !== null) graph.images.set(hash, bytes)
   }
+  graph.fonts = readProjectFontFiles(files)
 
   readVariables(graph, readTokensFile(textOf(TOKENS_FILE) ?? '{}'), project.variables ?? [])
   applySettings(graph, project.settings)

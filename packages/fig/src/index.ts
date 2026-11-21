@@ -3,16 +3,17 @@ export { materializeFigFragment, type FragmentMaterializationOptions } from './d
 export {
   materializeDocument,
   materializeFigArchive,
-  figCheckpointRecords,
   type FigSessionCheckpoint,
   type FigSessionResume,
   createFigDocumentSession,
   type DocumentAssemblyOptions
 } from './document/materialize'
+export { figCheckpointRecords } from './document/checkpoint-records'
 export {
   compressFigDataSync,
   figArchiveMetaJSON,
   FigArchiveMetaSchema,
+  KALKA_ARCHIVE_PREFIX,
   parseFigBuffer,
   readFigArchiveMeta,
   renameFigArchive,

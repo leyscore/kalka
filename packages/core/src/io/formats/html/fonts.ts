@@ -1,5 +1,15 @@
-import type { WebFontFaceAsset, WebFontFaceRequest } from '@kalka/dom-css/export'
-import type { InterVersion } from '@kalka/scene-graph'
+import type {
+  WebFontFaceAsset,
+  WebFontFaceRequest,
+  WebFontFaceResolver
+} from '@kalka/dom-css/export'
+import {
+  projectFontFormat,
+  projectFontSlug,
+  type InterVersion,
+  type ProjectFont,
+  type ProjectFontFace
+} from '@kalka/scene-graph'
 
 import { weightToStyle } from '#core/text/font/style'
 import { fontManager } from '#core/text/fonts'
@@ -56,5 +66,65 @@ export function loadedFontFaceAssets(interVersion: InterVersion) {
     if (missing.length === 0) return assets
     const fetched = await exportWebFontFaceAssets({ fonts: missing, assetBasePath, interVersion })
     return [...assets, ...fetched.assets]
+  }
+}
+
+/** Whether a face of a document's font serves a weight: its own, or within a variable range. */
+function servesWeight(face: ProjectFontFace, weight: number): boolean {
+  const [from, to = from] = face.weight.split(' ').map(Number)
+  return weight >= from && weight <= to
+}
+
+/** The faces of a document's font a request uses: every file of its weight and style. */
+function projectFaceAssets(
+  font: ProjectFont,
+  request: WebFontFaceRequest,
+  assetBasePath: string
+): WebFontFaceAsset[] {
+  const style = request.style ?? 'normal'
+  const matching = font.faces.filter((face) => face.style === style)
+  const exact = matching.filter((face) => servesWeight(face, request.weight))
+  // A weight the family lacks draws with its nearest, as the canvas does.
+  const distance = (face: ProjectFontFace) =>
+    Math.abs(Number(face.weight.split(' ')[0]) - request.weight)
+  const nearest = Math.min(...matching.map(distance))
+  const faces = exact.length > 0 ? exact : matching.filter((face) => distance(face) === nearest)
+  const folder = `${assetBasePath}/${projectFontSlug(font.family)}`
+  return faces.map((face) => ({
+    family: font.family,
+    weight: face.weight,
+    style,
+    format: projectFontFormat(face.file),
+    ...(face.unicodeRange ? { unicodeRange: face.unicodeRange.split(',') } : {}),
+    path: `${folder}/${face.file}`,
+    content: face.data
+  }))
+}
+
+/**
+ * Ships the fonts a document carries, as files beside the page or in it, before `fallback`
+ * resolves the faces they do not cover: an exported page draws as the canvas does, offline and
+ * without asking a font service. Each file is shipped once, however many weights it serves.
+ */
+export function withProjectFonts(
+  fonts: ReadonlyMap<string, ProjectFont>,
+  fallback: WebFontFaceResolver | 'none'
+): WebFontFaceResolver | 'none' {
+  if (fonts.size === 0) return fallback
+  return async (requests, assetBasePath) => {
+    const assets = new Map<string, WebFontFaceAsset>()
+    const rest: WebFontFaceRequest[] = []
+    for (const request of requests) {
+      const font = fonts.get(request.family)
+      if (!font) {
+        rest.push(request)
+        continue
+      }
+      for (const asset of projectFaceAssets(font, request, assetBasePath))
+        if (!assets.has(asset.path)) assets.set(asset.path, asset)
+    }
+    const others =
+      fallback === 'none' || rest.length === 0 ? [] : await fallback(rest, assetBasePath)
+    return [...assets.values(), ...others]
   }
 }

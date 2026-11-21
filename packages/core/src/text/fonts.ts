@@ -7,6 +7,7 @@ import type { FontVariation, InterVersion, SceneGraph } from '@kalka/scene-graph
 import { DEFAULT_FONT_FAMILY, IS_BROWSER } from '#core/constants'
 import {
   chooseLocalFontMatch,
+  FONT_WEIGHT_NAMES,
   normalizeFontFamily,
   styleToWeight,
   weightToStyle
@@ -55,6 +56,38 @@ export interface BrowserFontFace {
   weight: string
   style: 'normal' | 'italic'
   data: ArrayBuffer
+  /** The characters the file covers, for a family split into one file per script. */
+  unicodeRange?: string
+}
+
+/** A file of a font a document carries, as {@link FontManager.registerProjectFace} takes it. */
+export interface ProjectFaceData {
+  /** A weight such as `400`, or a variable font's range, such as `100 900`. */
+  weight: string
+  style: 'normal' | 'italic'
+  data: ArrayBuffer
+  unicodeRange?: string
+}
+
+/** Whether a `unicode-range` covers basic Latin letters, which a family's main file holds. */
+function coversBasicLatin(unicodeRange: string | undefined): boolean {
+  if (!unicodeRange) return true
+  return unicodeRange.split(',').some((part) => {
+    const [start, end = start] = part.trim().replace(/^U\+/i, '').split('-')
+    const from = Number.parseInt(start.replaceAll('?', '0'), 16)
+    const to = Number.parseInt(end.replaceAll('?', 'F'), 16)
+    return from <= 0x61 && to >= 0x7a
+  })
+}
+
+/** The styles a document's face serves: each named weight a variable font's range covers. */
+export function projectFaceStyles(weight: string, style: 'normal' | 'italic'): string[] {
+  const [from, to = from] = weight.split(' ').map(Number)
+  const italic = style === 'italic'
+  const weights = Object.keys(FONT_WEIGHT_NAMES)
+    .map(Number)
+    .filter((named) => named >= from && named <= to)
+  return (weights.length > 0 ? weights : [from]).map((named) => weightToStyle(named, italic))
 }
 
 export class FontManager {
@@ -168,6 +201,11 @@ export class FontManager {
 
   setWebFontFetch(fetcher: WebFontFetch | null): void {
     this.webFonts.setRemoteFetch(fetcher)
+  }
+
+  /** The fetch font catalogues are read and downloaded through, as the host configured it. */
+  webFontFetch(): WebFontFetch {
+    return this.webFonts.fetcher()
   }
 
   resetWebFontFailures(family?: string, style?: string): void {
@@ -368,6 +406,41 @@ export class FontManager {
 
   async ensureNodeFont(family: string, weight: number): Promise<void> {
     await this.loadFont(family, weightToStyle(weight))
+  }
+
+  /**
+   * Draws `family` with a file of a font the document carries: under every style the file
+   * serves, before any installed or downloaded face. A family split by script registers each
+   * file with its `unicodeRange`, and the file with basic Latin stands for the family's style.
+   */
+  registerProjectFace(family: string, face: ProjectFaceData): void {
+    const primary = coversBasicLatin(face.unicodeRange)
+    for (const style of projectFaceStyles(face.weight, face.style)) {
+      const key = `${family}|${style}`
+      const existing = this.loadedFamilies.get(key)
+      if (existing === face.data) continue
+      if (!existing || (primary && this.loadedFamilySources.get(key) !== 'project')) {
+        if (existing) this.addSupplementalData(key, existing)
+        this.loadedFamilies.set(key, face.data)
+        this.remoteCoverage.delete(key)
+      } else this.addSupplementalData(key, face.data)
+      this.loadedFamilySources.set(key, 'project')
+      this.unavailableFaces.delete(key)
+    }
+    this.registerFontInCanvasKit(family, face.data)
+    this.addBrowserFace({
+      family,
+      weight: face.weight,
+      style: face.style,
+      data: face.data,
+      ...(face.unicodeRange ? { unicodeRange: face.unicodeRange } : {})
+    })
+  }
+
+  private addSupplementalData(key: string, data: ArrayBuffer): void {
+    const supplemental = this.supplementalFamilyData.get(key) ?? []
+    if (!supplemental.includes(data)) supplemental.push(data)
+    this.supplementalFamilyData.set(key, supplemental)
   }
 
   markLoaded(
@@ -757,12 +830,17 @@ export class FontManager {
       known.data === face.data &&
       known.family === face.family &&
       known.weight === face.weight &&
-      known.style === face.style
+      known.style === face.style &&
+      known.unicodeRange === face.unicodeRange
     if (!this.browserFaces.some(same)) {
       this.browserFaces.push(face)
       for (const listener of this.browserFaceListeners) listener(face)
     }
-    const loaded = new FontFace(face.family, face.data, { weight: face.weight, style: face.style })
+    const loaded = new FontFace(face.family, face.data, {
+      weight: face.weight,
+      style: face.style,
+      ...(face.unicodeRange ? { unicodeRange: face.unicodeRange } : {})
+    })
     loaded
       .load()
       .then(() => document.fonts.add(loaded))

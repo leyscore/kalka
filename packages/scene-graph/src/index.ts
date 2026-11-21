@@ -96,6 +96,7 @@ import { DEFAULT_INTER_VERSION } from './constants'
 import { cloneNodeProps } from './copy'
 import { styleAfterFieldChanges } from './css-model/sync'
 import { bindNodeEvents } from './events'
+import type { ProjectFont } from './fonts'
 import * as HitTest from './hit-test'
 export type { DropTargetOptions } from './hit-test'
 import * as Instances from './instances'
@@ -202,6 +203,8 @@ function withStyleGivingWay(node: SceneNode, changes: Partial<SceneNode>): Parti
 export class SceneGraph {
   nodes = new Map<string, SceneNode>()
   images = new Map<string, Uint8Array>()
+  /** Fonts the document carries itself, by family; see `fonts.ts`. */
+  fonts = new Map<string, ProjectFont>()
   variables = new Map<string, Variable>()
   variableCollections = new Map<string, VariableCollection>()
   activeMode = new Map<string, string>()
@@ -236,6 +239,19 @@ export class SceneGraph {
 
     this.addPage('Page 1')
   }
+  /** Keeps `font` with the document, replacing a family of the same name. */
+  setProjectFont(font: ProjectFont): void {
+    this.fonts.set(font.family, font)
+    this.emitter.emit('fonts:changed', font.family)
+  }
+
+  /** Stops keeping a family with the document; its text then draws with what the host has. */
+  removeProjectFont(family: string): boolean {
+    if (!this.fonts.delete(family)) return false
+    this.emitter.emit('fonts:changed', family)
+    return true
+  }
+
   addPage(name: string): SceneNode {
     return this.createNode('CANVAS', this.rootId, { name, width: 0, height: 0 })
   }
@@ -1013,6 +1029,7 @@ export class SceneGraph {
 export * from './class-styles'
 export * from './comments'
 export * from './frame-reviews'
+export * from './fonts'
 export * from './html-element'
 export * from './responsive'
 export * from './shader'
