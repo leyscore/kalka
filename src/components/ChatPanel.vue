@@ -190,19 +190,36 @@ async function submitMessage(message: ChatSubmission) {
   if (generation === viewGeneration) chatInput.value?.restoreDraft(message)
   else for (const image of message.images) revokeImagePreviewURL(image.previewURL)
 }
-/** Sends the prompt the document was started with, such as one from Home, once its canvas is up. */
+/**
+ * Sends the prompt the document was started with, such as one from Home, once its canvas is up;
+ * a draft goes into the composer instead.
+ */
 async function sendQueuedPrompt() {
   const store = getActiveEditorStore()
   const prompt = takeQueuedChatPrompt(store)
   if (!prompt) return
   await store.canvasReady
-  await submitMessage({
+  const message = {
     modelText: prompt.text,
     displayText: prompt.displayText ?? prompt.text,
     images: [],
     nodes: prompt.nodes ?? []
-  })
+  }
+  if (prompt.draft) placeDraft(message)
+  else await submitMessage(message)
 }
+
+/** A draft waiting for the composer, which shows once a model is set up. */
+let waitingDraft: ChatSubmission | null = null
+function placeDraft(message: ChatSubmission) {
+  if (chatInput.value) chatInput.value.restoreDraft(message)
+  else waitingDraft = message
+}
+watch(chatInput, (input) => {
+  if (!input || !waitingDraft) return
+  input.restoreDraft(waitingDraft)
+  waitingDraft = null
+})
 
 let historyReady = false
 // A comment that asks the agent, or a request about the selection, can arrive while it is open.

@@ -1,5 +1,6 @@
-import { fromUint8Array } from 'js-base64'
 import * as v from 'valibot'
+
+import { createPKCEFlow, type PKCEFlow } from '@/app/runtime/pkce'
 
 /** OpenRouter's OAuth PKCE flow: https://openrouter.ai/docs/guides/overview/auth/oauth */
 export const OPENROUTER_AUTH_URL = 'https://openrouter.ai/auth'
@@ -7,11 +8,7 @@ export const OPENROUTER_KEYS_URL = 'https://openrouter.ai/api/v1/auth/keys'
 /** Authorization codes expire after ten minutes. */
 export const OPENROUTER_CODE_LIFETIME_MS = 10 * 60 * 1000
 
-export interface OpenRouterPKCE {
-  verifier: string
-  challenge: string
-  state: string
-}
+export type OpenRouterPKCE = PKCEFlow
 
 export type OpenRouterCallback =
   | { ok: true; code: string }
@@ -24,19 +21,8 @@ export class OpenRouterKeyExchangeError extends Error {
   }
 }
 
-function randomToken(bytes: number): string {
-  return fromUint8Array(crypto.getRandomValues(new Uint8Array(bytes)), true)
-}
-
-/** The S256 challenge for a verifier: the base64url SHA-256 digest, without padding. */
-export async function pkceChallenge(verifier: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
-  return fromUint8Array(new Uint8Array(digest), true)
-}
-
-export async function createOpenRouterPKCE(): Promise<OpenRouterPKCE> {
-  const verifier = randomToken(48)
-  return { verifier, challenge: await pkceChallenge(verifier), state: randomToken(16) }
+export function createOpenRouterPKCE(): Promise<OpenRouterPKCE> {
+  return createPKCEFlow(48)
 }
 
 export function openRouterAuthorizationURL(

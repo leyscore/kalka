@@ -73,8 +73,8 @@ export function startFromURL(url: URL): Promise<void> {
 
 /**
  * A file just created from a Kalka Cloud launch link takes what the console asked for: a frame
- * of a size, a request to the AI agent, or both. Without a model the request waits in the chat
- * and AI setup opens.
+ * of a size, a request to the AI agent, or both. The request waits in the chat's composer for
+ * the person to send; without a model, AI setup opens too.
  */
 export async function fillNewDocument(store: EditorStore, start: ServerLaunchStart): Promise<void> {
   if (start.frame) {
@@ -83,7 +83,7 @@ export async function fillNewDocument(store: EditorStore, start: ServerLaunchSta
     store.zoomToSelection()
   }
   if (start.prompt) {
-    queueChatPrompt(store, start.prompt)
+    queueChatPrompt(store, start.prompt, { draft: true })
     useAIChat().activeTab.value = 'ai'
     if (!isConfigured.value) openAISetup('connect')
   }

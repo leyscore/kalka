@@ -8,6 +8,8 @@ services:
       - KALKA_SETUP_CODE=${KALKA_SETUP_CODE}
       - KALKA_PUBLIC_URL=${KALKA_PUBLIC_URL}
       - KALKA_SERVER_NAME=${KALKA_SERVER_NAME}
+      # Dokploy's Traefik stands in front: rate limits read the address it forwards.
+      - KALKA_TRUSTED_PROXIES=${KALKA_TRUSTED_PROXIES:-1}
     volumes:
       - kalka-data:/data
 

@@ -113,5 +113,9 @@
   "serverLaunchOpening": "Otwieranie pliku z Kalka Cloud…",
   "serverLaunchFailed": "Logowanie do Kalka Cloud nie powiodło się. Otwórz edytor ponownie ze swojej przestrzeni roboczej.",
   "serverLaunchFileGone": "Tego pliku nie ma już na serwerze.",
-  "serverBackToWorkspace": "Wróć do przestrzeni roboczej"
+  "serverBackToWorkspace": "Wróć do przestrzeni roboczej",
+  "serverLaunchSwitchTitle": "Przełączyć na inne konto?",
+  "serverLaunchSwitchBody": "Ten link loguje cię jako {next}. Jesteś zalogowany jako {current}, a nowe pliki trafiłyby na inne konto. Przełącz tylko wtedy, gdy otworzyłeś własny link.",
+  "serverLaunchSwitchConfirm": "Przełącz konto",
+  "serverLaunchSwitchKeep": "Zostaw moje konto"
 }

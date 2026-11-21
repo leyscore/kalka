@@ -20,6 +20,7 @@ import {
   SANDBOX_PATH
 } from './csp'
 import { installIPC } from './ipc'
+import { APP_ORIGIN, APP_SCHEME, isAppURL, isTrustedSender } from './origin'
 
 app.setName('Kalka')
 
@@ -27,8 +28,6 @@ const here = dirname(fileURLToPath(import.meta.url))
 const PRELOAD = join(here, 'preload.cjs')
 /** The Vite dev server during development; the built app otherwise. */
 const DEV_URL = process.env.KALKA_DEV_URL?.replace(/\/$/, '')
-const APP_SCHEME = 'kalka-app'
-const APP_ORIGIN = `${APP_SCHEME}://app`
 /** The built app: shipped in the package's resources, or the workspace build in development. */
 const DIST = app.isPackaged
   ? normalize(join(process.resourcesPath, 'renderer'))
@@ -93,14 +92,14 @@ function pageURL(path: string): string {
   return DEV_URL ? `${DEV_URL}/${relative}` : `${APP_ORIGIN}/${relative}`
 }
 
-function isAppURL(url: string): boolean {
-  return url.startsWith(DEV_URL ? `${DEV_URL}/` : `${APP_ORIGIN}/`) || url === DEV_URL
-}
-
+/**
+ * No window of the app navigates away from it or opens another window: web links open in the
+ * system browser instead. Every web contents gets this, the Software Update window and any later
+ * one as much as the editor, since they all carry the preload.
+ */
 function lockDown(contents: WebContents): void {
-  // The editor never navigates away from itself; web links open in the system browser.
   contents.on('will-navigate', (event, url) => {
-    if (isAppURL(url)) return
+    if (isAppURL(url, DEV_URL)) return
     event.preventDefault()
     if (/^https?:\/\//.test(url)) void shell.openExternal(url)
   })
@@ -147,7 +146,6 @@ function createWindow(): BrowserWindow {
   if (process.platform !== 'darwin') window.setMenuBarVisibility(false)
   track(window, 'main')
   trackTitleBar(window)
-  lockDown(window.webContents)
   window.once('ready-to-show', () => window.show())
   void window.loadURL(pageURL(''))
   return window
@@ -199,13 +197,17 @@ if (!app.requestSingleInstanceLock()) {
     if (!app.isPackaged) app.dock?.setIcon(ICON)
     grantPermissions()
     serveApp()
-    installIPC((contents) => BrowserWindow.fromWebContents(contents))
+    installIPC((contents) => BrowserWindow.fromWebContents(contents), (frame) =>
+      isTrustedSender(frame, DEV_URL)
+    )
     registerHandlers({ createWindow, pageURL, preload: PRELOAD })
     createWindow()
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow()
     })
   })()
+
+  app.on('web-contents-created', (_event, contents) => lockDown(contents))
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()

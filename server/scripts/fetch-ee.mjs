@@ -2,6 +2,10 @@
 //   KALKA_EE_PATH       a local ee.js, for development
 //   KALKA_LICENSE_KEY   downloads ee.js from the Kalka license service
 // Without either, the server builds and runs without single sign-on.
+//
+// The key itself stays out of the bundle: the server reads KALKA_LICENSE_KEY at run time. Only
+// Cloudflare's Workers Builds (WORKERS_CI=1), where the Deploy button puts the key among the
+// build variables and the bundle goes to the owner's own account, keep it as a fallback.
 import { copyFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 
@@ -11,7 +15,9 @@ const version = JSON.parse(
   await (await import('node:fs/promises')).readFile(new URL('../package.json', import.meta.url), 'utf8')
 ).version
 
-const keyLine = (key) => `export const buildLicenseKey: string | null = ${JSON.stringify(key ?? null)}\n`
+const embedKey = process.env.WORKERS_CI === '1'
+const keyLine = (key) =>
+  `export const buildLicenseKey: string | null = ${JSON.stringify((embedKey && key) || null)}\n`
 const withModule = `import type { EnterpriseModule } from './types'
 // @ts-ignore: built from the private enterprise repository
 import enterprise from './ee.js'

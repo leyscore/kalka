@@ -113,5 +113,9 @@
   "serverLaunchOpening": "正在从 Kalka Cloud 打开你的文件…",
   "serverLaunchFailed": "登录 Kalka Cloud 失败。请从你的工作区重新打开编辑器。",
   "serverLaunchFileGone": "服务器上已没有这个文件。",
-  "serverBackToWorkspace": "返回我的工作区"
+  "serverBackToWorkspace": "返回我的工作区",
+  "serverLaunchSwitchTitle": "要切换到另一个账号吗？",
+  "serverLaunchSwitchBody": "此链接会以 {next} 的身份登录。你当前以 {current} 的身份登录，新文件将保存到另一个账号。只有在打开的是你自己的链接时才切换。",
+  "serverLaunchSwitchConfirm": "切换账号",
+  "serverLaunchSwitchKeep": "保留我的账号"
 }

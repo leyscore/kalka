@@ -5,9 +5,9 @@ import {
   openRouterAuthorizationURL,
   OpenRouterKeyExchangeError,
   OPENROUTER_KEYS_URL,
-  parseOpenRouterCallback,
-  pkceChallenge
+  parseOpenRouterCallback
 } from '@/app/ai/providers/openrouter/oauth'
+import { pkceChallenge } from '@/app/runtime/pkce'
 
 import { fetchStub } from '#tests/helpers/fetch'
 

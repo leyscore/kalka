@@ -18,6 +18,10 @@ export interface Env {
   KALKA_TENANT?: string
   /** "false" turns off email and password sign-in, once single sign-on works. */
   KALKA_LOCAL_LOGIN?: string
+  /** Docker: how many reverse proxies stand in front, whose X-Forwarded-For entries are trusted. */
+  KALKA_TRUSTED_PROXIES?: string
+  /** "true" lets single sign-on link to existing password accounts by verified email. */
+  KALKA_OIDC_LINK_LOCAL_ACCOUNTS?: string
   /** Any other KALKA_* setting, read by the enterprise module. */
   [key: string]: unknown
 }
