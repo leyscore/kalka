@@ -17,10 +17,10 @@ const { busy, paused, failed, checkFailed, remembered, retry, retryCheck } = use
   <SettingsSection v-if="!IS_TAURI || paused || failed || checkFailed">
     <template #title>{{ credentials.settingsTitle }}</template>
     <SettingsGroup v-if="!IS_TAURI">
-      <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
+      <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
         <span>
-          <span class="block text-xs text-surface">{{ credentials.rememberDevice }}</span>
-          <span v-if="!remembered" class="block text-[11px] text-muted">{{
+          <span class="block text-[13px] text-surface">{{ credentials.rememberDevice }}</span>
+          <span v-if="!remembered" class="mt-0.5 block text-xs text-muted">{{
             credentials.sessionOnly
           }}</span>
         </span>

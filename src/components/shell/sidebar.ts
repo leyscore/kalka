@@ -1,5 +1,9 @@
 import type { Component } from 'vue'
 
+import { colorToCSS, compositeOver, contrastRatio } from '@kalka/scene-graph/color'
+import { BLACK, WHITE } from '@kalka/scene-graph/constants'
+import type { Color } from '@kalka/scene-graph/primitives'
+
 /** One place in the sidebar: Home, a list of files, a team page or a section of Settings. */
 export interface ShellSidebarItem {
   id: string
@@ -30,6 +34,33 @@ export interface ShellAccount {
   /** Under the name; none when the name already says where the button leads. */
   detail?: string
   initials: string
+  /** Their picture: a photo or their pixel creature; the initials stand in without one. */
+  image?: string
+}
+
+export interface AvatarColors {
+  fill: string
+  ink: string
+}
+
+/** WCAG AA for text: white on the label reads at least this well. */
+const READABLE_CONTRAST = 4.5
+const SHADE_STEP = 0.05
+
+/**
+ * A label in a person's room color with white text on it, such as their name beside their cursor:
+ * the color is shaded just enough for the white to read, so a pale yellow or a bright blue still
+ * carries legible text.
+ */
+export function avatarColors(color: Color): AvatarColors {
+  let fill = color
+  for (
+    let shade = SHADE_STEP;
+    contrastRatio(fill, WHITE) < READABLE_CONTRAST && shade < 1;
+    shade += SHADE_STEP
+  )
+    fill = compositeOver(BLACK, color, shade)
+  return { fill: colorToCSS(fill), ink: colorToCSS(WHITE) }
 }
 
 export interface ShellSidebarProps {

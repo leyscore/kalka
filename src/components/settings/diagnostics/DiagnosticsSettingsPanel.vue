@@ -79,19 +79,21 @@ async function saveDiagnostics() {
     <template #title>{{ diagnosticMessages.title }}</template>
     <template #description>{{ diagnosticMessages.description }}</template>
     <SettingsGroup>
-      <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
+      <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
         <span
-          ><span class="block text-xs text-surface">{{ diagnosticMessages.localDiagnostics }}</span
-          ><span class="block text-[11px] text-muted">{{
+          ><span class="block text-[13px] text-surface">{{
+            diagnosticMessages.localDiagnostics
+          }}</span
+          ><span class="mt-0.5 block text-xs text-muted">{{
             diagnosticMessages.localDiagnosticsDescription
           }}</span></span
         >
         <AppSwitch v-model="diagnosticsEnabled" :label="diagnosticMessages.localDiagnostics" />
       </label>
-      <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
+      <label class="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
         <span
-          ><span class="block text-xs text-surface">{{ diagnosticMessages.usageHistory }}</span
-          ><span v-if="usageEnabled" class="block text-[11px] text-muted">{{
+          ><span class="block text-[13px] text-surface">{{ diagnosticMessages.usageHistory }}</span
+          ><span v-if="usageEnabled" class="mt-0.5 block text-xs text-muted">{{
             diagnosticMessages.usageHistoryDescription
           }}</span></span
         >

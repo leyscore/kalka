@@ -7,6 +7,8 @@ async function openMCPPage(page: Page) {
   await new CanvasHelper(page).waitForInit()
   await page.getByTestId('app-settings-trigger').click()
   await page.getByTestId('settings-section-mcp').click()
+  // The local server's own settings wait under Advanced settings.
+  await page.getByTestId('settings-mcp-advanced').getByRole('button').first().click()
 }
 
 test('MCP startup failures are explained and translated instead of one generic message', async ({
@@ -30,6 +32,8 @@ test('MCP startup failures are explained and translated instead of one generic m
   await page.getByTestId('settings-language').click()
   await page.getByRole('option', { name: 'Русский', exact: true }).click()
   await page.getByTestId('settings-section-mcp').click()
+  // The local server's own settings wait under Advanced settings.
+  await page.getByTestId('settings-mcp-advanced').getByRole('button').first().click()
   await expect(page.getByRole('alert', { name: 'MCP-сервер не ответил вовремя' })).toContainText(
     'Он не стал готовым за отведённое время.'
   )

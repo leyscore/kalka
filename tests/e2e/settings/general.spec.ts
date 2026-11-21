@@ -9,12 +9,11 @@ test('language can be changed from General settings and persists', async ({ page
   await canvas.waitForInit()
 
   await page.getByTestId('app-settings-trigger').click()
-  await page.getByRole('combobox', { name: 'Theme', exact: true }).click()
-  await page.getByRole('option', { name: 'Dark', exact: true }).click()
+  await page.getByRole('radio', { name: 'Dark', exact: true }).click()
   await page.getByTestId('settings-language').click()
   await page.getByRole('option', { name: 'Русский' }).click()
   await expect(page.getByTestId('app-settings')).toContainText('Настройки')
-  await expect(page.getByRole('combobox', { name: 'Тема', exact: true })).toHaveText('Тёмная')
+  await expect(page.getByRole('radio', { name: 'Тёмная', exact: true })).toBeChecked()
   await expect(page.getByRole('combobox', { name: 'Анимации' })).toHaveText('Как в системе')
 
   await page.reload()
@@ -26,7 +25,7 @@ test('language can be changed from General settings and persists', async ({ page
   await page.getByTestId('settings-language').click()
   await page.getByRole('option', { name: 'English' }).click()
   await expect(page.getByTestId('app-settings')).toContainText('Settings')
-  await expect(page.getByRole('combobox', { name: 'Theme', exact: true })).toHaveText('Dark')
+  await expect(page.getByRole('radio', { name: 'Dark', exact: true })).toBeChecked()
   await expect(page.getByRole('combobox', { name: 'Animations' })).toHaveText('Follow system')
 })
 
@@ -75,6 +74,8 @@ test('progressive tiled rendering preference persists and URL overrides take pre
   await canvas.waitForInit()
 
   await page.getByTestId('app-settings-trigger').click()
+  // Rendering lives under Diagnostics, in Performance.
+  await page.getByTestId('settings-section-diagnostics').click()
   const tiled = page.getByRole('switch', { name: 'Progressive rendering' })
   await expect(tiled).not.toBeChecked()
   await tiled.click()
@@ -103,6 +104,7 @@ test('progressive tiled rendering preference persists and URL overrides take pre
   await page.goto('/?test&renderer=retained')
   await canvas.waitForInit()
   await page.getByTestId('app-settings-trigger').click()
+  await page.getByTestId('settings-section-diagnostics').click()
   await expect(tiled).toBeChecked()
   await expect(
     page.getByText(/current session renderer is controlled by a URL override/i)

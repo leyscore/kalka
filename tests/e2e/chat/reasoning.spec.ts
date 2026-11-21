@@ -6,6 +6,8 @@ test('expand while thinking auto-collapses but preserves manual opening', async 
   page
 }) => {
   await page.getByTestId('provider-settings-trigger').click()
+  // Chat options wait folded under Kalka AI.
+  await page.getByTestId('settings-chat-options').getByRole('button').first().click()
   await page.getByRole('combobox', { name: 'Reasoning display' }).click()
   await page.getByRole('option', { name: 'Expand while thinking', exact: true }).click()
   await page.getByTestId('app-settings-back').click()
@@ -68,6 +70,8 @@ test('reasoning preferences use AI settings and persist across reload', async ({
   page
 }) => {
   await page.getByTestId('provider-settings-trigger').click()
+  // Chat options wait folded under Kalka AI.
+  await page.getByTestId('settings-chat-options').getByRole('button').first().click()
   const display = page.getByRole('combobox', { name: 'Reasoning display' })
   await expect(display).toContainText('Collapsed by default')
   await display.click()
@@ -89,5 +93,7 @@ test('reasoning preferences use AI settings and persist across reload', async ({
   await page.reload()
   await chat.chatTab.click()
   await page.getByTestId('provider-settings-trigger').click()
+  // Chat options wait folded under Kalka AI.
+  await page.getByTestId('settings-chat-options').getByRole('button').first().click()
   await expect(display).toContainText('Expanded by default')
 })

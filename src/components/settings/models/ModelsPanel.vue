@@ -12,6 +12,7 @@ import {
 } from '@/app/ai/models/settings/request'
 import { useModelSettings } from '@/app/ai/models/settings/use'
 import ConnectAgent from '@/components/chat/connect/ConnectAgent.vue'
+import SettingsDisclosure from '@/components/settings/layout/SettingsDisclosure.vue'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
 import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import ProfileEditor from '@/components/settings/models/ProfileEditor.vue'
@@ -99,22 +100,33 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
     </template>
 
     <SettingsPage>
-      <div class="flex flex-col gap-6">
+      <div class="flex flex-col gap-8">
         <SettingsSection>
-          <template #title>{{ ai.modelsTitle }}</template>
-          <template #description>{{ ai.modelsDescription }}</template>
+          <template #title>{{ ai.connectAITitle }}</template>
+          <template #description>{{ ai.connectAIDescription }}</template>
+          <ConnectAgent placement="settings" data-test-id="settings-connect" />
+          <AppButton
+            color="primary"
+            variant="link"
+            size="xs"
+            class="self-start"
+            data-test-id="settings-run-ai-setup"
+            @click="openAISetup()"
+          >
+            <template #leading><icon-hugeicons-sparkles class="size-3" /></template>
+            {{ ai.aiSetupRun }}
+          </AppButton>
+        </SettingsSection>
+
+        <SettingsSection>
+          <template #title>{{ ai.yourModels }}</template>
+          <template #description>{{ ai.yourModelsDescription }}</template>
           <template #actions>
-            <AppButton
-              color="primary"
-              variant="solid"
-              data-test-id="settings-add-model"
-              @click="addModel"
-            >
+            <AppButton variant="outline" data-test-id="settings-add-model" @click="addModel">
               <template #leading><icon-hugeicons-plus class="size-3" /></template>
               {{ ai.addModel }}
             </AppButton>
           </template>
-
           <div class="flex flex-col gap-1.5" data-test-id="settings-model-list">
             <AppActionRow
               v-for="profile in profiles"
@@ -172,25 +184,16 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
               </template>
             </AppActionRow>
           </div>
-          <!-- The short way to one more agent or provider; guided setup below plans several models. -->
-          <ConnectAgent placement="settings" data-test-id="settings-connect" />
-          <AppButton
-            color="primary"
-            variant="link"
-            size="xs"
-            class="self-start"
-            data-test-id="settings-run-ai-setup"
-            @click="openAISetup()"
-          >
-            <template #leading><icon-hugeicons-sparkles class="size-3" /></template>
-            {{ ai.aiSetupRun }}
-          </AppButton>
         </SettingsSection>
 
         <SettingsSection>
-          <template #title>{{ ai.modelAssignments }}</template>
-          <template #description>{{ ai.modelAssignmentsDescription }}</template>
-          <RoleAssignments />
+          <template #title>{{ ai.mainModelTitle }}</template>
+          <template #description>{{ ai.mainModelDescription }}</template>
+          <RoleAssignments :roles="['design']" />
+          <SettingsDisclosure data-test-id="settings-model-per-task">
+            <template #label>{{ ai.perTaskModels }}</template>
+            <RoleAssignments :roles="['review', 'fast', 'vision']" />
+          </SettingsDisclosure>
         </SettingsSection>
         <slot />
       </div>

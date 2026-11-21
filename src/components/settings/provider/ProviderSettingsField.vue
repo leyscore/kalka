@@ -32,7 +32,7 @@ const emit = defineEmits<{ clear: []; blur: [] }>()
 <template>
   <div class="flex flex-col gap-1" @focusout="emit('blur')">
     <div class="flex items-center justify-between">
-      <label :for="inputID" class="text-xs text-surface">{{ label }}</label>
+      <label :for="inputID" class="text-[13px] text-surface">{{ label }}</label>
       <AppButton
         v-if="clearLabel"
         color="neutral"

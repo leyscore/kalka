@@ -12,10 +12,12 @@ for (const width of [1280, 390]) {
     await canvas.waitForInit()
     async function open() {
       await page.keyboard.press(process.platform === 'darwin' ? 'Meta+,' : 'Control+,')
+      // Tool access is a page inside External agents.
       if (width < 640) {
         await page.getByTestId('app-settings').getByTestId('shell-menu').click()
-        await page.getByRole('tab', { name: 'Tool access', exact: true }).click()
-      } else await page.getByRole('tab', { name: 'Tool access', exact: true }).click()
+        await page.getByRole('tab', { name: 'External agents', exact: true }).click()
+      } else await page.getByTestId('settings-section-mcp').click()
+      await page.getByTestId('settings-choose-tools').click()
     }
     await open()
     const search = page.getByRole('searchbox', { name: 'Search tools' })

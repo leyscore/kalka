@@ -8,6 +8,7 @@ import IconServer from '~icons/hugeicons/server-stack-01'
 
 import { useI18n } from '@kalka/vue'
 
+import { useAvatar } from '@/app/collab/avatar'
 import { useCollabIdentity } from '@/app/collab/identity'
 import { serverAccount } from '@/app/collab/server/account'
 import { filesListFromPath, filesPath } from '@/app/home/files-route'
@@ -32,6 +33,7 @@ const { files, storage, menu, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const identity = useCollabIdentity()
+const avatar = useAvatar()
 const ui = shellSidebar()
 
 const workspace = computed(() => {
@@ -59,9 +61,15 @@ const selected = computed(() => {
 })
 
 const account = computed(() => {
-  const name = identity.hasChosenName.value ? identity.name.value : serverAccount.value?.user.name
-  if (!name) return { name: files.value.accountAndSettings, initials: 'K' }
-  return { name, detail: files.value.accountAndSettings, initials: initialsOf(name) }
+  const name = identity.hasChosenName.value
+    ? identity.name.value
+    : (serverAccount.value?.user.name ?? identity.guestName)
+  return {
+    name,
+    detail: files.value.accountAndSettings,
+    initials: initialsOf(name),
+    image: avatar.url.value
+  }
 })
 
 function select(id: string): void {

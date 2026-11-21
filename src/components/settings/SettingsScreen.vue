@@ -7,13 +7,13 @@ import IconChart from '~icons/hugeicons/chart-no-axes-combined'
 import IconCloud from '~icons/hugeicons/cloud'
 import IconImage from '~icons/hugeicons/image-01'
 import IconPlug from '~icons/hugeicons/plug'
-import IconServer from '~icons/hugeicons/server-stack-01'
 import IconSettings from '~icons/hugeicons/settings-01'
-import IconSliders from '~icons/hugeicons/sliders-horizontal'
 import IconSparkles from '~icons/hugeicons/sparkles'
+import IconUser from '~icons/hugeicons/user'
 
 import { useI18n } from '@kalka/vue'
 
+import { useAvatar } from '@/app/collab/avatar'
 import { useCollabIdentity } from '@/app/collab/identity'
 import { serverAccount } from '@/app/collab/server/account'
 import { provideSettingsNavigation } from '@/app/settings/navigation/use'
@@ -23,9 +23,12 @@ import {
   settingsSection,
   type SettingsSection
 } from '@/app/settings/open'
+import AccountProfile from '@/components/settings/account/AccountProfile.vue'
 import ChatSettingsSection from '@/components/settings/chat/ChatSettingsSection.vue'
 import DiagnosticsSettingsPanel from '@/components/settings/diagnostics/DiagnosticsSettingsPanel.vue'
 import GeneralSettingsPanel from '@/components/settings/general/GeneralSettingsPanel.vue'
+import RenderingSettingsSection from '@/components/settings/general/RenderingSettingsSection.vue'
+import SettingsDisclosure from '@/components/settings/layout/SettingsDisclosure.vue'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
 import SettingsSidebar from '@/components/settings/layout/SettingsSidebar.vue'
 import type { SettingsSidebarGroup } from '@/components/settings/layout/sidebar'
@@ -47,14 +50,15 @@ import {
 } from '@/components/ui/dialog'
 import AppTabsContent from '@/components/ui/tabs/AppTabsContent.vue'
 import AppTabsRoot from '@/components/ui/tabs/AppTabsRoot.vue'
-import { settingsShell } from '@/theme/settings/shell'
+import { settingsColumn, settingsShell } from '@/theme/settings/shell'
 
 /**
  * Settings, a page at `/settings/<section>` in the app's shell: the sidebar holds the way back,
  * the person and the sections; the section itself sits on a frosted panel beside it.
  */
-const { settings, common, collaboration, files } = useI18n()
+const { settings, common, files, ai } = useI18n()
 const identity = useCollabIdentity()
+const avatar = useAvatar()
 const navigation = provideSettingsNavigation()
 tryOnScopeDispose(registerSettingsNavigation(navigation.request))
 const { editing, confirming } = navigation
@@ -62,38 +66,66 @@ const ui = settingsShell()
 
 const groups = computed<SettingsSidebarGroup[]>(() => [
   {
-    id: 'app',
-    label: settings.value.groupApp,
+    id: 'account',
+    label: settings.value.account,
     sections: [
-      { value: 'general', label: settings.value.general, icon: IconSettings },
-      { value: 'storage', label: settings.value.storage, icon: IconCloud },
-      { value: 'server', label: collaboration.value.serverTab, icon: IconServer },
-      { value: 'media', label: settings.value.media, icon: IconImage },
-      { value: 'diagnostics', label: settings.value.diagnostics, icon: IconActivity }
+      { value: 'server', label: settings.value.account, icon: IconUser },
+      { value: 'general', label: settings.value.preferences, icon: IconSettings }
+    ]
+  },
+  {
+    id: 'workspace',
+    label: settings.value.groupWorkspace,
+    sections: [
+      { value: 'storage', label: settings.value.navSharedStorage, icon: IconCloud },
+      { value: 'media', label: settings.value.navImages, icon: IconImage }
     ]
   },
   {
     id: 'ai',
     label: settings.value.groupAI,
     sections: [
-      { value: 'ai', label: settings.value.aiAndAgents, icon: IconSparkles },
-      { value: 'mcp', label: settings.value.mcp, icon: IconPlug },
-      { value: 'tools', label: settings.value.toolAccess, icon: IconSliders },
+      { value: 'ai', label: settings.value.navKalkaAI, icon: IconSparkles },
+      { value: 'mcp', label: settings.value.navAgents, icon: IconPlug },
       { value: 'usage', label: settings.value.usage, icon: IconChart }
     ]
+  },
+  {
+    id: 'advanced',
+    label: settings.value.groupAdvanced,
+    sections: [{ value: 'diagnostics', label: settings.value.diagnostics, icon: IconActivity }]
   }
 ])
+/** Tool access is a page inside External agents: reached from it, with a way back to it. */
+const parentSection = computed<SettingsSection | undefined>(() =>
+  settingsSection.value === 'tools' ? 'mcp' : undefined
+)
+/** A sentence under each section's name, saying what it is for. */
+const descriptions = computed<Record<SettingsSection, string>>(() => ({
+  server: settings.value.accountDescription,
+  general: settings.value.preferencesDescription,
+  storage: settings.value.storageDescription,
+  media: settings.value.mediaDescription,
+  ai: settings.value.aiDescription,
+  mcp: settings.value.mcpDescription,
+  tools: settings.value.chooseToolsDescription,
+  usage: settings.value.usageDescription,
+  diagnostics: settings.value.diagnosticsDescription
+}))
 const sections = computed(() => groups.value.flatMap((group) => group.sections))
-const sectionLabel = computed(
-  () => sections.value.find((section) => section.value === settingsSection.value)?.label ?? ''
+const sectionLabel = computed(() =>
+  settingsSection.value === 'tools'
+    ? settings.value.chooseTools
+    : (sections.value.find((section) => section.value === settingsSection.value)?.label ?? '')
 )
 
 const profile = computed(() => {
   const account = serverAccount.value
-  const name = identity.hasChosenName.value ? identity.name.value : account?.user.name
+  const name = identity.hasChosenName.value
+    ? identity.name.value
+    : (account?.user.name ?? identity.guestName)
   const detail = account?.user.email ?? files.value.thisComputer
-  if (!name) return { name: detail, initials: 'K' }
-  return { name, detail, initials: initialsOf(name) }
+  return { name, detail, initials: initialsOf(name), image: avatar.url.value }
 })
 
 function isSection(value: string): value is SettingsSection {
@@ -139,6 +171,7 @@ function onOpenChange(open: boolean): void {
             :label="settings.title"
             :back-label="common.back"
             :can-leave="!editing"
+            :parent="parentSection"
             @back="close"
           />
         </template>
@@ -157,14 +190,32 @@ function onOpenChange(open: boolean): void {
         </template>
 
         <div :class="ui.panel()" data-test-id="settings-panel">
-          <h1 :class="ui.heading()">{{ sectionLabel }}</h1>
+          <header :class="ui.header()">
+            <div :class="settingsColumn">
+              <button
+                v-if="parentSection"
+                type="button"
+                :class="ui.parent()"
+                data-test-id="settings-parent"
+                @click="onSectionChange(parentSection)"
+              >
+                <icon-hugeicons-arrow-left-01 class="size-3.5" aria-hidden="true" />
+                {{ settings.navAgents }}
+              </button>
+              <h1 :class="ui.heading()">{{ sectionLabel }}</h1>
+              <p :class="ui.description()">{{ descriptions[settingsSection] }}</p>
+            </div>
+          </header>
           <AppTabsContent value="general" as-child>
             <SettingsPage><GeneralSettingsPanel /></SettingsPage>
           </AppTabsContent>
           <AppTabsContent value="ai" as-child>
             <section class="flex min-h-0 min-w-0 flex-1 flex-col" data-test-id="settings-ai-panel">
               <ModelsPanel>
-                <ChatSettingsSection />
+                <SettingsDisclosure data-test-id="settings-chat-options">
+                  <template #label>{{ ai.chatOptions }}</template>
+                  <ChatSettingsSection untitled />
+                </SettingsDisclosure>
               </ModelsPanel>
             </section>
           </AppTabsContent>
@@ -172,7 +223,12 @@ function onOpenChange(open: boolean): void {
             <SettingsPage><UsageSettingsPanel /></SettingsPage>
           </AppTabsContent>
           <AppTabsContent value="diagnostics" as-child>
-            <SettingsPage><DiagnosticsSettingsPanel /></SettingsPage>
+            <SettingsPage>
+              <div class="flex flex-col gap-8">
+                <DiagnosticsSettingsPanel />
+                <RenderingSettingsSection />
+              </div>
+            </SettingsPage>
           </AppTabsContent>
           <AppTabsContent value="mcp" as-child>
             <MCPWorkspacePanel />
@@ -187,7 +243,12 @@ function onOpenChange(open: boolean): void {
             <StorageSettingsPanel />
           </AppTabsContent>
           <AppTabsContent value="server" as-child>
-            <SettingsPage><ServerSettingsPanel /></SettingsPage>
+            <SettingsPage>
+              <div class="flex flex-col gap-6" data-test-id="settings-account-panel">
+                <AccountProfile />
+                <ServerSettingsPanel />
+              </div>
+            </SettingsPage>
           </AppTabsContent>
         </div>
       </ShellFrame>
