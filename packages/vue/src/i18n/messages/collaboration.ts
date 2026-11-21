@@ -95,7 +95,14 @@ export const collaborationMessageDefaults = {
   serverShareFailed: 'Couldn’t save this file on the server.',
   serverRoleAdmin: 'Administrator',
   serverRoleEditor: 'Editor',
-  serverRoleViewer: 'Viewer'
+  serverRoleViewer: 'Viewer',
+  serverOpeningDescription: params('Opening the file from {server}.'),
+  serverMissingTitle: 'This file isn’t on the server',
+  serverMissingDescription:
+    'It was deleted, or the link is incomplete. Ask whoever sent it for a new link.',
+  serverEmptyTitle: 'Nothing in this file yet',
+  serverEmptyDescription: 'It opens here as soon as an editor opens it in Kalka.',
+  serverCloseFile: 'Close'
 } as const
 
 export const collaborationMessages = i18n('collaboration', collaborationMessageDefaults)

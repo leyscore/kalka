@@ -49,3 +49,29 @@ describe('room tab status', () => {
     expect(deriveRoomStatus({ ...base, hasDocument: true })).toBe('alone')
   })
 })
+
+describe('server room status', () => {
+  const server = { loaded: false, settling: false, gone: false }
+
+  test('opens from the server without waiting for anyone, however long the load takes', () => {
+    const connected = { ...base, connectedFor: DISCOVERY_MS * 3, server }
+    expect(deriveRoomStatus(connected)).toBe('connecting')
+    expect(deriveRoomStatus({ ...base, openFor: UNREACHABLE_MS, server })).toBe('unreachable')
+  })
+
+  test('is empty once loaded with nothing, unless a version is being applied', () => {
+    const loaded = { ...base, connectedFor: 0, server: { ...server, loaded: true } }
+    expect(deriveRoomStatus(loaded)).toBe('empty')
+    expect(deriveRoomStatus({ ...loaded, server: { ...loaded.server, settling: true } })).toBe(
+      'connecting'
+    )
+  })
+
+  test('says the file is missing once the server says so, even after it was open', () => {
+    const gone = { ...server, gone: true }
+    expect(deriveRoomStatus({ ...base, server: gone })).toBe('missing')
+    expect(deriveRoomStatus({ ...base, hasDocument: true, peerCount: 1, server: gone })).toBe(
+      'missing'
+    )
+  })
+})

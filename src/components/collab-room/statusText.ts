@@ -14,5 +14,7 @@ export function roomStatusText(
   if (status === 'alone') return messages.statusAlone
   if (status === 'waiting') return messages.waitingTitle
   if (status === 'unreachable') return messages.unreachableTitle
+  if (status === 'missing') return messages.serverMissingTitle
+  if (status === 'empty') return messages.serverEmptyTitle
   return messages.joiningTitle
 }

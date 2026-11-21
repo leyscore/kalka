@@ -86,5 +86,11 @@
   "serverShareFailed": "このファイルをサーバーに保存できませんでした。",
   "serverRoleAdmin": "管理者",
   "serverRoleEditor": "編集者",
-  "serverRoleViewer": "閲覧者"
+  "serverRoleViewer": "閲覧者",
+  "serverOpeningDescription": "{server} からファイルを開いています。",
+  "serverMissingTitle": "このファイルはサーバーにありません",
+  "serverMissingDescription": "削除されたか、リンクが不完全です。送ってくれた人に新しいリンクを頼んでください。",
+  "serverEmptyTitle": "このファイルはまだ空です",
+  "serverEmptyDescription": "編集者が Kalka で開くと、ここに表示されます。",
+  "serverCloseFile": "閉じる"
 }

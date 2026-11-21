@@ -227,6 +227,8 @@ export function bindVariableSync({ store, ydoc, yvariables, ycollections }: Vari
 
   return {
     share,
+    /** Writes what changed since the last write, as an edit outside the history needs. */
+    send,
     dispose() {
       // An edit made just before leaving still reaches the room.
       send()

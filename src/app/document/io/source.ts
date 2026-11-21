@@ -27,6 +27,7 @@ import {
   type DocumentSourceAccess
 } from '@/app/document/io/types'
 import { createDocumentRecovery } from '@/app/document/recovery'
+import { isRecoveryKeptElsewhere } from '@/app/document/recovery/kept-elsewhere'
 import { recoveryEnabled } from '@/app/document/recovery/preferences'
 import { restorableFilePath } from '@/app/document/recovery/source-path'
 import { notificationMessages } from '@/app/i18n/notifications'
@@ -121,9 +122,10 @@ export function createDocumentSourceActions({
     isEnabled: () => recoveryEnabled.value,
     buildFigFile: buildRecoveryFigFile,
     isAutosaved: () =>
-      state.autosaveEnabled &&
-      !autosave.isFailing() &&
-      (!!getFileHandle() || !!getFilePath() || !!getStorageBinding()),
+      isRecoveryKeptElsewhere(state) ||
+      (state.autosaveEnabled &&
+        !autosave.isFailing() &&
+        (!!getFileHandle() || !!getFilePath() || !!getStorageBinding())),
     sourcePath: () => restorableFilePath(getFilePath())
   })
 

@@ -86,5 +86,11 @@
   "serverShareFailed": "No se pudo guardar este archivo en el servidor.",
   "serverRoleAdmin": "Administrador",
   "serverRoleEditor": "Editor",
-  "serverRoleViewer": "Lector"
+  "serverRoleViewer": "Lector",
+  "serverOpeningDescription": "Abriendo el archivo desde {server}.",
+  "serverMissingTitle": "Este archivo no está en el servidor",
+  "serverMissingDescription": "Se eliminó o el enlace está incompleto. Pide un enlace nuevo a quien te lo envió.",
+  "serverEmptyTitle": "Este archivo aún está vacío",
+  "serverEmptyDescription": "Se abrirá aquí en cuanto un editor lo abra en Kalka.",
+  "serverCloseFile": "Cerrar"
 }

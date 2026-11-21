@@ -8,6 +8,9 @@ import type {
   JoinCollabRoom
 } from './types'
 
+/** The close code a room's socket gets when its document is deleted on the server. */
+const DOCUMENT_DELETED_CODE = 4404
+
 /** The server introduces everyone in the room as soon as the socket opens. */
 const SERVER_DISCOVERY_MS = 1500
 const RECONNECT_MIN_MS = 1000
@@ -26,6 +29,18 @@ export interface ServerRoomTransport extends CollabRoomTransport {
   readonly server: true
   /** The role the server gave this person in the room, once connected. */
   role(): ServerRole | null
+  /** Runs once the server says the document does not exist, or no longer; it stops trying. */
+  onGone(handler: () => void): void
+}
+
+/** Whether a failed ticket request means the document is not on the server. */
+function isMissingDocument(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error.status === 404 || error.status === 410)
+  )
 }
 
 export function isServerTransport(room: CollabRoomTransport): room is ServerRoomTransport {
@@ -47,6 +62,8 @@ function joinServerRoom(
   const receivers = new Map<string, CollabActionReceiver[]>()
   const joinHandlers: ((peerId: string) => void)[] = []
   const leaveHandlers: ((peerId: string) => void)[] = []
+  const goneHandlers: (() => void)[] = []
+  let gone = false
   const peers = new Set<string>()
   let socket: WebSocket | null = null
   let welcomed = false
@@ -91,6 +108,14 @@ function joinServerRoom(
     for (const peerId of peers) peerLeft(peerId)
   }
 
+  function markGone() {
+    if (gone) return
+    gone = true
+    left = true
+    clearTimeout(retryTimer)
+    for (const handler of goneHandlers) handler()
+  }
+
   function scheduleReconnect() {
     if (left) return
     clearTimeout(retryTimer)
@@ -104,6 +129,10 @@ function joinServerRoom(
     try {
       pass = await ticket(roomId)
     } catch (error) {
+      if (isMissingDocument(error)) {
+        markGone()
+        return
+      }
       console.warn('[Kalka server] Could not get a room ticket', error)
       scheduleReconnect()
       return
@@ -114,9 +143,10 @@ function joinServerRoom(
     ws.binaryType = 'arraybuffer'
     socket = ws
     ws.addEventListener('message', onMessage)
-    ws.addEventListener('close', () => {
+    ws.addEventListener('close', (event) => {
       if (socket === ws) dropConnection()
-      scheduleReconnect()
+      if (event.code === DOCUMENT_DELETED_CODE) markGone()
+      else scheduleReconnect()
     })
   }
 
@@ -149,10 +179,15 @@ function joinServerRoom(
     },
     onPeerJoin: (handler) => void joinHandlers.push(handler),
     onPeerLeave: (handler) => void leaveHandlers.push(handler),
+    onGone: (handler) => {
+      if (gone) handler()
+      else goneHandlers.push(handler)
+    },
     signalingConnected: () => welcomed,
     discoveryMs: SERVER_DISCOVERY_MS,
     async leave() {
       left = true
+      goneHandlers.length = 0
       clearTimeout(retryTimer)
       watchdog.pause()
       socket?.close(1000, 'Left')

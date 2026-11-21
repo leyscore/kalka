@@ -86,5 +86,11 @@
   "serverShareFailed": "Diese Datei konnte nicht auf dem Server gespeichert werden.",
   "serverRoleAdmin": "Administrator",
   "serverRoleEditor": "Bearbeiter",
-  "serverRoleViewer": "Betrachter"
+  "serverRoleViewer": "Betrachter",
+  "serverOpeningDescription": "Die Datei wird von {server} geöffnet.",
+  "serverMissingTitle": "Diese Datei ist nicht auf dem Server",
+  "serverMissingDescription": "Sie wurde gelöscht, oder der Link ist unvollständig. Bitte die Person, die ihn geschickt hat, um einen neuen Link.",
+  "serverEmptyTitle": "Diese Datei ist noch leer",
+  "serverEmptyDescription": "Sie öffnet sich hier, sobald eine Person mit Bearbeitungsrechten sie in Kalka öffnet.",
+  "serverCloseFile": "Schließen"
 }

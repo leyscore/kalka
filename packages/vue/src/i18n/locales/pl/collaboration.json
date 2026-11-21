@@ -86,5 +86,11 @@
   "serverShareFailed": "Nie udało się zapisać tego pliku na serwerze.",
   "serverRoleAdmin": "Administrator",
   "serverRoleEditor": "Edytor",
-  "serverRoleViewer": "Czytelnik"
+  "serverRoleViewer": "Czytelnik",
+  "serverOpeningDescription": "Otwieranie pliku z {server}.",
+  "serverMissingTitle": "Tego pliku nie ma na serwerze",
+  "serverMissingDescription": "Został usunięty albo link jest niepełny. Poproś osobę, która go wysłała, o nowy link.",
+  "serverEmptyTitle": "Ten plik jest jeszcze pusty",
+  "serverEmptyDescription": "Otworzy się tutaj, gdy tylko edytor otworzy go w Kalce.",
+  "serverCloseFile": "Zamknij"
 }
