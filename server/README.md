@@ -99,7 +99,8 @@ Single sign-on is part of the Kalka enterprise module, which needs a license key
 **Add the key.**
 
 - Cloudflare: in the Worker, open **Settings › Build › Variables and secrets**, add `KALKA_LICENSE_KEY`, then redeploy (Deployments › Retry, or push to your repository). The build adds the module.
-- Docker: build the image with the key as a build secret, which never lands in the image: `docker build --secret id=kalka_license,env=KALKA_LICENSE_KEY -t kalka-server .`, and also pass `KALKA_LICENSE_KEY` to the container.
+- Docker: build the image with the key as a build secret, `docker build --secret id=kalka_license,env=KALKA_LICENSE_KEY -t kalka-server .`. The build uses it only to download the module, and the image does not contain it, so pass `KALKA_LICENSE_KEY` to the container as well: the server reads it from the environment at run time.
+- Deploying from your own machine with `npm run deploy`: set the key in your shell for the build, and add it to the Worker as a secret (`npx wrangler secret put KALKA_LICENSE_KEY`), since only Cloudflare's own builds keep it in the bundle.
 
 **Register Kalka with your identity provider** as a confidential web application, with the redirect URI `https://<your server>/auth/oidc/callback`, then set:
 
@@ -113,7 +114,8 @@ Single sign-on is part of the Kalka enterprise module, which needs a license key
 | `KALKA_OIDC_DEFAULT_ROLE` | Role for people in none of the groups above. Default `editor`. |
 | `KALKA_OIDC_GROUPS_CLAIM` | Claim that lists groups. Default `groups`. |
 | `KALKA_OIDC_SCOPES` | Default `openid email profile`; add `groups` where your provider needs it. |
-| `KALKA_OIDC_TRUST_EMAIL` | `true` links an existing password account by email even when the provider does not mark the email as verified. |
+| `KALKA_OIDC_LINK_LOCAL_ACCOUNTS` | `true` lets a single sign-on link to an existing password account, administrators included, with the same verified email. The account then takes its role from the provider's groups, or `KALKA_OIDC_DEFAULT_ROLE`. Off by default, so someone who can choose their email at the provider cannot take over an account; environment only, not in the console. |
+| `KALKA_OIDC_TRUST_EMAIL` | `true` treats every email the provider sends as verified. Only for providers where people cannot choose or change their own address: with `KALKA_OIDC_LINK_LOCAL_ACCOUNTS`, it lets the provider's users take over the password accounts that share their address. |
 | `KALKA_OIDC_TOKEN_AUTH` | `basic` (default) or `post`, how the server sends its client secret. |
 
 Provider notes:
@@ -121,12 +123,14 @@ Provider notes:
 - **Authentik**: issuer `https://authentik.example.com/application/o/<slug>/`. Groups come in the `groups` claim.
 - **Keycloak**: issuer `https://keycloak.example.com/realms/<realm>`. Add a “Group Membership” mapper with full path off to send `groups`.
 - **Authelia**: issuer `https://auth.example.com`; add the `groups` scope.
-- **Google Workspace**: issuer `https://accounts.google.com`. Google sends no groups: use `KALKA_OIDC_DEFAULT_ROLE`, and restrict the OAuth app to your organization in Google Cloud.
+- **Google Workspace**: issuer `https://accounts.google.com`. Google sends no groups: use `KALKA_OIDC_DEFAULT_ROLE`, and make the OAuth app Internal (your organization only) in Google Cloud; an External app lets any Google account sign in.
 - **Microsoft Entra ID**: issuer `https://login.microsoftonline.com/<tenant-id>/v2.0` (a tenant ID, not `common`). Turn on the groups claim in Token configuration; Entra sends group object IDs, so list IDs in the `*_GROUPS` variables.
 
 On Cloudflare, the identity provider must be reachable from the internet, or through a Cloudflare Tunnel. In Docker, it can be on your private network.
 
-The license counts editors and administrators who signed in through single sign-on in the last 90 days; viewers are free. When every seat is taken, people who already signed in keep working and new people are refused with a clear message; administrators get an email at 80 % and 100 % when email is set up. After the license ends, single sign-on keeps working for 30 more days, then people sign in with passwords again. No data is ever lost.
+The license counts editors and administrators who signed in through single sign-on in the last 90 days; viewers are free. When every seat is taken, people who already signed in keep working and new people are refused with a clear message, and a viewer cannot be made an editor or administrator, from the console or by their groups, until a seat is free; administrators get an email at 80 % and 100 % when email is set up.
+
+An existing account links to single sign-on by email only when the identity provider created it through user provisioning, or with `KALKA_OIDC_LINK_LOCAL_ACCOUNTS=true`; otherwise someone whose single sign-on email matches a password account is told to sign in with the password. After the license ends, single sign-on keeps working for 30 more days, then people sign in with passwords again. No data is ever lost.
 
 ## Business features
 
@@ -187,6 +191,10 @@ npm install
 cp .dev.vars.example .dev.vars   # set KALKA_SETUP_CODE
 npm run dev                      # wrangler dev on http://localhost:8787
 npm test                         # end-to-end tests against the running server
+KALKA_EE_PATH=test/fixtures/ee-stub.js npm run dev   # with a stand-in enterprise module, then:
+npm run test:sso                 # single sign-on linking, seats, and sign-in binding
+KALKA_TRUSTED_PROXIES=1 npm run workerd              # then, against workerd:
+npm run test:proxy               # rate limits behind a proxy
 npm run workerd                  # the Docker runtime, without Docker
 ```
 

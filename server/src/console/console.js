@@ -36,7 +36,7 @@
 
   function ssoButton() {
     if (!server.auth.sso) return null
-    return el('button', { type: 'button', class: 'btn soft', style: { height: '42px' }, onclick: () => { location.href = server.auth.sso.startPath + '?return=' + encodeURIComponent(location.origin + '/') } },
+    return el('button', { type: 'button', class: 'btn soft', style: { height: '42px' }, onclick: async () => { location.href = await ssoStartUrl() } },
       icon('login-01'), 'Continue with ' + server.auth.sso.label)
   }
 
@@ -599,7 +599,7 @@
       dropdownRow(settings, draft, 'KALKA_OIDC_DEFAULT_ROLE', 'Everyone else', v.KALKA_OIDC_DEFAULT_ROLE || 'editor',
         [{ value: 'editor', label: 'Editor', color: ROLES.editor.color }, { value: 'viewer', label: 'Viewer', color: ROLES.viewer.color }, { value: 'none', label: 'Cannot sign in', color: '#b42318' }],
         'The role of people in none of the groups above.'),
-      settings.ssoReady ? settingsRow('Test', el('button', { type: 'button', class: 'btn soft', onclick: () => window.open(server.auth.sso.startPath + '?return=' + encodeURIComponent(location.origin + '/'), '_blank') }, icon('login-01'), 'Test sign-in'), 'Opens a new tab and signs in there.') : null
+      settings.ssoReady ? settingsRow('Test', el('button', { type: 'button', class: 'btn soft', onclick: async () => { const tab = window.open('', '_blank'); if (tab) tab.location.href = await ssoStartUrl() } }, icon('login-01'), 'Test sign-in'), 'Opens a new tab and signs in there.') : null
     ], draft, status)
   }
 
@@ -1025,6 +1025,29 @@
     ])
   }
 
+  // ---------- Single sign-on: started here, finished here (PKCE) ----------
+
+  const SSO_KEY = 'kalka:sso:'
+  const b64url = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+
+  /** The start address, with a challenge whose verifier stays in this browser until the code comes back. */
+  async function ssoStartUrl() {
+    const flow = b64url(crypto.getRandomValues(new Uint8Array(16)))
+    const verifier = b64url(crypto.getRandomValues(new Uint8Array(32)))
+    const challenge = b64url(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))))
+    try { localStorage.setItem(SSO_KEY + flow, JSON.stringify({ verifier, at: Date.now() })) } catch { /* private mode: the exchange will say so */ }
+    return server.auth.sso.startPath + '?return=' + encodeURIComponent(location.origin + '/?sso=' + flow) + '&code_challenge=' + challenge + '&code_challenge_method=S256'
+  }
+
+  function takeSsoVerifier(flow) {
+    if (!flow) return null
+    try {
+      const saved = JSON.parse(localStorage.getItem(SSO_KEY + flow) ?? 'null')
+      localStorage.removeItem(SSO_KEY + flow)
+      return saved && Date.now() - saved.at < 15 * 60 * 1000 ? saved.verifier : null
+    } catch { return null }
+  }
+
   // ---------- Router ----------
 
   async function route() {
@@ -1037,7 +1060,10 @@
       const params = new URLSearchParams(location.search)
       if (params.get('code')) {
         history.replaceState(null, '', '/' + location.hash)
-        try { const result = await api('POST', '/api/auth/exchange', { code: params.get('code') }); setToken(result.token); me = result.user } catch (e) { toast(e.message) }
+        // Only a sign-in this browser started: a code from a link someone sent would sign in as them.
+        const verifier = takeSsoVerifier(params.get('sso'))
+        if (!verifier) toast('This sign-in was not started here. Sign in again.')
+        else try { const result = await api('POST', '/api/auth/exchange', { code: params.get('code'), verifier }); setToken(result.token); me = result.user } catch (e) { toast(e.message) }
       }
       if (params.get('error')) { history.replaceState(null, '', '/' + location.hash); toast(params.get('error')) }
       const hash = location.hash

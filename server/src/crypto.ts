@@ -39,6 +39,11 @@ export function base64url(bytes: Uint8Array): string {
   return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '')
 }
 
+/** The S256 challenge of a PKCE verifier (RFC 7636). */
+export async function challengeOf(verifier: string): Promise<string> {
+  return base64url(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(verifier))))
+}
+
 export function fromBase64url(text: string): Uint8Array {
   const padded = text.replaceAll('-', '+').replaceAll('_', '/')
   const binary = atob(padded + '='.repeat((4 - (padded.length % 4)) % 4))

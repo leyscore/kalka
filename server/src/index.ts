@@ -41,6 +41,7 @@ import { FONTS } from './assets/fonts'
 import { consolePage } from './page'
 import { directoryName } from './names'
 import { PROTOCOL_VERSION } from './protocol'
+import { enterpriseRoute } from './signin'
 
 export { Directory } from './directory'
 export { DocumentRoom } from './room'
@@ -68,6 +69,7 @@ const SettingsChange = v.object({
 })
 const Register = v.object({ ...Account.entries, invite: v.string() })
 const Code = v.object({ code: v.string() })
+const Exchange = v.object({ code: v.string(), verifier: v.optional(v.pipe(v.string(), v.regex(/^[A-Za-z0-9._~-]{43,128}$/))) })
 const InviteCheck = v.object({ invite: v.string() })
 const InviteRequest = v.object({
   role: v.picklist(ROLES),
@@ -367,8 +369,8 @@ async function api(env: Env, request: Request, path: string): Promise<Response> 
   }
   if (path === '/api/auth/exchange' && method === 'POST') {
     await limit(env, [ipLimit(env, request)])
-    const { code } = await body(request, Code)
-    const result = unwrap(await directory.exchangeLoginCode(code)) as { token: string; user: User }
+    const { code, verifier } = await body(request, Exchange)
+    const result = unwrap(await directory.exchangeLoginCode(code, verifier)) as { token: string; user: User }
     await log(result.user, 'auth.login', result.user.id, { method: 'sso' })
     return json(result)
   }
@@ -611,7 +613,7 @@ export default {
       Object.defineProperty(env, RAW_ENV, { value: raw })
       // Single sign-on and what the license adds are the enterprise module's.
       if (ENTERPRISE_PREFIXES.some((prefix) => path.startsWith(prefix) || path === prefix.slice(0, -1))) {
-        const response = enterprise ? await enterprise.handle(request, enterpriseHost(env, request)) : null
+        const response = await enterpriseRoute(env, request, path, enterpriseHost(env, request))
         if (response) return response
         if (path.startsWith('/api/')) throw new HttpError(404, 'This server does not include that feature.')
         return new Response(path.startsWith('/auth/') ? 'Single sign-on is not available on this server.' : 'Not found', { status: 404 })
