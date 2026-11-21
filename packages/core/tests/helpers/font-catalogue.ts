@@ -15,7 +15,7 @@ export interface FakeCatalogueFamily {
 }
 
 /** Font bytes that name the file they stand for, so a test can tell files apart. */
-export function fakeFontBytes(name: string): Uint8Array {
+export function fakeFontBytes(name: string): Uint8Array<ArrayBuffer> {
   return new TextEncoder().encode(`wOF2${name}`)
 }
 

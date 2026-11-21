@@ -9,7 +9,8 @@ import {
   mergeProjectFont,
   searchFontCatalogue,
   type CatalogueFont,
-  type InstallableFontFile
+  type AddedFonts,
+  type FontFile
 } from '@kalka/core/text'
 import type { ProjectFont } from '@kalka/scene-graph'
 
@@ -38,7 +39,7 @@ export async function catalogueFamilies(
 }
 
 /** Installs font files on the computer, for other apps to use; the desktop app only. */
-async function installFontFiles(files: readonly InstallableFontFile[]): Promise<void> {
+async function installFontFiles(files: readonly FontFile[]): Promise<void> {
   if (!isTauri() || files.length === 0) return
   const { invoke } = await import('@tauri-apps/api/core')
   await invoke('install_fonts', { files: files.map(({ name, data }) => ({ name, data })) })
@@ -75,12 +76,6 @@ export async function addCatalogueFont(
   return kept
 }
 
-export interface AddedFontFiles {
-  fonts: ProjectFont[]
-  /** Files that are no font, by name. */
-  rejected: string[]
-}
-
 /**
  * Keeps font files someone dropped or chose with the document, grouped by family; on the
  * desktop, optionally installs the TrueType and OpenType ones on the computer too.
@@ -89,7 +84,7 @@ export async function addFontFiles(
   editor: Editor,
   files: readonly File[],
   { install = false }: AddFontOptions = {}
-): Promise<AddedFontFiles> {
+): Promise<AddedFonts> {
   const read = await Promise.all(
     files.map(async (file) => ({ name: file.name, data: new Uint8Array(await file.arrayBuffer()) }))
   )

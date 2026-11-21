@@ -4,6 +4,8 @@ import type { ProjectFont, ProjectFontFace } from '@kalka/scene-graph'
 
 import type { WebFontFetch } from '#core/text/web-fonts'
 
+import type { FontFile } from './files'
+
 /**
  * Fontsource's catalogue: every Google Fonts family and other open-licence ones, each with its
  * licence. Kalka downloads only from it, and only families whose licence lets anyone keep and
@@ -71,6 +73,9 @@ const UrlsSchema = v.object({
     ttf: v.optional(v.string())
   })
 })
+
+/** Static files in the order worth downloading: the smallest format first. */
+const FILE_PREFERENCE = ['woff2', 'woff', 'ttf'] as const
 
 const DetailsSchema = v.object({
   id: v.string(),
@@ -314,10 +319,10 @@ async function staticFaces(
     for (const [style, subsets] of Object.entries(styles)) {
       if (!v.is(StyleSchema, style)) continue
       for (const subset of chosenSubsets(details, Object.keys(subsets), characters)) {
-        const { woff2, woff, ttf } = subsets[subset].url
-        const url = woff2 ?? woff ?? ttf
+        const urls = subsets[subset].url
+        const extension = FILE_PREFERENCE.find((format) => urls[format])
+        const url = extension && urls[extension]
         if (!url) continue
-        const extension = woff2 ? 'woff2' : woff ? 'woff' : 'ttf'
         const range = rangeOf(details, subset)
         faces.push({
           file: `${subset}-${weight}-${style}.${extension}`,
@@ -369,12 +374,6 @@ export async function downloadCatalogueFont(
   }
 }
 
-/** A file to install on a computer: a whole face as TrueType, which every system reads. */
-export interface InstallableFontFile {
-  name: string
-  data: Uint8Array
-}
-
 /**
  * A catalogue family as TrueType files to install on a computer, one per weight and style of
  * its main script: systems take TrueType, not the web files a document keeps.
@@ -382,9 +381,9 @@ export interface InstallableFontFile {
 export async function downloadInstallableFont(
   id: string,
   { fetch: fetcher, signal }: Omit<FontDownloadOptions, 'characters'>
-): Promise<InstallableFontFile[]> {
+): Promise<FontFile[]> {
   const { details } = await catalogueDetails(fetcher, id, signal)
-  const files: InstallableFontFile[] = []
+  const files: FontFile[] = []
   const name = details.family.replaceAll(/[^\p{L}\p{N}]+/gu, '')
   for (const [weight, styles] of Object.entries(details.variants)) {
     for (const [style, subsets] of Object.entries(styles)) {

@@ -9,6 +9,7 @@ const failure = (error: unknown) => ({
 
 export const searchFonts = defineTool({
   name: 'search_fonts',
+  exposure: { webmcp: false },
   description:
     'Search the free font catalogue (every Google Fonts family and other open-licence ones) by ' +
     'family name. Returns families with their category, licence, weights, styles, whether they ' +

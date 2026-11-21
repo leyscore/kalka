@@ -85,13 +85,13 @@ function story(options: { canInstall?: boolean; unavailable?: boolean; added?: s
   })
 }
 
-const meta = {
+const meta: Meta = {
   title: 'App/Fonts/Catalogue Dialog',
   component: FontCatalogueDialog
-} satisfies Meta<Record<string, never>>
+}
 
 export default meta
-type Story = StoryObj<typeof meta>
+type Story = StoryObj
 
 /** Free families listed with their licence, each previewed on the person's own text. */
 export const Search: Story = { render: story({ added: ['Tinos'] }) }

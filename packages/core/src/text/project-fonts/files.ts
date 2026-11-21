@@ -7,8 +7,8 @@ import {
 
 import { describeFontFile } from '#core/text/font/variation'
 
-/** A file someone added: its name and bytes. */
-export interface AddedFontFile {
+/** A font file by name and bytes: one someone added, or one to install on a computer. */
+export interface FontFile {
   name: string
   data: Uint8Array
 }
@@ -42,7 +42,7 @@ function familyFromFileName(name: string): { family: string; style: string; vari
 }
 
 /** A face for `data`, read from the file itself when it can be, else from its name. */
-function describe(file: AddedFontFile, format: string) {
+function describe(file: FontFile, format: string) {
   if (format === 'ttf' || format === 'otf') {
     const own = describeFontFile(file.data.slice().buffer)
     if (own) return own
@@ -89,7 +89,7 @@ export interface AddedFonts {
  * family each file names, or its file name says for a compressed file. A licence file added with
  * them is kept beside each family; without one the licence is unknown, for the person to check.
  */
-export function fontsFromFiles(files: readonly AddedFontFile[]): AddedFonts {
+export function fontsFromFiles(files: readonly FontFile[]): AddedFonts {
   const byFamily = new Map<string, ProjectFont>()
   const rejected: string[] = []
   let licenseText: string | null = null
