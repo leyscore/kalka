@@ -1,13 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
 import { FigmaAPI } from '@kalka/core/figma-api'
-import {
-  FRESH_COMPONENTS,
-  FRESH_LIBRARY_ID,
-  freshLibraryRevision,
-  insertFreshComponent,
-  searchFreshComponents
-} from '@kalka/core/library'
+import { FRESH_COMPONENTS, FRESH_LIBRARY_ID, searchFreshComponents } from '@kalka/core/library'
+import { freshLibraryRevision, insertFreshComponent } from '@kalka/core/tools'
 import { insertLibraryComponent, searchLibraryComponents } from '@kalka/core/tools/read'
 import { SceneGraph } from '@kalka/scene-graph'
 

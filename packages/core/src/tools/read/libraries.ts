@@ -4,9 +4,9 @@ import {
   FRESH_CATEGORIES,
   FRESH_LIBRARY_ID,
   FRESH_LIBRARY_NAME,
-  insertFreshComponent,
   searchFreshComponents
 } from '#core/library/fresh'
+import { insertFreshComponent } from '#core/library/fresh/insert'
 import { getComponentCatalog } from '#core/tools/component-catalog'
 import { insertIndexInput, positionInputs, toolNumber } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'

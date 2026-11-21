@@ -4,12 +4,12 @@ import {
   FRESH_LIBRARY_NAME,
   FRESH_LIBRARY_PUBLISHED_AT,
   FRESH_LIBRARY_REVISION,
-  freshLibraryRevision,
   type ComponentLibraryRevision,
   type LibraryCatalog,
   type LibrarySummary,
   type PublishLibraryInput
 } from '@kalka/core/library'
+import { freshLibraryRevision } from '@kalka/core/tools'
 
 const FRESH_SUMMARY: LibrarySummary = {
   libraryId: FRESH_LIBRARY_ID,
