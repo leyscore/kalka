@@ -19,12 +19,6 @@
 
 - An address that names no page, such as `/files` or a mistyped one, opens Home instead of an empty window.
 - Home's Storage tab is called Cloud storage, as in Settings.
-- Home's lists of files have their own addresses, `/files/recent`, `/files/storage` and `/files/server`, so a link or a reload opens Home on that list; `/storage` still opens the storage workspace.
-- The welcome is a page at `/welcome` with a few optional questions after the name: what you do, your company, position and team size, what you will design first and how you heard of Kalka, then connecting your AI or leaving it for later. Answers stay on this device.
-- Settings is a page of its own at `/settings/<section>`, filling the window instead of a dialog: Back closes it, a reload or a link opens it on that section, and the open documents stay as they were behind it.
-
-### Fixed
-
 - Errors and warnings in the Publish library, Rename selection and library update dialogs, variant authoring and Diagnostics show in the theme's error and warning colours instead of the default text colour.
 - On the Variables page, moving from one variable to the next no longer blanks the inspector for a moment: it shows the new variable in place.
 
