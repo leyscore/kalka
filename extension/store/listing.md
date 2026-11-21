@@ -126,7 +126,7 @@ Used only when the person copies an element with the Tablet or Phone breakpoint 
 
 ### Data usage
 
-Tick none of the data types: the extension collects none.
+Tick only Website content: the extension reads the page's text, images and styles, and pictures the tab, to build the copy on the clipboard. Nothing is sent to a server.
 
 Tick all three certifications:
 - I do not sell or transfer user data to third parties, outside of the approved use cases
