@@ -66,7 +66,7 @@
     "@hono/node-server": "^1.19.17",
     "@kalka/core": "workspace:*",
     "@kalka/scene-graph": "workspace:*",
-    "@modelcontextprotocol/server": "^2.0.0",
+    "@modelcontextprotocol/server": "^2.4.0",
     "@valibot/to-json-schema": "^1.8.0",
     "es-toolkit": "^1.52.0",
     "hono": "^4.13.13",

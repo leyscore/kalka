@@ -210,8 +210,8 @@
     "@kalka/demo-tools": "workspace:*",
     "@kalka/mcp": "workspace:*",
     "@lobehub/icons-static-svg": "^1.95.1",
-    "@modelcontextprotocol/client": "^2.0.0",
-    "@modelcontextprotocol/server": "^2.0.0",
+    "@modelcontextprotocol/client": "^2.4.0",
+    "@modelcontextprotocol/server": "^2.4.0",
     "@oxlint/plugins": "1.57.0",
     "@playwright/test": "^1.63.0",
     "@storybook/addon-a11y": "^10.6.6",
@@ -270,6 +270,7 @@
   "overrides": {
     "@codemirror/view": "6.43.9",
     "dompurify": "3.4.17",
+    "markdown-it": "14.3.3",
     "protobufjs": "7.5.5",
     "websocket-driver": "0.7.5"
   },

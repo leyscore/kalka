@@ -24,6 +24,7 @@
 
 ### Security
 
+- The desktop app runs on Electron 44.10.2, which distrusts the compromised eMudhra intermediate certificates. The local MCP server uses MCP SDK 2.4.0, which fixes messages that could reach another session sharing a transport and fixes oversized requests that could exhaust memory. Chat replies and release notes are rendered with markdown-it 14.3.3, so crafted Markdown can no longer freeze the editor.
 - In the desktop app, windows other than the editor, such as Software Update, can no longer navigate to a page outside Kalka or open new windows. Native calls from any page that is not Kalka's own are refused.
 - The desktop app ignores `NODE_OPTIONS` and `--inspect`, loads its code only from its packaged archive (on macOS, after checking the archive against its hash), and encrypts its cookies on disk. Another program can no longer use these to run code as Kalka.
 
