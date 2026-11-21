@@ -68,6 +68,7 @@ const SettingsChange = v.object({
 })
 const Register = v.object({ ...Account.entries, invite: v.string() })
 const Code = v.object({ code: v.string() })
+const InviteCheck = v.object({ invite: v.string() })
 const InviteRequest = v.object({
   role: v.picklist(ROLES),
   email: v.optional(v.pipe(v.string(), v.trim(), v.maxLength(254)))
@@ -161,6 +162,16 @@ function localLoginEnabled(env: Env): boolean {
   return setting(env, 'KALKA_LOCAL_LOGIN') !== 'false'
 }
 
+/**
+ * Without KALKA_PUBLIC_URL, links in emails and tickets would take whatever host a request came
+ * with, which anyone can set. The address the server was set up at, or the one its first
+ * administrator signs in at, becomes its public address instead, until KALKA_PUBLIC_URL is set.
+ */
+async function rememberPublicUrl(env: Env, request: Request): Promise<void> {
+  if (setting(env, 'KALKA_PUBLIC_URL')) return
+  await directoryOf(env).setSettings({ KALKA_PUBLIC_URL: new URL(request.url).origin })
+}
+
 async function serverInfo(env: Env, request: Request) {
   const status = await enterpriseStatus(env, request)
   return {
@@ -169,6 +180,8 @@ async function serverInfo(env: Env, request: Request) {
     version: SERVER_VERSION,
     protocol: PROTOCOL_VERSION,
     setupRequired: (await directoryOf(env).userCount()) === 0,
+    // A web editor that opens this server's files, the first of KALKA_APP_ORIGINS, or null.
+    editor: listSetting(env, 'KALKA_APP_ORIGINS')[0] ?? null,
     enterprise: Boolean(enterprise),
     email: canSendMail(env),
     auth: {
@@ -267,6 +280,17 @@ async function api(env: Env, request: Request, path: string): Promise<Response> 
 
   if (path === '/api/server' && method === 'GET') return json(await serverInfo(env, request))
 
+  // Lets the first setup screen say at once whether the code is right, before the account.
+  if (path === '/api/setup/check' && method === 'POST') {
+    await limit(env, [ipLimit(request)])
+    const { code } = await body(request, Code)
+    const expected = setting(env, 'KALKA_SETUP_CODE')
+    if (!expected) throw new HttpError(503, 'Set KALKA_SETUP_CODE on the server first.')
+    if ((await directory.userCount()) > 0) throw new HttpError(409, 'This server is already set up.')
+    if (!(await sameSecret(code.trim(), expected))) throw new HttpError(403, 'Wrong setup code.')
+    return json({ ok: true })
+  }
+
   if (path === '/api/setup' && method === 'POST') {
     await limit(env, [ipLimit(request)])
     const input = await body(request, Setup)
@@ -277,6 +301,7 @@ async function api(env: Env, request: Request, path: string): Promise<Response> 
     }
     const result = unwrap(await directory.setup(input)) as { token: string; user: User }
     if (input.serverName) await directory.setSettings({ KALKA_SERVER_NAME: input.serverName })
+    await rememberPublicUrl(env, request)
     await log(result.user, 'user.created', result.user.id, { email: result.user.email, role: 'admin', via: 'setup' })
     return json(result)
   }
@@ -305,6 +330,7 @@ async function api(env: Env, request: Request, path: string): Promise<Response> 
       await failedLogin('passwords are turned off')
       throw new HttpError(403, 'Sign in with single sign-on.')
     }
+    if (result.user.role === 'admin') await rememberPublicUrl(env, request)
     await log(result.user, 'auth.login', result.user.id, { method: 'password' })
     return json(result)
   }
@@ -314,6 +340,14 @@ async function api(env: Env, request: Request, path: string): Promise<Response> 
     const result = unwrap(await directory.register(await body(request, Register))) as { token: string; user: User }
     await log(result.user, 'user.created', result.user.id, { email: result.user.email, role: result.user.role, via: 'invitation' })
     return json(result)
+  }
+  // What an invitation offers before anyone fills in the form: its role and its address.
+  if (path === '/api/auth/invite' && method === 'POST') {
+    await limit(env, [ipLimit(request)])
+    const { invite } = await body(request, InviteCheck)
+    const offer = await directory.checkInvite(invite)
+    if (!offer) throw new HttpError(400, 'This invitation is invalid or has expired.')
+    return json(offer)
   }
   if (path === '/api/auth/exchange' && method === 'POST') {
     await limit(env, [ipLimit(request)])

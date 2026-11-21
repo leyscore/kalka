@@ -451,6 +451,15 @@ export class Directory extends DurableObject<Env> {
     return { token: await this.newSession(row.id), user: toUser(row) }
   }
 
+  /** Whether an active administrator other than `id` remains, whatever `id` itself is. */
+  private hasOtherActiveAdmin(id: string): boolean {
+    const others = this.one<{ count: number }>(
+      "SELECT COUNT(*) AS count FROM users WHERE role = 'admin' AND disabled = 0 AND id != ?",
+      id
+    )?.count
+    return (others ?? 0) > 0
+  }
+
   listUsers(): User[] {
     return this.all<UserRow>('SELECT * FROM users ORDER BY created_at').map(toUser)
   }
@@ -460,11 +469,8 @@ export class Directory extends DurableObject<Env> {
     if (!row) return failure(404, 'No such user.')
     const losesAdmin =
       row.role === 'admin' && ((change.role && change.role !== 'admin') || change.disabled)
-    if (losesAdmin) {
-      const admins = this.one<{ count: number }>(
-        "SELECT COUNT(*) AS count FROM users WHERE role = 'admin' AND disabled = 0"
-      )?.count
-      if ((admins ?? 0) <= 1) return failure(409, 'The server needs at least one administrator.')
+    if (losesAdmin && !this.hasOtherActiveAdmin(id)) {
+      return failure(409, 'The server needs at least one administrator.')
     }
     if (change.role) this.sql.exec('UPDATE users SET role = ? WHERE id = ?', change.role, id)
     if (change.disabled !== undefined) {
@@ -890,11 +896,8 @@ export class Directory extends DurableObject<Env> {
   deleteUser(id: string): Result<{ deleted: true }> {
     const row = this.userById(id)
     if (!row) return failure(404, 'No such user.')
-    if (row.role === 'admin') {
-      const admins = this.one<{ count: number }>(
-        "SELECT COUNT(*) AS count FROM users WHERE role = 'admin' AND disabled = 0"
-      )?.count
-      if ((admins ?? 0) <= 1) return failure(409, 'The server needs at least one administrator.')
+    if (row.role === 'admin' && !this.hasOtherActiveAdmin(id)) {
+      return failure(409, 'The server needs at least one administrator.')
     }
     this.sql.exec('DELETE FROM sessions WHERE user_id = ?', id)
     this.sql.exec('DELETE FROM app_passwords WHERE user_id = ?', id)
