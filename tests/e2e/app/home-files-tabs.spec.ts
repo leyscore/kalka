@@ -67,3 +67,11 @@ test('each list of files on Home has its own address', async ({ page }) => {
   await page.goto('/files/storage?recent-files')
   await expect(storage).toHaveAttribute('aria-selected', 'true')
 })
+
+test('the web editor opens Home on the list its address names', async ({ page }) => {
+  await page.goto('/files/storage')
+  const home = page.getByTestId('recent-files-home')
+  // Named by its id: the tab's label is the storage's name in the app's language.
+  await expect(home.locator('#home-tab-storage')).toHaveAttribute('aria-selected', 'true')
+  await expect(page).toHaveURL(/\/files\/storage$/)
+})
