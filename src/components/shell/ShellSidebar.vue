@@ -49,7 +49,14 @@ const ui = shellSidebar()
         data-test-id="shell-account"
         @click="emit('account')"
       >
-        <span :class="ui.avatar()" aria-hidden="true">{{ account.initials }}</span>
+        <span
+          :class="ui.avatar()"
+          :style="
+            account.colors && { backgroundColor: account.colors.fill, color: account.colors.ink }
+          "
+          aria-hidden="true"
+          >{{ account.initials }}</span
+        >
         <span :class="ui.accountText()">
           <span :class="ui.accountName()">{{ account.name }}</span>
           <span v-if="account.detail" :class="ui.accountDetail()">{{ account.detail }}</span>

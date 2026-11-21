@@ -54,6 +54,8 @@
   "joinRoomEllipsis": "Rejoindre une salle…",
   "joinRoomDescription": "Collez un lien ou un identifiant de salle pour ouvrir un fichier qu’on vous a partagé.",
   "nameSettingTitle": "Votre nom",
+  "namePreview": "Ce que voit l'équipe",
+  "serverConnected": "Connecté",
   "nameSettingDescription": "Les autres voient ce nom à côté de votre curseur dans les salles partagées.",
   "serverTab": "Serveur",
   "serverSettingsTitle": "Serveur Kalka",

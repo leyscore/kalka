@@ -23,9 +23,9 @@ import {
   settingsSection,
   type SettingsSection
 } from '@/app/settings/open'
+import AccountProfile from '@/components/settings/account/AccountProfile.vue'
 import ChatSettingsSection from '@/components/settings/chat/ChatSettingsSection.vue'
 import DiagnosticsSettingsPanel from '@/components/settings/diagnostics/DiagnosticsSettingsPanel.vue'
-import CollaborationNameSection from '@/components/settings/general/CollaborationNameSection.vue'
 import GeneralSettingsPanel from '@/components/settings/general/GeneralSettingsPanel.vue'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
 import SettingsSidebar from '@/components/settings/layout/SettingsSidebar.vue'
@@ -38,7 +38,7 @@ import StorageSettingsPanel from '@/components/settings/storage/StorageSettingsP
 import ToolAccessSettingsPanel from '@/components/settings/tool-access/ToolAccessSettingsPanel.vue'
 import UsageSettingsPanel from '@/components/settings/usage/UsageSettingsPanel.vue'
 import ShellFrame from '@/components/shell/ShellFrame.vue'
-import { initialsOf } from '@/components/shell/sidebar'
+import { avatarColors, initialsOf } from '@/components/shell/sidebar'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import {
   AppAlertDialogRoot,
@@ -113,10 +113,11 @@ const sectionLabel = computed(
 
 const profile = computed(() => {
   const account = serverAccount.value
-  const name = identity.hasChosenName.value ? identity.name.value : account?.user.name
+  const name = identity.hasChosenName.value
+    ? identity.name.value
+    : (account?.user.name ?? identity.guestName)
   const detail = account?.user.email ?? files.value.thisComputer
-  if (!name) return { name: detail, initials: 'K' }
-  return { name, detail, initials: initialsOf(name) }
+  return { name, detail, initials: initialsOf(name), colors: avatarColors(identity.color) }
 })
 
 function isSection(value: string): value is SettingsSection {
@@ -217,7 +218,7 @@ function onOpenChange(open: boolean): void {
           <AppTabsContent value="server" as-child>
             <SettingsPage>
               <div class="flex flex-col gap-6" data-test-id="settings-account-panel">
-                <CollaborationNameSection />
+                <AccountProfile />
                 <ServerSettingsPanel />
               </div>
             </SettingsPage>

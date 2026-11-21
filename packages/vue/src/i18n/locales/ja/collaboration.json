@@ -54,6 +54,8 @@
   "joinRoomEllipsis": "ルームに参加…",
   "joinRoomDescription": "共有されたファイルを開くには、ルームのリンクまたはIDを貼り付けてください。",
   "nameSettingTitle": "あなたの名前",
+  "namePreview": "チームからの見え方",
+  "serverConnected": "接続済み",
   "nameSettingDescription": "共有ルームでは、この名前がカーソルの横に表示されます。",
   "serverTab": "サーバー",
   "serverSettingsTitle": "Kalka サーバー",

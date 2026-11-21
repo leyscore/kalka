@@ -54,6 +54,8 @@
   "joinRoomEllipsis": "Raum beitreten…",
   "joinRoomDescription": "Füge einen Raumlink oder eine Raum-ID ein, um eine Datei zu öffnen, die jemand mit dir geteilt hat.",
   "nameSettingTitle": "Dein Name",
+  "namePreview": "So sieht Ihr Team Sie",
+  "serverConnected": "Verbunden",
   "nameSettingDescription": "Andere sehen diesen Namen in geteilten Räumen neben deinem Cursor.",
   "serverTab": "Server",
   "serverSettingsTitle": "Kalka-Server",

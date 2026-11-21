@@ -1,5 +1,8 @@
 import type { Component } from 'vue'
 
+import { colorToCSS, readableForeground } from '@kalka/scene-graph/color'
+import type { Color } from '@kalka/scene-graph/primitives'
+
 /** One place in the sidebar: Home, a list of files, a team page or a section of Settings. */
 export interface ShellSidebarItem {
   id: string
@@ -30,6 +33,18 @@ export interface ShellAccount {
   /** Under the name; none when the name already says where the button leads. */
   detail?: string
   initials: string
+  /** The avatar's fill and ink, the person's color in shared rooms; the accent when absent. */
+  colors?: AvatarColors
+}
+
+export interface AvatarColors {
+  fill: string
+  ink: string
+}
+
+/** An avatar in a person's room color, with ink that reads on it. */
+export function avatarColors(color: Color): AvatarColors {
+  return { fill: colorToCSS(color), ink: colorToCSS(readableForeground(color)) }
 }
 
 export interface ShellSidebarProps {

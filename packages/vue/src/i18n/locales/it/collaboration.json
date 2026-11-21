@@ -54,6 +54,8 @@
   "joinRoomEllipsis": "Entra in una stanza…",
   "joinRoomDescription": "Incolla un link o un ID di stanza per aprire un file che qualcuno ha condiviso con te.",
   "nameSettingTitle": "Il tuo nome",
+  "namePreview": "Come ti vede il team",
+  "serverConnected": "Connesso",
   "nameSettingDescription": "Gli altri vedono questo nome accanto al tuo cursore nelle stanze condivise.",
   "serverTab": "Server",
   "serverSettingsTitle": "Server Kalka",
