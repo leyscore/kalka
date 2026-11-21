@@ -2,7 +2,14 @@
 // its name and size, a panel with its type, colors and layout, the path to it, and, once
 // clicked, a bar to copy it. Everything lives in a shadow root, so the page's styles never
 // reach it and it never changes the page.
-import { captureElement, type CaptureFormat } from './capture'
+import {
+  BREAKPOINTS,
+  captureAtWidths,
+  isBreakpointKey,
+  type BreakpointKey,
+  type Emulate
+} from './breakpoints'
+import { captureElement, type Capture, type CaptureFormat } from './capture'
 import { describe, elementLabel } from './describe'
 import { STYLES } from './styles'
 
@@ -93,10 +100,18 @@ export class Inspector {
   private locked: Element | null = null
   private toastTimer = 0
   private readonly listeners: [EventTarget, string, EventListener, boolean][] = []
+  /** The breakpoints a copy for Kalka also takes, and their buttons. */
+  private breakpoints: BreakpointKey[] = []
+  private readonly chips = new Map<BreakpointKey, HTMLButtonElement>()
 
   constructor(
     private format: CaptureFormat,
-    private readonly onStop: () => void
+    private readonly onStop: () => void,
+    private readonly widths: {
+      /** Shows the page at another width; without it, copies are made at the page's own. */
+      emulate?: Emulate
+      save?: (keys: BreakpointKey[]) => void
+    } = {}
   ) {
     this.host.setAttribute('data-kalka-snapshot', '')
     this.host.style.cssText =
@@ -142,6 +157,20 @@ export class Inspector {
 
   setFormat(format: CaptureFormat): void {
     this.format = format
+  }
+
+  setBreakpoints(keys: readonly string[]): void {
+    this.breakpoints = keys.filter(isBreakpointKey)
+    for (const [key, chip] of this.chips)
+      chip.setAttribute('aria-pressed', String(this.breakpoints.includes(key)))
+  }
+
+  private toggleBreakpoint(key: BreakpointKey): void {
+    const keys = this.breakpoints.includes(key)
+      ? this.breakpoints.filter((other) => other !== key)
+      : [...this.breakpoints, key]
+    this.setBreakpoints(keys)
+    this.widths.save?.(this.breakpoints)
   }
 
   private on(target: EventTarget, type: string, listener: EventListener): void {
@@ -245,7 +274,21 @@ export class Inspector {
     quit.setAttribute('aria-label', 'Quit')
     quit.append(make('span', 'k', 'Esc'))
     quit.addEventListener('click', () => this.stop())
-    this.bar.append(copy, more, make('span', 'sep'), parent, quit)
+    this.bar.append(copy, more)
+    if (this.widths.emulate) {
+      // Breakpoints the copy for Kalka also takes, each pasted as a breakpoint of the artboard.
+      this.bar.append(make('span', 'sep'))
+      for (const { key, name, width } of BREAKPOINTS) {
+        const chip = make('button', 'chip', name)
+        chip.type = 'button'
+        chip.title = `Also copy at ${width} px, as a ${name.toLowerCase()} breakpoint`
+        chip.setAttribute('aria-pressed', 'false')
+        chip.addEventListener('click', () => this.toggleBreakpoint(key))
+        this.chips.set(key, chip)
+        this.bar.append(chip)
+      }
+    }
+    this.bar.append(make('span', 'sep'), parent, quit)
 
     const items: [string, string, () => void][] = [
       ['HTML and CSS', '⌥⌘C', () => void this.copy('html')],
@@ -273,17 +316,39 @@ export class Inspector {
     this.menu.dataset.open = 'false'
   }
 
+  /** A copy at the page's width, and at the chosen breakpoints for Kalka when it can. */
+  private async captureFor(
+    element: Element,
+    format: CaptureFormat
+  ): Promise<{ capture: Capture; widths: number[] }> {
+    const emulate = this.widths.emulate
+    if (format !== 'kalka' || !emulate || this.breakpoints.length === 0)
+      return { capture: captureElement(element, format), widths: [] }
+    // The inspector stays out of sight while the page is shown at other widths.
+    this.host.style.visibility = 'hidden'
+    try {
+      return await captureAtWidths(element, this.breakpoints, emulate)
+    } catch {
+      this.showToast('Other widths could not be shown; copying at this width only.', 0)
+      return { capture: captureElement(element, format), widths: [] }
+    } finally {
+      this.host.style.visibility = ''
+      this.draw()
+    }
+  }
+
   private async copy(format: CaptureFormat): Promise<void> {
     const element = this.locked
     if (!element) return
     this.showToast(`Capturing ${elementLabel(element)}…`, 0)
-    const capture = captureElement(element, format)
+    const { capture, widths } = await this.captureFor(element, format)
     await writeClipboard({ html: capture.html, text: capture.html })
     const what = [
       `${capture.layers} layer${capture.layers === 1 ? '' : 's'}`,
       `${capture.images} image${capture.images === 1 ? '' : 's'}`,
       `${capture.fonts.length} font${capture.fonts.length === 1 ? '' : 's'}`
     ].join(', ')
+    const at = widths.length > 0 ? ` with breakpoints at ${widths.join(' and ')} px` : ''
     const tail =
       format === 'kalka'
         ? 'Paste it into any Kalka file with ⌘V.'
@@ -291,7 +356,7 @@ export class Inspector {
     const replaced = capture.replaced
       ? ` ${capture.replaced} part${capture.replaced === 1 ? '' : 's'} from other sites kept as placeholders.`
       : ''
-    this.showToast(`Copied ${what}. ${tail}${replaced}`, 5000, true)
+    this.showToast(`Copied ${what}${at}. ${tail}${replaced}`, 5000, true)
   }
 
   private async copyCSS(): Promise<void> {
@@ -359,6 +424,10 @@ export class Inspector {
       part.dataset.open = String(visible)
     }
     this.bar.dataset.open = String(Boolean(this.locked))
+    for (const { key, width } of BREAKPOINTS) {
+      const chip = this.chips.get(key)
+      if (chip) chip.hidden = width >= window.innerWidth
+    }
     if (!this.locked) this.closeMenu()
     if (!element) return
 

@@ -34,6 +34,9 @@ export const STYLES = `
 .bar button:focus-visible, .menu button:focus-visible, .crumb button:focus-visible { outline: 2px solid #9DB7F5; outline-offset: 1px; }
 .bar .go { background: #2F5BEA; font-weight: 600; }
 .bar .go:hover { background: #1236B8; }
+.bar .chip { color: #A9A9B3; font-weight: 500; }
+.bar .chip[aria-pressed="true"] { color: #FFFFFF; background: #FFFFFF24; box-shadow: inset 0 0 0 1px #9DB7F5; }
+.bar .chip[hidden] { display: none; }
 .bar .sep { width: 1px; height: 20px; background: #FFFFFF2E; margin: 0 2px; }
 .k { padding: 1px 5px; border-radius: 5px; background: #FFFFFF24; font: 10px ui-monospace, 'Geist Mono', monospace; color: #DCE6FF; }
 .menu { position: fixed; display: flex; flex-direction: column; width: 240px; padding: 4px; border-radius: 12px; background: #FFFFFF; color: #141414; box-shadow: 0 16px 40px #0E122240; pointer-events: auto; }

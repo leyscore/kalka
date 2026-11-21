@@ -286,7 +286,19 @@ function lowerOverlappedBackgrounds(
   }
 }
 
+/** A layer for an element, hidden when the element is: the frame, or the text it became. */
 function createElementNode(
+  graph: SceneGraph,
+  parentId: string,
+  element: DesignElement,
+  placement?: Placement
+): SceneNode {
+  const node = createElementLayer(graph, parentId, element, placement)
+  if (pickStyle(mergedStyle(element), 'visibility') === 'hidden') node.visible = false
+  return node
+}
+
+function createElementLayer(
   graph: SceneGraph,
   parentId: string,
   element: DesignElement,

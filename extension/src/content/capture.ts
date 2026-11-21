@@ -212,7 +212,12 @@ interface Walk {
   families: Set<string>
   rules: string[]
   format: CaptureFormat
+  /** Elements to keep even where the page does not show them, hidden: see `captureElement`. */
+  keep: ReadonlySet<Element>
 }
+
+/** How an element the page hides at this width is written: hidden, taking no room. */
+const HIDDEN = 'display: block; visibility: hidden; position: absolute'
 
 function applyStyle(target: Element, style: string, walk: Walk): void {
   if (!style) return
@@ -324,7 +329,9 @@ function elementStyle(
   const tag = source.tagName.toUpperCase()
   const control = CONTROLS.has(tag)
   // Controls do not inherit text styles in the browser: they keep their own.
-  const declared = declarations(style, control ? null : parent, SIZED.has(tag), control)
+  // An empty box, such as an icon's or a divider's, has no content to size it: it keeps its own.
+  const empty = source.children.length === 0 && !source.textContent?.trim()
+  const declared = declarations(style, control ? null : parent, SIZED.has(tag) || empty, control)
   // The browser centres a button's content; the copy says so, as layers do not.
   const centred =
     tag === 'BUTTON' && !style.display.includes('flex') && !style.display.includes('grid')
@@ -346,7 +353,8 @@ function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk):
   if (source.nodeType === Node.TEXT_NODE) return document.createTextNode(source.textContent ?? '')
   if (!(source instanceof Element) || DROPPED_TAGS.has(source.tagName)) return null
   const style = getComputedStyle(source)
-  if (style.display === 'none') return null
+  const hidden = style.display === 'none'
+  if (hidden && !walk.keep.has(source)) return null
   const replaced = copyReplaced(source, style, parent, walk)
   if (replaced) return replaced
 
@@ -362,7 +370,12 @@ function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk):
   if (family) walk.families.add(family)
   if (source.namespaceURI === 'http://www.w3.org/2000/svg') return copySVG(source, style, walk)
 
-  applyStyle(copy, elementStyle(source, style, parent), walk)
+  const declared = elementStyle(source, style, parent)
+  applyStyle(
+    copy,
+    hidden ? `${declared.replace(/(^|; )display: none/, '$1')}; ${HIDDEN}` : declared,
+    walk
+  )
   const before = pseudo(source, '::before', style, walk)
   if (before) copy.append(before)
   const children = source.shadowRoot ? source.shadowRoot.childNodes : source.childNodes
@@ -419,8 +432,17 @@ function pageBackground(element: Element): string | null {
   return null
 }
 
-export function captureElement(element: Element, format: CaptureFormat): Capture {
+/**
+ * Copies an element. `keep` lists elements to write even where the page hides them, as hidden
+ * layers, so copies made at several widths have the same elements in the same order.
+ */
+export function captureElement(
+  element: Element,
+  format: CaptureFormat,
+  keep: ReadonlySet<Element> = new Set()
+): Capture {
   const walk: Walk = {
+    keep,
     layers: 0,
     images: 0,
     replaced: 0,
