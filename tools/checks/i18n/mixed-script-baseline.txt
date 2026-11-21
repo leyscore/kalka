@@ -273,6 +273,13 @@ ja:welcome.tourCodeBody
 ja:welcome.tourFolderBody
 ja:welcome.tourHistoryBody
 ja:welcome.tourToolbarBody
+ja:welcome.aboutIntro
+ja:welcome.aiTitle
+ja:welcome.designAppsHint
+ja:welcome.designBrand
+ja:welcome.designWebsites
+ja:welcome.sourceAi
+ja:welcome.sourceLabel
 zh-cn:ai.agentsNeedDirectModel
 zh-cn:ai.aiSetupAccessAPI
 zh-cn:ai.aiSetupAccessAgentsDesktop
@@ -543,3 +550,7 @@ zh-cn:welcome.tourCodeBody
 zh-cn:welcome.tourFolderBody
 zh-cn:welcome.tourHistoryBody
 zh-cn:welcome.tourToolbarBody
+zh-cn:welcome.aboutIntro
+zh-cn:welcome.aiTitle
+zh-cn:welcome.sourceAi
+zh-cn:welcome.sourceLabel

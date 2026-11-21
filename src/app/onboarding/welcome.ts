@@ -3,8 +3,12 @@ import { ref } from 'vue'
 import { offerAISetupOnFirstRun, openAISetup } from '@/app/ai/models/settings/onboarding/dialog'
 import { appPreferences, updateOnboarding } from '@/app/settings/preferences/store'
 
-/** The welcome is one screen; connecting an agent over MCP is a second one reached from it or from Home. */
-export type WelcomeStep = 'start' | 'claude'
+/**
+ * The welcome, at `/welcome`: the name, a few optional questions about the person, then their AI.
+ * Connecting an agent over MCP is a wider screen reached from the AI step or from Home.
+ */
+export const WELCOME_STEPS = ['start', 'about', 'design', 'ai'] as const
+export type WelcomeStep = (typeof WELCOME_STEPS)[number] | 'claude'
 
 export const welcomeOpen = ref(false)
 export const welcomeStep = ref<WelcomeStep>('start')
@@ -12,6 +16,25 @@ export const welcomeStep = ref<WelcomeStep>('start')
 export function openWelcome(step: WelcomeStep = 'start'): void {
   welcomeStep.value = step
   welcomeOpen.value = true
+}
+
+const ORDER: readonly WelcomeStep[] = WELCOME_STEPS
+
+/** Where `step` sits in the welcome's order; -1 for the MCP screen, which is outside it. */
+export function welcomeStepIndex(step: WelcomeStep): number {
+  return ORDER.indexOf(step)
+}
+
+/** The step after `step` in the welcome's order, or null after the last one. */
+export function nextWelcomeStep(step: WelcomeStep): WelcomeStep | null {
+  const index = welcomeStepIndex(step)
+  return index === -1 ? null : (ORDER[index + 1] ?? null)
+}
+
+export function previousWelcomeStep(step: WelcomeStep): WelcomeStep | null {
+  if (step === 'claude') return 'ai'
+  const index = welcomeStepIndex(step)
+  return index > 0 ? (ORDER[index - 1] ?? null) : null
 }
 
 /**

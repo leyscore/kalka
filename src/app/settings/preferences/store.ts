@@ -46,6 +46,49 @@ export type OnboardingStepState = (typeof ONBOARDING_STEP_STATES)[number]
 export const ONBOARDING_ROLES = ['design', 'build', 'both', 'ai'] as const
 export type OnboardingRole = (typeof ONBOARDING_ROLES)[number]
 
+/** What the person does, from the welcome's About you step. */
+export const ONBOARDING_JOBS = [
+  'designer',
+  'developer',
+  'product',
+  'founder',
+  'marketing',
+  'student',
+  'other'
+] as const
+export type OnboardingJob = (typeof ONBOARDING_JOBS)[number]
+
+export const ONBOARDING_TEAM_SIZES = ['solo', 'small', 'medium', 'large', 'larger'] as const
+export type OnboardingTeamSize = (typeof ONBOARDING_TEAM_SIZES)[number]
+
+/** What the person means to design first; several can apply. */
+export const ONBOARDING_DESIGNS = ['websites', 'apps', 'brand', 'systems'] as const
+export type OnboardingDesign = (typeof ONBOARDING_DESIGNS)[number]
+
+/** How the person heard of Kalka. */
+export const ONBOARDING_SOURCES = [
+  'search',
+  'x',
+  'linkedin',
+  'youtube',
+  'github',
+  'producthunt',
+  'friend',
+  'ai',
+  'other'
+] as const
+export type OnboardingSource = (typeof ONBOARDING_SOURCES)[number]
+
+/** What the welcome asked about the person; every answer is optional and stays on this device. */
+export interface OnboardingProfile {
+  job: OnboardingJob | null
+  company: string
+  position: string
+  teamSize: OnboardingTeamSize | null
+  designs: OnboardingDesign[]
+  source: OnboardingSource | null
+}
+
 /** The code the Code panel shows first. */
 export const CODE_SOURCES = ['design-jsx', 'tailwind-jsx', 'html-css'] as const
 export type DefaultCodeSource = (typeof CODE_SOURCES)[number]
@@ -80,6 +123,7 @@ export interface AppPreferences {
     welcome: OnboardingStepState
     tour: OnboardingStepState
     role: OnboardingRole | null
+    profile: OnboardingProfile
   }
   code: {
     defaultSource: DefaultCodeSource
@@ -102,11 +146,18 @@ export const DEFAULT_APP_PREFERENCES: Readonly<AppPreferences> = {
   rendering: { canvasMode: 'retained', canvasBackground: 'kalka' },
   // Markers on the canvas are the person's choice, from the View menu: off until they ask.
   designCheck: { showOnCanvas: false, preset: 'recommended', disabledRules: [] },
-  onboarding: { aiSetup: 'pending', welcome: 'pending', tour: 'pending', role: null },
+  onboarding: {
+    aiSetup: 'pending',
+    welcome: 'pending',
+    tour: 'pending',
+    role: null,
+    profile: { job: null, company: '', position: '', teamSize: null, designs: [], source: null }
+  },
   code: { defaultSource: 'html-css' }
 }
 
 const STORAGE_KEY = 'kalka:preferences:v1'
+const designSchema = v.picklist(ONBOARDING_DESIGNS)
 
 /** An object whose fields each fall back to their default, and that is all defaults when absent. */
 function section<TEntries extends v.ObjectEntries>(entries: TEntries) {
@@ -166,7 +217,26 @@ const appPreferencesSchema = section({
     aiSetup: v.fallback(v.picklist(AI_SETUP_STATES), defaults.onboarding.aiSetup),
     welcome: v.fallback(v.picklist(ONBOARDING_STEP_STATES), defaults.onboarding.welcome),
     tour: v.fallback(v.picklist(ONBOARDING_STEP_STATES), defaults.onboarding.tour),
-    role: v.fallback(v.nullable(v.picklist(ONBOARDING_ROLES)), defaults.onboarding.role)
+    role: v.fallback(v.nullable(v.picklist(ONBOARDING_ROLES)), defaults.onboarding.role),
+    profile: v.fallback(
+      v.object({
+        job: v.fallback(v.nullable(v.picklist(ONBOARDING_JOBS)), null),
+        company: v.fallback(v.pipe(v.string(), v.maxLength(120)), ''),
+        position: v.fallback(v.pipe(v.string(), v.maxLength(120)), ''),
+        teamSize: v.fallback(v.nullable(v.picklist(ONBOARDING_TEAM_SIZES)), null),
+        designs: v.fallback(
+          v.pipe(
+            v.array(v.unknown()),
+            v.transform((items) =>
+              uniq(items.filter((item): item is OnboardingDesign => v.is(designSchema, item)))
+            )
+          ),
+          () => []
+        ),
+        source: v.fallback(v.nullable(v.picklist(ONBOARDING_SOURCES)), null)
+      }),
+      () => structuredClone(defaults.onboarding.profile)
+    )
   }),
   code: section({
     defaultSource: v.fallback(v.picklist(CODE_SOURCES), defaults.code.defaultSource)
@@ -234,6 +304,12 @@ export function updateAISetupState(aiSetup: AISetupState): void {
 export function updateOnboarding(changes: Partial<AppPreferences['onboarding']>): void {
   editPreferences((draft) => {
     Object.assign(draft.onboarding, changes)
+  })
+}
+
+export function updateOnboardingProfile(changes: Partial<OnboardingProfile>): void {
+  editPreferences((draft) => {
+    Object.assign(draft.onboarding.profile, changes)
   })
 }
 

@@ -12,8 +12,10 @@ import { aiSetupDialogOpen } from '@/app/ai/models/settings/onboarding/dialog'
 import { answerClosePrompt, closePrompt } from '@/app/document/close/prompt'
 import { useDocumentCloseProtection } from '@/app/document/close/use'
 import { useFollowingEditorStore } from '@/app/editor/active-store'
+import { syncFilesRoute } from '@/app/home/files-route'
 import { publishLibraryDialogOpen } from '@/app/libraries/publish/dialog'
 import { libraryReviewRequest } from '@/app/libraries/review'
+import { syncWelcomeRoute } from '@/app/onboarding/route'
 import { welcomeOpen } from '@/app/onboarding/welcome'
 import { settingsOpen } from '@/app/settings/open'
 import { syncSettingsRoute } from '@/app/settings/route'
@@ -69,7 +71,10 @@ provideEditor(useFollowingEditorStore())
 useAppTheme()
 useWindowTheme()
 useDocumentCloseProtection()
-onScopeDispose(syncSettingsRoute(useRouter()))
+const router = useRouter()
+onScopeDispose(syncSettingsRoute(router))
+onScopeDispose(syncWelcomeRoute(router))
+onScopeDispose(syncFilesRoute(router))
 useRestartApprovals()
 useEventListener(window, 'pagehide', () => {
   void prepareForReload()
