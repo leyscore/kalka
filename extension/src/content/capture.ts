@@ -328,10 +328,12 @@ function elementStyle(
 ): string {
   const tag = source.tagName.toUpperCase()
   const control = CONTROLS.has(tag)
-  // Controls do not inherit text styles in the browser: they keep their own.
+  // Controls do not inherit text styles in the browser, and links take the browser's blue and
+  // underline: both write their own text styles rather than rely on the parent's.
+  const ownText = control || tag === 'A'
   // An empty box, such as an icon's or a divider's, has no content to size it: it keeps its own.
   const empty = source.children.length === 0 && !source.textContent?.trim()
-  const declared = declarations(style, control ? null : parent, SIZED.has(tag) || empty, control)
+  const declared = declarations(style, ownText ? null : parent, SIZED.has(tag) || empty, control)
   // The browser centres a button's content; the copy says so, as layers do not.
   const centred =
     tag === 'BUTTON' && !style.display.includes('flex') && !style.display.includes('grid')

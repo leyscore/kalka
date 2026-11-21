@@ -11,6 +11,7 @@ import {
 } from './breakpoints'
 import { captureElement, type Capture, type CaptureFormat } from './capture'
 import { describe, elementLabel } from './describe'
+import { inlineFonts } from './fonts'
 import { STYLES } from './styles'
 
 const KALKA_BLUE = '#2F5BEA'
@@ -56,23 +57,33 @@ interface ClipboardContent {
   text: string
 }
 
+/**
+ * Writes a copy through a copy event, which keeps the HTML as it is. The async clipboard is the
+ * fallback: Chrome rewrites the HTML it is given, dropping the `<style>` with the fonts and the
+ * `<template>`s that carry the breakpoints.
+ */
 async function writeClipboard(content: ClipboardContent): Promise<void> {
-  try {
-    const items: Record<string, Blob> = {
-      'text/plain': new Blob([content.text], { type: 'text/plain' })
-    }
-    if (content.html) items['text/html'] = new Blob([content.html], { type: 'text/html' })
-    await navigator.clipboard.write([new ClipboardItem(items)])
-  } catch {
-    // Pages that deny the async clipboard still let a copy event carry both formats.
-    const onCopy = (event: ClipboardEvent) => {
-      event.preventDefault()
-      event.clipboardData?.setData('text/plain', content.text)
-      if (content.html) event.clipboardData?.setData('text/html', content.html)
-    }
-    document.addEventListener('copy', onCopy, { once: true, capture: true })
-    document.execCommand('copy')
+  let written = false
+  const onCopy = (event: ClipboardEvent) => {
+    if (!event.clipboardData) return
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    event.clipboardData.setData('text/plain', content.text)
+    if (content.html) event.clipboardData.setData('text/html', content.html)
+    written = true
   }
+  window.addEventListener('copy', onCopy, { capture: true })
+  try {
+    document.execCommand('copy')
+  } finally {
+    window.removeEventListener('copy', onCopy, { capture: true })
+  }
+  if (written) return
+  const items: Record<string, Blob> = {
+    'text/plain': new Blob([content.text], { type: 'text/plain' })
+  }
+  if (content.html) items['text/html'] = new Blob([content.html], { type: 'text/html' })
+  await navigator.clipboard.write([new ClipboardItem(items)])
 }
 
 /** An element's four margin or padding widths in pixels: top, right, bottom, left. */
@@ -342,7 +353,8 @@ export class Inspector {
     if (!element) return
     this.showToast(`Capturing ${elementLabel(element)}…`, 0)
     const { capture, widths } = await this.captureFor(element, format)
-    await writeClipboard({ html: capture.html, text: capture.html })
+    const html = await inlineFonts(capture.html)
+    await writeClipboard({ html, text: html })
     const what = [
       `${capture.layers} layer${capture.layers === 1 ? '' : 's'}`,
       `${capture.images} image${capture.images === 1 ? '' : 's'}`,

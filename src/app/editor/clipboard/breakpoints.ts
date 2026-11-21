@@ -58,10 +58,16 @@ function valuesOf(source: SceneNode, own: boolean): Partial<SceneNode> {
   return changes
 }
 
+/** Whether two layers are the same element: the importer names a layer after its classes or text. */
+function sameLayer(target: SceneNode, source: SceneNode): boolean {
+  return target.type === source.type && target.name === source.name
+}
+
 /**
  * Gives each layer of a breakpoint the values its element had at that width. The copies have
- * the same elements in the same order, so layers pair by position; a subtree whose layers do
- * not line up keeps following the wider breakpoint.
+ * the same elements in the same order, so layers pair in order; where the importer made a
+ * different layer at one width, its neighbours still pair by type and name, and an unpaired
+ * layer keeps following the wider breakpoint.
  */
 function applyCopy(
   graph: SceneGraph,
@@ -70,15 +76,18 @@ function applyCopy(
   source: SceneNode,
   root: boolean
 ): void {
-  if (target.type !== source.type) return
+  if (!root && !sameLayer(target, source)) return
   graph.updateNode(target.id, valuesOf(source, root))
-  const children = graph.getChildren(target.id)
   const copies = copyGraph.getChildren(source.id)
-  if (children.length !== copies.length) return
-  children.forEach((child, index) => {
-    const copy = copies.at(index)
-    if (copy) applyCopy(graph, child, copyGraph, copy, false)
-  })
+  let next = 0
+  for (const child of graph.getChildren(target.id)) {
+    let found = next
+    while (found < copies.length && !sameLayer(child, copies[found] ?? child)) found++
+    const copy = copies.at(found)
+    if (!copy) continue
+    applyCopy(graph, child, copyGraph, copy, false)
+    next = found + 1
+  }
 }
 
 async function importCopy(html: string): Promise<{ graph: SceneGraph; root: SceneNode } | null> {
