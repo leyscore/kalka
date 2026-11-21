@@ -6,7 +6,8 @@ import type { EditorStore } from '@/app/editor/active-store'
 /**
  * A prompt for a document's chat sent from elsewhere: the one Home starts a design with, a
  * comment that asks the agent, or a request about the selection. The document's chat panel takes
- * it when it opens, or at once when it is open, and sends it as a message.
+ * it when it opens, or at once when it is open, and sends it as a message, or leaves a draft in
+ * the composer.
  */
 export interface QueuedChatPrompt {
   store: EditorStore
@@ -16,6 +17,11 @@ export interface QueuedChatPrompt {
   displayText?: string
   /** Layers the request is about, shown under it and sent with it. */
   nodes?: ReferencedNode[]
+  /**
+   * Put in the composer for the person to send, rather than sent: a request that came with a
+   * link someone else may have made, which must not run on this person's AI provider unasked.
+   */
+  draft?: boolean
 }
 
 const queued = shallowRef<QueuedChatPrompt | null>(null)

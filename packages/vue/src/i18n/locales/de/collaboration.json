@@ -113,5 +113,9 @@
   "serverLaunchOpening": "Ihre Datei wird aus Kalka Cloud geöffnet …",
   "serverLaunchFailed": "Die Anmeldung bei Kalka Cloud hat nicht funktioniert. Öffnen Sie den Editor erneut aus Ihrem Workspace.",
   "serverLaunchFileGone": "Diese Datei ist nicht mehr auf dem Server.",
-  "serverBackToWorkspace": "Zurück zu meinem Workspace"
+  "serverBackToWorkspace": "Zurück zu meinem Workspace",
+  "serverLaunchSwitchTitle": "Zu einem anderen Konto wechseln?",
+  "serverLaunchSwitchBody": "Dieser Link meldet dich als {next} an. Du bist als {current} angemeldet, und neue Dateien würden im anderen Konto landen. Wechsle nur, wenn du deinen eigenen Link geöffnet hast.",
+  "serverLaunchSwitchConfirm": "Konto wechseln",
+  "serverLaunchSwitchKeep": "Mein Konto behalten"
 }

@@ -147,8 +147,13 @@ export const serverAPI = {
       body: { email, password },
       schema: sessionSchema
     }),
-  exchange: (base: string, code: string) =>
-    request(base, '/api/auth/exchange', { method: 'POST', body: { code }, schema: sessionSchema }),
+  /** With `verifier`, the PKCE verifier of the single sign-on that produced the code. */
+  exchange: (base: string, code: string, verifier?: string) =>
+    request(base, '/api/auth/exchange', {
+      method: 'POST',
+      body: verifier ? { code, verifier } : { code },
+      schema: sessionSchema
+    }),
   signOut: (base: string, token: string) =>
     request(base, '/api/auth/logout', { method: 'POST', token, schema: v.unknown() }),
   me: (base: string, token: string) =>

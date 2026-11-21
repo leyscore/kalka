@@ -113,5 +113,9 @@
   "serverLaunchOpening": "Открываем файл из Kalka Cloud…",
   "serverLaunchFailed": "Не удалось войти в Kalka Cloud. Откройте редактор снова из своего рабочего пространства.",
   "serverLaunchFileGone": "Этого файла больше нет на сервере.",
-  "serverBackToWorkspace": "Вернуться в рабочее пространство"
+  "serverBackToWorkspace": "Вернуться в рабочее пространство",
+  "serverLaunchSwitchTitle": "Переключиться на другой аккаунт?",
+  "serverLaunchSwitchBody": "Эта ссылка выполняет вход как {next}. Вы вошли как {current}, и новые файлы попадут в другой аккаунт. Переключайтесь, только если открыли свою собственную ссылку.",
+  "serverLaunchSwitchConfirm": "Сменить аккаунт",
+  "serverLaunchSwitchKeep": "Оставить мой аккаунт"
 }

@@ -132,7 +132,13 @@ export const collaborationMessageDefaults = {
   serverLaunchFailed:
     'Signing in to Kalka Cloud did not work. Open the editor again from your workspace.',
   serverLaunchFileGone: 'This file is no longer on the server.',
-  serverBackToWorkspace: 'Back to my workspace'
+  serverBackToWorkspace: 'Back to my workspace',
+  serverLaunchSwitchTitle: 'Switch to another account?',
+  serverLaunchSwitchBody: params(
+    'This link signs you in as {next}. You are signed in as {current}, and new files would go to the other account. Switch only if you opened your own link.'
+  ),
+  serverLaunchSwitchConfirm: 'Switch account',
+  serverLaunchSwitchKeep: 'Keep my account'
 } as const
 
 export const collaborationMessages = i18n('collaboration', collaborationMessageDefaults)

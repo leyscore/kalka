@@ -113,5 +113,9 @@
   "serverLaunchOpening": "Ouverture de votre fichier depuis Kalka Cloud…",
   "serverLaunchFailed": "La connexion à Kalka Cloud n’a pas fonctionné. Rouvrez l’éditeur depuis votre espace de travail.",
   "serverLaunchFileGone": "Ce fichier n’est plus sur le serveur.",
-  "serverBackToWorkspace": "Retour à mon espace de travail"
+  "serverBackToWorkspace": "Retour à mon espace de travail",
+  "serverLaunchSwitchTitle": "Passer à un autre compte ?",
+  "serverLaunchSwitchBody": "Ce lien vous connecte en tant que {next}. Vous êtes connecté en tant que {current}, et les nouveaux fichiers iraient dans l’autre compte. Ne changez que si vous avez ouvert votre propre lien.",
+  "serverLaunchSwitchConfirm": "Changer de compte",
+  "serverLaunchSwitchKeep": "Garder mon compte"
 }

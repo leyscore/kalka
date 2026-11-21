@@ -1,7 +1,7 @@
 // Kalka Cloud opens the web editor with a launch link:
 // https://app.kalka.design/#kalka-server=<server url>&code=<one-time code>&open=<document id|new>
 // A new file can start with a frame (&frame=1440x900&name=Desktop) or a request to the AI agent
-// (&prompt=<text>).
+// (&prompt=<text>), which waits in the chat for the person to send it.
 // The fragment never reaches a server log. The editor signs in to that server with the code,
 // then opens the document, or creates a new one there. Only servers this app trusts by
 // address may sign it in, so a link from elsewhere cannot point it at someone else's server.
@@ -9,7 +9,7 @@ import { panelMessages } from '@kalka/vue'
 
 import { isRoomId } from '@/app/collab/room/id'
 
-import { describeServer, signInWithCode } from './account'
+import { describeServer, signInWithCode, type ServerAccountSummary } from './account'
 import { normalizeServerURL, type ServerDocument } from './api'
 import { refreshServerDocuments, serverDocuments } from './documents'
 
@@ -87,6 +87,11 @@ export type ServerLaunchFailure = 'sign-in' | 'missing'
 export interface ServerLaunchActions {
   openDocument: (document: ServerDocument) => void
   createDocument: (start: ServerLaunchStart) => Promise<void>
+  /**
+   * Asks before the link replaces the account already signed in: anyone can send a launch link
+   * of their own workspace, and opening it must not quietly sign this editor in to it.
+   */
+  confirmSwitch: (current: ServerAccountSummary, next: ServerAccountSummary) => Promise<boolean>
   /** The launch is under way, until the returned function is called. */
   started: () => () => void
   failed: (failure: ServerLaunchFailure, serverURL: string) => void
@@ -107,7 +112,7 @@ export async function launchFromServerLink(
   const done = actions.started()
   try {
     const { info } = await describeServer(launch.url)
-    await signInWithCode(launch.url, info, launch.code)
+    if (!(await signInWithCode(launch.url, info, launch.code, actions.confirmSwitch))) return false
     await refreshServerDocuments()
     if (launch.open === 'new') {
       await actions.createDocument(launch.start)
