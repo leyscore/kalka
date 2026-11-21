@@ -4,7 +4,7 @@ import { filesListFromPath, filesPath } from '@/app/home/files-route'
 
 describe('file list addresses', () => {
   test('each list has an address that reads back', () => {
-    for (const list of ['recent', 'storage', 'server'] as const) {
+    for (const list of ['recent', 'storage', 'server', 'trash'] as const) {
       expect(filesListFromPath(filesPath(list))).toBe(list)
     }
   })
@@ -12,7 +12,7 @@ describe('file list addresses', () => {
   test('other paths name no list', () => {
     expect(filesListFromPath('/')).toBeNull()
     expect(filesListFromPath('/files')).toBeNull()
-    expect(filesListFromPath('/files/trash')).toBeNull()
+    expect(filesListFromPath('/files/archive')).toBeNull()
     expect(filesListFromPath('/storage')).toBeNull()
   })
 })
