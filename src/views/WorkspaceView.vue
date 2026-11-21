@@ -29,6 +29,7 @@ import type { PendingOpenFile } from '@/app/document/io/pending-open'
 import { openPendingFiles } from '@/app/document/io/pending-open'
 import { openWebLinkFromLocation, withoutWebLinkParams } from '@/app/document/io/web-link'
 import { focusNodesByName } from '@/app/editor/selection/focus'
+import { filesListFromPath } from '@/app/home/files-route'
 import { fillNewDocument } from '@/app/home/start'
 import { notificationMessages } from '@/app/i18n/notifications'
 import { WELCOME_PATH } from '@/app/onboarding/route'
@@ -75,7 +76,10 @@ const router = useRouter()
 const createdInitialTab = tabCount() === 0
 /** Home, and Settings and the welcome, which open over Home, start the workspace the same way. */
 const opensHome =
-  route.path === '/' || route.path === WELCOME_PATH || settingsSectionFromPath(route.path) !== null
+  route.path === '/' ||
+  route.path === WELCOME_PATH ||
+  filesListFromPath(route.path) !== null ||
+  settingsSectionFromPath(route.path) !== null
 const shouldCreateHome =
   opensHome &&
   !appRuntimeConfig.test &&
