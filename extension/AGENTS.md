@@ -1,6 +1,6 @@
 # Kalka Snapshot (browser extension)
 
-A Chrome MV3 extension that inspects any web page and copies an element as Kalka layers or as HTML and CSS. `bun run --cwd extension build` writes the unpacked extension to `extension/dist`; load that folder from `chrome://extensions` with developer mode on. `bun run --cwd extension package` builds and zips it for the Chrome Web Store into `extension/release/`.
+A Chrome MV3 extension that inspects any web page and copies an element as Kalka layers or as HTML and CSS. `bun run --cwd extension build` writes the unpacked extension to `extension/dist`; load that folder from `chrome://extensions` with developer mode on. `bun run --cwd extension package` builds and zips it for the Chrome Web Store into `extension/release/`; the store listing's text and images live in `extension/store/`.
 
 - The toolbar popup (`extension/src/popup.ts`) and the Alt+Shift+K command (`extension/src/background.ts`) inject one script, `dist/main.js`, built as an IIFE from `extension/src/content/main.ts`; nothing runs on a page until the user asks, so the manifest keeps `activeTab` and no host permissions; `debugger` is there only to show a page at a breakpoint's width, and the worker takes the tab's pictures with `captureVisibleTab` (`extension/manifest.json`, `extension/src/background.ts`).
 - The inspector draws inside a closed-off shadow root and swallows the page's pointer events while it is open, so the page never sees a click meant for the inspector (`extension/src/content/overlay.ts`).
