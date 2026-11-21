@@ -2,7 +2,7 @@
 import { useHead } from '@unhead/vue'
 import { until, useEventListener } from '@vueuse/core'
 import { omit } from 'es-toolkit'
-import { defineAsyncComponent, onMounted, onUnmounted, provide, ref } from 'vue'
+import { defineAsyncComponent, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useI18n } from '@kalka/vue'
@@ -13,6 +13,7 @@ import { startWebMCP } from '@/app/automation/webmcp/runtime'
 import { exposeCollaborationActions } from '@/app/browser-bridge'
 import { useJoinRoom } from '@/app/collab/join'
 import { bindDesktopRoomLinks } from '@/app/collab/room/links'
+import type { ServerAccountSummary } from '@/app/collab/server/account'
 import { normalizeServerURL } from '@/app/collab/server/api'
 import {
   openServerDocument,
@@ -65,6 +66,7 @@ import FontStatusBanner from '@/components/font-status/FontStatusBanner.vue'
 import HomeWorkspace from '@/components/home/HomeWorkspace.vue'
 import RenameSelectionDialog from '@/components/selection/RenameSelectionDialog.vue'
 import TabBar from '@/components/TabBar.vue'
+import { AppConfirmationDialog } from '@/components/ui/dialog'
 import { IS_BROWSER } from '@/constants'
 
 // The editor's code loads apart from the home screen's, so the home screen shows sooner; it is
@@ -89,6 +91,27 @@ const shouldCreateHome =
   // The web editor starts on a document, except when the address names one of Home's lists.
   (isTauri() || appRuntimeConfig.recentFiles || filesListFromPath(route.path) !== null)
 const { collaboration } = useI18n()
+
+/** A launch link that would sign in as someone else waits here for the person to say yes. */
+const accountSwitch = ref<{
+  current: ServerAccountSummary
+  next: ServerAccountSummary
+  answer: (agreed: boolean) => void
+} | null>(null)
+const accountSwitchOpen = ref(false)
+function confirmAccountSwitch(current: ServerAccountSummary, next: ServerAccountSummary) {
+  const answer = createDeferred<boolean>()
+  accountSwitch.value = { current, next, answer: answer.resolve }
+  accountSwitchOpen.value = true
+  return answer.promise
+}
+watch(accountSwitchOpen, (open) => {
+  const pending = accountSwitch.value
+  if (open || !pending) return
+  // Closing without the confirm button keeps the account; a confirm in the same click wins.
+  setTimeout(() => pending.answer(false), 0)
+  accountSwitch.value = null
+})
 const joinRoomFromInput = useJoinRoom()
 
 /** Shown in the tab until the server document brings its own name. */
@@ -324,6 +347,7 @@ onMounted(async () => {
       // Kalka Cloud's launch link: sign in to the workspace, then open or create a file.
       await launchFromServerLink(window.location.hash, window.location.origin, stripServerLaunch, {
         openDocument: (document) => void openServerDocument(document),
+        confirmSwitch: confirmAccountSwitch,
         createDocument: async (start) => {
           // The blank tab the editor opened with takes the new file; otherwise a tab of its own.
           if (!createdInitialTab) createTab()
@@ -382,5 +406,21 @@ onUnmounted(() => {
       :tab="activeTab"
     />
     <EditorTour v-if="activeTab && activeTab.kind !== 'home'" />
+    <AppConfirmationDialog
+      v-model:open="accountSwitchOpen"
+      :heading="collaboration.serverLaunchSwitchTitle"
+      :description="
+        accountSwitch
+          ? collaboration.serverLaunchSwitchBody({
+              current: `${accountSwitch.current.email} (${accountSwitch.current.serverName})`,
+              next: `${accountSwitch.next.email} (${accountSwitch.next.serverName})`
+            })
+          : ''
+      "
+      :cancel-label="collaboration.serverLaunchSwitchKeep"
+      :confirm-label="collaboration.serverLaunchSwitchConfirm"
+      tone="warning"
+      @confirm="accountSwitch?.answer(true)"
+    />
   </div>
 </template>

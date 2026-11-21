@@ -113,5 +113,9 @@
   "serverLaunchOpening": "Kalka Cloud からファイルを開いています…",
   "serverLaunchFailed": "Kalka Cloud へのサインインに失敗しました。ワークスペースからエディターを開き直してください。",
   "serverLaunchFileGone": "このファイルはもうサーバーにありません。",
-  "serverBackToWorkspace": "ワークスペースに戻る"
+  "serverBackToWorkspace": "ワークスペースに戻る",
+  "serverLaunchSwitchTitle": "別のアカウントに切り替えますか？",
+  "serverLaunchSwitchBody": "このリンクは {next} としてサインインします。現在 {current} としてサインインしており、新しいファイルは別のアカウントに保存されます。自分のリンクを開いた場合にのみ切り替えてください。",
+  "serverLaunchSwitchConfirm": "アカウントを切り替える",
+  "serverLaunchSwitchKeep": "今のアカウントのままにする"
 }

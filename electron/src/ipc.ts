@@ -1,4 +1,4 @@
-import { ipcMain, type BrowserWindow, type WebContents } from 'electron'
+import { ipcMain, type BrowserWindow, type WebContents, type WebFrameMain } from 'electron'
 
 /**
  * One request channel and one event channel between the editor and the main process.
@@ -26,8 +26,16 @@ export function registerAll(group: Record<string, Handler>, prefix: string): voi
   for (const [name, handler] of Object.entries(group)) handle(`${prefix}.${name}`, handler)
 }
 
-export function installIPC(windowOf: (sender: WebContents) => BrowserWindow | null): void {
+/**
+ * `trusted` decides whether a call's frame may reach the handlers: only the app's own pages, so
+ * a page some window navigated to, or a frame inside one, never gets the native bridge.
+ */
+export function installIPC(
+  windowOf: (sender: WebContents) => BrowserWindow | null,
+  trusted: (frame: WebFrameMain | null) => boolean
+): void {
   ipcMain.handle(CALL_CHANNEL, async (event, name: unknown, args: unknown) => {
+    if (!trusted(event.senderFrame)) throw new Error('Native calls come from Kalka’s own pages only')
     if (typeof name !== 'string' || !Array.isArray(args)) throw new Error('Malformed call')
     const handler = handlers.get(name)
     if (!handler) throw new Error(`Unknown native call: ${name}`)
