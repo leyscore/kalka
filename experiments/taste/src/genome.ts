@@ -191,7 +191,7 @@ export type GenomeAxis = (typeof GENOME_AXES)[number]
 function pick<T extends { id: string }>(items: T[], id: string, axis: string): T {
   const found = items.find((item) => item.id === id)
   if (!found)
-    throw new Error(`${axis}: "${id}" is not an option. Options: ${items.map((item) => item.id).join(', ')}`)
+    throw new Error(`${axis}: "${id}" is not an option. Options: ${items.map((item) => item.id).filter((option) => !option.startsWith('x-')).join(', ')}${id === 'new' ? '. You wrote "new" without a valid entry for this axis under "invent".' : ''}`)
   return found
 }
 

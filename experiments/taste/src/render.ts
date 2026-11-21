@@ -132,7 +132,7 @@ function measureInPage(): Measurement {
       bgImage: style.backgroundImage === 'none' ? '' : style.backgroundImage.slice(0, 200),
       bgClipText: style.webkitBackgroundClip === 'text' || style.backgroundClip === 'text',
       radius: Math.max(px(style.borderTopLeftRadius), px(style.borderBottomRightRadius)),
-      shadow: style.boxShadow === 'none' ? '' : style.boxShadow.slice(0, 120),
+      shadow: style.boxShadow === 'none' ? '' : style.boxShadow.slice(0, 400),
       backdrop: style.backdropFilter !== 'none' && style.backdropFilter !== '',
       borderWidths: [
         px(style.borderTopWidth),

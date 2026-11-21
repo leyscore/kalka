@@ -215,7 +215,15 @@ export function seedFromPage(m: Measurement, name: string, source: string, fontH
   const radii = [...tally(blocks, (box) => String(Math.round(box.radius)), () => 1).entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([value]) => Number(value)).sort((a, b) => a - b)
   if (!radii.length) radii.push(0)
   const radius = { sm: radii[0], md: radii[Math.min(1, radii.length - 1)], lg: radii[radii.length - 1] }
-  const shadows = top(tally(m.boxes.filter((box) => box.shadow !== ''), (box) => box.shadow, () => 1))
+  const balanced = (value: string) => value.split('(').length === value.split(')').length && !/[;{}]/.test(value)
+  // Tailwind composes shadows from layers that are transparent when unused; only painted layers count.
+  const painted = (value: string) =>
+    value
+      .split(/,(?![^(]*\))/)
+      .map((layer) => layer.trim())
+      .filter((layer) => !/rgba\(0, 0, 0, 0\)/.test(layer) && !/ 0px 0px 0px 0px$/.test(layer))
+      .join(', ')
+  const shadows = top(tally(m.boxes.filter((box) => box.w >= 120 && balanced(box.shadow) && painted(box.shadow) !== ''), (box) => painted(box.shadow), () => 1))
   const spacingCounts = tally(
     m.boxes.flatMap((box) => [...box.padding, ...box.gap, box.margin[0], box.margin[2]]).filter((value) => value > 0 && value % 4 === 0 && value <= 160),
     (value) => String(value / 4),
@@ -494,9 +502,24 @@ export function fidelity(seed: BrandSeed, reference: Measurement, m: Measurement
   const sizes = new Set(seed.type.map((style) => Math.round(style.size)))
   const radii = new Set([0, ...Object.values(seed.radius).map(Math.round)])
   const rounded = m.boxes.filter((box) => box.radius > 0 && box.radius < 100 && box.w >= 24)
-  const signature = (box: Box) => `${opaque(box.bg) ? hex(box.bg) : 'none'}|${Math.round(box.radius)}|${Math.round(box.padding[0])}|${Math.round(box.padding[1])}|${Math.round(box.fontSize)}|${box.fontWeight}`
   const isControl = (box: Box) => (/^(a|button)$/.test(box.tag) && box.h >= 28 && box.h <= 64 && box.padding[1] >= 8) || /^(input|select|textarea)$/.test(box.tag)
-  const known = new Set(reference.boxes.filter(isControl).map(signature))
+  // A part is reused when a control has the fill, radius, weight and (within a step) the padding and size of one of the product's.
+  const originals = reference.boxes.filter(isControl)
+  const sameFill = (a: Box, b: Box) => {
+    if (!opaque(a.bg) || !opaque(b.bg)) return opaque(a.bg) === opaque(b.bg)
+    const [x, y] = [lchOf(a.bg), lchOf(b.bg)]
+    return Math.hypot(x.l - y.l, x.c - y.c) < 0.03
+  }
+  const reuses = (box: Box) =>
+    originals.some(
+      (other) =>
+        sameFill(other, box) &&
+        Math.abs(other.radius - box.radius) <= 1 &&
+        Math.abs(other.padding[0] - box.padding[0]) <= 2 &&
+        Math.abs(other.padding[1] - box.padding[1]) <= 4 &&
+        Math.abs(other.fontSize - box.fontSize) <= 1 &&
+        other.fontWeight === box.fontWeight
+    )
   const controls = m.boxes.filter(isControl)
   const colour = ratio(weightIn, weightAll)
   const face = ratio(texts.filter((box) => faces.has(box.fontFamily)).reduce((sum, box) => sum + box.ownText, 0), chars)
@@ -508,7 +531,7 @@ export function fidelity(seed: BrandSeed, reference: Measurement, m: Measurement
     size,
     radius,
     tokens: (colour + face + size + radius) / 4,
-    components: ratio(controls.filter((box) => known.has(signature(box))).length, controls.length),
+    components: ratio(controls.filter(reuses).length, controls.length),
     componentCount: controls.length
   }
 }

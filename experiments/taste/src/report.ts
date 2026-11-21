@@ -56,6 +56,7 @@ type Line = {
   baseline: Row | null
   reviewed: Row | null
   variants: Row[]
+  second: Row | null
   picked: Row | null
   final: Row | null
   genome: Genome | null
@@ -71,6 +72,7 @@ const lines: Line[] = briefs.map((brief) => {
     baseline: row(brief, join(home, 'baseline')),
     reviewed: row(brief, join(home, 'baseline-reviewed')),
     variants: [1, 2, 3].flatMap((index) => row(brief, join(home, `v${index}`)) ?? []),
+    second: row(brief, join(home, 'v2build')),
     picked: pick ? row(brief, join(home, pick.picked)) : null,
     final: final ? row(brief, final) : null,
     genome: final ? genomeOf(final) : null,
@@ -99,7 +101,8 @@ const conditions: [string, Pick][] = [
   ['Current agent, after its own review', (line) => (line.reviewed ? [line.reviewed] : [])],
   ['Genome, mean of the 3 drafts (no selection)', (line) => line.variants],
   ['Genome, draft kept', (line) => (line.picked ? [line.picked] : [])],
-  ['Genome, after refinement (final)', (line) => (line.final ? [line.final] : [])]
+  ['Genome, after refinement (final)', (line) => (line.final ? [line.final] : [])],
+  ['Genome, second build prompt', (line) => (line.second ? [line.second] : [])]
 ]
 md.push('\n### Means per condition\n')
 md.push('| Condition | n | Craft | Rhythm | Type scale | Contrast | Alignment | Text sizes | Distinct spacings | Weighted slop | Pages with no sign | Singularity (DOM) | Singularity (image) | External P(slop) | Score |')
@@ -133,7 +136,7 @@ md.push('Mean distance between two pages of the same condition (web pages only).
 md.push('| Condition | n | DOM distance (capped standard deviations) | Image distance (CLIP cosine) | Mean craft | Mean slop |')
 md.push('|---|---|---|---|---|---|')
 const web = lines.filter((line) => line.brief.surface === 'web')
-for (const [name, select] of [conditions[0], conditions[2], conditions[5]]) {
+for (const [name, select] of [conditions[0], conditions[2], conditions[5], conditions[6]]) {
   const rows = web.flatMap((line) => select(line).slice(0, 1))
   const embedded = rows.flatMap((r) => { const e = context.embeddings[join(r.dir, 'fold.jpg')]; return e ? [e] : [] })
   md.push(`| ${name} | ${rows.length} | ${fixed(spread(rows.map((r) => r.metrics.vector), scale), 2)} | ${fixed(embeddingSpread(embedded), 3)} | ${fixed(mean(rows.map((r) => r.metrics.craft.craft)))} | ${fixed(mean(rows.map((r) => r.metrics.slop)), 2)} |`)
@@ -190,9 +193,15 @@ for (const brief of briefs) {
 if (repeatTotals.length)
   md.push(`| **mean** | ${fixed(mean(repeatTotals.map((r) => r[0])), 2)} | ${fixed(mean(repeatTotals.map((r) => r[1])), 3)} | ${fixed(mean(repeatTotals.map((r) => r[2])), 2)} | ${fixed(mean(repeatTotals.map((r) => r[3])), 3)} | ${fixed(mean(repeatTotals.map((r) => r[4])))} | | |`)
 
-const duels = briefs.flatMap((brief) => readJSON(join(RUNS_DIR, brief.id, 'duel.json'), v.object({ pipeline: v.object({ score: v.number() }), baseline: v.object({ score: v.number() }) })) ?? [])
-if (duels.length)
-  md.push(`\nBlind pairwise VLM judge (weak, circular signal): pipeline preferred ${duels.filter((duel) => duel.pipeline.score > duel.baseline.score).length} times, current agent ${duels.filter((duel) => duel.pipeline.score < duel.baseline.score).length} times, tie ${duels.filter((duel) => duel.pipeline.score === duel.baseline.score).length} times of ${duels.length}; mean score ${fixed(mean(duels.map((duel) => duel.pipeline.score)))} against ${fixed(mean(duels.map((duel) => duel.baseline.score)))}.\n`)
+const Duel = v.object({ pipeline: v.object({ score: v.number() }), baseline: v.object({ score: v.number() }) })
+md.push('\n### Blind pairwise VLM judge (weak, circular signal)\n')
+md.push('| Pipeline page | Briefs | Pipeline preferred | Current agent preferred | Tie | Mean score: pipeline | current agent |')
+md.push('|---|---|---|---|---|---|---|')
+for (const [file, label] of [['duel.json', 'Menu only, final'], ['duel-free.json', 'Free within the system, draft kept'], ['duel-v2.json', 'Menu only, second build prompt']] as const) {
+  const duels = briefs.flatMap((brief) => readJSON(join(RUNS_DIR, brief.id, file), Duel) ?? [])
+  if (duels.length)
+    md.push(`| ${label} | ${duels.length} | ${duels.filter((duel) => duel.pipeline.score > duel.baseline.score).length} | ${duels.filter((duel) => duel.pipeline.score < duel.baseline.score).length} | ${duels.filter((duel) => duel.pipeline.score === duel.baseline.score).length} | ${fixed(mean(duels.map((duel) => duel.pipeline.score)))} | ${fixed(mean(duels.map((duel) => duel.baseline.score)))} |`)
+}
 
 // The same drafts, picked with a penalty for options earlier briefs already kept.
 {
@@ -300,15 +309,15 @@ writeFileSync(join(out, 'tables.md'), md.join('\n'))
 
 /** One image per brief: current agent on the left, the pipeline on the right, first screens. */
 const browser = await chromium.launch()
-const page = await browser.newPage({ viewport: { width: 2000, height: 700 }, deviceScaleFactor: 1 })
+const page = await browser.newPage({ viewport: { width: 2700, height: 700 }, deviceScaleFactor: 1 })
 const compose = join(RUNS_DIR, 'compose.html')
 const image = (file: string) => (existsSync(file) ? `<img src="${pathToFileURL(file).href}">` : '<div class="none">not produced</div>')
 for (const line of lines) {
   if (!line.reviewed || !line.final) continue
   for (const kind of ['fold', 'full'] as const) {
-    const html = `<style>body{margin:0;font:15px/1.4 system-ui;background:#1b1b1b;color:#eee}main{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px}h2{font-size:15px;font-weight:600;margin:0 0 8px}img{width:100%;display:block;background:#fff}p{margin:6px 0 0;color:#aaa;font-size:13px}</style><main>
+    const html = `<style>body{margin:0;font:15px/1.4 system-ui;background:#1b1b1b;color:#eee}main{display:grid;grid-template-columns:repeat(${line.second ? 3 : 2},1fr);gap:16px;padding:16px}h2{font-size:15px;font-weight:600;margin:0 0 8px}img{width:100%;display:block;background:#fff}p{margin:6px 0 0;color:#aaa;font-size:13px}</style><main>
 <div><h2>${line.brief.id} — current agent (guide + anti-slop, after its review)</h2>${image(join(line.reviewed.dir, `${kind}.jpg`))}<p>craft ${fixed(line.reviewed.metrics.craft.craft, 0)}, slop ${line.reviewed.metrics.slop}, singularity ${fixed(line.reviewed.scored.singularity.score, 0)}</p></div>
-<div><h2>${line.brief.id} — genome pipeline (${line.genome ? `${line.genome.structure}, ${line.genome.pairing}, ${line.genome.palette}, ${line.genome.shape}` : ''})</h2>${image(join(line.final.dir, `${kind}.jpg`))}<p>craft ${fixed(line.final.metrics.craft.craft, 0)}, slop ${line.final.metrics.slop}, singularity ${fixed(line.final.scored.singularity.score, 0)}</p></div></main>`
+<div><h2>${line.brief.id} — genome pipeline (${line.genome ? `${line.genome.structure}, ${line.genome.pairing}, ${line.genome.palette}, ${line.genome.shape}` : ''})</h2>${image(join(line.final.dir, `${kind}.jpg`))}<p>craft ${fixed(line.final.metrics.craft.craft, 0)}, slop ${line.final.metrics.slop}, singularity ${fixed(line.final.scored.singularity.score, 0)}</p></div>${line.second ? `<div><h2>${line.brief.id} — same genome, second build prompt</h2>${image(join(line.second.dir, `${kind}.jpg`))}<p>craft ${fixed(line.second.metrics.craft.craft, 0)}, slop ${line.second.metrics.slop}, singularity ${fixed(line.second.scored.singularity.score, 0)}</p></div>` : ''}</main>`
     writeFileSync(compose, html)
     await page.goto(pathToFileURL(compose).href, { waitUntil: 'load' })
     await page.screenshot({ path: join(out, `${line.brief.id}-${kind}.jpg`), type: 'jpeg', quality: kind === 'fold' ? 84 : 72, fullPage: true })

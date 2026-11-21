@@ -36,6 +36,16 @@ decisions become data the tools can check.
    pass from its screenshot, kept only if it scores at least as well. A VLM ranking counts for a
    tenth of the score.
 
+6. **A floor, not a ceiling.** With `--free` the agent may add an option of its own on any axis
+   (a palette derived from the subject, a composition, a type treatment). `registerInvented`
+   holds it to the checks every menu option passed: contrast, the refused combinations, and the
+   catalogue's known defaults (an indigo accent, cream with terracotta, neon on dark grey).
+7. **Brand mode.** When a product already has its system, `src/brand.ts` seeds one from a
+   rendered page (`seedFromPage`) or from custom properties such as `kalka tokens` output or a
+   Tailwind `@theme` (`seedFromCSS`). Colours, type, shape and the product's own parts are
+   locked; only structure, imagery, motion, signature and an unspecified rhythm are chosen, inside
+   what the matrix allows next to the brand. `fidelity` measures token adherence and part reuse.
+
 The result of each draft is a static HTML page with one compiled stylesheet, which
 `bun kalka import` reads.
 
@@ -57,10 +67,22 @@ drives over ACP; no key is read. Everything lands in the ignored `runs/`.
 bun src/check-genome.ts
 TASTE_PYTHON=/path/to/python-with-torch bun src/run.ts all --parallel 4   # 20 briefs
 bun src/run.ts baseline --sample 1 --briefs saas-freight                  # repeated runs
+bun src/run.ts direction --free --briefs saas-freight                      # options may be invented
+bun src/run.ts rebuild && bun src/run.ts duel --v2                        # second build prompt, blind VLM duel
+bun src/brand-run.ts /path/to/source-clones                               # brand-mode briefs
 bun src/report.ts /path/to/output                                         # tables and side-by-sides
 ```
 
 `briefs.json` holds the 20 fixed briefs.
+
+## What the first run showed
+
+On 20 briefs the pipeline's pages measure cleaner than the current guide's (craft 97 against 89,
+19 pages of 20 with no slop sign against 7), repeated runs differ more, and brand-mode pages
+stay on the product's tokens. A blind VLM comparison nevertheless preferred the current guide's
+page 17 times of 20: the genome pages were flat, with no product shown on the first screen. A
+second build prompt (`FIRST_SCREEN` in `src/prompts.ts`) brought that to 13 of 20. The metrics
+here measure the floor; they do not measure whether a page has an idea.
 
 ## Limits to keep in mind
 

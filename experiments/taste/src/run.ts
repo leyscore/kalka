@@ -33,6 +33,7 @@ import {
   describeFindings,
   DIRECTION_SYSTEM,
   directionPrompt,
+  FIRST_SCREEN,
   JUDGE_SYSTEM,
   judgePrompt,
   PLAIN_SYSTEM,
@@ -180,6 +181,7 @@ function readDirection(dir: string, surface: Surface): Direction | null {
 type Options = { briefs: Brief[]; sample: number; parallel: number; free: boolean }
 /** Sample 0 is the main run; `r1`, `r2` are repeats; `free` is the arm where options may be invented. */
 let freeArm = false
+let secondPrompt = false
 const home = (brief: Brief, sample: number) => {
   if (freeArm) return join(RUNS_DIR, brief.id, 'free')
   return sample ? join(RUNS_DIR, brief.id, `r${sample}`) : join(RUNS_DIR, brief.id)
@@ -383,13 +385,24 @@ const stages: Record<string, (options: Options) => Promise<void>> = {
   async duel({ briefs, parallel }) {
     await pool(
       briefs.map((brief) => async () => {
-        const dir = home(brief, 0)
+        const dir = join(RUNS_DIR, brief.id)
         const final = v.safeParse(v.pipe(v.string(), v.parseJson(), v.object({ final: v.string() })), existsSync(join(dir, 'final.json')) ? readFileSync(join(dir, 'final.json'), 'utf8') : '')
-        if (!final.success || existsSync(join(dir, 'duel.json')) || !readMetrics(join(dir, 'baseline-reviewed'))) return
-        const stage = join(dir, 'duel')
+        // Which pipeline page meets the baseline: the final, the free arm's pick, or the second build prompt.
+        let challenger = final.success ? final.output.final : ''
+        let output = 'duel.json'
+        if (freeArm) {
+          const pick = readPick(join(dir, 'free'))
+          challenger = pick ? join('free', pick.picked) : ''
+          output = 'duel-free.json'
+        } else if (secondPrompt) {
+          challenger = 'v2build'
+          output = 'duel-v2.json'
+        }
+        if (!challenger || !readMetrics(join(dir, challenger)) || existsSync(join(dir, output)) || !readMetrics(join(dir, 'baseline-reviewed'))) return
+        const stage = join(dir, output.replace('.json', ''))
         mkdirSync(stage, { recursive: true })
         const pipelineFirst = [...brief.id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 2 === 0
-        const order = pipelineFirst ? [final.output.final, 'baseline-reviewed'] : ['baseline-reviewed', final.output.final]
+        const order = pipelineFirst ? [challenger, 'baseline-reviewed'] : ['baseline-reviewed', challenger]
         const names = ['a.jpg', 'b.jpg']
         names.forEach((name, index) => writeFileSync(join(stage, name), readFileSync(join(dir, order[index], 'fold.jpg'))))
         const reply = await ask({ label: `duel:${brief.id}`, system: JUDGE_SYSTEM, prompt: judgePrompt(brief, names), images: names.map((name) => join(stage, name)) })
@@ -400,8 +413,36 @@ const stages: Record<string, (options: Options) => Promise<void>> = {
         if (!parsed.success || parsed.output.drafts.length !== 2) return
         const [first, second] = parsed.output.drafts
         const result = { pipeline: pipelineFirst ? first : second, baseline: pipelineFirst ? second : first }
-        writeFileSync(join(dir, 'duel.json'), JSON.stringify(result, null, 1))
-        console.log('duel', brief.id, `pipeline ${result.pipeline.score} baseline ${result.baseline.score}`)
+        writeFileSync(join(dir, output), JSON.stringify(result, null, 1))
+        console.log(output, brief.id, `pipeline ${result.pipeline.score} baseline ${result.baseline.score}`)
+      }),
+      parallel
+    )
+  },
+
+  /**
+   * Builds the kept genome again with the second build prompt, written after reading why the
+   * blind judge preferred the baseline. Same genome, same gate; only the instructions change.
+   */
+  async rebuild({ briefs, parallel }) {
+    await pool(
+      briefs.map((brief) => async () => {
+        const dir = join(RUNS_DIR, brief.id)
+        const direction = readDirection(dir, brief.surface)
+        const pick = readPick(dir)
+        const out = join(dir, 'v2build')
+        if (!direction || !pick || readMetrics(out)) return
+        const candidate = direction.candidates[Number(pick.picked.slice(1)) - 1]
+        const system = resolve(candidate, brief.surface)
+        const references = direction.references.map((reference) => `${reference.name} (${reference.take})`).join('; ')
+        const why = Object.entries(candidate.why).map(([axis, reason]) => `${axis}: ${reason}`).join(' ')
+        const reply = await ask({
+          label: `rebuild:${brief.id}`,
+          system: `${BUILD_SYSTEM}\n\n${FIRST_SCREEN}`,
+          prompt: buildPrompt(brief, system, direction.reading, references, `${candidate.name}. ${why}`)
+        })
+        const metrics = await writeGenome(out, reply, brief, system)
+        console.log('rebuild', brief.id, `craft ${metrics.craft.craft.toFixed(0)} slop ${metrics.slop}`)
       }),
       parallel
     )
@@ -481,6 +522,7 @@ if (import.meta.main) {
     free: rest.includes('--free')
   }
   freeArm = options.free
+  secondPrompt = rest.includes('--v2')
   mkdirSync(RUNS_DIR, { recursive: true })
   const order = stage === 'all' ? ['plain', 'baseline', 'direction', 'build', 'review', 'embed', 'judge', 'pick', 'refine', 'embed', 'final'] : [stage]
   try {

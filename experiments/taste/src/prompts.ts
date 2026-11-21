@@ -123,6 +123,18 @@ Craft:
 
 Reply with one \`\`\`html block and nothing else: the sections only (no <html>, <head>, <body>, <style> or <script>), using Tailwind utility classes restricted to the vocabulary.`
 
+/**
+ * Added for the second build prompt. The first prompt produced clean pages that a blind judge
+ * found flat: no product on the first screen, equal weights, empty columns, small text.
+ */
+export const FIRST_SCREEN = `What makes the first screen land (all of it inside the genome):
+- A hero device. The first screen shows the product or the subject itself, drawn with the vocabulary: a real table of the brief's data, an open ticket, this week's menu, a screen of the app built from divs. Show it; do not describe it. A photograph plate is not a hero device: put no <img> in the first screen unless the imagery rule is full-bleed or strips.
+- One thing dominant. The most important fact of the brief is clearly the largest element (text-display or text-h1) and sits on a fill or carries the accent. Never give four numbers the same weight; never make the action smaller than a label.
+- Use the width. No empty column and no empty half: if the structure has an index or margin column, it carries real content (a fact, a number, the action).
+- Weight. At least two sections sit on a fill (surface, tint, ink, accent or support) so the page is not only text and hairlines; in a rules-only shape, use one ink band.
+- Readable sizes. Running text is text-body or text-lead. text-small and text-label are for captions, table cells and labels only.
+- The customer's language. A bistro in Nantes writes in French, a counter in Manchester in English; keep the brief's own names and figures exactly.`
+
 const CONTAINER: Record<Surface, string> = {
   web: 'Top level: <header>, <main> with its <section>s, <footer>. Each spans the full width; the content sits in a container (max-w-7xl mx-auto px-8).',
   dashboard:
