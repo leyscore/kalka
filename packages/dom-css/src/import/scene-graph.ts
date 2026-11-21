@@ -169,7 +169,8 @@ function createPhrasingNode(
     const oneLine = (drawn?.height ?? box.height - top - bottom) < lineHeight * 1.5
     const width = Math.max(1, box.width - left - right)
     label.width = oneLine ? width : Math.ceil(width) + 1
-    label.textAutoResize = oneLine || frame.layoutMode !== 'NONE' ? 'WIDTH_AND_HEIGHT' : 'HEIGHT'
+    // Words the browser wrapped keep the width they wrapped at, in auto layout too.
+    label.textAutoResize = oneLine ? 'WIDTH_AND_HEIGHT' : 'HEIGHT'
     label.x = left
     label.y = drawn && frame.layoutMode === 'NONE' ? drawn.y - box.y : top
   }
@@ -364,7 +365,9 @@ function createDesignNode(
     )
     if (node.layoutBox) {
       // Its measured size, not a guess from its length, also where auto layout places it.
-      text.textAutoResize = 'WIDTH_AND_HEIGHT'
+      // Text the browser wrapped keeps its width and wraps there; one line hugs its words.
+      const lineHeight = text.lineHeight ?? text.fontSize * 1.3
+      text.textAutoResize = node.layoutBox.height < lineHeight * 1.5 ? 'WIDTH_AND_HEIGHT' : 'HEIGHT'
       text.width = Math.ceil(node.layoutBox.width) + 1
       text.height = node.layoutBox.height
     }

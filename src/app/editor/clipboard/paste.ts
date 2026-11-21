@@ -4,6 +4,7 @@ import type { Vector } from '@kalka/scene-graph/primitives'
 
 import { addSnapshotBreakpoints, splitSnapshotBreakpoints } from './breakpoints'
 import { externalHTMLAsDesignClipboard, isExternalHTML } from './external-html'
+import { registerPastedFonts } from './fonts'
 import { matchingClipboardSnapshot } from './memory'
 
 export async function pasteClipboardHTML(
@@ -24,6 +25,8 @@ export async function pasteClipboardHTML(
   }
   // A page copied at several widths pastes as an artboard with a breakpoint for each.
   const { html: widest, breakpoints } = splitSnapshotBreakpoints(html)
+  // The page's own fonts, when the copy carries them, draw its text on the canvas.
+  registerPastedFonts(widest)
   const design = await externalHTMLAsDesignClipboard(widest)
   await editor.pasteFromHTML(design ?? widest, cursorPos, options)
   const pasted = [...editor.state.selectedIds]

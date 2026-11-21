@@ -72,6 +72,10 @@ const PROPERTIES = [
   'box-shadow',
   'opacity',
   'transform',
+  'translate',
+  'rotate',
+  'scale',
+  'transform-origin',
   'filter',
   'backdrop-filter',
   'mix-blend-mode',
@@ -81,12 +85,26 @@ const PROPERTIES = [
   'font-size',
   'font-weight',
   'font-style',
+  'font-stretch',
+  'font-feature-settings',
+  'font-variation-settings',
+  'font-variant-numeric',
+  'font-variant-ligatures',
+  'font-kerning',
   'line-height',
   'letter-spacing',
   'text-align',
   'text-transform',
   'text-decoration',
   'white-space',
+  'text-wrap-mode',
+  'text-wrap-style',
+  'word-break',
+  'overflow-wrap',
+  'hyphens',
+  'text-indent',
+  'word-spacing',
+  'text-overflow',
   'list-style-type',
   'vertical-align',
   'aspect-ratio'
@@ -99,41 +117,26 @@ const INHERITED = new Set<string>([
   'font-size',
   'font-weight',
   'font-style',
+  'font-stretch',
+  'font-feature-settings',
+  'font-variation-settings',
+  'font-variant-numeric',
+  'font-variant-ligatures',
+  'font-kerning',
   'line-height',
   'letter-spacing',
   'text-align',
   'text-transform',
   'white-space',
+  'text-wrap-mode',
+  'text-wrap-style',
+  'word-break',
+  'overflow-wrap',
+  'hyphens',
+  'text-indent',
+  'word-spacing',
   'list-style-type'
 ])
-
-/** Values that change nothing on any element, so the copy stays short. */
-const NEUTRAL = new Set([
-  'none',
-  'normal',
-  'auto',
-  '0px',
-  '0',
-  'static',
-  'visible',
-  'rgba(0, 0, 0, 0)',
-  'start',
-  'stretch',
-  'nowrap',
-  'baseline',
-  '0% 0%',
-  'repeat',
-  'fill',
-  '50% 50%',
-  'content-box',
-  'row',
-  'inline',
-  '0px none rgb(0, 0, 0)',
-  'matrix(1, 0, 0, 1, 0, 0)'
-])
-
-/** Kept even when neutral, because the copy loses the page's own rules around it. */
-const ALWAYS = new Set(['display'])
 
 const DROPPED_TAGS = new Set(['SCRIPT', 'NOSCRIPT', 'STYLE', 'LINK', 'META', 'TEMPLATE'])
 
@@ -151,40 +154,141 @@ const SIZED = new Set([
   'BUTTON'
 ])
 
-/** Elements the browser draws with a border and a background of their own. */
-const CONTROLS = new Set(['BUTTON', 'INPUT', 'TEXTAREA', 'SELECT', 'FIELDSET'])
+/**
+ * The browser's own style for each tag, read in an empty document: what a pasted element gets
+ * without the page's stylesheets, so what the copy must write when the page says otherwise.
+ */
+class BrowserDefaults {
+  private readonly frame = document.createElement('iframe')
+  private readonly byTag = new Map<string, Map<string, string>>()
 
-/** Defaults that `NEUTRAL` cannot hold, since the same value means something on other properties. */
-const DEFAULTS: Record<string, string> = {
-  'flex-shrink': '1',
-  opacity: '1',
-  'flex-grow': '0',
-  order: '0',
-  'z-index': 'auto',
-  // The initial value; written out, Kalka's importer sizes flex items wrongly with it.
-  'box-sizing': 'content-box'
+  constructor() {
+    this.frame.setAttribute('aria-hidden', 'true')
+    this.frame.style.cssText =
+      'position: fixed; width: 0; height: 0; border: 0; visibility: hidden; pointer-events: none'
+    document.documentElement.append(this.frame)
+  }
+
+  of(tag: string): Map<string, string> {
+    const known = this.byTag.get(tag)
+    if (known) return known
+    const values = new Map<string, string>()
+    const doc = this.frame.contentDocument
+    const view = this.frame.contentWindow
+    if (doc && view) {
+      // A link is styled as one only with an address.
+      const [name = 'div', link] = tag.split('[')
+      const element = doc.createElement(name)
+      if (link) element.setAttribute('href', '#')
+      doc.body.append(element)
+      const style = view.getComputedStyle(element)
+      for (const property of PROPERTIES) values.set(property, style.getPropertyValue(property))
+      element.remove()
+    }
+    this.byTag.set(tag, values)
+    return values
+  }
+
+  release(): void {
+    this.frame.remove()
+  }
+}
+
+/** Whether anything turns, scales or moves the element: only then does its origin matter. */
+function transformed(style: CSSStyleDeclaration): boolean {
+  return [style.transform, style.translate, style.rotate, style.scale].some(
+    (value) => value !== '' && value !== 'none'
+  )
+}
+
+/** A value an animation left a hair away from its rest, which would only add noise. */
+/** A transform matrix that moves nothing by more than half a pixel. */
+function nearIdentity(value: string): boolean {
+  const matrix = /^matrix\(([^)]*)\)$/.exec(value)
+  if (!matrix) return false
+  const [a = 0, b = 0, c = 0, d = 0, e = 0, f = 0] = (matrix[1] ?? '').split(',').map(Number)
+  const unit = [a - 1, b, c, d - 1].every((part) => Math.abs(part) < 0.005)
+  return unit && Math.abs(e) < 0.5 && Math.abs(f) < 0.5
+}
+
+function settled(property: string, value: string): string | null {
+  if (property === 'opacity' && Number(value) >= 0.99) return null
+  const faintBlur = /^blur\((0(\.\d+)?)px\)$/.test(value) && Number.parseFloat(value.slice(5)) < 0.2
+  if (property === 'filter' && faintBlur) return null
+  if (property === 'transform' && nearIdentity(value)) return null
+  return value
+}
+
+/** Which of an element's sizes the copy writes. */
+interface Sized {
+  width: boolean
+  height: boolean
+}
+
+/**
+ * Which of an element's sizes the page's CSS sets rather than its content: each is set back to
+ * `auto` for a moment, and a size that changes was the page's. The element's own style comes
+ * back exactly as it was.
+ */
+function explicitSize(element: Element): Sized {
+  if (!(element instanceof HTMLElement)) return { width: false, height: false }
+  const before = { width: element.offsetWidth, height: element.offsetHeight }
+  const attribute = element.getAttribute('style')
+  const changes = (property: 'width' | 'height') => {
+    element.style.setProperty(property, 'auto', 'important')
+    const after = property === 'width' ? element.offsetWidth : element.offsetHeight
+    if (attribute === null) element.removeAttribute('style')
+    else element.setAttribute('style', attribute)
+    return Math.abs(after - before[property]) > 0.5
+  }
+  return { width: changes('width'), height: changes('height') }
+}
+
+/**
+ * The declarations an element's copy needs: every property where the page's value differs from
+ * what the browser would give that tag on its own. An inherited property is written where it
+ * changes from the parent, or where the browser styles the tag itself (a heading's weight, a
+ * link's color), since the copy cannot count on the parent there.
+ */
+/** What the copy may leave out because the pasted element gets it anyway. */
+interface Baseline {
+  style: CSSStyleDeclaration
+  parent: CSSStyleDeclaration | null
+  own: Map<string, string>
+  plain: Map<string, string>
+}
+
+/** Whether a property's value is what the pasted element would get without being told. */
+function given(property: string, value: string, base: Baseline): boolean {
+  if (property === 'transform-origin' && !transformed(base.style)) return true
+  if (INHERITED.has(property)) {
+    const tagSetsIt = base.own.get(property) !== base.plain.get(property)
+    return !!base.parent && !tagSetsIt && base.parent.getPropertyValue(property) === value
+  }
+  if (property === 'display') return false
+  if (base.own.get(property) === value) return true
+  // A border drawn by neither: only its color, which follows the text, differs.
+  return (
+    property.startsWith('border-') &&
+    value.includes(' none') &&
+    !!base.own.get(property)?.includes(' none')
+  )
 }
 
 function declarations(
   style: CSSStyleDeclaration,
   parent: CSSStyleDeclaration | null,
-  sized = true,
-  reset = false
+  tag: string,
+  defaults: BrowserDefaults,
+  sized: Sized = { width: true, height: true }
 ): string {
+  const base: Baseline = { style, parent, own: defaults.of(tag), plain: defaults.of('div') }
   const out: string[] = []
   for (const property of PROPERTIES) {
-    const value = style.getPropertyValue(property)
-    if (!value) continue
     // Other boxes size to their content and their layout, as on the page.
-    if (!sized && (property === 'width' || property === 'height')) continue
-    if (property.startsWith('border-') && property !== 'border-radius' && value.includes(' none')) {
-      // Controls have a border of their own in the browser; the copy must say it has none.
-      if (reset) out.push(`${property}: 0`)
-      continue
-    }
-    if (INHERITED.has(property) && parent && parent.getPropertyValue(property) === value) continue
-    if (DEFAULTS[property] === value) continue
-    if (!ALWAYS.has(property) && !INHERITED.has(property) && NEUTRAL.has(value)) continue
+    if ((property === 'width' && !sized.width) || (property === 'height' && !sized.height)) continue
+    const value = settled(property, style.getPropertyValue(property))
+    if (!value || given(property, value, base)) continue
     out.push(`${property}: ${value}`)
   }
   return out.join('; ')
@@ -214,6 +318,7 @@ interface Walk {
   format: CaptureFormat
   /** Elements to keep even where the page does not show them, hidden: see `captureElement`. */
   keep: ReadonlySet<Element>
+  defaults: BrowserDefaults
 }
 
 /** How an element the page hides at this width is written: hidden, taking no room. */
@@ -241,7 +346,7 @@ function pseudo(
   if (text === null) return null
   const span = document.createElement('span')
   span.textContent = text
-  applyStyle(span, declarations(style, parent), walk)
+  applyStyle(span, declarations(style, parent, 'span', walk.defaults), walk)
   walk.layers++
   return span
 }
@@ -275,7 +380,7 @@ function copyReplaced(
   try {
     const image = document.createElement('img')
     image.src = source.toDataURL('image/png')
-    applyStyle(image, declarations(style, parent), walk)
+    applyStyle(image, declarations(style, parent, 'img', walk.defaults), walk)
     walk.layers++
     walk.images++
     return image
@@ -317,23 +422,53 @@ function copySVG(source: Element, style: CSSStyleDeclaration, walk: Walk): Eleme
   svg.setAttribute('width', String(box.width))
   svg.setAttribute('height', String(box.height))
   applyStyle(svg, `color: ${style.color}`, walk)
+  paintSVG(source, svg)
   return svg
+}
+
+/** The paint an SVG's shapes take from the page's stylesheets, which do not come along. */
+const SVG_PAINT = [
+  'fill',
+  'fill-opacity',
+  'stroke',
+  'stroke-width',
+  'stroke-linecap',
+  'stroke-linejoin',
+  'stroke-opacity',
+  'opacity'
+] as const
+
+/** Writes each shape's computed paint on its copy, so the drawing looks as it did on the page. */
+function paintSVG(source: Element, copy: Element): void {
+  const sources = [...source.querySelectorAll('*')]
+  const copies = [...copy.querySelectorAll('*')]
+  sources.forEach((shape, index) => {
+    const target = copies[index]
+    if (!target || target.localName !== shape.localName) return
+    const style = getComputedStyle(shape)
+    const paint = SVG_PAINT.map((property) => `${property}: ${style.getPropertyValue(property)}`)
+    const own = target.getAttribute('style')
+    target.setAttribute('style', [...(own ? [own] : []), ...paint].join('; '))
+  })
 }
 
 /** The styles written on an element's copy. */
 function elementStyle(
   source: Element,
   style: CSSStyleDeclaration,
-  parent: CSSStyleDeclaration | null
+  parent: CSSStyleDeclaration | null,
+  defaults: BrowserDefaults
 ): string {
   const tag = source.tagName.toUpperCase()
-  const control = CONTROLS.has(tag)
-  // Controls do not inherit text styles in the browser, and links take the browser's blue and
-  // underline: both write their own text styles rather than rely on the parent's.
-  const ownText = control || tag === 'A'
   // An empty box, such as an icon's or a divider's, has no content to size it: it keeps its own.
   const empty = source.children.length === 0 && !source.textContent?.trim()
-  const declared = declarations(style, ownText ? null : parent, SIZED.has(tag) || empty, control)
+  // A positioned box gets its four offsets as the browser resolved them; together they would
+  // set its size, so it keeps the size it had, which also puts it back where it was.
+  const placed = style.position === 'absolute' || style.position === 'fixed'
+  const key = source.localName === 'a' && source.hasAttribute('href') ? 'a[href]' : source.localName
+  const own = SIZED.has(tag) || empty || placed
+  const fixed = own ? { width: true, height: true } : explicitSize(source)
+  const declared = declarations(style, parent, key, defaults, fixed)
   // The browser centres a button's content; the copy says so, as layers do not.
   const centred =
     tag === 'BUTTON' && !style.display.includes('flex') && !style.display.includes('grid')
@@ -342,19 +477,40 @@ function elementStyle(
     : declared
 }
 
-function firstFamily(style: CSSStyleDeclaration): string {
-  return (
-    style.fontFamily
-      .split(',')[0]
-      ?.trim()
-      .replace(/^["']|["']$/g, '') ?? ''
-  )
+/** The families an element's font stack names; the page may draw with any it loaded. */
+function families(style: CSSStyleDeclaration): string[] {
+  return style.fontFamily
+    .split(',')
+    .map((family) => family.trim().replace(/^["']|["']$/g, ''))
+    .filter((family) => family !== '')
+}
+
+const SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
+
+/** An element's children copied in its place, for a box the page does not draw. */
+function copyChildren(source: Element, parent: CSSStyleDeclaration | null, walk: Walk): Node {
+  const fragment = document.createDocumentFragment()
+  for (const child of source.childNodes) {
+    const copied = copyNode(child, parent, walk)
+    if (copied) fragment.append(copied)
+  }
+  return fragment
+}
+
+/** Text kept for screen readers only, in a box of a pixel that clips it: it would show on a layer. */
+function screenReaderOnly(source: Element, style: CSSStyleDeclaration): boolean {
+  const box = source.getBoundingClientRect()
+  return box.width <= 1 && box.height <= 1 && (style.overflow === 'hidden' || style.clip !== 'auto')
 }
 
 function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk): Node | null {
   if (source.nodeType === Node.TEXT_NODE) return document.createTextNode(source.textContent ?? '')
   if (!(source instanceof Element) || DROPPED_TAGS.has(source.tagName)) return null
   const style = getComputedStyle(source)
+  // A box the page does not draw passes its children on: they come along without it.
+  if (style.display === 'contents' && source.namespaceURI !== SVG_NAMESPACE)
+    return copyChildren(source, parent, walk)
+  if (screenReaderOnly(source, style)) return null
   const hidden = style.display === 'none'
   if (hidden && !walk.keep.has(source)) return null
   const replaced = copyReplaced(source, style, parent, walk)
@@ -368,16 +524,26 @@ function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk):
   walk.layers++
   copyAttributes(copy, source, walk)
   if (style.backgroundImage.includes('url(')) walk.images++
-  const family = firstFamily(style)
-  if (family) walk.families.add(family)
-  if (source.namespaceURI === 'http://www.w3.org/2000/svg') return copySVG(source, style, walk)
+  for (const family of families(style)) walk.families.add(family)
+  if (source.namespaceURI === SVG_NAMESPACE) return copySVG(source, style, walk)
 
-  const declared = elementStyle(source, style, parent)
+  const declared = elementStyle(source, style, parent, walk.defaults)
   applyStyle(
     copy,
     hidden ? `${declared.replace(/(^|; )display: none/, '$1')}; ${HIDDEN}` : declared,
     walk
   )
+  fillChildren(copy, source, style, walk)
+  return copy
+}
+
+/** A copy's content: its pseudo-elements, and its children or its shadow root's. */
+function fillChildren(
+  copy: Element,
+  source: Element,
+  style: CSSStyleDeclaration,
+  walk: Walk
+): void {
   const before = pseudo(source, '::before', style, walk)
   if (before) copy.append(before)
   const children = source.shadowRoot ? source.shadowRoot.childNodes : source.childNodes
@@ -387,29 +553,35 @@ function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk):
   }
   const after = pseudo(source, '::after', style, walk)
   if (after) copy.append(after)
-  return copy
 }
 
 /** The page's `@font-face` rules for the families the copy uses, with absolute URLs. */
+/** Every `@font-face` rule of a list, including those inside `@media`, `@supports` or `@layer`. */
+function faceRules(rules: CSSRuleList, out: CSSFontFaceRule[]): void {
+  for (const rule of rules) {
+    if (rule instanceof CSSFontFaceRule) out.push(rule)
+    else if (rule instanceof CSSGroupingRule) faceRules(rule.cssRules, out)
+  }
+}
+
 function fontFaces(families: Set<string>): string[] {
-  const faces: string[] = []
+  const faces = new Set<string>()
   for (const sheet of document.styleSheets) {
-    let rules: CSSRuleList
+    const rules: CSSFontFaceRule[] = []
     try {
-      rules = sheet.cssRules
+      faceRules(sheet.cssRules, rules)
     } catch {
       // A stylesheet from another site hides its rules.
       continue
     }
     const base = sheet.href ?? document.baseURI
     for (const rule of rules) {
-      if (!(rule instanceof CSSFontFaceRule)) continue
       const family = rule.style
         .getPropertyValue('font-family')
         .trim()
         .replace(/^["']|["']$/g, '')
       if (!families.has(family)) continue
-      faces.push(
+      faces.add(
         rule.cssText.replace(/url\((["']?)([^"')]+)\1\)/g, (_match, quote: string, url: string) => {
           try {
             return `url(${quote}${new URL(url, base).href}${quote})`
@@ -420,18 +592,45 @@ function fontFaces(families: Set<string>): string[] {
       )
     }
   }
-  return faces
+  return [...faces]
 }
 
 const TRANSPARENT_COLORS = new Set(['rgba(0, 0, 0, 0)', 'transparent'])
 
+/** The red, green, blue and alpha of a computed `rgb()` or `rgba()` color. */
+function channels(color: string): [number, number, number, number] | null {
+  const parts = /rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/.exec(color)
+  if (!parts) return null
+  return [
+    Number(parts[1]),
+    Number(parts[2]),
+    Number(parts[3]),
+    parts[4] === undefined ? 1 : Number(parts[4])
+  ]
+}
+
+/**
+ * The color an element shows on the page: its own background over what is behind it. A copy
+ * pasted elsewhere loses what was behind, so a translucent root keeps the color it looked.
+ */
+function shownBackground(own: string, behind: string | null): string | null {
+  if (TRANSPARENT_COLORS.has(own)) return behind
+  const top = channels(own)
+  const under = behind ? channels(behind) : null
+  if (!top || !under || top[3] >= 1) return null
+  const mix = (index: number) =>
+    Math.round((top[index] ?? 0) * top[3] + (under[index] ?? 0) * (1 - top[3]))
+  return `#${[mix(0), mix(1), mix(2)].map((part) => part.toString(16).padStart(2, '0')).join('')}`
+}
+
 /** The colour behind an element: the first ancestor's background that is not transparent. */
-function pageBackground(element: Element): string | null {
+function pageBackground(element: Element): string {
   for (let node = element.parentElement; node; node = node.parentElement) {
     const color = getComputedStyle(node).backgroundColor
     if (!TRANSPARENT_COLORS.has(color)) return color
   }
-  return null
+  // A page that paints no background shows the browser's white.
+  return '#FFFFFF'
 }
 
 /**
@@ -443,8 +642,10 @@ export function captureElement(
   format: CaptureFormat,
   keep: ReadonlySet<Element> = new Set()
 ): Capture {
+  const defaults = new BrowserDefaults()
   const walk: Walk = {
     keep,
+    defaults,
     layers: 0,
     images: 0,
     replaced: 0,
@@ -460,7 +661,7 @@ export function captureElement(
     // The copy keeps the width it had on the page, without the margins around it.
     // A transparent root shows what was behind it on the page, so the copy keeps that colour.
     const background = getComputedStyle(element).backgroundColor
-    const behind = TRANSPARENT_COLORS.has(background) ? pageBackground(element) : null
+    const behind = shownBackground(background, pageBackground(element))
     const extra = ['box-sizing: border-box', `width: ${Math.round(box.width)}px`, 'margin: 0']
     if (behind) extra.push(`background-color: ${behind}`)
     if (format === 'kalka') {
@@ -473,6 +674,7 @@ export function captureElement(
     copy.setAttribute('data-kalka-source', location.href)
     container.append(copy)
   }
+  defaults.release()
   const faces = fontFaces(walk.families)
   const sheet = [...faces, ...walk.rules].join('\n')
   const html = `${sheet ? `<style>\n${sheet}\n</style>\n` : ''}${container.innerHTML}`
@@ -480,7 +682,7 @@ export function captureElement(
     html,
     layers: walk.layers,
     images: walk.images,
-    fonts: [...walk.families],
+    fonts: [...walk.families].filter((family) => faces.some((face) => face.includes(family))),
     replaced: walk.replaced
   }
 }
