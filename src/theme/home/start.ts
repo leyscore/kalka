@@ -1,19 +1,20 @@
 import { tv } from 'tailwind-variants'
 
 /**
- * The top of Home: the kalka.design pixel sky as a band, with the mark, the greeting, the request
+ * The top of Home, on the shell's kalka.design pixel sky: the greeting, the request
  * to the agent, the sizes to start from and the ways to bring a file in. The sky is day in the
  * light theme and night in the dark one, so everything on it stays white.
  */
 export const homeHero = {
-  root: 'relative isolate mx-0 flex shrink-0 scroll-mt-14 flex-col items-center gap-6 overflow-hidden px-4 pt-16 pb-24 text-center text-white sm:mx-2 sm:rounded-b-[28px] sm:pt-[72px] sm:pb-28',
-  mark: 'size-[52px] overflow-hidden rounded-[13px]',
+  root: 'relative flex shrink-0 scroll-mt-14 flex-col items-center gap-6 px-4 pt-10 pb-16 text-center text-white sm:pt-16 sm:pb-20',
   title:
-    'font-display text-[clamp(40px,5.4vw,64px)] leading-none font-semibold tracking-[-0.045em] text-balance',
+    'font-display text-[clamp(36px,5.4vw,64px)] leading-none font-semibold tracking-[-0.045em] text-balance',
   prompt: 'w-full max-w-[640px]',
-  corner: 'absolute top-3 right-3 z-10 flex gap-2 sm:top-[18px] sm:right-[18px]',
-  cornerButton:
-    'size-[38px] rounded-[11px] border border-white/30 bg-white/12 text-white hover:bg-white/22 hover:text-white'
+  /** The files on a frosted panel like the sidebar's: under the greeting, or the whole list page. */
+  files: tv({
+    base: 'mx-auto flex w-full max-w-[1104px] flex-col rounded-[18px] bg-float px-4 pt-8 pb-12 text-surface shadow-[0_0_0_1px_var(--color-float-border),var(--float-shadow)] backdrop-blur-[28px] backdrop-saturate-150 sm:px-8 sm:pt-10',
+    variants: { list: { true: 'mt-3 min-h-full md:mt-0' } }
+  })
 } as const
 
 /** The request to the agent: a frosted field on the sky with a white send button. */
@@ -52,13 +53,9 @@ export const sizeChip = tv({
 export const homeAction =
   'inline-flex h-10 cursor-pointer items-center gap-2 rounded-[11px] px-3.5 text-sm font-medium text-[#DCE6FF] transition-colors outline-none hover:bg-white/12 hover:text-white focus-visible:ring-2 focus-visible:ring-white/70'
 
-/** Recent and Storage: two words set like headings, the one shown in full ink. */
-export const filesTab = tv({
-  base: 'cursor-pointer font-display text-2xl font-semibold tracking-[-0.03em] transition-colors outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-accent/50',
-  variants: {
-    selected: { true: 'text-surface', false: 'text-muted/70 hover:text-muted' }
-  }
-})
+/** The title over the files: Recent on Home, or the place a list shows. */
+export const filesHeading =
+  'm-0 truncate font-display text-2xl font-semibold tracking-[-0.03em] text-surface'
 
 /** The storage provider and bucket next to the tabs, with a dot for a configured workspace. */
 export const storageChip =

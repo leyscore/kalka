@@ -7,9 +7,11 @@ export {
   recentLocalFileAt,
   recentLocalFilePaths,
   rememberRecentFile,
+  rememberRecentServerDocument,
   rememberRecentStorageDocument,
   type RecentDocument,
   type RecentLocalDocument,
+  type RecentServerDocument,
   type RecentStorageDocument
 } from './store'
 export {

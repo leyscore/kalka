@@ -7,6 +7,7 @@ import { joinRoom, roomForStore, shareDocument } from '@/app/collab/rooms'
 import type { RoomSession } from '@/app/collab/session'
 import { serverRoomJoiner } from '@/app/collab/transport/server'
 import type { EditorStore } from '@/app/editor/active-store'
+import { rememberRecentServerDocument } from '@/app/recent-files'
 import { addressPath, documentSlug } from '@/app/shell/address/path'
 import { IS_BROWSER, IS_TAURI } from '@/constants'
 
@@ -54,6 +55,8 @@ export function openServerDocument(
   document: Pick<ServerDocument, 'id' | 'name'>
 ): RoomSession | null {
   markServerRoom(document.id)
+  const account = serverAccount.value
+  if (account) rememberRecentServerDocument(account.url, document.id, document.name)
   return joinRoom(document.id, { tabName: document.name, transport: serverTransport })
 }
 

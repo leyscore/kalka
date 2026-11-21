@@ -26,6 +26,11 @@ export default {
       xl: { content: 'w-[min(64rem,96vw)]' },
       /** Nearly the whole window, for editors such as the variables dialog when expanded. */
       screen: { content: 'w-[98vw]' },
+      /** A panel along the left edge, full height, such as the app's sidebar on a phone. */
+      drawer: {
+        content:
+          'top-2 left-2 h-[calc(100dvh-1rem)] max-h-[calc(100dvh-1rem)] w-[min(284px,84vw)] translate-x-0 translate-y-0 rounded-[18px] bg-panel data-[state=closed]:zoom-out-100 data-[state=open]:zoom-in-100'
+      },
       /** The whole window, as a page of its own with an address, such as Settings. */
       page: {
         overlay: 'bg-canvas',

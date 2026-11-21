@@ -1,60 +1,40 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+
 import { useI18n } from '@kalka/vue'
 
 import { useCollabIdentity } from '@/app/collab/identity'
-import { openSettings } from '@/app/settings/open'
-import { openExternalLink } from '@/app/shell/ui'
-import BrandMark from '@/components/brand/BrandMark.vue'
-import PixelSky from '@/components/brand/PixelSky.vue'
+import { filesListFromPath } from '@/app/home/files-route'
 import HomeFiles from '@/components/home/files/HomeFiles.vue'
 import HomePrompt from '@/components/home/prompt/HomePrompt.vue'
 import HomeStart from '@/components/home/start/HomeStart.vue'
-import IconButton from '@/components/ui/button/IconButton.vue'
-import { docsURL } from '@/constants'
+import AppSidebar from '@/components/shell/AppSidebar.vue'
+import ShellFrame from '@/components/shell/ShellFrame.vue'
 import { homeHero } from '@/theme/home/start'
 
 /**
- * Home: the kalka.design sky with the greeting, the request to the agent, the sizes to start from
- * and the ways to bring a file in; then the recent and stored files. Its ways elsewhere are the
- * documentation and the settings, in the sky's corner.
+ * Home, in the app's shell: the sidebar with the places, documentation and account; beside it, on
+ * the sky, the greeting, the request to the agent, the sizes to start from and the ways to bring a
+ * file in; then the recent files from every place on a frosted panel. At a list's address
+ * (`/files/<list>`) the page is that list in full instead.
  */
-const { settings, welcome, menu, locale } = useI18n()
-
-function openDocs() {
-  void openExternalLink(docsURL(locale.value))
-}
+const { files, welcome } = useI18n()
 const identity = useCollabIdentity()
+const route = useRoute()
+const onList = computed(() => filesListFromPath(route.path) !== null)
 </script>
 
 <template>
-  <div class="relative flex min-h-0 flex-1 text-surface">
+  <ShellFrame :label="files.placesLabel" :menu-label="files.openMenu">
+    <template #sidebar>
+      <AppSidebar />
+    </template>
     <main
-      class="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto"
+      class="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto px-[max(0.75rem,env(safe-area-inset-left))] pb-3 md:px-0 md:pb-0"
       data-test-id="recent-files-home"
     >
-      <section id="home-top" :class="homeHero.root">
-        <PixelSky place="band" class="-z-10" />
-        <div :class="homeHero.corner">
-          <IconButton
-            :label="menu.documentation"
-            side="left"
-            data-test-id="home-documentation"
-            :class="homeHero.cornerButton"
-            @click="openDocs"
-          >
-            <icon-hugeicons-help-circle class="size-[18px]" />
-          </IconButton>
-          <IconButton
-            :label="settings.title"
-            side="left"
-            data-test-id="home-settings"
-            :class="homeHero.cornerButton"
-            @click="openSettings()"
-          >
-            <icon-hugeicons-settings-01 class="size-[18px]" />
-          </IconButton>
-        </div>
-        <BrandMark variant="app-icon" decorative :class="homeHero.mark" />
+      <section v-if="!onList" id="home-top" :class="homeHero.root">
         <h1 :class="homeHero.title">
           {{
             identity.hasChosenName.value
@@ -66,11 +46,9 @@ const identity = useCollabIdentity()
         <HomeStart />
       </section>
 
-      <div
-        class="mx-auto flex w-full max-w-[1104px] flex-col pt-14 pr-[max(1rem,env(safe-area-inset-right))] pb-20 pl-[max(1rem,env(safe-area-inset-left))] sm:px-8 sm:pt-[72px]"
-      >
-        <HomeFiles />
+      <div :class="homeHero.files({ list: onList })">
+        <HomeFiles :key="onList ? 'files' : 'home'" :place="onList ? 'files' : 'home'" />
       </div>
     </main>
-  </div>
+  </ShellFrame>
 </template>

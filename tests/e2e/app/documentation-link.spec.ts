@@ -29,7 +29,7 @@ test('Home opens the documentation on kalka.design', async ({ page, context }) =
     route.fulfill({ status: 200, contentType: 'text/html', body: '<title>Docs</title>' })
   )
   await page.goto('/?recent-files')
-  const docs = page.getByTestId('recent-files-home').getByRole('button', { name: 'Documentation' })
+  const docs = page.getByTestId('shell-sidebar').getByRole('button', { name: 'Documentation' })
   await expect(docs).toBeVisible()
   const opened = context.waitForEvent('page')
   await docs.click()

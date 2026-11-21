@@ -25,7 +25,17 @@ export interface RecentStorageDocument {
   updatedAt: string
 }
 
-export type RecentDocument = RecentLocalDocument | RecentStorageDocument
+/** A document on a Kalka server or Cloud workspace, by the server's address and its id there. */
+export interface RecentServerDocument {
+  id: string
+  kind: 'server'
+  serverURL: string
+  documentId: string
+  name: string
+  updatedAt: string
+}
+
+export type RecentDocument = RecentLocalDocument | RecentStorageDocument | RecentServerDocument
 
 export const recentDocuments = useLocalStorage<RecentDocument[]>(RECENT_DOCUMENTS_STORAGE_KEY, [])
 
@@ -39,6 +49,10 @@ function localDocumentId(path: string): string {
 
 function storageDocumentId(providerId: StorageProviderID, documentId: string): string {
   return `storage:${providerId}:${documentId}`
+}
+
+function serverDocumentId(serverURL: string, documentId: string): string {
+  return `server:${serverURL}:${documentId}`
 }
 
 function normalizedRecentDocuments(): RecentDocument[] {
@@ -79,6 +93,21 @@ export function rememberRecentStorageDocument(
     id: storageDocumentId(providerId, documentId),
     kind: 'storage',
     providerId,
+    documentId,
+    name,
+    updatedAt: new Date().toISOString()
+  })
+}
+
+export function rememberRecentServerDocument(
+  serverURL: string,
+  documentId: string,
+  name: string
+): void {
+  remember({
+    id: serverDocumentId(serverURL, documentId),
+    kind: 'server',
+    serverURL,
     documentId,
     name,
     updatedAt: new Date().toISOString()
