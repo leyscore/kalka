@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TabsList, TabsTrigger } from 'reka-ui'
-import { computed, useTemplateRef } from 'vue'
+import { computed, useTemplateRef, type ComponentPublicInstance } from 'vue'
 
 import type { SettingsSidebarGroup } from '@/components/settings/layout/sidebar'
 import type { ShellAccount } from '@/components/shell/sidebar'
@@ -33,7 +33,7 @@ const {
 const emit = defineEmits<{ back: [] }>()
 
 const ui = shellSidebar()
-const list = useTemplateRef<InstanceType<typeof TabsList>>('list')
+const list = useTemplateRef<ComponentPublicInstance>('list')
 const nav = computed(() => {
   const element: unknown = list.value?.$el
   return element instanceof HTMLElement ? element : null
