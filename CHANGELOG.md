@@ -22,6 +22,10 @@
 - Errors and warnings in the Publish library, Rename selection and library update dialogs, variant authoring and Diagnostics show in the theme's error and warning colours instead of the default text colour.
 - On the Variables page, moving from one variable to the next no longer blanks the inspector for a moment: it shows the new variable in place.
 
+### Security
+
+- The desktop app runs on Electron 44.10.2, which distrusts the compromised eMudhra intermediate certificates. The local MCP server uses MCP SDK 2.4.0, which fixes messages that could reach another session sharing a transport and fixes oversized requests that could exhaust memory. Chat replies and release notes are rendered with markdown-it 14.3.3, so crafted Markdown can no longer freeze the editor.
+
 ## 0.2.0-beta.4 — 2026-11-20
 
 ### Breaking changes

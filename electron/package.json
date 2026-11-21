@@ -13,7 +13,7 @@
     "smoke": "bun scripts/smoke.ts"
   },
   "devDependencies": {
-    "electron": "44.4.5",
+    "electron": "44.10.2",
     "electron-builder": "26.15.3",
     "electron-updater": "6.8.10",
     "fflate": "^0.8.3",
