@@ -15,7 +15,8 @@ const {
   profile,
   label,
   backLabel,
-  canLeave = true
+  canLeave = true,
+  parent
 } = defineProps<{
   groups: SettingsSidebarGroup[]
   profile: ShellAccount
@@ -23,6 +24,8 @@ const {
   backLabel: string
   /** False while a section holds an editor of its own, whose Back leads out of it first. */
   canLeave?: boolean
+  /** The section shown as current while one of its own pages is open, such as Tool access. */
+  parent?: string
 }>()
 const emit = defineEmits<{ back: [] }>()
 
@@ -60,7 +63,7 @@ const ui = shellSidebar()
           :key="section.value"
           :value="section.value"
           :class="[
-            ui.item(),
+            ui.item({ selected: section.value === parent }),
             'data-[state=active]:bg-accent data-[state=active]:text-white data-[state=active]:hover:bg-accent'
           ]"
           :data-shell-place="section.value"

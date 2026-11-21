@@ -29,11 +29,13 @@ const previewOptions = computed(() => [
   { value: 'medium' as const, label: ai.value.changePreviewMedium },
   { value: 'large' as const, label: ai.value.changePreviewLarge }
 ])
+/** Inside a disclosure that already names it, the section drops its own title. */
+const { untitled = false } = defineProps<{ untitled?: boolean }>()
 </script>
 
 <template>
   <SettingsSection>
-    <template #title>{{ ai.chatSettings }}</template>
+    <template v-if="!untitled" #title>{{ ai.chatSettings }}</template>
     <SettingsGroup>
       <SettingsRow :label="ai.reasoningDisplay" class="max-sm:flex-col max-sm:items-stretch">
         <AppSelect

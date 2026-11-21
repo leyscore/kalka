@@ -17,7 +17,8 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     await openSettings(page)
     // Settings is a page: it takes the whole window.
     await expect(page.getByRole('dialog')).toHaveCSS('width', '1280px')
-    await page.getByTestId('settings-section-tools').click()
+    await page.getByTestId('settings-section-mcp').click()
+    await page.getByTestId('settings-choose-tools').click()
     const trigger = page.getByRole('button', { name: 'Read-only tools', exact: true })
     await trigger.click()
     await expect(page.getByRole('switch', { name: 'get_selection', exact: true })).toBeHidden()
