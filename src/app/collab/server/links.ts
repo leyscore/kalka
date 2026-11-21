@@ -1,7 +1,6 @@
-import * as v from 'valibot'
 import { shallowRef } from 'vue'
 
-import { isTauri } from '@/app/tauri/env'
+import { bindPendingLinks } from '@/app/tauri/pending-links'
 
 import { normalizeServerURL } from './api'
 
@@ -10,8 +9,6 @@ const SERVER_LINKS_EVENT = 'open-server-links'
 const TAKE_PENDING_SERVERS = 'take_pending_servers'
 /** The web editor's twin of the desktop link: `?kalka-server=<address>`. */
 const WEB_PARAM = 'kalka-server'
-
-const pendingServersSchema = v.array(v.string())
 
 /**
  * A server address a link asked to connect to, waiting for Settings › Server to fill it in.
@@ -49,19 +46,9 @@ export function takeWebServerLink(): string | null {
 }
 
 /** Opens the server links the desktop app received, at startup and while running. */
-export async function bindDesktopServerLinks(open: (url: string) => void): Promise<() => void> {
-  if (!isTauri()) return () => undefined
-  const [{ invoke }, { listen }] = await Promise.all([
-    import('@tauri-apps/api/core'),
-    import('@tauri-apps/api/event')
-  ])
-  async function drain() {
-    const servers = v.parse(pendingServersSchema, await invoke<unknown>(TAKE_PENDING_SERVERS))
-    for (const url of servers) open(url)
-  }
-  const stop = await listen(SERVER_LINKS_EVENT, () => {
-    void drain().catch((error: unknown) => console.error('[Server link]', error))
-  })
-  await drain()
-  return stop
+export function bindDesktopServerLinks(open: (url: string) => void): Promise<() => void> {
+  return bindPendingLinks(
+    { event: SERVER_LINKS_EVENT, command: TAKE_PENDING_SERVERS, label: 'Server link' },
+    open
+  )
 }

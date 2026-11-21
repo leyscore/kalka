@@ -1,24 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import IconRecent from '~icons/hugeicons/clock-01'
-import IconCloud from '~icons/hugeicons/cloud'
-import IconHome from '~icons/hugeicons/home-01'
 import IconServer from '~icons/hugeicons/server-stack-01'
 import IconTeam from '~icons/hugeicons/user-group'
 
+import { samplePlaces } from './sample-places'
 import ShellSidebar from './ShellSidebar.vue'
-import type { ShellSidebarGroup, ShellSidebarProps } from './sidebar'
+import type { ShellSidebarProps } from './sidebar'
 
-const places: ShellSidebarGroup[] = [
-  { id: 'main', items: [{ id: 'home', label: 'Home', icon: IconHome }] },
-  {
-    id: 'files',
-    label: 'Files',
-    items: [
-      { id: 'recent', label: 'Recent', icon: IconRecent, count: 12 },
-      { id: 'storage', label: 'Cloud storage', icon: IconCloud }
-    ]
-  }
-]
+const places = samplePlaces(12)
 
 /**
  * The sidebar of the app's pages: the workspace, its places and the account. The same card holds

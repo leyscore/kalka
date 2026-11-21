@@ -1,23 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import IconRecent from '~icons/hugeicons/clock-01'
-import IconCloud from '~icons/hugeicons/cloud'
-import IconHome from '~icons/hugeicons/home-01'
 
+import { samplePlaces } from './sample-places'
 import ShellFrame from './ShellFrame.vue'
 import ShellSidebar from './ShellSidebar.vue'
-import type { ShellSidebarGroup } from './sidebar'
 
-const groups: ShellSidebarGroup[] = [
-  { id: 'main', items: [{ id: 'home', label: 'Home', icon: IconHome }] },
-  {
-    id: 'files',
-    label: 'Files',
-    items: [
-      { id: 'recent', label: 'Recent', icon: IconRecent },
-      { id: 'storage', label: 'Cloud storage', icon: IconCloud }
-    ]
-  }
-]
+const groups = samplePlaces()
 
 /**
  * The frame of every page that is not a document: the sky, the sidebar and the page. On a phone the
