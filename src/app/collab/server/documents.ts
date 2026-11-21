@@ -55,7 +55,21 @@ export function openServerDocument(
 export function openServerDocumentById(id: string, fallbackName: string): RoomSession | null {
   if (!serverAccount.value) return null
   const known = serverDocuments.value.find((document) => document.id === id)
-  return openServerDocument({ id, name: known?.name ?? fallbackName })
+  const session = openServerDocument({ id, name: known?.name ?? fallbackName })
+  // The server's name wins over the one guessed from the address, which a new document takes.
+  if (session && !known) {
+    withServerSession((url, token) => serverAPI.document(url, token, id))
+      .then((document) => {
+        serverDocuments.value = [
+          document,
+          ...serverDocuments.value.filter((other) => other.id !== document.id)
+        ]
+        session.store.state.documentName = document.name
+        return undefined
+      })
+      .catch(() => undefined)
+  }
+  return session
 }
 
 /** Puts a tab's document on the server: a new server document whose room it then shares. */
@@ -73,6 +87,9 @@ export async function shareToServer(store: EditorStore): Promise<RoomSession> {
 
 /** Gives a server document a new name, on the server and in the list of its files. */
 export async function renameServerDocument(roomId: string, name: string): Promise<void> {
+  if (serverDocuments.value.some((document) => document.id === roomId && document.name === name)) {
+    return
+  }
   const renamed = await withServerSession((url, token) =>
     serverAPI.renameDocument(url, token, roomId, name)
   )
