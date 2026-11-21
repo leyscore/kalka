@@ -82,7 +82,7 @@ const categoryOptions = computed(() => [
             />
             <icon-hugeicons-triangle-alert
               v-else-if="event.level === 'warning'"
-              class="size-3.5 shrink-0 text-warning"
+              class="size-3.5 shrink-0 text-warning-text"
             />
             <icon-hugeicons-info v-else class="size-3.5 shrink-0 text-muted" />
             <span class="min-w-0">
