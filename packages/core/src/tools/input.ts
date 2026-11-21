@@ -18,6 +18,11 @@ export const positionInputs = {
   y: toolNumber(v.pipe(v.number(), v.description('Y position in the parent, or on the page')))
 }
 
+/** Where a new layer goes among its parent's children. */
+export const insertIndexInput = v.optional(
+  toolNumber(v.pipe(v.number(), v.description('Position among siblings (0 = first)')))
+)
+
 /** Reuse a native number schema for both numeric and numeric-string agent inputs. */
 export function toolNumber(schema: v.GenericSchema<number, number> = v.number()) {
   // JSON Schema numbers are finite. Express that with representable bounds as well as at runtime.

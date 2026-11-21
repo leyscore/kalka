@@ -47,7 +47,8 @@ Write a short brief in the conversation before drawing:
 - before building, hold the palette and the typefaces against the generated look listed under
   Taste rules; if they match it, pick again from the product's own world
 - a spacing scale on a 4 px base (4, 8, 12, 16, 24, 32, 48, 64, 96, 128) and a radius scale
-- the one device that carries the hero (product shot, type, photography, illustration)
+- the one device that carries the hero (product shot, type, photography, illustration, or a
+  piece of Kalka Fresh adapted to the idea, below)
 - the sections of the page, in order, each with its job in a few words
 
 Say it with set_status, such as "Pricing page, print-shop mood, after the brief". Then build.
@@ -128,6 +129,24 @@ targets at least 44 px.
 Call finish_working_on_nodes, select the result so the person sees it, and give a two or three
 line summary: what was built, the direction in one phrase, and what is left or uncertain. Answer
 the comments that ask you (get_comments, reply_to_comment).
+
+## Kalka Fresh, an optional toolbox
+
+Kalka ships a library of design-forward pieces: live shader grounds, headline effects (a
+variable-font ramp, text on a circle, words around a pill of media), glass and paper cards,
+tactile and hover-state buttons, hero devices (an orbit of labels, a floating collage, a status
+island) and separators. They are raw material for an idea you already have, never a template
+and never a reason to have an idea.
+
+- Decide the direction first, then search_library_components with the intent in your own words
+  ("seal beside the headline for a bakery", "moving ground for the closing call to action").
+  Use one or two where they carry the page's strong moment; most pages need none.
+- Insert with insert_library_component (library_id "kalka-fresh"), set its variant and text
+  properties, then make it the page's own: its colours follow the variables ground, ink, accent,
+  muted and line, so name the brief's colours that way; resize it, change its words, or write
+  your own version from the html that include_html returns.
+- The taste rules still hold: a shader ground is not a purple-to-blue gradient by default, glass
+  sits over something worth blurring, no glow under a button, one effect per screen.
 
 ## Taste rules
 

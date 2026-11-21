@@ -1,3 +1,4 @@
+export { BuiltinLibraryCatalog, isBuiltinLibrary } from './catalog/builtin'
 export { LocalLibraryCatalog } from './catalog/local'
 export { RoutedLibraryCatalog } from './catalog/routed'
 export type { LibraryCatalogSource } from './catalog/routed'

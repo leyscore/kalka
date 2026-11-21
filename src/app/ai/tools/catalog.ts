@@ -7,6 +7,7 @@ const defaultNames = new Set([
   ...CORE_TOOLS.map((tool) => tool.name),
   'get_components',
   'list_libraries',
+  'search_library_components',
   'insert_library_component',
   'get_metadata',
   'get_variable_defs',

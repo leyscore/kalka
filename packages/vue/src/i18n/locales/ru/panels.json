@@ -390,6 +390,7 @@
   "disableLibrary": "Отключить библиотеку",
   "noLibraries": "Нет опубликованных библиотек",
   "libraryAssetCount": "Ресурсы: {count}",
+  "builtInLibrary": "Встроена в Kalka, с указанием источников",
   "libraryInstanceCount": "Экземпляры: {count}",
   "libraryUpdateAvailable": "Доступно обновление",
   "applyLibraryUpdate": "Применить обновление",

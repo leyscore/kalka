@@ -18,7 +18,7 @@ import {
 } from '#core/tools/html/class-css'
 import { ESCAPED_HTML_NOTE, unescapedHTML } from '#core/tools/html/escaped'
 import { instancePlaceholders, swapInstancePlaceholders } from '#core/tools/html/instances'
-import { toolNumber } from '#core/tools/input'
+import { insertIndexInput, toolNumber } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'
 
 /** Recreates an imported subtree in the document, under `parentId`. */
@@ -87,9 +87,7 @@ export const writeHTML = defineTool({
     replace_id: v.optional(
       v.pipe(v.string(), v.description('Layer to replace; the new layers take its place'))
     ),
-    insert_index: v.optional(
-      toolNumber(v.pipe(v.number(), v.description('Position among siblings (0 = first)')))
-    ),
+    insert_index: insertIndexInput,
     x: v.optional(toolNumber(v.pipe(v.number(), v.description('X position of the first layer')))),
     y: v.optional(toolNumber(v.pipe(v.number(), v.description('Y position of the first layer'))))
   }),

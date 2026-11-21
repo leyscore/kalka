@@ -1,6 +1,6 @@
 export { getComponents } from './read/components'
 export { searchDesignSystem } from './read/design-system'
-export { insertLibraryComponent, listLibraries } from './read/libraries'
+export { insertLibraryComponent, listLibraries, searchLibraryComponents } from './read/libraries'
 export { getFontStatus, listAvailableFonts, listFonts } from './read/fonts'
 export { diffJSX, getJSX } from './read/jsx'
 export { findNodes } from './read/find'

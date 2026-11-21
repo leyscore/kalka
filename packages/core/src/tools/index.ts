@@ -1,6 +1,13 @@
 export { ANTI_SLOP_GUIDE, CODEGEN_PROMPT, DESIGN_GUIDE } from './prompts'
 
 export { getComponentCatalog, registerComponentCatalog } from './component-catalog'
+// Kalka Fresh is built with the Figma API, so it ships with the tools rather than `library`.
+export { buildFreshLibraryGraph, freshLibraryRevision } from '#core/library/fresh/build'
+export {
+  insertFreshComponent,
+  type InsertedFresh,
+  type InsertFreshInput
+} from '#core/library/fresh/insert'
 export type {
   ComponentCatalog,
   ComponentCatalogInsertInput,

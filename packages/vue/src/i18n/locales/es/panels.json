@@ -398,6 +398,7 @@
   "disableLibrary": "Deshabilitar biblioteca",
   "noLibraries": "No hay bibliotecas publicadas",
   "libraryAssetCount": "{count} recursos",
+  "builtInLibrary": "Incluida en Kalka, con créditos a sus fuentes",
   "libraryInstanceCount": "Instancias: {count}",
   "libraryUpdateAvailable": "Actualización disponible",
   "applyLibraryUpdate": "Aplicar actualización",

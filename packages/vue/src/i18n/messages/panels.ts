@@ -121,6 +121,7 @@ export const panelMessageDefaults = {
   disableLibrary: 'Disable library',
   noLibraries: 'No published libraries',
   libraryAssetCount: params('{count} assets'),
+  builtInLibrary: 'Built into Kalka, with credits to its sources',
   libraryInstanceCount: params('Instances: {count}'),
   libraryUpdateAvailable: 'Update available',
   applyLibraryUpdate: 'Apply update',

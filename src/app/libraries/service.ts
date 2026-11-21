@@ -30,6 +30,7 @@ import type {
 } from '@kalka/core/tools'
 
 import type { EditorStore } from '@/app/editor/session'
+import { BuiltinLibraryCatalog } from '@/app/libraries/catalog/builtin'
 import { LocalLibraryCatalog } from '@/app/libraries/catalog/local'
 import { RoutedLibraryCatalog, type LibraryCatalogSource } from '@/app/libraries/catalog/routed'
 import {
@@ -53,11 +54,11 @@ export class LibraryService implements ComponentCatalog {
 
   constructor(catalog?: LibraryCatalog) {
     if (catalog) {
-      this.#catalog = markRaw(catalog)
+      this.#catalog = markRaw(new BuiltinLibraryCatalog(catalog))
       this.#routedCatalog = catalog instanceof RoutedLibraryCatalog ? catalog : null
     } else {
       const routed = new RoutedLibraryCatalog(new LocalLibraryCatalog())
-      this.#catalog = markRaw(routed)
+      this.#catalog = markRaw(new BuiltinLibraryCatalog(routed))
       this.#routedCatalog = routed
     }
   }
