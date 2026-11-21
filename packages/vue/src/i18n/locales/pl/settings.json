@@ -11,6 +11,8 @@
   "title": "Ustawienia",
   "description": "Zarządzaj integracjami i preferencjami aplikacji.",
   "general": "Ogólne",
+  "groupApp": "Aplikacja",
+  "groupAI": "AI",
   "languageDescription": "Wybierz język interfejsu aplikacji.",
   "editing": "Edycja",
   "snappingDescription": "Określ wyrównywanie podczas edycji ścieżek oraz przesuwania i zmiany rozmiaru warstw.",

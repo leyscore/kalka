@@ -40,3 +40,14 @@ export interface ShellSidebarProps {
   account?: ShellAccount
   label: string
 }
+
+/** Two letters for an avatar: the first and last names' initials, or a single name's first two. */
+export function initialsOf(name: string): string {
+  const parts = name
+    .trim()
+    .split(/\s+/)
+    .filter((part) => part.length > 0)
+  const letters =
+    parts.length > 1 ? `${parts[0]?.[0]}${parts.at(-1)?.[0]}` : name.trim().slice(0, 2)
+  return letters.toUpperCase() || 'K'
+}
