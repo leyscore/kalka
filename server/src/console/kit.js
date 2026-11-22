@@ -349,16 +349,44 @@
       el('p', { class: 'foot' }, foot || null)))
   }
 
-  /** The signed-in frame: glass sidebar, a heading on the sky, then the page. */
+  /**
+   * The signed-in frame: glass sidebar, a heading on the sky, then the page. When the sidebar starts with a
+   * `.brand`, phones and tablets show only that brand and a menu button, which opens the rest over the page.
+   */
   function shell({ side, eyebrow, title, actions, body }) {
     mountSky()
+    const parts = [side].flat(Infinity).filter((part) => part != null && part !== false)
+    const aside = el('aside', { class: 'glass k-side' })
+    if (parts[0] instanceof Element && parts[0].classList.contains('brand')) {
+      // Both icons stay in the button and CSS shows one: swapping nodes mid-click would detach the click target.
+      const burger = el('button', { type: 'button', class: 'icon-btn k-burger', 'aria-label': 'Menu', 'aria-expanded': 'false', 'aria-controls': 'k-drawer', onclick: () => sideMenu() },
+        icon('menu-01', 20), icon('cancel-01', 20))
+      aside.append(el('div', { class: 'k-bar' }, parts[0], burger),
+        el('div', { class: 'k-drawer', id: 'k-drawer', onclick: (event) => { if (event.target.closest('a')) sideMenu(false) } }, parts.slice(1)))
+    } else aside.append(...parts)
     root.replaceChildren(el('div', { class: 'k-app' },
-      el('aside', { class: 'glass k-side' }, side),
+      aside,
       el('main', { class: 'k-main' },
         el('header', { class: 'k-head' }, el('div', {}, eyebrow ? el('div', { class: 'eyebrow' }, eyebrow) : null, el('h1', {}, title)), actions ? el('div', { class: 'actions' }, actions) : null),
         body)))
     window.scrollTo(0, 0)
   }
+
+  /** Opens, closes or toggles the phone menu of the current frame. */
+  function sideMenu(open) {
+    const aside = root.querySelector('.k-side')
+    const burger = aside && aside.querySelector('.k-burger')
+    if (!burger) return
+    const next = open ?? !aside.classList.contains('open')
+    aside.classList.toggle('open', next)
+    burger.setAttribute('aria-expanded', String(next))
+  }
+  document.addEventListener('click', (event) => { const aside = root.querySelector('.k-side.open'); if (aside && !aside.contains(event.target)) sideMenu(false) })
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !root.querySelector('.k-side.open')) return
+    sideMenu(false)
+    root.querySelector('.k-burger').focus()
+  })
 
   function nav(items, active) {
     return el('nav', { class: 'nav', 'aria-label': 'Sections' }, items.map((item) => item.group
