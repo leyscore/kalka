@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- The Kalka server's console works on phones and tablets: the sidebar becomes a bar with a menu button that opens the navigation over the page, figures sit two per row, and the settings and people rows no longer overflow the screen.
+
 ## 0.2.0-beta.8 — 2026-11-21
 
 ### Changed

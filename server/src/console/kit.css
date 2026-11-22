@@ -11,7 +11,7 @@
   --mono: ui-monospace, 'SF Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
   --blue: #2f5bea; --blue-ink: #1236b8; --focus: #4b74f0;
   --text: #141414; --sub: #4a4f63; --faint: #6b7086; --line: rgba(20, 20, 40, 0.07);
-  --glass: rgba(255, 255, 255, 0.8); --glass-edge: rgba(255, 255, 255, 0.95); --glass-solid: rgba(255, 255, 255, 0.94);
+  --glass: rgba(255, 255, 255, 0.8); --glass-edge: rgba(255, 255, 255, 0.95); --glass-solid: rgba(255, 255, 255, 0.94); --menu-bg: #ffffff;
   --chip: rgba(20, 20, 40, 0.06); --chip-hover: rgba(20, 20, 40, 0.1); --field: rgba(255, 255, 255, 0.85); --field-edge: rgba(20, 20, 40, 0.1);
   --dot: #1236b8; --dot-soft: rgba(47, 91, 234, 0.28); --track: rgba(20, 20, 40, 0.06);
   --on-sky: #ffffff; --on-sky-sub: #dce6ff;
@@ -22,7 +22,7 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
   --text: #edeef3; --sub: #b9c6ee; --faint: #8e9bc4; --line: rgba(157, 183, 245, 0.09);
-  --glass: rgba(8, 12, 42, 0.66); --glass-edge: rgba(157, 183, 245, 0.16); --glass-solid: rgba(12, 17, 52, 0.96);
+  --glass: rgba(8, 12, 42, 0.66); --glass-edge: rgba(157, 183, 245, 0.16); --glass-solid: rgba(12, 17, 52, 0.96); --menu-bg: #0c1134;
   --chip: rgba(157, 183, 245, 0.1); --chip-hover: rgba(157, 183, 245, 0.16); --field: rgba(157, 183, 245, 0.07); --field-edge: rgba(157, 183, 245, 0.18);
   --dot: #ffffff; --dot-soft: rgba(157, 183, 245, 0.3); --track: rgba(157, 183, 245, 0.08);
   --ok: #4ade80; --ok-bg: rgba(74, 222, 128, 0.14); --warn: #fcd34d; --warn-bg: rgba(252, 211, 77, 0.14);
@@ -306,12 +306,42 @@ label.stack { display: flex; flex-direction: column; gap: 6px; color: var(--sub)
 .links a { color: var(--blue); }
 
 @media (prefers-reduced-motion: reduce) {
-  .k-sky .clouds, .k-sky .star, .px, .bars > span, .meter > i, .waffle > span, .seats > span, .portrait > i, .live, .pop, .dialog, .scrim { animation: none !important; }
+  .k-sky .clouds, .k-sky .star, .px, .bars > span, .meter > i, .waffle > span, .seats > span, .portrait > i, .live, .pop, .dialog, .scrim, .k-drawer { animation: none !important; }
   ::view-transition-new(root) { animation: none; }
 }
-@media (max-width: 720px) {
-  .k-side { position: static; min-height: 0; gap: 10px; }
+/* ---------- Phones and tablets: the sidebar becomes a bar with a menu over the page ---------- */
+.k-bar, .k-drawer { display: contents; }
+.k-burger { display: none; }
+.k-burger[aria-expanded='false'] > svg:last-child, .k-burger[aria-expanded='true'] > svg:first-child { display: none; }
+@media (max-width: 900px) {
+  .k-app { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 0; padding: 8px 12px; }
+  .k-side { position: sticky; top: 8px; z-index: 20; flex: none; min-height: 0; gap: 0; padding: 6px; background: var(--glass-solid); }
+  .k-side:not(:has(.k-bar)) { position: static; gap: 10px; }
+  .k-bar { display: flex; align-items: center; gap: 4px; }
+  .k-bar .brand { flex: 1; min-width: 0; width: auto; }
+  .k-burger { display: grid; flex: none; width: 44px; height: 44px; border-radius: 11px; color: var(--text); }
+  .k-drawer { display: none; }
+  /* Glass lets the page show through a panel this size, so the menu gets an opaque surface. */
+  .k-side.open .k-drawer { position: absolute; top: calc(100% + 8px); left: 0; right: 0; display: flex; flex-direction: column; gap: 10px; max-height: calc(100dvh - 100px); overflow-y: auto; padding: 8px; border-radius: 18px; background: var(--menu-bg); border: 1px solid var(--glass-edge); box-shadow: var(--shadow); transform-origin: top; animation: k-menu 0.18s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .k-drawer .nav a { height: 44px; }
   .k-side .side-card { display: none; }
+  .k-drawer .side-foot { margin-top: 0; }
+  .k-main { padding: 18px 0 40px; }
+  .k-head { padding: 6px 4px 12px; }
+}
+@media (max-width: 720px) {
   .k-head .actions { margin-left: 0; }
-  .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .stats > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .stat { padding: 14px; }
+  .stat .top .label { overflow-wrap: anywhere; }
+}
+@media (max-width: 640px) {
+  .k-head .actions { width: 100%; }
+  .settings-row { padding: 14px 16px; }
+  .settings-row > .value { min-width: 0; width: 100%; }
+  .row { padding: 12px 16px; column-gap: 12px; }
+  .row > .grow { min-width: 0; flex: 1 1 0; }
+  .row:has(> .cell) > .grow { flex-basis: calc(100% - 60px); }
+  .row > .grow > span { overflow-wrap: anywhere; }
 }
