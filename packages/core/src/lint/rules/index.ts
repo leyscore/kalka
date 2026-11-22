@@ -15,12 +15,17 @@ export { default as noGroups } from './no-groups'
 export { default as effectStyleRequired } from './effect-style-required'
 export { default as noMixedStyles } from './no-mixed-styles'
 export { default as noDetachedInstances } from './no-detached-instances'
+export { default as trackedCapsEyebrow } from './tracked-caps-eyebrow'
+export { default as headingTracking } from './heading-tracking'
+export { default as brokenImage } from './broken-image'
 
 import type { Rule } from '#core/lint/types'
 
 import colorContrast from './color-contrast'
 import consistentRadius from './consistent-radius'
 import consistentSpacing from './consistent-spacing'
+import brokenImage from './broken-image'
+import headingTracking from './heading-tracking'
 import effectStyleRequired from './effect-style-required'
 import minTextSize from './min-text-size'
 import noDeeplyNested from './no-deeply-nested'
@@ -35,6 +40,7 @@ import pixelPerfect from './pixel-perfect'
 import preferAutoLayout from './prefer-auto-layout'
 import textStyleRequired from './text-style-required'
 import touchTargetSize from './touch-target-size'
+import trackedCapsEyebrow from './tracked-caps-eyebrow'
 
 export const allRules: Record<string, Rule> = {
   'no-hardcoded-colors': noHardcodedColors,
@@ -53,5 +59,8 @@ export const allRules: Record<string, Rule> = {
   'no-groups': noGroups,
   'effect-style-required': effectStyleRequired,
   'no-mixed-styles': noMixedStyles,
-  'no-detached-instances': noDetachedInstances
+  'no-detached-instances': noDetachedInstances,
+  'tracked-caps-eyebrow': trackedCapsEyebrow,
+  'heading-tracking': headingTracking,
+  'broken-image': brokenImage
 }

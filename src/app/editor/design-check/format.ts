@@ -40,7 +40,10 @@ const RULE_COPY: Partial<Record<string, RuleCopy>> = {
   'no-detached-instances': {
     title: 'ruleNoDetachedInstances',
     help: 'ruleNoDetachedInstancesHelp'
-  }
+  },
+  'tracked-caps-eyebrow': { title: 'ruleTrackedCapsEyebrow', help: 'ruleTrackedCapsEyebrowHelp' },
+  'heading-tracking': { title: 'ruleHeadingTracking', help: 'ruleHeadingTrackingHelp' },
+  'broken-image': { title: 'ruleBrokenImage', help: 'ruleBrokenImageHelp' }
 }
 
 const SPACING_DETAIL = {
@@ -101,7 +104,10 @@ export function issueDetail(issue: DesignIssue, messages: Messages): string | nu
       return `${formatNumber(width)} × ${formatNumber(height)}`
     }
     case 'min-text-size':
+    case 'heading-tracking':
       return px(numberAt(issue, 'fontSize')) || null
+    case 'broken-image':
+      return stringAt(issue, 'source') ?? null
     case 'consistent-radius':
       return px(numberAt(issue, 'radius')) || null
     case 'consistent-spacing': {

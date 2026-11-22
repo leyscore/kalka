@@ -91,5 +91,11 @@
   "ruleNoMixedStyles": "Stili di testo misti",
   "ruleNoMixedStylesHelp": "Più stili in un solo livello di testo si rompono facilmente durante la modifica.",
   "ruleNoDetachedInstances": "Sembra un componente",
-  "ruleNoDetachedInstancesHelp": "Questa cornice sembra un elemento riutilizzabile. Usa un’istanza di componente."
+  "ruleNoDetachedInstancesHelp": "Questa cornice sembra un elemento riutilizzabile. Usa un’istanza di componente.",
+  "ruleTrackedCapsEyebrow": "Etichetta sopra un titolo",
+  "ruleTrackedCapsEyebrowHelp": "Piccole maiuscole spaziate sopra un titolo sembrano un modello. Togli l'etichetta o scrivila come sottotitolo.",
+  "ruleHeadingTracking": "Titolo troppo stretto",
+  "ruleHeadingTrackingHelp": "Lettere o righe di un titolo grande sono così strette da toccarsi. Allargale e bilancia le righe.",
+  "ruleBrokenImage": "Immagine mancante",
+  "ruleBrokenImageHelp": "Questa immagine non mostra nulla. Inserisci un'immagine reale, disegna il visual o rimuovi il riquadro."
 }
