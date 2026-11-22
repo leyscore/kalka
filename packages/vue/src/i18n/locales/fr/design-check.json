@@ -97,5 +97,7 @@
   "ruleHeadingTracking": "Titre trop serré",
   "ruleHeadingTrackingHelp": "Les lettres ou les lignes d'un grand titre sont si serrées qu'elles se touchent. Desserrez-les et équilibrez les lignes.",
   "ruleBrokenImage": "Image manquante",
-  "ruleBrokenImageHelp": "Cette image n'a rien à afficher. Placez une vraie image, dessinez le visuel ou retirez le bloc."
+  "ruleBrokenImageHelp": "Cette image n'a rien à afficher. Placez une vraie image, dessinez le visuel ou retirez le bloc.",
+  "ruleButtonGlow": "Bouton lumineux",
+  "ruleButtonGlowHelp": "Une ombre colorée sous un bouton fait générée. Gardez le bouton à plat ou utilisez une ombre neutre."
 }

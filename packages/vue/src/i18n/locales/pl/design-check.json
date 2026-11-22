@@ -97,5 +97,7 @@
   "ruleHeadingTracking": "Ściśnięty nagłówek",
   "ruleHeadingTrackingHelp": "Litery lub wiersze dużego nagłówka są tak ściśnięte, że się stykają. Rozluźnij je i wyrównaj wiersze.",
   "ruleBrokenImage": "Brak obrazu",
-  "ruleBrokenImageHelp": "Ten obraz nic nie pokazuje. Wstaw prawdziwy obraz, narysuj grafikę lub usuń ramkę."
+  "ruleBrokenImageHelp": "Ten obraz nic nie pokazuje. Wstaw prawdziwy obraz, narysuj grafikę lub usuń ramkę.",
+  "ruleButtonGlow": "Świecący przycisk",
+  "ruleButtonGlowHelp": "Kolorowy cień pod przyciskiem wygląda na wygenerowany. Zostaw przycisk płaski albo użyj neutralnego cienia."
 }

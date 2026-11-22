@@ -97,5 +97,7 @@
   "ruleHeadingTracking": "Enge Überschrift",
   "ruleHeadingTrackingHelp": "Buchstaben oder Zeilen einer großen Überschrift stehen so eng, dass sie sich berühren. Lockere sie und gleiche die Zeilen aus.",
   "ruleBrokenImage": "Fehlendes Bild",
-  "ruleBrokenImageHelp": "Dieses Bild zeigt nichts an. Setze ein echtes Bild ein, zeichne das Motiv oder entferne den Rahmen."
+  "ruleBrokenImageHelp": "Dieses Bild zeigt nichts an. Setze ein echtes Bild ein, zeichne das Motiv oder entferne den Rahmen.",
+  "ruleButtonGlow": "Leuchtender Button",
+  "ruleButtonGlowHelp": "Ein farbiger Schatten unter einem Button wirkt generiert. Lass den Button flach oder nimm einen neutralen Schatten."
 }

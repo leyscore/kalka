@@ -32,7 +32,8 @@ export const recommended: Preset = {
     'no-detached-instances': 'off',
     'tracked-caps-eyebrow': 'info',
     'heading-tracking': 'info',
-    'broken-image': 'warning'
+    'broken-image': 'warning',
+    'button-glow': 'info'
   }
 }
 
@@ -62,7 +63,8 @@ export const accessibility: Preset = {
     'no-detached-instances': 'off',
     'tracked-caps-eyebrow': 'off',
     'heading-tracking': 'off',
-    'broken-image': 'off'
+    'broken-image': 'off',
+    'button-glow': 'off'
   }
 }
 export const presets: Record<string, Preset> = { recommended, strict, accessibility }

@@ -140,7 +140,8 @@ export class Linter {
       effects: raw.effects.map((effect) => ({
         type: effect.type,
         visible: effect.visible,
-        radius: effect.radius
+        radius: effect.radius,
+        color: effect.color
       }))
     }
   }

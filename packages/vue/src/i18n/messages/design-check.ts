@@ -112,7 +112,10 @@ export const designCheckMessageDefaults = {
     'Letters or lines of a large heading are set so tight they collide. Loosen them and balance the lines.',
   ruleBrokenImage: 'Missing image',
   ruleBrokenImageHelp:
-    'This image has no picture to show. Place a real image, draw the visual, or remove the box.'
+    'This image has no picture to show. Place a real image, draw the visual, or remove the box.',
+  ruleButtonGlow: 'Glowing button',
+  ruleButtonGlowHelp:
+    'A coloured shadow under a button reads as generated. Keep the button flat, or use a neutral shadow.'
 } as const
 
 export const designCheckMessages = i18n('designCheck', designCheckMessageDefaults)

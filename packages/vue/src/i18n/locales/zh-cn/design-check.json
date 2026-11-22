@@ -97,5 +97,7 @@
   "ruleHeadingTracking": "标题过紧",
   "ruleHeadingTrackingHelp": "大标题的字母或行距过紧，彼此相碰。请放宽间距并平衡各行。",
   "ruleBrokenImage": "缺少图片",
-  "ruleBrokenImageHelp": "此图片没有可显示的内容。放入真实图片、绘制视觉元素，或删除该框。"
+  "ruleBrokenImageHelp": "此图片没有可显示的内容。放入真实图片、绘制视觉元素，或删除该框。",
+  "ruleButtonGlow": "发光按钮",
+  "ruleButtonGlowHelp": "按钮下的彩色阴影看起来像自动生成的。保持按钮扁平，或使用中性阴影。"
 }

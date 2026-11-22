@@ -18,10 +18,12 @@ export { default as noDetachedInstances } from './no-detached-instances'
 export { default as trackedCapsEyebrow } from './tracked-caps-eyebrow'
 export { default as headingTracking } from './heading-tracking'
 export { default as brokenImage } from './broken-image'
+export { default as buttonGlow } from './button-glow'
 
 import type { Rule } from '#core/lint/types'
 
 import brokenImage from './broken-image'
+import buttonGlow from './button-glow'
 import colorContrast from './color-contrast'
 import consistentRadius from './consistent-radius'
 import consistentSpacing from './consistent-spacing'
@@ -62,5 +64,6 @@ export const allRules: Record<string, Rule> = {
   'no-detached-instances': noDetachedInstances,
   'tracked-caps-eyebrow': trackedCapsEyebrow,
   'heading-tracking': headingTracking,
-  'broken-image': brokenImage
+  'broken-image': brokenImage,
+  'button-glow': buttonGlow
 }

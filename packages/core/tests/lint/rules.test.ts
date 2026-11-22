@@ -298,3 +298,55 @@ describe('broken-image', () => {
     expect(lint(graph, 'broken-image')).toEqual([])
   })
 })
+
+describe('button-glow', () => {
+  function shadow(color: typeof BLUE, radius = 24): SceneNode['effects'] {
+    return [{ type: 'DROP_SHADOW', color, offset: { x: 0, y: 8 }, radius, spread: 0, visible: true }]
+  }
+
+  test('reports a button on a coloured shadow', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const button = graph.createNode('FRAME', page.id, {
+      name: 'Get started',
+      htmlTag: 'button',
+      width: 160,
+      height: 48,
+      effects: shadow({ ...BLUE, a: 0.4 })
+    })
+    const named = graph.createNode('FRAME', page.id, {
+      name: 'CTA',
+      width: 160,
+      height: 48,
+      effects: shadow({ ...BLUE, a: 0.4 })
+    })
+    const messages = lint(graph, 'button-glow')
+    expect(messages.map((message) => message.nodeId)).toEqual([button.id, named.id])
+    expect(messages[0].data).toEqual({ radius: 24 })
+  })
+
+  test('accepts neutral shadows, sharp offsets and shadowed cards', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    graph.createNode('FRAME', page.id, {
+      name: 'Primary button',
+      width: 160,
+      height: 48,
+      effects: shadow({ r: 0, g: 0, b: 0, a: 0.2 })
+    })
+    graph.createNode('FRAME', page.id, {
+      name: 'Primary button',
+      width: 160,
+      height: 48,
+      effects: shadow({ ...BLUE, a: 1 }, 0)
+    })
+    graph.createNode('FRAME', page.id, {
+      name: 'Project',
+      htmlTag: 'a',
+      width: 400,
+      height: 320,
+      effects: shadow({ ...BLUE, a: 0.4 })
+    })
+    expect(lint(graph, 'button-glow')).toEqual([])
+  })
+})

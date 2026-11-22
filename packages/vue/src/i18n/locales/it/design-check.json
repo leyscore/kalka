@@ -97,5 +97,7 @@
   "ruleHeadingTracking": "Titolo troppo stretto",
   "ruleHeadingTrackingHelp": "Lettere o righe di un titolo grande sono così strette da toccarsi. Allargale e bilancia le righe.",
   "ruleBrokenImage": "Immagine mancante",
-  "ruleBrokenImageHelp": "Questa immagine non mostra nulla. Inserisci un'immagine reale, disegna il visual o rimuovi il riquadro."
+  "ruleBrokenImageHelp": "Questa immagine non mostra nulla. Inserisci un'immagine reale, disegna il visual o rimuovi il riquadro.",
+  "ruleButtonGlow": "Pulsante luminoso",
+  "ruleButtonGlowHelp": "Un'ombra colorata sotto un pulsante sembra generata. Lascia il pulsante piatto o usa un'ombra neutra."
 }

@@ -43,7 +43,8 @@ const RULE_COPY: Partial<Record<string, RuleCopy>> = {
   },
   'tracked-caps-eyebrow': { title: 'ruleTrackedCapsEyebrow', help: 'ruleTrackedCapsEyebrowHelp' },
   'heading-tracking': { title: 'ruleHeadingTracking', help: 'ruleHeadingTrackingHelp' },
-  'broken-image': { title: 'ruleBrokenImage', help: 'ruleBrokenImageHelp' }
+  'broken-image': { title: 'ruleBrokenImage', help: 'ruleBrokenImageHelp' },
+  'button-glow': { title: 'ruleButtonGlow', help: 'ruleButtonGlowHelp' }
 }
 
 const SPACING_DETAIL = {

@@ -97,5 +97,7 @@
   "ruleHeadingTracking": "Título apretado",
   "ruleHeadingTrackingHelp": "Las letras o líneas de un título grande están tan juntas que se tocan. Sepáralas y equilibra las líneas.",
   "ruleBrokenImage": "Imagen ausente",
-  "ruleBrokenImageHelp": "Esta imagen no muestra nada. Coloca una imagen real, dibuja el visual o quita el bloque."
+  "ruleBrokenImageHelp": "Esta imagen no muestra nada. Coloca una imagen real, dibuja el visual o quita el bloque.",
+  "ruleButtonGlow": "Botón con resplandor",
+  "ruleButtonGlowHelp": "Una sombra de color bajo un botón parece generada. Deja el botón plano o usa una sombra neutra."
 }

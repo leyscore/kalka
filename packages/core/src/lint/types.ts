@@ -1,3 +1,5 @@
+import type { Color } from '@kalka/scene-graph'
+
 export type Severity = 'error' | 'warning' | 'info' | 'off'
 
 export type Category =
@@ -129,6 +131,7 @@ export interface LintNode {
     type: string
     visible: boolean
     radius: number
+    color?: Color
   }>
   parent?: LintNode
 }

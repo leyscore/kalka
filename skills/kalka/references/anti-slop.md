@@ -106,7 +106,8 @@ problems.
 - A thick colored stripe down one side of a rounded card.
 - An icon inside a tinted rounded square above each heading.
 - Frosted glass cards with a highlight and a colored shadow.
-- A colored glow under a button: a blue button floating on a blue shadow.
+- A colored glow under a button: a blue button floating on a blue shadow (the `lint` tool reports
+  it as button-glow).
 - Everything a pill. "New" and "Pro" badges on things that are neither. A pill above the hero
   headline that announces nothing.
 - The same large radius and the same soft shadow on every surface.
