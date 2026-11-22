@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- Kalka Snapshot keeps the size and placement of an element's icons, so the checks of a list no longer come out at different sizes. Pasted Tablet and Phone breakpoints keep the page's margins on both sides instead of an empty strip on the right.
 - The Kalka server's console works on phones and tablets: the sidebar becomes a bar with a menu button that opens the navigation over the page, figures sit two per row, and the settings and people rows no longer overflow the screen.
 
 ## 0.2.0-beta.8 — 2026-11-21

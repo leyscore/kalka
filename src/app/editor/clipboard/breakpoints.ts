@@ -48,14 +48,38 @@ const COPIED_FIELDS: readonly (keyof SceneNode)[] = [
   'style'
 ]
 
-function valuesOf(source: SceneNode, own: boolean): Partial<SceneNode> {
+/**
+ * The page's margin on each side of the copied element at a breakpoint width: the element was
+ * narrower than the window there, and the artboard keeps the difference as equal margins instead
+ * of an empty strip on the right.
+ */
+function sideGutter(source: SceneNode, artboard: number): number {
+  const gutter = (artboard - source.width) / 2
+  return gutter > 0 ? gutter : 0
+}
+
+/**
+ * Values a layer takes from its copy. `artboard` is the breakpoint artboard's width when `source`
+ * is the copy's root; `shift` moves a layer placed by its parent's coordinates sideways.
+ */
+function valuesOf(source: SceneNode, artboard?: number, shift = 0): Partial<SceneNode> {
   const changes: Partial<SceneNode> = {}
+  const own = artboard !== undefined
   for (const field of COPIED_FIELDS) {
     // A breakpoint artboard keeps its own place; its width is the breakpoint's.
     if (own && (field === 'x' || field === 'y' || field === 'width')) continue
     Object.assign(changes, { [field]: structuredClone(source[field]) })
   }
-  return changes
+  if (shift) changes.x = source.x + shift
+  if (!own || source.layoutMode === 'NONE') return changes
+  // Auto layout places the children inside the padding, so the margin goes there.
+  const gutter = sideGutter(source, artboard)
+  if (!gutter) return changes
+  return {
+    ...changes,
+    paddingLeft: source.paddingLeft + gutter,
+    paddingRight: source.paddingRight + gutter
+  }
 }
 
 /** Whether two layers are the same element: the importer names a layer after its classes or text. */
@@ -74,10 +98,13 @@ function applyCopy(
   target: SceneNode,
   copyGraph: SceneGraph,
   source: SceneNode,
-  root: boolean
+  root: boolean,
+  shift = 0
 ): void {
   if (!root && !sameLayer(target, source)) return
-  graph.updateNode(target.id, valuesOf(source, root))
+  graph.updateNode(target.id, valuesOf(source, root ? target.width : undefined, shift))
+  // Without auto layout the children sit at their own coordinates, so they carry the margin.
+  const childShift = root && source.layoutMode === 'NONE' ? sideGutter(source, target.width) : 0
   const copies = copyGraph.getChildren(source.id)
   let next = 0
   for (const child of graph.getChildren(target.id)) {
@@ -85,7 +112,7 @@ function applyCopy(
     while (found < copies.length && !sameLayer(child, copies[found] ?? child)) found++
     const copy = copies.at(found)
     if (!copy) continue
-    applyCopy(graph, child, copyGraph, copy, false)
+    applyCopy(graph, child, copyGraph, copy, false, childShift)
     next = found + 1
   }
 }

@@ -421,6 +421,30 @@ function copyAttributes(copy: Element, source: Element, walk: Walk): void {
   }
 }
 
+/**
+ * How an SVG sits among its siblings, which the page's stylesheets set and which do not come
+ * along: an icon beside wrapping text keeps its size only with `flex-shrink: 0`.
+ */
+const SVG_PLACEMENT: readonly string[] = [
+  'position',
+  'top',
+  'right',
+  'bottom',
+  'left',
+  'z-index',
+  'margin-top',
+  'margin-right',
+  'margin-bottom',
+  'margin-left',
+  'align-self',
+  'flex-grow',
+  'flex-shrink',
+  'flex-basis',
+  'order',
+  'grid-column',
+  'grid-row'
+]
+
 /** An SVG keeps its own markup at its size; its paint is in its attributes. */
 function copySVG(source: Element, style: CSSStyleDeclaration, walk: Walk): Element | null {
   if (source.tagName.toLowerCase() !== 'svg') return null
@@ -429,7 +453,12 @@ function copySVG(source: Element, style: CSSStyleDeclaration, walk: Walk): Eleme
   const box = source.getBoundingClientRect()
   svg.setAttribute('width', String(box.width))
   svg.setAttribute('height', String(box.height))
-  applyStyle(svg, `color: ${style.color}`, walk)
+  const base = walk.defaults.of('svg')
+  const placement = SVG_PLACEMENT.flatMap((property) => {
+    const value = settled(property, style.getPropertyValue(property))
+    return value && base.get(property) !== value ? [`${property}: ${value}`] : []
+  })
+  applyStyle(svg, [`color: ${style.color}`, ...placement].join('; '), walk)
   paintSVG(source, svg)
   return svg
 }
