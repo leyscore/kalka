@@ -91,5 +91,13 @@
   "ruleNoMixedStyles": "Gemischte Textstile",
   "ruleNoMixedStylesHelp": "Mehrere Stile in einer Textebene gehen beim Bearbeiten leicht kaputt.",
   "ruleNoDetachedInstances": "Sieht wie eine Komponente aus",
-  "ruleNoDetachedInstancesHelp": "Dieser Rahmen sieht wie ein wiederverwendbares Element aus. Verwende eine Komponenteninstanz."
+  "ruleNoDetachedInstancesHelp": "Dieser Rahmen sieht wie ein wiederverwendbares Element aus. Verwende eine Komponenteninstanz.",
+  "ruleTrackedCapsEyebrow": "Label über einer Überschrift",
+  "ruleTrackedCapsEyebrowHelp": "Kleine gesperrte Großbuchstaben über einer Überschrift wirken wie eine Vorlage. Entferne das Label oder schreibe es als Untertitel.",
+  "ruleHeadingTracking": "Enge Überschrift",
+  "ruleHeadingTrackingHelp": "Buchstaben oder Zeilen einer großen Überschrift stehen so eng, dass sie sich berühren. Lockere sie und gleiche die Zeilen aus.",
+  "ruleBrokenImage": "Fehlendes Bild",
+  "ruleBrokenImageHelp": "Dieses Bild zeigt nichts an. Setze ein echtes Bild ein, zeichne das Motiv oder entferne den Rahmen.",
+  "ruleButtonGlow": "Leuchtender Button",
+  "ruleButtonGlowHelp": "Ein farbiger Schatten unter einem Button wirkt generiert. Lass den Button flach oder nimm einen neutralen Schatten."
 }

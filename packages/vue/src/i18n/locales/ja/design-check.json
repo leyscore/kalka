@@ -91,5 +91,13 @@
   "ruleNoMixedStyles": "混在したテキストスタイル",
   "ruleNoMixedStylesHelp": "1 つのテキストレイヤーに複数のスタイルがあると、編集時に崩れやすくなります。",
   "ruleNoDetachedInstances": "コンポーネントのようなフレーム",
-  "ruleNoDetachedInstancesHelp": "このフレームは再利用する要素に見えます。コンポーネントのインスタンスを使ってください。"
+  "ruleNoDetachedInstancesHelp": "このフレームは再利用する要素に見えます。コンポーネントのインスタンスを使ってください。",
+  "ruleTrackedCapsEyebrow": "見出し上のラベル",
+  "ruleTrackedCapsEyebrowHelp": "見出しの上の字間を広げた小さな大文字はテンプレートのように見えます。ラベルを削除するか、サブタイトルとして書いてください。",
+  "ruleHeadingTracking": "詰まった見出し",
+  "ruleHeadingTrackingHelp": "大きな見出しの文字や行が詰まりすぎて重なっています。間隔を広げ、行のバランスを整えてください。",
+  "ruleBrokenImage": "画像がありません",
+  "ruleBrokenImageHelp": "この画像には表示するものがありません。実際の画像を配置するか、ビジュアルを描くか、枠を削除してください。",
+  "ruleButtonGlow": "光るボタン",
+  "ruleButtonGlowHelp": "ボタンの下の色付きの影は自動生成されたように見えます。ボタンはフラットにするか、ニュートラルな影を使ってください。"
 }

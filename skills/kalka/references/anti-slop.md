@@ -24,7 +24,7 @@ started" button, it reads as generated.
    A page that fails here is not saved by fixing details.
 2. Go through the lists below and write down every sign you find, with the layer's name. Where
    a sign has a measure in brackets, check it with `get_computed_styles` or the layer's CSS
-   rather than by eye.
+   rather than by eye. Run the `lint` tool on the frame too: it measures several of them.
 3. For each: is it a decision the direction supports? If yes, leave it and say why. If no,
    replace it, do not just delete it. An empty slot gets filled by the next default.
 4. Take a new image and compare.
@@ -42,9 +42,13 @@ problems.
 - A gradient inside the letters of a heading or a number.
 - One word of a heading in another color, in italics or in a serif.
 - A huge italic serif headline as the whole idea of the hero.
-- A small label in spaced capitals above every heading.
+- A small label in spaced capitals above every heading (the `lint` tool reports it as
+  tracked-caps-eyebrow).
 - A monospace face on labels to look technical.
 - The heaviest weight on every heading, or headlines squeezed tighter than -0.04em.
+- Huge condensed capitals set tight as the hero: a narrow face in capitals with letter
+  spacing below -0.03em, or a line height under 0.95 once the heading wraps (the `lint` tool
+  reports both as heading-tracking).
 - Every Word Of Every Heading In Capitals.
 - A lot of small text: captions, hints and fine print under everything.
 - Numbers that do not line up in a column.
@@ -60,6 +64,10 @@ problems.
 - Cream background, high-contrast serif and a terracotta accent: the newer default.
 - Near black with one acid green or vermilion accent and monospace labels.
 - An emerald or teal accent picked because purple was ruled out.
+- Signal yellow or amber on navy: an accent between 35 and 60 degrees of hue on a dark blue
+  ground (hue 210 to 240, lightness under 25%).
+- The sector's cliché as the palette or the ornament: hazard stripes for logistics, a leaf
+  green for plants, a shield and a padlock for security, a coffee brown for a café.
 - The stock colors of a framework, unchanged.
 - Pure black or pure grey beside a brand color.
 - Grey text placed on a colored surface, or body text below 4.5:1 contrast.
@@ -98,7 +106,8 @@ problems.
 - A thick colored stripe down one side of a rounded card.
 - An icon inside a tinted rounded square above each heading.
 - Frosted glass cards with a highlight and a colored shadow.
-- A colored glow under a button: a blue button floating on a blue shadow.
+- A colored glow under a button: a blue button floating on a blue shadow (the `lint` tool reports
+  it as button-glow).
 - Everything a pill. "New" and "Pro" badges on things that are neither. A pill above the hero
   headline that announces nothing.
 - The same large radius and the same soft shadow on every surface.
@@ -140,6 +149,8 @@ problems.
 - Glossy blobs, glowing orbs, a robot, a brain, flat people with long limbs.
 - An illustration assembled from circles and rectangles.
 - An empty gradient box where a picture should be.
+- A grey placeholder block, or an `img` with no source or a source that does not load (the
+  `lint` tool reports it as broken-image).
 - Stock photographs standing in for the real product; a random photo under a dark veil.
 - A grey row of logos, "Trusted by", with no customer behind it.
 - Icons from several sets, in several sizes and line weights.
@@ -165,8 +176,11 @@ Removing a default is half the work. Here is what replaces each family.
   clearly bigger.
 - In place of a gradient or a colored word: make the whole heading work by its wording and its
   size. If one word needs stressing, the sentence should be rewritten around it.
-- In place of the label above every heading: nothing. Keep one on the page, where it adds a
-  fact the heading does not have.
+- In place of the label above every heading: nothing, or a sentence-case subtitle below the
+  heading. Keep one label on the page, where it adds a fact the heading does not have.
+- In place of condensed capitals set tight: a face with its own character in sentence case,
+  letter spacing of -0.03em or more, a line height of 0.95 or more, `text-wrap: balance`, and
+  a size that leaves the key content on the first screen.
 
 **Color**
 
@@ -174,6 +188,9 @@ Removing a default is half the work. Here is what replaces each family.
 - In place of a neon accent on dark: a dark theme built from lighter surfaces, with one
   accent used on one kind of thing.
 - In place of pure grey: neutrals that carry a trace of the brand hue.
+- In place of yellow on navy or the sector's cliché: the colours of the subject's real
+  materials, sampled from a photograph of them: the steel of a container, the ink of an
+  invoice, the clay of a pot.
 - In place of blurred color shapes: the product, a photograph, or plain space.
 - In place of a filler grid: plain ground, unless the dots or lines draw something of the
   project's world.
@@ -230,7 +247,9 @@ Removing a default is half the work. Here is what replaces each family.
   twice the size, swapped or played where the page needs to show it working.
 - In place of the sparkle: a mark that belongs to the page's world, drawn once and used
   everywhere it fits, at different sizes.
-- In place of a placeholder box: remove the section until there is a picture for it.
+- In place of a placeholder box or a broken image: a real photo from `stock_photo`, a visual
+  drawn in CSS from the product's own parts, or a layout that needs no picture. Otherwise
+  remove the section until there is a picture for it.
 
 **Motion**
 

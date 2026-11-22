@@ -29,7 +29,11 @@ export const recommended: Preset = {
     'no-groups': 'info',
     'effect-style-required': 'info',
     'no-mixed-styles': 'info',
-    'no-detached-instances': 'off'
+    'no-detached-instances': 'off',
+    'tracked-caps-eyebrow': 'info',
+    'heading-tracking': 'info',
+    'broken-image': 'warning',
+    'button-glow': 'info'
   }
 }
 
@@ -56,7 +60,11 @@ export const accessibility: Preset = {
     'no-groups': 'off',
     'effect-style-required': 'off',
     'no-mixed-styles': 'off',
-    'no-detached-instances': 'off'
+    'no-detached-instances': 'off',
+    'tracked-caps-eyebrow': 'off',
+    'heading-tracking': 'off',
+    'broken-image': 'off',
+    'button-glow': 'off'
   }
 }
 export const presets: Record<string, Preset> = { recommended, strict, accessibility }

@@ -91,5 +91,13 @@
   "ruleNoMixedStyles": "Estilos de texto mezclados",
   "ruleNoMixedStylesHelp": "Varios estilos en una capa de texto se rompen fácilmente al editar.",
   "ruleNoDetachedInstances": "Parece un componente",
-  "ruleNoDetachedInstancesHelp": "Este marco parece un elemento reutilizable. Usa una instancia de componente."
+  "ruleNoDetachedInstancesHelp": "Este marco parece un elemento reutilizable. Usa una instancia de componente.",
+  "ruleTrackedCapsEyebrow": "Etiqueta sobre un título",
+  "ruleTrackedCapsEyebrowHelp": "Las versalitas espaciadas sobre un título parecen de plantilla. Quita la etiqueta o escríbela como subtítulo.",
+  "ruleHeadingTracking": "Título apretado",
+  "ruleHeadingTrackingHelp": "Las letras o líneas de un título grande están tan juntas que se tocan. Sepáralas y equilibra las líneas.",
+  "ruleBrokenImage": "Imagen ausente",
+  "ruleBrokenImageHelp": "Esta imagen no muestra nada. Coloca una imagen real, dibuja el visual o quita el bloque.",
+  "ruleButtonGlow": "Botón con resplandor",
+  "ruleButtonGlowHelp": "Una sombra de color bajo un botón parece generada. Deja el botón plano o usa una sombra neutra."
 }

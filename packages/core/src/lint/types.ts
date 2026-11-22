@@ -1,3 +1,5 @@
+import type { Color } from '@kalka/scene-graph'
+
 export type Severity = 'error' | 'warning' | 'info' | 'off'
 
 export type Category =
@@ -32,6 +34,8 @@ export type LintFixProperty =
   | 'paddingBottom'
   | 'paddingLeft'
   | 'fontSize'
+  | 'letterSpacing'
+  | 'lineHeight'
 
 /**
  * A change that resolves a finding on the reported layer, kept as data so any interface can
@@ -100,6 +104,16 @@ export interface LintNode {
   componentId?: string
   text: string
   fontSize: number
+  fontWeight: number
+  /** In px. */
+  letterSpacing: number
+  /** In px; `null` is the font's own line height. */
+  lineHeight: number | null
+  textCase: 'ORIGINAL' | 'UPPER' | 'LOWER' | 'TITLE'
+  /** The HTML element the layer exports as, such as `img` or `h1`. */
+  tag: string
+  /** Where an image layer that carries no image fill was loaded from. */
+  imageSource?: string
   styleRunCount: number
   boundVariables: Record<string, string>
   fills: Array<{
@@ -117,6 +131,7 @@ export interface LintNode {
     type: string
     visible: boolean
     radius: number
+    color?: Color
   }>
   parent?: LintNode
 }

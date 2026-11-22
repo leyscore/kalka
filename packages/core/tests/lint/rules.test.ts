@@ -173,3 +173,180 @@ describe('instances', () => {
     expect(graph.getNode(messages[0]?.nodeId ?? '')?.parentId).toBe(component.id)
   })
 })
+
+function text(graph: SceneGraph, parentId: string, overrides: Partial<SceneNode>): SceneNode {
+  return graph.createNode('TEXT', parentId, { width: 600, height: 20, ...overrides })
+}
+
+describe('tracked-caps-eyebrow', () => {
+  function section(graph: SceneGraph, layoutMode: SceneNode['layoutMode'] = 'VERTICAL') {
+    const page = graph.getPages()[0]
+    return graph.createNode('FRAME', page.id, { width: 800, height: 400, layoutMode })
+  }
+  const eyebrow = {
+    text: 'Our process',
+    textCase: 'UPPER',
+    fontSize: 12,
+    letterSpacing: 1.8
+  } satisfies Partial<SceneNode>
+
+  test('reports tracked capitals right above a heading', () => {
+    const graph = new SceneGraph()
+    const frame = section(graph)
+    const label = text(graph, frame.id, eyebrow)
+    text(graph, frame.id, { text: 'Built for crews', fontSize: 48 })
+    const messages = lint(graph, 'tracked-caps-eyebrow')
+    expect(messages.map((message) => message.nodeId)).toEqual([label.id])
+  })
+
+  test('finds the heading after a wrapper that holds only the label', () => {
+    const graph = new SceneGraph()
+    const frame = section(graph)
+    const wrapper = graph.createNode('FRAME', frame.id, { width: 200, height: 20 })
+    text(graph, wrapper.id, { ...eyebrow, textCase: 'ORIGINAL', text: 'CASE STUDY' })
+    const headline = graph.createNode('FRAME', frame.id, { width: 600, height: 60 })
+    text(graph, headline.id, { text: 'A port that never sleeps', fontSize: 40 })
+    expect(lint(graph, 'tracked-caps-eyebrow')).toHaveLength(1)
+  })
+
+  test('ignores untracked labels, body text after it and labels in a row', () => {
+    const graph = new SceneGraph()
+    const plain = section(graph)
+    text(graph, plain.id, { ...eyebrow, letterSpacing: 0 })
+    text(graph, plain.id, { text: 'Built for crews', fontSize: 48 })
+    const body = section(graph)
+    text(graph, body.id, eyebrow)
+    text(graph, body.id, { text: 'We answer within a day.', fontSize: 16 })
+    const row = section(graph, 'HORIZONTAL')
+    text(graph, row.id, eyebrow)
+    text(graph, row.id, { text: '48', fontSize: 48 })
+    expect(lint(graph, 'tracked-caps-eyebrow')).toEqual([])
+  })
+})
+
+describe('heading-tracking', () => {
+  test('reports tight tracking with a fix at the floor', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    text(graph, page.id, { text: 'Freight', fontSize: 100, letterSpacing: -6, height: 100 })
+    const [message] = lint(graph, 'heading-tracking')
+    expect(message.suggestions).toEqual([{ kind: 'set', changes: { letterSpacing: -3 } }])
+  })
+
+  test('reports tight leading only on a heading that wraps', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    text(graph, page.id, { text: 'One line', fontSize: 80, lineHeight: 64, height: 64 })
+    const wrapped = text(graph, page.id, {
+      text: 'Two lines of display type',
+      fontSize: 80,
+      lineHeight: 64,
+      height: 128
+    })
+    const messages = lint(graph, 'heading-tracking')
+    expect(messages.map((message) => message.nodeId)).toEqual([wrapped.id])
+    expect(messages[0].suggestions).toEqual([{ kind: 'set', changes: { lineHeight: 76 } }])
+  })
+
+  test('accepts body text and headings at the floor', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    text(graph, page.id, { text: 'Body', fontSize: 16, letterSpacing: -1 })
+    text(graph, page.id, { text: 'Heading', fontSize: 64, letterSpacing: -1.92, height: 64 })
+    expect(lint(graph, 'heading-tracking')).toEqual([])
+  })
+})
+
+describe('broken-image', () => {
+  test('reports an image whose source cannot load', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const relative = graph.createNode('FRAME', page.id, {
+      width: 400,
+      height: 300,
+      pluginData: [{ pluginId: 'kalka-dom-css', key: 'image-source-url', value: 'hero.jpg' }]
+    })
+    const messages = lint(graph, 'broken-image')
+    expect(messages.map((message) => message.nodeId)).toEqual([relative.id])
+    expect(messages[0].data).toEqual({ source: 'hero.jpg' })
+  })
+
+  test('accepts image fills and remote sources', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    graph.createNode('FRAME', page.id, {
+      width: 400,
+      height: 300,
+      pluginData: [
+        { pluginId: 'kalka-dom-css', key: 'image-source-url', value: 'https://example.com/a.jpg' }
+      ]
+    })
+    graph.createNode('FRAME', page.id, {
+      width: 400,
+      height: 300,
+      fills: [
+        {
+          type: 'IMAGE',
+          imageHash: 'abc',
+          imageScaleMode: 'FILL',
+          color: WHITE,
+          opacity: 1,
+          visible: true
+        }
+      ]
+    })
+    expect(lint(graph, 'broken-image')).toEqual([])
+  })
+})
+
+describe('button-glow', () => {
+  function shadow(color: typeof BLUE, radius = 24): SceneNode['effects'] {
+    return [{ type: 'DROP_SHADOW', color, offset: { x: 0, y: 8 }, radius, spread: 0, visible: true }]
+  }
+
+  test('reports a button on a coloured shadow', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const button = graph.createNode('FRAME', page.id, {
+      name: 'Get started',
+      htmlTag: 'button',
+      width: 160,
+      height: 48,
+      effects: shadow({ ...BLUE, a: 0.4 })
+    })
+    const named = graph.createNode('FRAME', page.id, {
+      name: 'CTA',
+      width: 160,
+      height: 48,
+      effects: shadow({ ...BLUE, a: 0.4 })
+    })
+    const messages = lint(graph, 'button-glow')
+    expect(messages.map((message) => message.nodeId)).toEqual([button.id, named.id])
+    expect(messages[0].data).toEqual({ radius: 24 })
+  })
+
+  test('accepts neutral shadows, sharp offsets and shadowed cards', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    graph.createNode('FRAME', page.id, {
+      name: 'Primary button',
+      width: 160,
+      height: 48,
+      effects: shadow({ r: 0, g: 0, b: 0, a: 0.2 })
+    })
+    graph.createNode('FRAME', page.id, {
+      name: 'Primary button',
+      width: 160,
+      height: 48,
+      effects: shadow({ ...BLUE, a: 1 }, 0)
+    })
+    graph.createNode('FRAME', page.id, {
+      name: 'Project',
+      htmlTag: 'a',
+      width: 400,
+      height: 320,
+      effects: shadow({ ...BLUE, a: 0.4 })
+    })
+    expect(lint(graph, 'button-glow')).toEqual([])
+  })
+})

@@ -91,5 +91,13 @@
   "ruleNoMixedStyles": "Styles de texte mélangés",
   "ruleNoMixedStylesHelp": "Plusieurs styles dans un même calque de texte se cassent facilement à l’édition.",
   "ruleNoDetachedInstances": "Ressemble à un composant",
-  "ruleNoDetachedInstancesHelp": "Ce cadre ressemble à un élément réutilisable. Utilisez une instance de composant."
+  "ruleNoDetachedInstancesHelp": "Ce cadre ressemble à un élément réutilisable. Utilisez une instance de composant.",
+  "ruleTrackedCapsEyebrow": "Étiquette au-dessus d'un titre",
+  "ruleTrackedCapsEyebrowHelp": "De petites capitales espacées au-dessus d'un titre font gabarit. Retirez l'étiquette ou écrivez-la en sous-titre.",
+  "ruleHeadingTracking": "Titre trop serré",
+  "ruleHeadingTrackingHelp": "Les lettres ou les lignes d'un grand titre sont si serrées qu'elles se touchent. Desserrez-les et équilibrez les lignes.",
+  "ruleBrokenImage": "Image manquante",
+  "ruleBrokenImageHelp": "Cette image n'a rien à afficher. Placez une vraie image, dessinez le visuel ou retirez le bloc.",
+  "ruleButtonGlow": "Bouton lumineux",
+  "ruleButtonGlowHelp": "Une ombre colorée sous un bouton fait générée. Gardez le bouton à plat ou utilisez une ombre neutre."
 }

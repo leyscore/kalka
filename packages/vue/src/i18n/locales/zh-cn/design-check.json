@@ -91,5 +91,13 @@
   "ruleNoMixedStyles": "混合文字样式",
   "ruleNoMixedStylesHelp": "一个文字图层中的多种样式在编辑时容易被破坏。",
   "ruleNoDetachedInstances": "看起来像组件",
-  "ruleNoDetachedInstancesHelp": "这个画框看起来像可复用元素。请使用组件实例。"
+  "ruleNoDetachedInstancesHelp": "这个画框看起来像可复用元素。请使用组件实例。",
+  "ruleTrackedCapsEyebrow": "标题上方的标签",
+  "ruleTrackedCapsEyebrowHelp": "标题上方字距加宽的小号大写字母看起来像模板。删除标签，或改写为副标题。",
+  "ruleHeadingTracking": "标题过紧",
+  "ruleHeadingTrackingHelp": "大标题的字母或行距过紧，彼此相碰。请放宽间距并平衡各行。",
+  "ruleBrokenImage": "缺少图片",
+  "ruleBrokenImageHelp": "此图片没有可显示的内容。放入真实图片、绘制视觉元素，或删除该框。",
+  "ruleButtonGlow": "发光按钮",
+  "ruleButtonGlowHelp": "按钮下的彩色阴影看起来像自动生成的。保持按钮扁平，或使用中性阴影。"
 }

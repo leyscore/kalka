@@ -91,5 +91,13 @@
   "ruleNoMixedStyles": "Mieszane style tekstu",
   "ruleNoMixedStylesHelp": "Kilka stylów w jednej warstwie tekstu łatwo zepsuć podczas edycji.",
   "ruleNoDetachedInstances": "Wygląda jak komponent",
-  "ruleNoDetachedInstancesHelp": "Ta ramka wygląda jak element wielokrotnego użytku. Użyj instancji komponentu."
+  "ruleNoDetachedInstancesHelp": "Ta ramka wygląda jak element wielokrotnego użytku. Użyj instancji komponentu.",
+  "ruleTrackedCapsEyebrow": "Etykieta nad nagłówkiem",
+  "ruleTrackedCapsEyebrowHelp": "Małe rozstrzelone wersaliki nad nagłówkiem wyglądają jak szablon. Usuń etykietę lub napisz ją jako podtytuł.",
+  "ruleHeadingTracking": "Ściśnięty nagłówek",
+  "ruleHeadingTrackingHelp": "Litery lub wiersze dużego nagłówka są tak ściśnięte, że się stykają. Rozluźnij je i wyrównaj wiersze.",
+  "ruleBrokenImage": "Brak obrazu",
+  "ruleBrokenImageHelp": "Ten obraz nic nie pokazuje. Wstaw prawdziwy obraz, narysuj grafikę lub usuń ramkę.",
+  "ruleButtonGlow": "Świecący przycisk",
+  "ruleButtonGlowHelp": "Kolorowy cień pod przyciskiem wygląda na wygenerowany. Zostaw przycisk płaski albo użyj neutralnego cienia."
 }

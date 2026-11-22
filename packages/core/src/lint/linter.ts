@@ -1,5 +1,6 @@
 import { isEqual } from 'es-toolkit/predicate'
 
+import { imageSourceURL, tagForNode } from '@kalka/dom-css/export'
 import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 import { colorToHex } from '@kalka/scene-graph/color'
 
@@ -117,6 +118,12 @@ export class Linter {
       componentId: raw.componentId || undefined,
       text: raw.text,
       fontSize: raw.fontSize,
+      fontWeight: raw.fontWeight,
+      letterSpacing: raw.letterSpacing,
+      lineHeight: raw.lineHeight,
+      textCase: raw.textCase,
+      tag: tagForNode(raw),
+      imageSource: imageSourceURL(raw),
       styleRunCount: raw.styleRuns.length,
       boundVariables: raw.boundVariables,
       fills: raw.fills.map((f, index) => ({
@@ -133,7 +140,8 @@ export class Linter {
       effects: raw.effects.map((effect) => ({
         type: effect.type,
         visible: effect.visible,
-        radius: effect.radius
+        radius: effect.radius,
+        color: effect.color
       }))
     }
   }

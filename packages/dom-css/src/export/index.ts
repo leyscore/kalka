@@ -6,7 +6,7 @@ export {
   type VectorElementRenderer
 } from './projection'
 export type { HairlineScale } from './hairlines'
-export { canTakeHTMLTag, defaultTagForNode, tagForNode } from './tags'
+export { canTakeHTMLTag, defaultTagForNode, imageSourceURL, tagForNode } from './tags'
 export { exportHTMLBundle } from './bundle'
 export {
   replaceDataImages,
