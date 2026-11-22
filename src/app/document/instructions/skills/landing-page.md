@@ -29,6 +29,10 @@ including the top and the footer. A section exists only if there is true materia
 
 Then check the plan:
 
+- What must a visitor see in the first five seconds, and is it in the first screen? It depends
+  on the page: the prices on a pricing page, the work itself on a portfolio, a dish or the menu
+  for a restaurant, the product working on a software page, the dates and the place for an
+  event. A headline alone is not it.
 - Is it hero, three features, call to action, footer? That is the reflex. Find what this
   project has that the reflex has no slot for, and build a section around it.
 - Does each section have a different shape from its neighbours? Two splits in a row, or two

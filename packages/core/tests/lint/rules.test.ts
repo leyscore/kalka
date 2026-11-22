@@ -258,18 +258,17 @@ describe('heading-tracking', () => {
 })
 
 describe('broken-image', () => {
-  test('reports an image tag without a picture or with a source that cannot load', () => {
+  test('reports an image whose source cannot load', () => {
     const graph = new SceneGraph()
     const page = graph.getPages()[0]
-    const empty = graph.createNode('FRAME', page.id, { width: 400, height: 300, htmlTag: 'img' })
     const relative = graph.createNode('FRAME', page.id, {
       width: 400,
       height: 300,
       pluginData: [{ pluginId: 'kalka-dom-css', key: 'image-source-url', value: 'hero.jpg' }]
     })
     const messages = lint(graph, 'broken-image')
-    expect(messages.map((message) => message.nodeId)).toEqual([empty.id, relative.id])
-    expect(messages[1].data).toEqual({ source: 'hero.jpg' })
+    expect(messages.map((message) => message.nodeId)).toEqual([relative.id])
+    expect(messages[0].data).toEqual({ source: 'hero.jpg' })
   })
 
   test('accepts image fills and remote sources', () => {

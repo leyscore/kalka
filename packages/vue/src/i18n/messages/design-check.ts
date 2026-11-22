@@ -102,13 +102,17 @@ export const designCheckMessageDefaults = {
   ruleNoMixedStyles: 'Mixed text styles',
   ruleNoMixedStylesHelp: 'Several styles in one text layer are easy to break when editing.',
   ruleNoDetachedInstances: 'Looks like a component',
-  ruleNoDetachedInstancesHelp: 'This frame looks like a reusable element. Use a component instance.',
+  ruleNoDetachedInstancesHelp:
+    'This frame looks like a reusable element. Use a component instance.',
   ruleTrackedCapsEyebrow: 'Label above a heading',
-  ruleTrackedCapsEyebrowHelp: 'Small spaced capitals above a heading read as a template. Remove the label or write it as a subtitle.',
+  ruleTrackedCapsEyebrowHelp:
+    'Small spaced capitals above a heading read as a template. Remove the label or write it as a subtitle.',
   ruleHeadingTracking: 'Tight heading',
-  ruleHeadingTrackingHelp: 'Letters or lines of a large heading are set so tight they collide. Loosen them and balance the lines.',
+  ruleHeadingTrackingHelp:
+    'Letters or lines of a large heading are set so tight they collide. Loosen them and balance the lines.',
   ruleBrokenImage: 'Missing image',
-  ruleBrokenImageHelp: 'This image has no picture to show. Place a real image, draw the visual, or remove the box.'
+  ruleBrokenImageHelp:
+    'This image has no picture to show. Place a real image, draw the visual, or remove the box.'
 } as const
 
 export const designCheckMessages = i18n('designCheck', designCheckMessageDefaults)

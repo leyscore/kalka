@@ -13,7 +13,9 @@ interface Options {
 function isCapitals(node: LintNode): boolean {
   if (node.textCase === 'UPPER') return true
   const letters = node.text.replace(/[^\p{L}]/gu, '')
-  return letters.length >= 2 && letters === letters.toUpperCase() && letters !== letters.toLowerCase()
+  return (
+    letters.length >= 2 && letters === letters.toUpperCase() && letters !== letters.toLowerCase()
+  )
 }
 
 /** The first visible text inside `node`, in reading order. */
@@ -35,8 +37,8 @@ function textAfter(node: LintNode, context: RuleContext): LintNode | null {
   const parent = context.getParent(node)
   if (!parent || parent.layoutMode === 'HORIZONTAL' || parent.layoutMode === 'GRID') return null
   const siblings = context.getChildren(parent).filter((sibling) => sibling.visible)
-  const next = siblings[siblings.findIndex((sibling) => sibling.id === node.id) + 1]
-  if (next) return firstText(next, context)
+  const index = siblings.findIndex((sibling) => sibling.id === node.id)
+  if (index + 1 < siblings.length) return firstText(siblings[index + 1], context)
   return siblings.length === 1 ? textAfter(parent, context) : null
 }
 

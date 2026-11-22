@@ -41,10 +41,15 @@ Write a short brief in the conversation before drawing:
   list three and keep one that is not your first idea. A warm-paper "atelier" or "editorial"
   mood is everyone's first idea; choose it only when the product really lives there
 - a palette with roles: one ground, one ink, one strong accent, two or three supporting tones
-  taken from that place, with their hex values and enough contrast for text
+  taken from that place, with their hex values and enough contrast for text. Take the colours
+  from the real materials of the subject (the steel of a container, the ink of an invoice, the
+  clay of a pot), not from the sector's cliché: signal yellow or amber on navy now reads as
+  generated, and so do hazard stripes for logistics or a leaf green for plants
 - two typefaces: a display face with character and a quiet text face, and a type scale with
-  strong contrast between display and labels (for example 72 / 48 / 28 / 18 / 16 / 13). Find
-  them with search_fonts and keep each with the document with add_font before setting text in
+  strong contrast between display and labels (for example 72 / 48 / 28 / 18 / 16 / 13). Cap
+  the display size so the headline, the key content and the main action fit on the first
+  screen; set headings with letter spacing of -0.03 em or more, a line height of 0.95 or more
+  once they wrap, and `text-wrap: balance`. Find them with search_fonts and keep each with the document with add_font before setting text in
   it: the document then carries the files and their licence, so it draws the same offline, for
   teammates and in exported HTML
 - before building, hold the palette and the typefaces against the generated look listed under
@@ -65,8 +70,8 @@ Set the system up before any screen, so every screen is made of it.
    radius scales. Name them by role, never by value (`accent`, not `orange`).
 2. **Classes.** Write the shared styles once, in a `<style>` block of write_html or with
    update_css_class, using the variables' values:
-   - type: `.display`, `.h1`, `.h2`, `.h3`, `.body`, `.small`, `.label`, `.eyebrow`, each with
-     its family, size, weight, line height and letter spacing
+   - type: `.display`, `.h1`, `.h2`, `.h3`, `.body`, `.small`, `.label`, each with its family,
+     size, weight, line height and letter spacing
    - surfaces and layout: `.page`, `.section`, `.container` (max width and side padding),
      `.stack` and `.row` (flex with a gap), `.grid-3` and the like, `.card`, `.divider`
      A class is shared by every layer that has it, so changing the direction later is one
@@ -106,6 +111,9 @@ In every section:
   no fixed heights on text containers, so content can grow.
 - **Real content:** the product's words, real numbers with their source, real names. No lorem
   ipsum, no "Your text here", no invented logos. Images from stock_photo or the person's files.
+- **No placeholder images.** When no real image exists, compose without one: a real photo from
+  stock_photo, a visual drawn in CSS from the product's own parts, or a layout that needs no
+  image. Never leave a grey block, an empty `img` or a broken source.
 - **Names by role** for every layer that matters (Hero, Pricing card, Primary CTA).
 
 Change a section with edit_html, update_styles or update_css_class; rewrite a whole section only
@@ -113,7 +121,9 @@ when its structure must change.
 
 ## 7. Check every section
 
-After each section, get_screenshot the page frame and judge it before moving on:
+After each section, get_screenshot the page frame and judge it before moving on. Ask first:
+what must the visitor see in the first five seconds (the prices on a pricing page, the work on
+a portfolio, a dish or the menu for a restaurant), and is it on the first screen? Then check:
 
 - it fits its frame: nothing clipped, overflowing or collapsed
 - spacing follows the scale: tight inside a group, generous between groups
@@ -122,6 +132,10 @@ After each section, get_screenshot the page frame and judge it before moving on:
 - edges align on the container and the grid
 - content is real and nothing is left from a placeholder
 - no sign from the anti-slop catalogue is left that the direction did not choose
+
+Run the `lint` tool on the page frame as well: it flags tracked all-caps eyebrows, display
+headings set too tight and broken images, among other checks. Fix what it reports or keep it
+only when the direction chose it.
 
 Fix what fails, then go on. When the desktop page is done, add_breakpoint at 390 (and 810 when it
 matters) and adjust the phone layout: stack the rows, shrink the display sizes, keep the tap
@@ -133,7 +147,7 @@ Call finish_working_on_nodes, select the result so the person sees it, and give 
 line summary: what was built, the direction in one phrase, and what is left or uncertain. Answer
 the comments that ask you (get_comments, reply_to_comment).
 
-## Kalka Fresh, an optional toolbox
+## Kalka Fresh
 
 Kalka ships a library of design-forward pieces: live shader grounds, headline effects (a
 variable-font ramp, text on a circle, words around a pill of media), glass and paper cards,
@@ -141,13 +155,17 @@ tactile and hover-state buttons, hero devices (an orbit of labels, a floating co
 island) and separators. They are raw material for an idea you already have, never a template
 and never a reason to have an idea.
 
-- Decide the direction first, then search_library_components with the intent in your own words
-  ("seal beside the headline for a bakery", "moving ground for the closing call to action").
-  Use one or two where they carry the page's strong moment; most pages need none.
+- Search whenever you reach one of these choices: the hero's ground or background, an effect
+  on the headline, a separator between sections, or the ground of the closing call to action.
+  Call search_library_components once for that choice with the intent in your own words ("seal
+  beside the headline for a bakery", "moving ground for the closing call to action"), look at
+  what comes back, then decide. Using nothing is a valid decision; not looking is not.
+- Use one or two pieces where they carry the page's strong moment; most pages need few.
 - Insert with insert_library_component (library_id "kalka-fresh"), set its variant and text
   properties, then make it the page's own: its colours follow the variables ground, ink, accent,
-  muted and line, so name the brief's colours that way; resize it, change its words, or write
-  your own version from the html that include_html returns.
+  muted and line, so name the brief's colours that way. A piece is editable after insertion:
+  resize it, change its words, or take its html with include_html and rewrite it with
+  write_html.
 - The taste rules still hold: a shader ground is not a purple-to-blue gradient by default, glass
   sits over something worth blurring, no glow under a button, one effect per screen.
 
@@ -164,10 +182,13 @@ and never a reason to have an idea.
   look machine-made:
   - colour: purple-to-blue gradients on white; cyan or neon on dark grey; a glowing dark mode by
     default; a cream or warm-paper ground with a serif display and a terracotta, rust or
-    burnt-orange accent
+    burnt-orange accent; signal yellow or amber on navy; the sector's cliché (hazard stripes for
+    logistics, a leaf for plants, a shield for security)
   - type: the reflex faces (Inter, Space Grotesk, Playfair Display, Fraunces, DM Sans) chosen
     because they come first; monospace as a "technical" signal; gradient text; one headline word
-    set apart in italic or colour; a tracked all-caps eyebrow above every heading
+    set apart in italic or colour; a tracked all-caps eyebrow above every heading (write a
+    sentence-case subtitle below the heading, or nothing); huge condensed capitals set with
+    tight tracking and tight leading
   - layout: three identical cards with an icon, a heading and a line; cards nested in cards;
     everything centred; thick coloured side stripes on cards and callouts; 01 / 02 / 03 markers
     on things that are not a sequence

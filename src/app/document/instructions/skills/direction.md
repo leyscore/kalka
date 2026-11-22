@@ -76,7 +76,10 @@ The world on the card is where every later choice comes from. Ask of it:
 - **What lettering does it use?** Stamped, painted, engraved, typed. That gives the display
   face and how heavy it is.
 - **What color is it, really?** Not the category's color: the color of that object. A
-  workshop is not "orange for energy", it is the specific red of a tool chest.
+  workshop is not "orange for energy", it is the specific red of a tool chest. Sample the
+  palette from the subject's real materials (the steel of a container, the ink of an invoice,
+  the clay of a pot), never from the sector's cliché: signal yellow or amber on navy, hazard
+  stripes for logistics or a leaf green for plants now read as generated.
 
 ## 4. Propose three directions that differ
 

@@ -13,7 +13,7 @@ import { defineTool } from '#core/tools/schema'
 
 /** How the agent should treat what a search returns; the design guide says the same at length. */
 const TOOLBOX_NOTE =
-  'An optional toolbox, not a template: use one or two where they serve the idea of the page (its strong moment), then adapt them with properties, the document variables, or by writing your own HTML from the html field. Skip them when nothing fits.'
+  'Raw material, not a template. Search once whenever you choose a hero ground, a headline effect, a separator or the closing call-to-action ground, then decide: use one or two where they serve the idea of the page (its strong moment) and adapt them with properties, the document variables, or by writing your own HTML from the html field, or use none when nothing fits.'
 
 export const listLibraries = defineTool({
   name: 'list_libraries',

@@ -25,6 +25,10 @@ and least wants to hear.
 
 The order matters: a problem high in the list makes those below it pointless to fix.
 
+0. **The first five seconds.** What must the visitor see first: the prices on a pricing
+   page, the work on a portfolio, a dish or the menu for a restaurant, the product on a
+   product page? Is it on the first screen, above the fold, at the size of a phone too? If
+   not, nothing below matters yet.
 1. **Focal point.** Look at the image small and blurred. Is there one place the eye goes
    first? If the eye wanders, nothing was chosen.
 2. **Hierarchy.** Are there two or three clear levels of importance, or is everything the
