@@ -5,6 +5,7 @@ import { dataURLs } from '../src/content/data-url'
 import {
   backInPlace,
   foldTranslation,
+  growFromContent,
   hideFaded,
   statesOrigin,
   unplaced,
@@ -367,5 +368,19 @@ describe('wholePage', () => {
     expect(
       wholePage({ width: 1440, height: 900 }, { left: 0, right: 1440 }, { left: 0, right: 0 })
     ).toEqual(['width: 1440px', 'max-width: none', 'min-height: 900px'])
+  })
+})
+
+describe('growFromContent', () => {
+  test('an element that grows starts from its content', () => {
+    expect(growFromContent('display: flex; flex-grow: 1')).toBe(
+      'display: flex; flex-grow: 1; flex-basis: auto'
+    )
+  })
+
+  test('one that says what it grows from, or does not grow, stays as written', () => {
+    expect(growFromContent('flex-grow: 1; flex-basis: 0px')).toBe('flex-grow: 1; flex-basis: 0px')
+    expect(growFromContent('flex-grow: 0')).toBe('flex-grow: 0')
+    expect(growFromContent('display: block')).toBe('display: block')
   })
 })

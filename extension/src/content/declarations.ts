@@ -71,9 +71,22 @@ export function hideFaded(declared: string): string {
   return writeDeclarations(style)
 }
 
+/**
+ * An element that grows says what it grows from. On the page that is its content unless it says
+ * otherwise, where Kalka grows a layer from nothing: two buttons that grow in a row that wraps
+ * each take a line on a phone, and would share one.
+ */
+export function growFromContent(declared: string): string {
+  const style = parseDeclarations(declared)
+  const grow = Number(style.get('flex-grow') ?? 0)
+  if (!(grow > 0) || style.has('flex-basis')) return declared
+  style.set('flex-basis', 'auto')
+  return writeDeclarations(style)
+}
+
 /** What every element's copy does with its declarations before they are written. */
 export function finalDeclarations(declared: string): string {
-  return hideFaded(foldTranslation(declared))
+  return growFromContent(hideFaded(foldTranslation(declared)))
 }
 
 /**
