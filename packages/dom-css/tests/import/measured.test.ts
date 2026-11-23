@@ -159,6 +159,27 @@ describe('measured HTML import', () => {
     expect(children.map((child) => child.height)).toEqual([200, 100, 50])
   })
 
+  test('centered lines in a column keep the width they are centered in', () => {
+    const type = { ...BLOCK, 'text-align': 'center', 'font-size': '64px', 'line-height': '66px' }
+    const column = element(
+      'span',
+      box(0, 0, 1440, 132),
+      { ...type, display: 'flex', 'flex-direction': 'column' },
+      [
+        element('span', box(0, 0, 1440, 66), type, [
+          { type: 'text', text: 'A website', layoutBox: box(590, 0, 260, 66) }
+        ]),
+        { type: 'text', text: ' makes it real', layoutBox: box(556, 66, 328, 66) }
+      ]
+    )
+    const { graph, artboard } = graphOf(measured([column]))
+    const lines = graph.getChildren(graph.getChildren(artboard?.id ?? '')[0]?.id ?? '')
+    expect(lines.map((line) => [line.width, line.textAutoResize])).toEqual([
+      [1440, 'HEIGHT'],
+      [1440, 'HEIGHT']
+    ])
+  })
+
   test('a rotation reads from transform or rotate; scaling is not one', () => {
     expect(
       rotationFromTransform('matrix(0.994522, -0.104528, 0.104528, 0.994522, 0, 0)')

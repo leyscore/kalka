@@ -111,6 +111,12 @@ const TEXT_PROPERTIES = [
   'white-space'
 ]
 
+/** Whether a line of text sits away from the start of the box it is written in. */
+export function alignsAwayFromStart(style: DesignStyleDeclaration): boolean {
+  const align = pickStyle(style, 'text-align')
+  return align === 'center' || align === 'right' || align === 'end' || align === '-webkit-center'
+}
+
 export function inheritedTextStyle(style: DesignStyleDeclaration): DesignStyleDeclaration {
   return Object.fromEntries(
     TEXT_PROPERTIES.flatMap((property) => {
