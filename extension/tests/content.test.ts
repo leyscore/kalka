@@ -118,12 +118,10 @@ describe('unplaced', () => {
 })
 
 describe('unscrolled', () => {
-  test('the page’s root grows to the page instead of staying one window tall', () => {
-    expect(unscrolled(true)).toEqual(['height: auto', 'overflow: visible'])
-  })
-
-  test('any other root keeps its height and how it scrolls', () => {
-    expect(unscrolled(false)).toEqual([])
+  test('the page’s root loses the height and scrolling that keep it one window tall', () => {
+    expect(
+      unscrolled('display: block; height: 900px; overflow: auto scroll; min-height: 900px')
+    ).toBe('display: block; min-height: 900px')
   })
 })
 

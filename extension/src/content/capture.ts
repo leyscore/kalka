@@ -8,6 +8,7 @@ import {
   shifted,
   statesOrigin,
   unplaced,
+  UNSCROLLED,
   unscrolled,
   writeDeclarations
 } from './declarations'
@@ -837,7 +838,7 @@ export function captureElement(
     const extra = ['box-sizing: border-box', `width: ${Math.round(box.width)}px`, 'margin: 0']
     if (behind) extra.push(`background-color: ${behind}`)
     extra.push(...unplaced(getComputedStyle(element).position))
-    extra.push(...unscrolled(pageRoot(element.localName)))
+    const root = pageRoot(element.localName)
     // What the page drew behind it, from the screen, under the element's own background.
     if (shots?.backdrop) {
       const own = getComputedStyle(element).backgroundImage
@@ -849,9 +850,11 @@ export function captureElement(
       walk.images++
     }
     if (format === 'kalka') {
-      const own = copy.getAttribute('style')
+      const written = copy.getAttribute('style')
+      const own = written && root ? unscrolled(written) : written
       copy.setAttribute('style', [...(own ? [own] : []), ...extra].join('; '))
     } else {
+      if (root) extra.push(...UNSCROLLED)
       walk.rules.push(`.k-root { ${extra.join('; ')} }`)
       copy.classList.add('k-root')
     }

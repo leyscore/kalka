@@ -85,12 +85,19 @@ export function unplaced(position: string): string[] {
   return ['position: relative', 'top: auto', 'right: auto', 'bottom: auto', 'left: auto']
 }
 
+/** What lets a copy of the page's root hold the whole page, where rules style the copy. */
+export const UNSCROLLED = ['height: auto', 'overflow: visible']
+
 /**
- * What lets a copy of the page's root hold the whole page: on the page it is one window tall and
- * the window scrolls the rest, where an artboard is as tall as what it holds.
+ * The declarations of the page's root without the height and the scrolling that keep it one
+ * window tall: on the page the window scrolls the rest, where an artboard is as tall as what
+ * it holds.
  */
-export function unscrolled(root: boolean): string[] {
-  return root ? ['height: auto', 'overflow: visible'] : []
+export function unscrolled(declared: string): string {
+  const declarations = parseDeclarations(declared)
+  declarations.delete('height')
+  declarations.delete('overflow')
+  return writeDeclarations(declarations)
 }
 
 /**
