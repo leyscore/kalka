@@ -3,6 +3,7 @@ import * as v from 'valibot'
 
 import { FigmaAPI } from '@kalka/core/figma-api'
 import {
+  ASK_USER_MAX_SENT_PICTURES,
   askUser,
   CORE_TOOLS,
   finishWorkingOnNodes,
@@ -102,6 +103,56 @@ describe('ask_user', () => {
       mimeType: 'image/png'
     })
     expect(JSON.stringify(result)).toContain('2 pictures')
+  })
+
+  test('passes the references the person picked as images after their own picture', async () => {
+    const figma = new FigmaAPI(new SceneGraph())
+    const own = { name: 'mood.png', mimeType: 'image/png', base64: 'AAAA' }
+    const reference = (name: string) => ({ name, mimeType: 'image/webp', base64: `${name}==` })
+    figma.askUser = () =>
+      Promise.resolve([
+        {
+          question: 'Which look?',
+          answer: 'Onyx (https://example.org/onyx)',
+          references: [reference('Onyx'), reference('Blue Bottle')]
+        },
+        { question: 'Anything else?', answer: '', image: own }
+      ])
+    const result = await askUser.execute(figma, { questions })
+    expect(result).toMatchObject({
+      base64: 'AAAA',
+      mimeType: 'image/png',
+      images: [
+        { base64: 'Onyx==', mimeType: 'image/webp' },
+        { base64: 'Blue Bottle==', mimeType: 'image/webp' }
+      ]
+    })
+    expect(JSON.stringify(result)).toContain('Onyx (a reference they picked)')
+    expect(JSON.stringify(result)).not.toContain('"references"')
+  })
+
+  test('sends one picked reference alone as the image, and caps how many go', async () => {
+    const figma = new FigmaAPI(new SceneGraph())
+    const references = Array.from({ length: ASK_USER_MAX_SENT_PICTURES + 2 }, (_, index) => ({
+      name: `Ref ${index}`,
+      mimeType: 'image/jpeg',
+      base64: 'AAAA'
+    }))
+    figma.askUser = () =>
+      Promise.resolve([{ question: 'Which look?', answer: 'Ref 0', references: references.slice(0, 1) }])
+    const single = await askUser.execute(figma, { questions })
+    expect(single).toMatchObject({ base64: 'AAAA', mimeType: 'image/jpeg' })
+    expect(single).not.toHaveProperty('images')
+
+    figma.askUser = () => Promise.resolve([{ question: 'Which look?', answer: 'All', references }])
+    const many = await askUser.execute(figma, { questions })
+    expect(many).toMatchObject({
+      images: Array.from({ length: ASK_USER_MAX_SENT_PICTURES - 1 }, () => ({
+        base64: 'AAAA',
+        mimeType: 'image/jpeg'
+      }))
+    })
+    expect(JSON.stringify(many)).toContain('2 more they picked are not shown')
   })
 
   test('shows https pictures only', () => {

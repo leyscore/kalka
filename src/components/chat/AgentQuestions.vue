@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useFileDialog } from '@vueuse/core'
+import { compact } from 'es-toolkit'
 import { computed, ref, watch } from 'vue'
 
-import type { AgentAnswerImage, AgentQuestionImage } from '@kalka/core/figma-api'
+import type { AgentAnswer, AgentAnswerImage, AgentQuestionImage } from '@kalka/core/figma-api'
 import { useI18n } from '@kalka/vue'
 
-import { pictureAnswer, readAnswerPicture } from '@/app/ai/questions/picture'
+import { pictureAnswer, readAnswerPicture, readPickedPicture } from '@/app/ai/questions/picture'
 import { answerQuestions, currentQuestions, skipQuestions } from '@/app/ai/questions/queue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
@@ -19,6 +20,7 @@ const pickedImages = ref<string[][]>([])
 const ownPictures = ref<(AgentAnswerImage | null)[]>([])
 const brokenImages = ref<string[]>([])
 const pictureFailed = ref(false)
+const sending = ref(false)
 
 // A new set of questions starts from its first one, with nothing picked.
 watch(
@@ -108,28 +110,46 @@ pictureDialog.onChange(async (files) => {
   }
 })
 
-function answerOf(index: number): string {
+function pickedPicturesOf(index: number): AgentQuestionImage[] {
   const asked = questions.value[index]
-  const pickedPictures = (asked?.images ?? [])
-    .filter((image) => pickedImages.value[index]?.includes(image.url))
-    .map(pictureAnswer)
+  return (asked?.images ?? []).filter((image) => pickedImages.value[index]?.includes(image.url))
+}
+
+function answerOf(index: number): string {
+  const pickedPictures = pickedPicturesOf(index).map(pictureAnswer)
   return [...(picks.value[index] ?? []), ...pickedPictures, typed.value[index]?.trim() ?? '']
     .filter((part) => part.length > 0)
     .join(', ')
 }
 
-function next(): void {
+// The picked references go with the answer as pictures, so the agent sees them, not only their names.
+async function answerOfQuestion(index: number): Promise<AgentAnswer> {
+  const asked = questions.value[index]
+  const answer: AgentAnswer = {
+    question: asked?.question ?? '',
+    answer: answerOf(index)
+  }
+  const image = ownPictures.value[index]
+  if (image) answer.image = image
+  const references = compact(await Promise.all(pickedPicturesOf(index).map(readPickedPicture)))
+  if (references.length > 0) answer.references = references
+  return answer
+}
+
+async function next(): Promise<void> {
   if (!isLast.value) {
     step.value += 1
     return
   }
-  answerQuestions(
-    questions.value.map((asked, index) => {
-      const image = ownPictures.value[index]
-      const answer = { question: asked.question, answer: answerOf(index) }
-      return image ? { ...answer, image } : answer
-    })
-  )
+  const pending = currentQuestions.value
+  sending.value = true
+  try {
+    const answers = await Promise.all(questions.value.map((_, index) => answerOfQuestion(index)))
+    // The person may have skipped while the pictures downloaded.
+    if (currentQuestions.value === pending) answerQuestions(answers)
+  } finally {
+    sending.value = false
+  }
 }
 </script>
 
@@ -235,7 +255,7 @@ function next(): void {
       :aria-label="ai.questionOwnAnswer"
       :ui="{ root: 'w-full min-w-0' }"
       data-test-id="agent-question-own-answer"
-      @keydown.enter.prevent="next"
+      @keydown.enter.prevent="sending || next()"
     />
     <footer class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
       <AppButton
@@ -254,6 +274,7 @@ function next(): void {
           size="xs"
           color="primary"
           variant="solid"
+          :loading="sending"
           data-test-id="agent-questions-next"
           @click="next"
         >

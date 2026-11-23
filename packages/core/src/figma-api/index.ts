@@ -650,4 +650,6 @@ export interface AgentAnswer {
   answer: string
   /** A picture of their own, when the question offered pictures. */
   image?: AgentAnswerImage
+  /** The offered pictures the person picked, as bytes, for those the host could download. */
+  references?: AgentAnswerImage[]
 }

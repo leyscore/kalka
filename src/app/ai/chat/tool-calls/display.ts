@@ -107,7 +107,13 @@ export function displayedToolOutput(part: ToolCallPart): unknown {
   if (part.state !== 'output-available') return undefined
   const { output } = part
   if (!isRecord(output) || typeof output.base64 !== 'string') return output
-  return { ...output, base64: `<${output.base64.length} base64 characters>` }
+  const elided = {
+    ...output,
+    base64: `<${output.base64.length} base64 characters>`
+  }
+  return Array.isArray(output.images)
+    ? { ...elided, images: `<${output.images.length} more images>` }
+    : elided
 }
 
 /** The source a call writes, shown highlighted instead of as a JSON string. */

@@ -72,7 +72,14 @@ export {
 export { setPexelsAPIKey, setUnsplashAccessKey } from './stock-photo'
 export { importSVG } from './create'
 export { editCSSClass, setHTMLElement } from './html'
-export { askUser, finishWorkingOnNodes, readStyle, setStatus, styleNamed } from './presence'
+export {
+  ASK_USER_MAX_SENT_PICTURES,
+  askUser,
+  finishWorkingOnNodes,
+  readStyle,
+  setStatus,
+  styleNamed
+} from './presence'
 export {
   findReferences,
   REFERENCE_COUNT,

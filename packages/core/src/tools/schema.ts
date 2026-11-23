@@ -28,7 +28,8 @@ export type ToolExecution =
 
 /**
  * What a tool returns: a JSON value, or a file as `{ mimeType, base64, ...metadata }` (an image or
- * a PDF), which adapters may hand over as an image or a link instead of JSON text.
+ * a PDF), which adapters may hand over as an image or a link instead of JSON text. An image result
+ * may carry further images as `images: [{ mimeType, base64 }]`, handed over after the first.
  */
 export type ToolOutput = 'json' | 'file'
 

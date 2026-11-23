@@ -33,11 +33,22 @@ const DocumentTarget = v.object({
 })
 export type DocumentTarget = v.InferOutput<typeof DocumentTarget>
 
-const AssetLink = v.object({ url: v.string(), mimeType: v.string(), expiresAt: v.string() })
+const AssetLink = v.object({
+  url: v.string(),
+  mimeType: v.string(),
+  expiresAt: v.string()
+})
 type AssetLink = v.InferOutput<typeof AssetLink>
 
 const FileResult = v.looseObject({ base64: v.string(), mimeType: v.string() })
 type FileResult = v.InferOutput<typeof FileResult>
+
+/** The images an image result carries after its first, as `images`. */
+function moreImages(file: FileResult, images: unknown): FileResult[] {
+  if (!file.mimeType.startsWith('image/')) return []
+  const parsed = v.safeParse(v.array(FileResult), images)
+  return parsed.success ? parsed.output.filter((image) => image.mimeType.startsWith('image/')) : []
+}
 
 /**
  * The target the app reported, or null. Sharing only the selection keeps the file's path to
@@ -108,10 +119,11 @@ export function fileResult(
   assetValue: unknown,
   delivery: FileDelivery
 ): MCPResult {
-  const { base64, mimeType, ...metadata } = file
+  const { base64, mimeType, images, ...metadata } = file
+  const inline = [file, ...moreImages(file, images)]
   const parsedAsset = v.safeParse(AssetLink, assetValue)
   const asset = parsedAsset.success ? parsedAsset.output : null
-  const bytes = Buffer.byteLength(base64, 'utf8')
+  const bytes = inline.reduce((total, part) => total + Buffer.byteLength(part.base64, 'utf8'), 0)
   const tooLarge = bytes > MAX_RESULT_BYTES
   if (!asset && tooLarge) {
     return fail(
@@ -127,12 +139,14 @@ export function fileResult(
   const details: Record<string, unknown> = { mimeType, ...metadata }
   const content: MCPContent[] = []
   if (!asset) {
-    content.push(inlineContent(tool, file))
+    content.push(...inline.map((part) => inlineContent(tool, part)))
     if (delivery === 'url') {
       details.note = 'No URL: the MCP server has no TCP listener, so the file is inline'
     }
   } else {
-    if (delivery === 'inline' && !tooLarge) content.push(inlineContent(tool, file))
+    if (delivery === 'inline' && !tooLarge) {
+      content.push(...inline.map((part) => inlineContent(tool, part)))
+    }
     if (delivery === 'inline' && tooLarge) details.note = 'Too large to inline; fetch the URL'
     content.push(linkContent(tool, asset))
     details.url = asset.url

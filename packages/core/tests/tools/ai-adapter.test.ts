@@ -52,7 +52,25 @@ describe('AI adapter model output', () => {
     })
   })
 
+  test('sends further images after the first, without their bytes in the text', () => {
+    const output = {
+      mimeType: 'image/png',
+      base64: 'AAAA',
+      images: [{ mimeType: 'image/webp', base64: 'BBBB' }, { mimeType: 'text/plain', base64: 'CC' }],
+      note: 'Two pictures'
+    }
+    expect(adapt(output).toModelOutput({ output })).toEqual({
+      type: 'content',
+      value: [
+        { type: 'text', text: '{"note":"Two pictures"}' },
+        { type: 'file', mediaType: 'image/png', data: { type: 'data', data: 'AAAA' } },
+        { type: 'file', mediaType: 'image/webp', data: { type: 'data', data: 'BBBB' } }
+      ]
+    })
+  })
+
   test.each([
+    { mimeType: 'image/png', base64: 'AAAA', images: [{ mimeType: 'image/png', base64: 'BBBB' }] },
     { mimeType: 'image/png', base64: 'AAAA', changedPixels: 12 },
     { mimeType: 'image/png', base64: 'AAAA' },
     { mimeType: 'application/pdf', base64: 'AAAA' }

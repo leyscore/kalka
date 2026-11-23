@@ -66,7 +66,11 @@ export const getDesignGuide = defineTool({
     'Read how to design in Kalka: decide on a direction, set up variables and components, compose screens from them, and review your work, plus the anti-slop catalogue of what makes a design look machine-made and the style system (global rules, colour and type direction, and the index of styles you may pick from with read_style, or not). Call it once before you design a page or screen, and again if the conversation got long.',
   execution: { kind: 'sync', mutation: 'none' },
   input: v.strictObject({}),
-  execute: () => ({ guide: DESIGN_GUIDE, antiSlop: ANTI_SLOP_GUIDE, styles: STYLE_SYSTEM })
+  execute: () => ({
+    guide: DESIGN_GUIDE,
+    antiSlop: ANTI_SLOP_GUIDE,
+    styles: STYLE_SYSTEM
+  })
 })
 
 /** The style index entry a recorded style names first, as in `Dark Precision + Bento section`. */
@@ -111,6 +115,9 @@ export const ASK_USER_MAX_QUESTIONS = 6
 /** How many pictures one question shows, so they stay large enough to judge. */
 export const ASK_USER_MAX_IMAGES = 8
 
+/** How many pictures the answers hand the agent, so the result stays a size models read. */
+export const ASK_USER_MAX_SENT_PICTURES = 6
+
 const imageSchema = v.strictObject({
   url: v.pipe(v.string(), v.url(), v.startsWith('https://'), v.description('The picture')),
   label: v.pipe(v.string(), v.minLength(1), v.description('What it shows, in a few words')),
@@ -150,32 +157,50 @@ const questionSchema = v.strictObject({
 })
 
 /**
- * The answers as text, and the first picture the person sent as the result's image, which the
- * model then sees. Answers keep the picture's name, so the text says which question it answers.
+ * The answers as text, and the pictures the person sent or picked as images the model then sees:
+ * the first as the result's image, the others in `images`. Answers keep the pictures' names, so
+ * the text says which question each one answers.
  */
-function answersWithPicture(answers: AgentAnswer[]) {
+function answersWithPictures(answers: AgentAnswer[]) {
   const text = answers.map(({ question, answer, image }) => ({
     question,
     answer: image ? compact([answer, `their own picture: ${image.name}`]).join(', ') : answer
   }))
-  const sent = answers.flatMap(({ image }) => (image ? [image] : []))
-  const picture = sent.at(0)
-  if (!picture) return { answers: text }
+  const own = answers.flatMap(({ image }) => (image ? [{ ...image, own: true }] : []))
+  const picked = answers.flatMap(({ references }) =>
+    (references ?? []).map((reference) => ({ ...reference, own: false }))
+  )
+  const all = [...own, ...picked]
+  const pictures = all.slice(0, ASK_USER_MAX_SENT_PICTURES)
+  if (pictures.length === 0) return { answers: text }
+  const [first, ...rest] = pictures
+  const names = pictures.map(({ name, own }) =>
+    own ? `${name} (their own)` : `${name} (a reference they picked)`
+  )
+  const left = all.length - pictures.length
+  const note =
+    pictures.length === 1
+      ? `The picture is ${names[0]}. Let its look guide the direction.`
+      : compact([
+          `The person sent or picked ${pictures.length} pictures, in this order: ${names.join(', ')}.`,
+          left > 0 ? `${left} more they picked are not shown.` : '',
+          'Let their look guide the direction.'
+        ]).join(' ')
   return {
     answers: text,
-    base64: picture.base64,
-    mimeType: picture.mimeType,
-    note:
-      sent.length > 1
-        ? `The person sent ${sent.length} pictures; this is the first, ${picture.name}. Let its look guide the direction.`
-        : `The picture is the person's own reference, ${picture.name}. Let its look guide the direction.`
+    base64: first.base64,
+    mimeType: first.mimeType,
+    ...(rest.length > 0
+      ? { images: rest.map(({ base64, mimeType }) => ({ base64, mimeType })) }
+      : {}),
+    note
   }
 }
 
 export const askUser = defineTool({
   name: 'ask_user',
   description:
-    'Ask the person what you need to know before designing: the product and its name, who it is for, what the page must do, its sections, colours they like or must avoid, references. The questions appear in Kalka one at a time, with your suggested answers as buttons and a field to type their own, and the call returns their answers. A question can also show pictures, such as references from find_references, which the person picks from or answers with a picture of their own. Ask only what the conversation and the document do not already tell you, and offer real choices, not placeholders.',
+    'Ask the person what you need to know before designing: the product and its name, who it is for, what the page must do, its sections, colours they like or must avoid, references. The questions appear in Kalka one at a time, with your suggested answers as buttons and a field to type their own, and the call returns their answers. A question can also show pictures, such as references from find_references, which the person picks from or answers with a picture of their own; you then see the pictures they picked or sent. Ask only what the conversation and the document do not already tell you, and offer real choices, not placeholders.',
   execution: { kind: 'async', mutation: 'none' },
   input: v.strictObject({
     questions: v.pipe(
@@ -187,7 +212,10 @@ export const askUser = defineTool({
   }),
   execute: async (figma, { questions }) => {
     if (!figma.askUser) {
-      return { answers: null, note: 'This host cannot show questions; ask in your reply instead.' }
+      return {
+        answers: null,
+        note: 'This host cannot show questions; ask in your reply instead.'
+      }
     }
     const answers = await figma.askUser(questions)
     if (!answers) {
@@ -196,6 +224,6 @@ export const askUser = defineTool({
         note: 'The person skipped the questions. Decide sensibly from what you know and say what you assumed.'
       }
     }
-    return answersWithPicture(answers)
+    return answersWithPictures(answers)
   }
 })

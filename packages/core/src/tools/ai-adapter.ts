@@ -35,7 +35,11 @@ export interface ToolLogEntry {
 export interface ToolDebugLog {
   entries: ToolLogEntry[]
   /** Detect repeated tool calls with identical args */
-  duplicates: Array<{ tool: string; args: Record<string, unknown>; count: number }>
+  duplicates: Array<{
+    tool: string
+    args: Record<string, unknown>
+    count: number
+  }>
   /** Entries where mutating tool succeeded but node didn't change */
   noopMutations: ToolLogEntry[]
   /** Total bytes of tool results sent to model (rough token proxy) */
@@ -150,9 +154,9 @@ function returnedError(result: unknown): string | undefined {
   return typeof result.error === 'string' ? result.error : undefined
 }
 
-function isImageOutput(
-  output: unknown
-): output is { base64: string; mimeType: string; [key: string]: unknown } {
+type ImageFile = { base64: string; mimeType: string }
+
+function isImageOutput(output: unknown): output is ImageFile & { [key: string]: unknown } {
   return (
     typeof output === 'object' &&
     output !== null &&
@@ -226,18 +230,19 @@ export function toolsToAI(
     // SDK, because a shape it does not know fails the next step's prompt validation.
     toolOpts.toModelOutput = ({ output }: { output: unknown }): ToolResultPart['output'] => {
       if (isImageOutput(output)) {
-        const { base64, mimeType, ...metadata } = output
-        const image = {
+        const { base64, mimeType, images, ...metadata } = output
+        const more: ImageFile[] = Array.isArray(images) ? images.filter(isImageOutput) : []
+        const files = [{ base64, mimeType }, ...more].map((image) => ({
           type: 'file' as const,
-          mediaType: mimeType,
-          data: { type: 'data' as const, data: base64 }
-        }
+          mediaType: image.mimeType,
+          data: { type: 'data' as const, data: image.base64 }
+        }))
         return Object.keys(metadata).length > 0
           ? {
               type: 'content',
-              value: [{ type: 'text', text: JSON.stringify(metadata) }, image]
+              value: [{ type: 'text', text: JSON.stringify(metadata) }, ...files]
             }
-          : { type: 'content', value: [image] }
+          : { type: 'content', value: files }
       }
       return { type: 'json', value: output as JSONValue }
     }
@@ -324,7 +329,11 @@ export function buildDebugLog(entries: ToolLogEntry[]): ToolDebugLog {
       existing.count++
       if (entry.mutates) entry.isDuplicate = true
     } else {
-      callCounts.set(key, { args: entry.args, count: 1, mutates: entry.mutates })
+      callCounts.set(key, {
+        args: entry.args,
+        count: 1,
+        mutates: entry.mutates
+      })
     }
 
     if (entry.mutates && !entry.error && entry.unchangedProps?.length) {
