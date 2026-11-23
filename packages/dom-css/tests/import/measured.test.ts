@@ -159,6 +159,30 @@ describe('measured HTML import', () => {
     expect(children.map((child) => child.height)).toEqual([200, 100, 50])
   })
 
+  test('a background goes under a sibling that holds a box the page paints over it', () => {
+    const hero = (titleStyle: Record<string, string>) =>
+      element('section', box(0, 0, 400, 300), { ...BLOCK, position: 'relative' }, [
+        element('div', box(0, 0, 400, 200), BLOCK, [
+          element('h1', box(0, 0, 400, 40), { ...BLOCK, ...titleStyle })
+        ]),
+        element('div', box(0, 0, 400, 300), {
+          ...BLOCK,
+          position: 'absolute',
+          'z-index': '1',
+          'background-color': 'rgb(9, 9, 9)'
+        })
+      ])
+    const heights = (document: DesignDocument) => {
+      const { graph, artboard } = graphOf(document)
+      const section = graph.getChildren(artboard?.id ?? '')[0]
+      return graph.getChildren(section?.id ?? '').map((child) => child.height)
+    }
+    expect(heights(measured([hero({ position: 'relative', 'z-index': '2' })]))).toEqual([300, 200])
+    // A title the page leaves under the background stays under it.
+    expect(heights(measured([hero({})]))).toEqual([200, 300])
+    expect(heights(measured([hero({ position: 'relative', 'z-index': '1' })]))).toEqual([200, 300])
+  })
+
   test('centered lines in a column keep the width they are centered in', () => {
     const type = { ...BLOCK, 'text-align': 'center', 'font-size': '64px', 'line-height': '66px' }
     const column = element(

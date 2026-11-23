@@ -138,13 +138,62 @@ function leavesFlow(node: DesignNode): boolean {
   return position === 'absolute' || position === 'fixed'
 }
 
+/** The z-index a box stacks by, or null for one the page stacks where it is written. */
+function stackLevel(node: DesignNode): number | null {
+  if (node.type === 'text') return null
+  const style = mergedStyle(node)
+  const position = pickStyle(style, 'position')
+  if (position === undefined || position === 'static') return null
+  const value = Number.parseInt(pickStyle(style, 'z-index') ?? '', 10)
+  return Number.isFinite(value) ? value : null
+}
+
+/** Whether a box keeps what is in it together when the page stacks: nothing in it gets out. */
+function stacksItsOwn(node: DesignNode): boolean {
+  if (node.type === 'text') return true
+  if (stackLevel(node) !== null) return true
+  const style = mergedStyle(node)
+  const set = (property: string, plain: string) => (pickStyle(style, property) ?? plain) !== plain
+  return (
+    Number.parseFloat(pickStyle(style, 'opacity') ?? '1') < 1 ||
+    set('transform', 'none') ||
+    set('filter', 'none') ||
+    set('isolation', 'auto') ||
+    set('mix-blend-mode', 'normal')
+  )
+}
+
+/**
+ * The highest z-index among what a box holds and does not keep to itself: a page paints those
+ * boxes over a later box with a lower z-index, though they sit inside an earlier one.
+ */
+function reach(node: DesignNode): number {
+  if (node.type === 'text' || stacksItsOwn(node)) return 0
+  let highest = 0
+  for (const child of node.children) {
+    if (isNotRendered(child)) continue
+    highest = Math.max(highest, stackLevel(child) ?? 0, reach(child))
+  }
+  return highest
+}
+
+/** Just under what stacks where it is written, and over every negative z-index. */
+const UNDER_THE_FLOW = -0.5
+
 /**
  * Children in the order they paint: by z-index, lowest first, and in document order among
  * equals, as layers paint in their order. Where the parent lays its children out, the ones in
- * the flow keep their document order, since moving one would move what follows it.
+ * the flow keep their document order, since moving one would move what follows it. A layer
+ * holds its children, so a box taken out of the flow goes under its siblings when one of them
+ * holds a box the page paints over it: a hero's drawn background under the hero's text.
  */
 export function paintOrder(children: readonly DesignNode[], flows = false): DesignNode[] {
-  const rank = (node: DesignNode) => (flows && !leavesFlow(node) ? 0 : zIndexOf(node))
+  const over = Math.max(0, ...children.map(reach))
+  const rank = (node: DesignNode) => {
+    if (flows && !leavesFlow(node)) return 0
+    const level = zIndexOf(node)
+    return leavesFlow(node) && level > 0 && over > level ? UNDER_THE_FLOW : level
+  }
   return [...children].sort((a, b) => rank(a) - rank(b))
 }
 
