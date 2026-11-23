@@ -1,6 +1,7 @@
 // The inspector drawn over the page: the hovered element's box with its margin and padding,
-// its name and size, a panel with its type, colors and layout, the path to it, and, once
-// clicked, a bar to copy it. Everything lives in a shadow root, so the page's styles never
+// its name and size, a panel with its type, colors and layout (a summary of the page while
+// nothing is hovered), the path to it, and, once clicked, a bar to copy it. The panel floats
+// where it is dragged or docks along the right edge. Everything lives in a shadow root, so the page's styles never
 // reach it and it never changes the page.
 import {
   BREAKPOINTS,
@@ -12,25 +13,15 @@ import {
 import { captureElement, type Capture, type CaptureFormat } from './capture'
 import type { ReadFiles } from './data-url'
 import { describe, elementLabel } from './describe'
+import { make } from './dom'
 import { inlineFonts } from './fonts'
 import { readHiddenSheets } from './hidden-sheets'
 import { inlineImages } from './images'
+import { Panel, type PanelLayout } from './panel'
 import { takeShots, type Shoot, type Shots } from './shots'
 import { STYLES } from './styles'
 
 const KALKA_BLUE = '#2F5BEA'
-
-function make<K extends keyof HTMLElementTagNameMap>(
-  tag: K,
-  className?: string,
-  text?: string
-): HTMLElementTagNameMap[K] {
-  const element = document.createElement(tag)
-  if (className) element.className = className
-  if (text !== undefined) element.textContent = text
-  return element
-}
-
 function section(title: string, rows: [string, string][]): HTMLElement {
   const block = make('div', 'sec')
   block.append(make('h3', '', title))
@@ -106,7 +97,7 @@ export class Inspector {
   private readonly padding = make('div', 'padding')
   private readonly border = make('div', 'border')
   private readonly label = make('div', 'label')
-  private readonly panel = make('aside', 'panel')
+  private readonly panel: Panel
   private readonly crumb = make('nav', 'crumb')
   private readonly bar = make('div', 'bar')
   private readonly menu = make('div', 'menu')
@@ -130,12 +121,19 @@ export class Inspector {
       shoot?: Shoot
       /** Reads the files their site refuses to the page. */
       read?: ReadFiles
+      /** Remembers where the panel sits for the next time the inspector opens. */
+      saveLayout?: (layout: PanelLayout) => void
     } = {}
   ) {
     this.host.setAttribute('data-kalka-snapshot', '')
     this.host.style.cssText =
       'all: initial; position: fixed; inset: 0; z-index: 2147483647; pointer-events: none;'
     this.root = this.host.attachShadow({ mode: 'open' })
+    this.panel = new Panel(this.crumb, {
+      close: () => this.stop(),
+      copy: (value) => void this.copyValue(value),
+      saveLayout: widths.saveLayout
+    })
     const style = make('style', '', STYLES)
     this.root.append(
       style,
@@ -143,8 +141,8 @@ export class Inspector {
       this.padding,
       this.border,
       this.label,
-      this.panel,
       this.crumb,
+      this.panel.element,
       this.bar,
       this.menu,
       this.toast
@@ -161,7 +159,12 @@ export class Inspector {
     this.on(window, 'click', (event) => this.onClick(event as MouseEvent))
     this.on(window, 'keydown', (event) => this.onKey(event as KeyboardEvent))
     this.on(window, 'scroll', () => this.draw())
-    this.on(window, 'resize', () => this.draw())
+    this.on(window, 'resize', () => {
+      this.panel.place()
+      this.draw()
+    })
+    this.panel.place()
+    this.draw()
     this.showToast('Hover to inspect, click to select. Esc quits.', 2600)
   }
 
@@ -182,6 +185,10 @@ export class Inspector {
     this.breakpoints = keys.filter(isBreakpointKey)
     for (const [key, chip] of this.chips)
       chip.setAttribute('aria-pressed', String(this.breakpoints.includes(key)))
+  }
+
+  setLayout(layout: PanelLayout): void {
+    this.panel.setLayout(layout)
   }
 
   private toggleBreakpoint(key: BreakpointKey): void {
@@ -209,7 +216,15 @@ export class Inspector {
   }
 
   private onMove(event: MouseEvent): void {
-    if (this.locked || this.ours(event)) return
+    if (this.locked) return
+    if (this.ours(event)) {
+      // Over the inspector itself, the panel goes back to the page summary.
+      if (this.hovered) {
+        this.hovered = null
+        this.draw()
+      }
+      return
+    }
     const target = document.elementFromPoint(event.clientX, event.clientY)
     if (!target || target === this.host || target === document.documentElement) return
     if (target !== this.hovered) {
@@ -270,6 +285,11 @@ export class Inspector {
       this.select(current)
       void this.copy(event.altKey ? 'html' : this.format)
     }
+  }
+
+  private async copyValue(value: string): Promise<void> {
+    await writeClipboard({ text: value })
+    this.showToast(`Copied ${value}.`, 2000, true)
   }
 
   private buildBar(): void {
@@ -449,14 +469,7 @@ export class Inspector {
   private draw(): void {
     const element = this.locked ?? this.hovered
     const visible = Boolean(element)
-    for (const part of [
-      this.margin,
-      this.padding,
-      this.border,
-      this.label,
-      this.panel,
-      this.crumb
-    ]) {
+    for (const part of [this.margin, this.padding, this.border, this.label, this.crumb]) {
       part.dataset.open = String(visible)
     }
     this.bar.dataset.open = String(Boolean(this.locked))
@@ -465,7 +478,10 @@ export class Inspector {
       if (chip) chip.hidden = width >= window.innerWidth
     }
     if (!this.locked) this.closeMenu()
-    if (!element) return
+    if (!element) {
+      this.panel.showOverview()
+      return
+    }
 
     const box = this.drawBoxes(element)
     this.border.dataset.locked = String(Boolean(this.locked))
@@ -477,13 +493,13 @@ export class Inspector {
     const labelTop = labelBelow ? Math.min(box.bottom + 6, window.innerHeight - 70) : box.top - 30
     Object.assign(this.label.style, { left: `${Math.max(4, box.left)}px`, top: `${labelTop}px` })
 
-    this.panel.textContent = ''
+    this.panel.clear()
     const head = make('div', 'head')
     head.append(
       make('b', '', info.label),
       make('span', 'dim', this.locked ? 'Selected' : 'Click to select')
     )
-    this.panel.append(
+    this.panel.body.append(
       head,
       section('TYPOGRAPHY', info.typography),
       swatches(info.colors),

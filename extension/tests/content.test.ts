@@ -17,6 +17,7 @@ import { drawnFirst } from '../src/content/drawn-font'
 import { fontURLs } from '../src/content/fonts'
 import { sheetFaces } from '../src/content/hidden-sheets'
 import { inlineImages } from '../src/content/images'
+import { firstFamily, mostUsed } from '../src/content/overview'
 import { seeThrough } from '../src/content/see-through'
 
 describe('hexColor', () => {
@@ -382,5 +383,22 @@ describe('growFromContent', () => {
     expect(growFromContent('flex-grow: 1; flex-basis: 0px')).toBe('flex-grow: 1; flex-basis: 0px')
     expect(growFromContent('flex-grow: 0')).toBe('flex-grow: 0')
     expect(growFromContent('display: block')).toBe('display: block')
+  })
+})
+
+describe('page summary', () => {
+  test('ranks the values seen most often first, each once', () => {
+    expect(mostUsed(['#FFFFFF', '#141414', '#FFFFFF', '#2F5BEA', '#141414', '#FFFFFF'], 2)).toEqual(
+      ['#FFFFFF', '#141414']
+    )
+  })
+
+  test('keeps the first seen of values used as often', () => {
+    expect(mostUsed(['#2F5BEA', '#141414'], 5)).toEqual(['#2F5BEA', '#141414'])
+  })
+
+  test('names a font stack by its first family, without quotes', () => {
+    expect(firstFamily('"Hanken Grotesk", sans-serif')).toBe('Hanken Grotesk')
+    expect(firstFamily('')).toBeNull()
   })
 })

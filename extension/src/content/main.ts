@@ -4,10 +4,12 @@ import type { BreakpointKey, Emulate } from './breakpoints'
 import type { CaptureFormat } from './capture'
 import type { ReadFiles } from './data-url'
 import { Inspector } from './overlay'
+import type { PanelLayout } from './panel'
 import type { Shoot } from './shots'
 
 const FORMAT_KEY = 'copyFormat'
 const BREAKPOINTS_KEY = 'breakpoints'
+const LAYOUT_KEY = 'panelLayout'
 
 declare global {
   interface Window {
@@ -36,6 +38,25 @@ async function readBreakpoints(): Promise<string[]> {
 
 function saveBreakpoints(keys: BreakpointKey[]): void {
   void chrome.storage.local.set({ [BREAKPOINTS_KEY]: keys }).catch(() => undefined)
+}
+
+async function readLayout(): Promise<PanelLayout | null> {
+  try {
+    const stored = await chrome.storage.local.get(LAYOUT_KEY)
+    const value: unknown = stored[LAYOUT_KEY]
+    if (typeof value !== 'object' || value === null || !('docked' in value)) return null
+    const point = (key: string) => {
+      const n: unknown = key in value ? Reflect.get(value, key) : undefined
+      return typeof n === 'number' && Number.isFinite(n) ? n : undefined
+    }
+    return { docked: value.docked === true, left: point('left'), top: point('top') }
+  } catch {
+    return null
+  }
+}
+
+function saveLayout(layout: PanelLayout): void {
+  void chrome.storage.local.set({ [LAYOUT_KEY]: layout }).catch(() => undefined)
 }
 
 /** Asks the extension's worker to show this tab at a width; only it can reach the debugger. */
@@ -77,10 +98,11 @@ if (window.kalkaSnapshot) {
     () => {
       window.kalkaSnapshot = undefined
     },
-    { emulate, save: saveBreakpoints, shoot, read }
+    { emulate, save: saveBreakpoints, shoot, read, saveLayout }
   )
   window.kalkaSnapshot = inspector
   inspector.start()
   void readFormat().then((format) => inspector.setFormat(format))
   void readBreakpoints().then((keys) => inspector.setBreakpoints(keys))
+  void readLayout().then((layout) => layout && inspector.setLayout(layout))
 }
