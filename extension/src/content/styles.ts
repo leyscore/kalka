@@ -61,6 +61,9 @@ export const STYLES = `
 .bar button:focus-visible, .menu button:focus-visible, .crumb button:focus-visible { outline: 2px solid #9DB7F5; outline-offset: 1px; }
 .bar .go { background: #2F5BEA; font-weight: 600; }
 .bar .go:hover { background: #1236B8; }
+.bar .go:has(+ .more) { border-radius: 8px 0 0 8px; }
+.bar .more { margin-left: -4px; width: 28px; padding: 0; justify-content: center; border-radius: 0 8px 8px 0; box-shadow: inset 1px 0 0 #FFFFFF40; }
+.bar .more svg { width: 14px; height: 14px; }
 .bar .chip { color: #A9A9B3; font-weight: 500; }
 .bar .chip[aria-pressed="true"] { color: #FFFFFF; background: #FFFFFF24; box-shadow: inset 0 0 0 1px #9DB7F5; }
 .bar .chip[hidden] { display: none; }

@@ -13,7 +13,7 @@ import {
 import { captureElement, type Capture, type CaptureFormat } from './capture'
 import type { ReadFiles } from './data-url'
 import { describe, elementLabel } from './describe'
-import { make } from './dom'
+import { icon, make } from './dom'
 import { inlineFonts } from './fonts'
 import { readHiddenSheets } from './hidden-sheets'
 import { inlineImages } from './images'
@@ -297,9 +297,13 @@ export class Inspector {
     copy.type = 'button'
     copy.append(make('span', '', 'Copy for Kalka'), make('span', 'k', '⌘C'))
     copy.addEventListener('click', () => void this.copy('kalka'))
-    const more = make('button', '', '▾')
+    // The other copy formats open from a chevron joined to the copy button, as one split button.
+    const more = make('button', 'go more')
     more.type = 'button'
     more.setAttribute('aria-label', 'More ways to copy')
+    more.setAttribute('aria-haspopup', 'menu')
+    more.title = 'More ways to copy'
+    more.append(icon('m6 9 6 6 6-6'))
     more.addEventListener('click', () => this.toggleMenu())
     const parent = make('button')
     parent.type = 'button'
