@@ -1,12 +1,17 @@
 import { expect, test } from 'bun:test'
 
-import { DESIGN_GUIDE } from '@kalka/core/tools'
+import { ANTI_SLOP_GUIDE, DESIGN_GUIDE, STYLE_SYSTEM } from '@kalka/core/tools'
 
 import SYSTEM_PROMPT from '@/app/ai/chat/system-prompt'
 import { isAIToolEnabled } from '@/app/ai/tools/catalog'
 
 test('the chat agent gets the design process MCP agents read, once', () => {
   expect(SYSTEM_PROMPT.split(DESIGN_GUIDE)).toHaveLength(2)
+})
+
+test('the chat agent gets the anti-slop catalogue and the style system, once each', () => {
+  expect(SYSTEM_PROMPT.split(ANTI_SLOP_GUIDE)).toHaveLength(2)
+  expect(SYSTEM_PROMPT.split(STYLE_SYSTEM)).toHaveLength(2)
 })
 
 test('the tools the design process names are on by default in the chat', () => {
@@ -22,7 +27,10 @@ test('the tools the design process names are on by default in the chat', () => {
     'create_instance',
     'get_screenshot',
     'add_breakpoint',
-    'finish_working_on_nodes'
+    'finish_working_on_nodes',
+    'read_style',
+    'find_references',
+    'ask_user'
   ]
   expect(steps.filter((name) => !isAIToolEnabled(name, {}))).toEqual([])
 })

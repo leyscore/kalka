@@ -16,6 +16,7 @@ import {
   inferredClassKind,
   rememberClassCSS
 } from '#core/tools/html/class-css'
+import { recordDesignStyle, styleComment, type DesignStyle } from '#core/tools/html/design-style'
 import { ESCAPED_HTML_NOTE, unescapedHTML } from '#core/tools/html/escaped'
 import { instancePlaceholders, swapInstancePlaceholders } from '#core/tools/html/instances'
 import { insertIndexInput, toolNumber } from '#core/tools/input'
@@ -134,7 +135,13 @@ export const writeHTML = defineTool({
       class_css_not_kept?: Record<string, Record<string, string>>
       note?: string
       missing_components?: string[]
+      style_recorded?: DesignStyle
     } = { layers: results.map(({ id, name, type }) => ({ id, name, type })) }
+    const style = styleComment(written.html)
+    if (style) {
+      recordDesignStyle(graph, placement.pageId, style)
+      reply.style_recorded = style
+    }
     if (Object.keys(ignored).length > 0) reply.class_css_not_kept = ignored
     if (written.decoded) reply.note = ESCAPED_HTML_NOTE
     if (placeholders.missing.length > 0) reply.missing_components = placeholders.missing

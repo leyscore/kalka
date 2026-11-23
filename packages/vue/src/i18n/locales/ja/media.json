@@ -7,5 +7,7 @@
   "stockPhotoToolOptional": "任意 — stock_photoツール用",
   "pexelsAlternativeOptional": "任意 — Pexelsの代替案",
   "getPexelsAPIKey": "Pexelsの無料APIキーを取得 →",
-  "getUnsplashAccessKey": "Unsplashの無料アクセスキーを取得 →"
+  "getUnsplashAccessKey": "Unsplashの無料アクセスキーを取得 →",
+  "agentReferences": "エージェントの質問に写真を表示",
+  "agentReferencesDescription": "デザインの雰囲気を尋ねるとき、上のサービスの写真を表示して、見て選べるようにします。上でキーの設定が必要です。"
 }

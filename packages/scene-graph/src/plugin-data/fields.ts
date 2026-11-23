@@ -162,6 +162,19 @@ export const KALKA_PLUGIN_DATA = {
   cssClasses: jsonPluginDataField('cssClasses', 'format', cssClassesSchema),
   /** The document's comment threads, on its root; Figma's own comments live outside the file. */
   comments: jsonPluginDataField('comments', 'bookkeeping', commentThreadsSchema),
+  /**
+   * The style a page was designed in, on the page: what an agent wrote in the HTML comment
+   * opening the page, read back so a later session keeps to it.
+   */
+  designStyle: jsonPluginDataField(
+    'designStyle',
+    'bookkeeping',
+    v.object({
+      style: v.pipe(v.string(), v.minLength(1)),
+      reason: v.optional(v.string()),
+      palette: v.optional(v.string())
+    })
+  ),
   /** Which of the document's frames are ready for development, on its root. */
   frameReviews: jsonPluginDataField('frameReviews', 'bookkeeping', frameReviewsSchema),
   /** The node-local rect a TEXT_PATH layout maps onto, which Kiwi has no field for. */

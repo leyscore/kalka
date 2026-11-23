@@ -2,6 +2,7 @@ import { isValid, toUint8Array } from 'js-base64'
 
 import type { Fill, ImageScaleMode, SceneGraph, SceneNode } from '@kalka/scene-graph'
 import { TRANSPARENT } from '@kalka/scene-graph/constants'
+import { parseCSSColor } from '@kalka/scene-graph/css'
 import {
   pickStyle,
   readLayerStyle,
@@ -10,8 +11,9 @@ import {
 } from '@kalka/scene-graph/css-model'
 import { computeImageHash } from '@kalka/scene-graph/images'
 
-import { DOM_CSS_PLUGIN_ID, IMAGE_SOURCE_URL_KEY } from '../export/tags'
+import { DOM_CSS_PLUGIN_ID, IMAGE_SOURCE_URL_KEY, PHOTO_DESCRIPTION_KEY } from '../export/tags'
 import type { DesignElement } from '../types'
+import { photoPlaceholderSVG } from './photo-placeholder'
 
 /** The image hash an `<img src>` names in the graph, for sources that are not data URLs. */
 export type ImageSourceResolver = (source: string) => string | null
@@ -54,6 +56,15 @@ function readImage(
 ): void {
   if (element.tagName.toLowerCase() !== 'img') return
   const source = element.attrs.src
+  if ('data-photo' in element.attrs) {
+    const photo = element.attrs['data-photo']
+    node.pluginData.push({ pluginId: DOM_CSS_PLUGIN_ID, key: PHOTO_DESCRIPTION_KEY, value: photo })
+    // No picture yet, or the placeholder an earlier export wrote: draw it again at today's size.
+    if (!source || source.startsWith('data:image/svg+xml')) {
+      readPhotoPlaceholder(graph, node, style, element, photo)
+      return
+    }
+  }
   const resolved = source && resolveImage ? resolveImage(source) : null
   if (resolved) {
     node.fills = [imageFill(resolved, style)]
@@ -72,6 +83,24 @@ function readImage(
   const imageHash = computeImageHash(bytes)
   graph.images.set(imageHash, bytes)
   node.fills = [imageFill(imageHash, style)]
+}
+
+/** The stand-in for a photograph still to come, drawn at the size the element measured. */
+function readPhotoPlaceholder(
+  graph: SceneGraph,
+  node: SceneNode,
+  style: CSSDeclarations,
+  element: DesignElement,
+  description: string
+): void {
+  const markup = photoPlaceholderSVG({
+    description,
+    width: element.layoutBox?.width || undefined,
+    height: element.layoutBox?.height || undefined,
+    ink: parseCSSColor(pickStyle(style, 'color'))
+  })
+  node.fills = [svgImageFill(graph, markup)]
+  if (description.trim() && node.name === element.tagName) node.name = description.trim()
 }
 
 /** An SVG file as the image that fills a layer, stored in the graph. */

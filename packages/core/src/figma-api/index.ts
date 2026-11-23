@@ -620,10 +620,34 @@ export interface AgentQuestion {
   multiple?: boolean
   /** A hint for the typed answer. */
   placeholder?: string
+  /**
+   * Pictures the person picks from, such as visual references; a question with pictures also
+   * lets them send a picture of their own.
+   */
+  images?: AgentQuestionImage[]
+}
+
+/** A picture offered as an answer: its HTTPS address, what it shows, and where it comes from. */
+export interface AgentQuestionImage {
+  url: string
+  label: string
+  /** The page the picture comes from. */
+  link?: string
+  /** Who made it and under which licence. */
+  credit?: string
+}
+
+/** A picture the person sent with an answer, as Base64 bytes. */
+export interface AgentAnswerImage {
+  name: string
+  mimeType: string
+  base64: string
 }
 
 /** The person's answer to one question: the options they picked and what they typed. */
 export interface AgentAnswer {
   question: string
   answer: string
+  /** A picture of their own, when the question offered pictures. */
+  image?: AgentAnswerImage
 }

@@ -67,3 +67,53 @@ export const Answering: Story = {
     ])
   }
 }
+
+function swatch(ground: string, ink: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="120"><rect width="160" height="120" fill="${ground}"/><circle cx="56" cy="60" r="30" fill="${ink}"/><rect x="96" y="30" width="40" height="60" fill="${ink}" opacity="0.5"/></svg>`
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`
+}
+
+const REFERENCES: AgentQuestion[] = [
+  {
+    question: 'Which of these feels closest to the roastery?',
+    images: [
+      {
+        url: swatch('#f4ede1', '#b5532b'),
+        label: 'Kraft coffee bags',
+        credit: 'Ada Brun, Pexels',
+        link: 'https://example.org/a'
+      },
+      {
+        url: swatch('#1d1b18', '#d9b26a'),
+        label: 'Roaster at night',
+        credit: 'Noor Haddad, Pexels'
+      },
+      { url: swatch('#e8e4da', '#2b4a3a'), label: 'Café menu board' },
+      { url: swatch('#f2f2f0', '#c8102e'), label: 'Swiss coffee poster', credit: 'Pexels' }
+    ]
+  }
+]
+
+/** References from find_references: several may be picked, and one's own picture sent instead. */
+export const References: Story = {
+  beforeEach: () => {
+    skipQuestions()
+    answered = askUserInPanel(REFERENCES, 'Pebble')
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Kraft coffee bags' }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Café menu board' }))
+    await expect(canvas.getByRole('button', { name: 'Kraft coffee bags' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    )
+    await userEvent.click(canvas.getByRole('button', { name: 'Send answers' }))
+    await expect(await answered).toEqual([
+      {
+        question: REFERENCES[0]?.question,
+        answer: `Kraft coffee bags (https://example.org/a), Café menu board (${REFERENCES[0]?.images?.[2]?.url ?? ''})`
+      }
+    ])
+  }
+}

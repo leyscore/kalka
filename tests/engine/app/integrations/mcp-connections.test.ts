@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'bun:test'
 import { MCP_AGENT_HEADER } from '@kalka/core/constants'
 
 import {
+  availableSuggestedMCPConnections,
   buildACPMCPServers,
   createMCPConnectionDraft,
   mcpConnectionCredentialRef,
@@ -12,7 +13,10 @@ import {
   replaceMCPConnectionSettings,
   saveMCPConnectionDraft,
   setMCPConnectionCredential,
+  SUGGESTED_MCP_CONNECTIONS,
+  suggestedMCPConnectionDraft,
   validateMCPConnectionURL,
+  type MCPConnection,
   type MCPConnectionSettings
 } from '@/app/integrations/mcp'
 import { appCredentialServices } from '@/app/settings/credentials/app'
@@ -219,5 +223,33 @@ describe('MCP connections', () => {
     await expect(buildACPMCPServers({ authorizationToken: null })).rejects.toThrow(
       'needs a bearer token'
     )
+  })
+})
+
+describe('suggested MCP connections', () => {
+  test('offers each library until a connection uses its server', () => {
+    const keys = (connections: Parameters<typeof availableSuggestedMCPConnections>[0]) =>
+      availableSuggestedMCPConnections(connections).map(({ key }) => key)
+    expect(keys([])).toEqual(['inspo', 'mobbin', 'refero'])
+    const inspo: MCPConnection = {
+      id: 'mcp-inspo',
+      name: 'My inspiration',
+      enabled: false,
+      transport: { type: 'streamable-http', url: 'https://inspomcp.dev/api/mcp/' },
+      authentication: { type: 'none' }
+    }
+    expect(keys([inspo])).toEqual(['mobbin', 'refero'])
+  })
+
+  test('fills a new, enabled connection from a suggestion', () => {
+    const mobbin = SUGGESTED_MCP_CONNECTIONS.find(({ key }) => key === 'mobbin')
+    if (!mobbin) throw new Error('Mobbin is no longer suggested')
+    expect(suggestedMCPConnectionDraft(mobbin)).toEqual({
+      ...createMCPConnectionDraft(),
+      name: 'Mobbin',
+      url: 'https://api.mobbin.com/mcp',
+      authenticationType: 'oauth',
+      enabled: true
+    })
   })
 })

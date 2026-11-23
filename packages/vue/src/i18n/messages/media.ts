@@ -10,7 +10,10 @@ export const mediaMessageDefaults = {
   stockPhotoToolOptional: 'Optional — for stock_photo tool',
   pexelsAlternativeOptional: 'Optional — alternative to Pexels',
   getPexelsAPIKey: 'Get free Pexels API key →',
-  getUnsplashAccessKey: 'Get free Unsplash access key →'
+  getUnsplashAccessKey: 'Get free Unsplash access key →',
+  agentReferences: 'Pictures in agent questions',
+  agentReferencesDescription:
+    'When Kalka AI asks about the look of a design, it shows photos from the service above so you pick by eye. Needs a Pexels or Unsplash key.'
 } as const
 
 export const mediaMessages = i18n('media', mediaMessageDefaults)

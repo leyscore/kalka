@@ -32,8 +32,9 @@ import {
   setTextProperties,
   updateNode
 } from './modify'
-import { askUser, finishWorkingOnNodes, getDesignGuide, setStatus } from './presence'
+import { askUser, finishWorkingOnNodes, getDesignGuide, readStyle, setStatus } from './presence'
 import { addFont, diffJSX, findNodes, getJSX, getNode, getSelection, searchFonts } from './read'
+import { findReferences } from './references'
 import type { ToolDef } from './schema'
 import { stockPhoto } from './stock-photo'
 import { batchUpdate, deleteNode, nodeResize, reparentNode } from './structure'
@@ -94,6 +95,8 @@ export const CORE_TOOLS: ToolDef[] = [
   finishWorkingOnNodes,
   setStatus,
   getDesignGuide,
+  readStyle,
+  findReferences,
   askUser,
   // Comments
   getComments,

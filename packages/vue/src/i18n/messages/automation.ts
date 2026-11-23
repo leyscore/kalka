@@ -134,6 +134,11 @@ export const automationMessageDefaults = {
   deleteConnection: 'Delete connection',
   deleteConnectionDescription: 'Delete this MCP connection and remove its saved bearer token?',
   noConnections: 'No external MCP connections configured.',
+  suggestedConnections: 'Design references',
+  suggestedConnectionsDescription:
+    'Libraries of real websites and app screens. Once connected, Kalka AI shows you pages from them when you choose the look of a design.',
+  suggestedFree: 'Free, no account needed',
+  suggestedPaid: 'Sign in with a paid account',
   description: 'Monitor and restart the local MCP server used by agents and automation.',
   status: 'Status',
   port: 'Port',

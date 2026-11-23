@@ -4,7 +4,7 @@ What makes a generated page or screen read as "AI slop", why, how to detect each
 
 ## Where Kalka uses it
 
-- `packages/core/src/tools/prompts/anti-slop.md` is the agent-facing catalogue and the only source of that prose. The app offers it as the built-in `/anti-slop` skill (`src/app/document/instructions/starter-skills.ts`), `get_design_guide` returns it with the design process to every agent, and `bun run generate:authoring-reference` copies it into the installable skill as `skills/kalka/references/anti-slop.md`.
+- `packages/core/src/tools/prompts/anti-slop.md` is the agent-facing catalogue and the only source of that prose. The app offers it as the built-in `/anti-slop` skill (`src/app/document/instructions/starter-skills.ts`), `get_design_guide` returns it with the design process and the style system (`prompts/styles/`: global rules, colour and type direction, the style index; `read_style` returns one style's full guide) to every agent, and `bun run generate:authoring-reference` copies it into the installable skill as `skills/kalka/references/anti-slop.md`.
 - `packages/core/src/tools/prompts/design-guide.md` keeps a short taste summary and sends agents to the catalogue when they check each section.
 - The [Catalogue](#catalogue) below gives every sign a stable ID and a detection rule. Those IDs are meant for a lint over rendered pages, for the labels of the Kalka Ley taste model, and for the Ley Index benchmark; see [Checks for Kalka Ley and a lint](#checks-for-kalka-ley-and-a-lint).
 
