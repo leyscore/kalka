@@ -1,5 +1,3 @@
-import { compact } from 'es-toolkit/array'
-
 import {
   claudeDesignBoardDocument,
   createClaudeDesignGraph,
@@ -14,36 +12,7 @@ import { browserHTMLToSceneGraph } from '@kalka/dom-css/browser'
 import type { SceneGraph } from '@kalka/scene-graph'
 
 import { openDesignLogicSandbox } from '@/app/document/io/claude-design/sandbox'
-
-/** Where web font stylesheets come from; the only links the import reads. */
-const WEB_FONT_STYLESHEET_HOST = 'fonts.googleapis.com'
-
-/**
- * The web font stylesheets a board links, as text for the page the import measures in: it reads
- * only the page's own styles, and text measured in a fallback font sizes boxes as the design
- * never does. A stylesheet that cannot be read is left out.
- */
-function webFontCSS(links: readonly string[], cache: Map<string, Promise<string>>) {
-  return Promise.all(
-    links.map((href) => {
-      let url: URL
-      try {
-        url = new URL(href)
-      } catch {
-        return ''
-      }
-      if (url.protocol !== 'https:' || url.hostname !== WEB_FONT_STYLESHEET_HOST) return ''
-      let css = cache.get(url.href)
-      if (!css) {
-        css = fetch(url.href, { credentials: 'omit' })
-          .then((response) => (response.ok ? response.text() : ''))
-          .catch(() => '')
-        cache.set(url.href, css)
-      }
-      return css
-    })
-  ).then((sheets) => compact(sheets).join('\n'))
-}
+import { webFontCSS } from '@/app/document/io/web-fonts'
 
 export interface ClaudeDesignImportProgress {
   board: string

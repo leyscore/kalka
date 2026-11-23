@@ -99,12 +99,15 @@ function strokeNeedsVector(node: SceneNode): boolean {
 const BOX_PAINT = /^(background|border|box-shadow|outline|filter)/
 
 const MARGIN = /^margin(?:-|$)/
+const GRID_PLACEMENT = /^grid-(?:area|column|row)(?:-start|-end)?$/
 
 /**
  * A layer's CSS: what the table writes from its fields, then what its CSS says otherwise. A layer
  * placed at `left`/`top` is at its own x and y, which already include any margin it had where it
  * was measured; its margin would move it again, and every layout that reads the box back would
- * add it once more.
+ * add it once more. Its grid placement goes too: an absolutely placed child of a grid takes its
+ * grid area as the box its `left` and `top` count from, which would move it by the area's offset
+ * on every layout.
  */
 function layerCSS(node: SceneNode, context: WriteContext): DesignStyleDeclaration {
   const style = { ...writeLayerStyle(node, context), ...node.style }
@@ -112,7 +115,9 @@ function layerCSS(node: SceneNode, context: WriteContext): DesignStyleDeclaratio
     (style.position === 'absolute' || style.position === 'fixed') &&
     ('left' in style || 'top' in style)
   if (!placed) return style
-  return Object.fromEntries(Object.entries(style).filter(([name]) => !MARGIN.test(name)))
+  return Object.fromEntries(
+    Object.entries(style).filter(([name]) => !MARGIN.test(name) && !GRID_PLACEMENT.test(name))
+  )
 }
 
 function nodeChildren(graph: SceneGraph, node: SceneNode): SceneNode[] {

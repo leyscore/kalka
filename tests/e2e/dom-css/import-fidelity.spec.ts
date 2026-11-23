@@ -17,6 +17,17 @@ test.describe('HTML import draws as the page does', () => {
     expect(dots?.style.transition).toBeUndefined()
   })
 
+  test('keeps a value a shorthand takes from a variable', async ({ page }) => {
+    const layers = await publicBrowserHTMLLayers(
+      page,
+      `<style>:root{--dots:radial-gradient(circle,#333 0 1px,transparent 1.5px)}.dots{width:200px;height:100px;background:var(--dots);background-size:8px 8px}</style>
+       <div class="dots"></div>`
+    )
+    const dots = layers.find((layer) => layer.name === 'dots')
+    expect(dots?.style['background-image']).toContain('radial-gradient')
+    expect(dots?.style['background-image']).not.toContain('var(')
+  })
+
   test('imports an inline SVG as the image it draws, its colors resolved', async ({ page }) => {
     const layers = await publicBrowserHTMLLayers(
       page,

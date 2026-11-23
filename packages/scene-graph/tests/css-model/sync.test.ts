@@ -34,6 +34,26 @@ function place({ type = 'FRAME', fields, parent: parentFields }: (typeof SAMPLES
 }
 
 describe('a layer’s CSS', () => {
+  test('a top-level layer is not placed inside its own artboard', () => {
+    const { graph, page } = graphWithPage()
+    const artboard = graph.createNode('FRAME', page.id, {
+      x: 1560,
+      y: 40,
+      layoutPositioning: 'ABSOLUTE'
+    })
+    const css = layerCSS(artboard, page)
+    expect(css.position).toBeUndefined()
+    expect(css.left).toBeUndefined()
+    expect(css.top).toBeUndefined()
+
+    const inner = graph.createNode('FRAME', artboard.id, {
+      x: 12,
+      y: 8,
+      layoutPositioning: 'ABSOLUTE'
+    })
+    expect(layerCSS(inner, artboard)).toMatchObject({ position: 'absolute', left: '12px' })
+  })
+
   test('each family names every field it writes CSS from', () => {
     for (const sample of SAMPLES) {
       const { node, parent } = place(sample)
@@ -53,7 +73,10 @@ describe('a layer’s CSS', () => {
       const css = writeLayerStyle(node, { parent, css: literal })
       const blank = graph.createNode(node.type, parent?.id ?? graph.getPages()[0].id, {})
       const changes = cssWrite(blank, parent, css)
-      expect({ sample: sample.name, style: changes.style }).toEqual({ sample: sample.name, style: {} })
+      expect({ sample: sample.name, style: changes.style }).toEqual({
+        sample: sample.name,
+        style: {}
+      })
       for (const [field, value] of Object.entries(sample.fields))
         expect({ field, value: Reflect.get({ ...blank, ...changes }, field) }).toEqual({
           field,

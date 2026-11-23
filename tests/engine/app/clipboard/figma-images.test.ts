@@ -24,6 +24,14 @@ function pendingResponseUntilAbort(_input: RequestInfo | URL, init?: RequestInit
   })
 }
 
+/** This module's own warnings: other test files' late async work can warn while the spy is on. */
+function imageWarnings(warn: { mock: { calls: unknown[][] } }) {
+  return warn.mock.calls.filter(
+    ([message]) =>
+      typeof message === 'string' && message.startsWith('Failed to fetch pasted Figma image')
+  )
+}
+
 describe('resolveFigmaClipboardImages', () => {
   test('resolves signed URLs, verifies bytes, and deduplicates hashes', async () => {
     const bytes = new Uint8Array([1, 2, 3])
@@ -80,7 +88,7 @@ describe('resolveFigmaClipboardImages', () => {
     )
 
     expect(images.size).toBe(0)
-    expect(warn).toHaveBeenCalledTimes(1)
+    expect(imageWarnings(warn)).toHaveLength(1)
     warn.mockRestore()
   })
 
@@ -115,7 +123,7 @@ describe('resolveFigmaClipboardImages', () => {
     )
 
     expect(images.size).toBe(0)
-    expect(warn).toHaveBeenCalledTimes(1)
+    expect(imageWarnings(warn)).toHaveLength(1)
     warn.mockRestore()
   })
 

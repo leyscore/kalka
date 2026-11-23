@@ -2,6 +2,8 @@
 // page draws behind the element (an ancestor's pattern, guide lines, a WebGL gradient) and
 // canvases drawn with WebGL or shaders, whose pixels the page does not hand out.
 
+import { seeThrough } from './see-through'
+
 /** A picture of the visible part of the tab, as a data URL at the screen's pixel ratio. */
 export type Shoot = () => Promise<string>
 
@@ -26,28 +28,59 @@ async function pause(ms: number): Promise<void> {
   })
 }
 
-/** Sets `visibility` on elements for the time of `run`, then gives each its own value back. */
+/** How an element is kept out of a picture: see `withVisibility`. */
+type Showing = 'hidden' | 'visible' | 'gone' | 'onWhite' | 'onBlack'
+
+/** What each way of showing sets; the transition is cut so the picture does not catch a fade. */
+const SHOWING: Record<Showing, readonly (readonly [string, string])[]> = {
+  hidden: [['visibility', 'hidden']],
+  visible: [['visibility', 'visible']],
+  gone: [
+    ['opacity', '0'],
+    ['transition', 'none']
+  ],
+  onWhite: [
+    ['visibility', 'visible'],
+    ['background-color', '#fff'],
+    ['transition', 'none']
+  ],
+  onBlack: [
+    ['visibility', 'visible'],
+    ['background-color', '#000'],
+    ['transition', 'none']
+  ]
+}
+
+/**
+ * Shows or hides elements for the time of `run`, then gives each its own styles back. `hidden`
+ * leaves a descendant that asks to be visible on the screen, which is how one canvas is shot
+ * alone; `gone` takes the element out with everything in it, whatever its descendants ask.
+ */
 async function withVisibility<T>(
-  changes: readonly (readonly [HTMLElement | SVGElement, 'hidden' | 'visible'])[],
+  changes: readonly (readonly [HTMLElement | SVGElement, Showing])[],
   run: () => Promise<T>
 ): Promise<T> {
-  const saved = changes.map(
-    ([element]) =>
+  const set = changes.flatMap(([element, showing]) =>
+    SHOWING[showing].map(([property, value]) => [element, property, value] as const)
+  )
+  const saved = set.map(
+    ([element, property]) =>
       [
         element,
-        element.style.getPropertyValue('visibility'),
-        element.style.getPropertyPriority('visibility')
+        property,
+        element.style.getPropertyValue(property),
+        element.style.getPropertyPriority(property)
       ] as const
   )
-  for (const [element, value] of changes)
-    element.style.setProperty('visibility', value, 'important')
+  for (const [element, property, value] of set)
+    element.style.setProperty(property, value, 'important')
   try {
     await nextFrame()
     return await run()
   } finally {
-    for (const [element, value, priority] of saved) {
-      if (value) element.style.setProperty('visibility', value, priority)
-      else element.style.removeProperty('visibility')
+    for (const [element, property, value, priority] of saved) {
+      if (value) element.style.setProperty(property, value, priority)
+      else element.style.removeProperty(property)
     }
   }
 }
@@ -150,8 +183,8 @@ async function dataURL(canvas: OffscreenCanvas): Promise<string> {
  * that is one flat color, which the copy gives as its background color.
  */
 async function backdropOf(element: HTMLElement | SVGElement, shoot: Shoot): Promise<string | null> {
-  const covering = overlays(element).map((overlay) => [overlay, 'hidden'] as const)
-  const picture = await withVisibility([[element, 'hidden'], ...covering], () =>
+  const covering = overlays(element).map((overlay) => [overlay, 'gone'] as const)
+  const picture = await withVisibility([[element, 'gone'], ...covering], () =>
     pictureOf(element.getBoundingClientRect(), shoot)
   )
   if (!picture || flat(picture)) return null
@@ -178,16 +211,54 @@ async function readable(canvas: HTMLCanvasElement): Promise<boolean> {
   }
 }
 
-/** A canvas as the screen shows it, everything else hidden for a moment. */
-async function canvasPicture(canvas: HTMLCanvasElement, shoot: Shoot): Promise<string | null> {
-  const picture = await withVisibility(
+/** A canvas alone on the screen, shown as `showing` says, everything else hidden for a moment. */
+async function canvasAlone(
+  canvas: HTMLCanvasElement,
+  showing: Showing,
+  shoot: Shoot
+): Promise<OffscreenCanvas | null> {
+  return withVisibility(
     [
       [document.documentElement, 'hidden'],
-      [canvas, 'visible']
+      [canvas, showing],
+      // A bar that stays on the screen would be drawn over the canvas.
+      ...overlays(canvas).map((overlay) => [overlay, 'gone'] as const)
     ],
     () => pictureOf(canvas.getBoundingClientRect(), shoot)
   )
-  return picture ? dataURL(picture) : null
+}
+
+/** Whether a canvas has no background of its own, so what lies under it shows through it. */
+function bare(canvas: HTMLCanvasElement): boolean {
+  const style = getComputedStyle(canvas)
+  const color = style.backgroundColor
+  return style.backgroundImage === 'none' && (color === 'transparent' || /,\s*0\)$/.test(color))
+}
+
+/**
+ * A canvas as the screen shows it. One with no background of its own is shot over white, then
+ * over black, so the picture is clear where the canvas is: see `seeThrough`.
+ */
+async function canvasPicture(canvas: HTMLCanvasElement, shoot: Shoot): Promise<string | null> {
+  if (!bare(canvas)) {
+    const picture = await canvasAlone(canvas, 'visible', shoot)
+    return picture ? dataURL(picture) : null
+  }
+  const onWhite = await canvasAlone(canvas, 'onWhite', shoot)
+  if (!onWhite) return null
+  await pause(SHOT_INTERVAL_MS)
+  const onBlack = await canvasAlone(canvas, 'onBlack', shoot)
+  const white = onWhite.getContext('2d')
+  const black = onBlack?.getContext('2d')
+  const same = onBlack?.width === onWhite.width && onBlack.height === onWhite.height
+  if (!white || !black || !same) return dataURL(onWhite)
+  const { width, height } = onWhite
+  const clear = seeThrough(
+    white.getImageData(0, 0, width, height).data,
+    black.getImageData(0, 0, width, height).data
+  )
+  white.putImageData(new ImageData(clear, width, height), 0, 0)
+  return dataURL(onWhite)
 }
 
 /**

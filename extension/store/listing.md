@@ -117,7 +117,7 @@ Copying the selected element to the clipboard is what the extension is for: it w
 
 **debugger**
 ```
-Used only when the person copies an element with the Tablet or Phone breakpoint turned on. The extension attaches to that tab, calls Emulation.setDeviceMetricsOverride to show the page at 810 or 390 pixels wide, as a narrower screen would, reads the selected element's computed styles at that width, then clears the override and detaches, all within about a second. A browser window cannot be made as narrow as a phone, so device emulation is the only way to read how the page lays the element out at those widths. No other debugger command is used, no network traffic is read, and nothing is sent anywhere.
+Used only while the person copies an element. With the Tablet or Phone breakpoint turned on, the extension attaches to that tab, calls Emulation.setDeviceMetricsOverride to show the page at 810 or 390 pixels wide, as a narrower screen would, reads the selected element's computed styles at that width, then clears the override and detaches, all within about a second. A browser window cannot be made as narrow as a phone, so device emulation is the only way to read how the page lays the element out at those widths. During a copy it also reads again, with Network.loadNetworkResource, the stylesheets, fonts and images the page already shows but whose site refuses to hand them to the page a second time, so the copy keeps the page's typeface and pictures; it attaches for that reading only and detaches after it. No other debugger command is used, the page's network traffic is not watched, and nothing is sent anywhere.
 ```
 
 **Host permissions:** none requested.

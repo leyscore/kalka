@@ -2,7 +2,9 @@
 // for each: the page is shown at each width in turn, as a narrower screen would show it, and the
 // element is copied there. Every copy has the same elements in the same order, those the page
 // hides at a width written as hidden, so Kalka pairs the layers of each breakpoint by position.
-import { captureElement, type Capture } from './capture'
+import { captureElement, homeOf, type Capture } from './capture'
+import type { ReadFiles } from './data-url'
+import { readHiddenSheets } from './hidden-sheets'
 import type { Shots } from './shots'
 
 /** The widths Kalka's Design panel offers as breakpoints. */
@@ -55,8 +57,10 @@ export async function captureAtWidths(
   element: Element,
   keys: readonly BreakpointKey[],
   emulate: Emulate,
-  shots?: Shots
+  shots?: Shots,
+  read?: ReadFiles
 ): Promise<{ capture: Capture; widths: number[] }> {
+  await readHiddenSheets(read)
   const own = window.innerWidth
   const breakpoints = BREAKPOINTS.filter(
     (breakpoint) => keys.includes(breakpoint.key) && breakpoint.width < own
@@ -65,7 +69,12 @@ export async function captureAtWidths(
     return { capture: captureElement(element, 'kalka', { shots }), widths: [] }
   // Elements the page shows at any of the widths, so each copy holds them all.
   const keep = shown(element)
+  const home = homeOf(element)
   const copies: string[] = []
+  // The pictures are taken at the page's own width. A narrower copy keeps the ones of the
+  // canvases, stretched to the box each has there, rather than an empty box; the backdrop
+  // would not sit behind the same things.
+  const narrow = shots && { backdrop: null, canvases: shots.canvases }
   try {
     for (const { width } of breakpoints) {
       await emulate(width)
@@ -75,7 +84,9 @@ export async function captureAtWidths(
     for (const { width, name } of breakpoints) {
       await emulate(width)
       await settle()
-      copies.push(template(width, name, captureElement(element, 'kalka', { keep }).html))
+      copies.push(
+        template(width, name, captureElement(element, 'kalka', { keep, shots: narrow, home }).html)
+      )
     }
   } finally {
     await emulate(null)

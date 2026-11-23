@@ -129,6 +129,81 @@ describe('measured HTML import', () => {
     expect(children[0]?.width).toBe(200)
   })
 
+  test('a stacked block stays where the flow put it', () => {
+    const column = element(
+      'div',
+      box(0, 0, 400, 300),
+      { ...BLOCK, display: 'flex', 'flex-direction': 'column' },
+      [
+        element('header', box(0, 0, 400, 50), {
+          ...BLOCK,
+          position: 'absolute',
+          'z-index': '10',
+          'background-color': 'rgb(1, 1, 1)'
+        }),
+        element('main', box(0, 0, 400, 200), {
+          ...BLOCK,
+          'z-index': '9',
+          'background-color': 'rgb(2, 2, 2)'
+        }),
+        element('footer', box(0, 200, 400, 100), {
+          ...BLOCK,
+          position: 'relative',
+          'z-index': '0',
+          'background-color': 'rgb(3, 3, 3)'
+        })
+      ]
+    )
+    const { graph, artboard } = graphOf(measured([column]))
+    const children = graph.getChildren(graph.getChildren(artboard?.id ?? '')[0]?.id ?? '')
+    expect(children.map((child) => child.height)).toEqual([200, 100, 50])
+  })
+
+  test('a background goes under a sibling that holds a box the page paints over it', () => {
+    const hero = (titleStyle: Record<string, string>) =>
+      element('section', box(0, 0, 400, 300), { ...BLOCK, position: 'relative' }, [
+        element('div', box(0, 0, 400, 200), BLOCK, [
+          element('h1', box(0, 0, 400, 40), { ...BLOCK, ...titleStyle })
+        ]),
+        element('div', box(0, 0, 400, 300), {
+          ...BLOCK,
+          position: 'absolute',
+          'z-index': '1',
+          'background-color': 'rgb(9, 9, 9)'
+        })
+      ])
+    const heights = (document: DesignDocument) => {
+      const { graph, artboard } = graphOf(document)
+      const section = graph.getChildren(artboard?.id ?? '')[0]
+      return graph.getChildren(section?.id ?? '').map((child) => child.height)
+    }
+    expect(heights(measured([hero({ position: 'relative', 'z-index': '2' })]))).toEqual([300, 200])
+    // A title the page leaves under the background stays under it.
+    expect(heights(measured([hero({})]))).toEqual([200, 300])
+    expect(heights(measured([hero({ position: 'relative', 'z-index': '1' })]))).toEqual([200, 300])
+  })
+
+  test('centered lines in a column keep the width they are centered in', () => {
+    const type = { ...BLOCK, 'text-align': 'center', 'font-size': '64px', 'line-height': '66px' }
+    const column = element(
+      'span',
+      box(0, 0, 1440, 132),
+      { ...type, display: 'flex', 'flex-direction': 'column' },
+      [
+        element('span', box(0, 0, 1440, 66), type, [
+          { type: 'text', text: 'A website', layoutBox: box(590, 0, 260, 66) }
+        ]),
+        { type: 'text', text: ' makes it real', layoutBox: box(556, 66, 328, 66) }
+      ]
+    )
+    const { graph, artboard } = graphOf(measured([column]))
+    const lines = graph.getChildren(graph.getChildren(artboard?.id ?? '')[0]?.id ?? '')
+    expect(lines.map((line) => [line.width, line.textAutoResize])).toEqual([
+      [1440, 'HEIGHT'],
+      [1440, 'HEIGHT']
+    ])
+  })
+
   test('a rotation reads from transform or rotate; scaling is not one', () => {
     expect(
       rotationFromTransform('matrix(0.994522, -0.104528, 0.104528, 0.994522, 0, 0)')
@@ -181,6 +256,60 @@ describe('measured HTML import', () => {
     const [pill] = graph.getChildren(artboard.id)
     expect([pill.width, pill.height]).toEqual([146, 52])
     expect(pill.fills.map((fill) => fill.type)).toEqual(['GRADIENT_LINEAR'])
+  })
+
+  test('text that wraps after an inline box starts its first line past the box', () => {
+    const { graph, artboard } = graphOf(
+      measured([
+        element('p', box(0, 0, 540, 42), BLOCK, [
+          { type: 'text', text: 'Render UI before ', layoutBox: box(0, 2, 110, 21) },
+          element(
+            'code',
+            box(113, 0, 105, 24),
+            { ...BLOCK, display: 'inline', 'background-color': 'rgb(240, 240, 240)' },
+            [{ type: 'text', text: 'vehicle_state', layoutBox: box(117, 2, 97, 21) }]
+          ),
+          {
+            type: 'text',
+            text: ' sync when the minimum state is ready for the first paint',
+            layoutBox: box(0, 2, 520, 42),
+            firstLineIndent: 222.5
+          }
+        ])
+      ])
+    )
+    const [paragraph] = graph.getChildren(artboard.id)
+    const [before, , after] = graph.getChildren(paragraph.id)
+    expect(before.style['text-indent']).toBeUndefined()
+    expect(after.x).toBe(0)
+    expect(after.style['text-indent']).toBe('222.5px')
+  })
+
+  test('a placed picture drops the limit it took from a box further up the page', () => {
+    const { graph, artboard } = graphOf(
+      measured([
+        element('div', box(0, 0, 676, 507), { ...BLOCK, position: 'relative' }, [
+          element('span', box(0, 253, 0, 0), { ...BLOCK, display: 'inline' }, [
+            {
+              ...element('div', box(0, 0, 676, 507), {
+                ...BLOCK,
+                position: 'absolute',
+                top: '0px',
+                'max-height': '100%',
+                'background-color': 'rgb(0, 0, 0)'
+              }),
+              inlineStyle: { 'max-height': '100%', 'text-indent': '4px' }
+            }
+          ])
+        ])
+      ])
+    )
+    const [banner] = graph.getChildren(artboard.id)
+    const [span] = graph.getChildren(banner.id)
+    const [picture] = graph.getChildren(span.id)
+    expect(picture.height).toBe(507)
+    expect(picture.style['max-height']).toBeUndefined()
+    expect(picture.style['text-indent']).toBe('4px')
   })
 
   test('a gradient clipped to its text paints the letters, not a box', () => {

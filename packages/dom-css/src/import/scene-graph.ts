@@ -20,6 +20,7 @@ import { hasBoxStyle, isTextLikeElement, textContent } from './element-kinds'
 import { applyHTMLElement } from './html-element'
 import { readElementStyle, svgImageFill } from './image'
 import {
+  alignsAwayFromStart,
   inheritedTextStyle,
   isNotRendered,
   keepsAutoLayout,
@@ -99,9 +100,16 @@ function createTextNode(
  * Text that auto layout places keeps the size it was measured at: one line takes the width of its
  * words, and several keep the width they wrapped at, rounded up so the widest line still fits.
  */
-function sizeFlowText(node: SceneNode, box: LayoutBox): void {
+function sizeFlowText(node: SceneNode, box: LayoutBox, words?: LayoutBox, aligned = false): void {
   const lineHeight = node.lineHeight ?? node.fontSize * 1.3
   node.height = box.height
+  // A centered line in a box wider than its words keeps that box, or it would hug its words
+  // and sit at the start.
+  if (aligned && words && box.width > words.width + 2) {
+    node.width = box.width
+    node.textAutoResize = 'HEIGHT'
+    return
+  }
   if (box.height < lineHeight * 1.5) {
     node.width = Math.ceil(box.width) + 1
     node.textAutoResize = 'WIDTH_AND_HEIGHT'
@@ -150,7 +158,7 @@ function createPhrasingNode(
     node.textAutoResize = 'HEIGHT'
     applyHTMLElement(node, element)
     if (placement?.byMeasure && box) placeAtMeasure(node, box, placement)
-    else if (box) sizeFlowText(node, box)
+    else if (box) sizeFlowText(node, box, textBounds(element), alignsAwayFromStart(style))
     return node
   }
   const frame = createFrameNode(graph, parentId, element, style, placement)
@@ -332,7 +340,7 @@ function createElementLayer(
 
   const node = createFrameNode(graph, parentId, element, style, placement)
   const placed: Array<[DesignNode, SceneNode]> = []
-  for (const child of paintOrder(element.children)) {
+  for (const child of paintOrder(element.children, node.layoutMode !== 'NONE')) {
     const layer = createDesignNode(
       graph,
       node.id,
@@ -344,6 +352,19 @@ function createElementLayer(
   }
   if (node.layoutMode === 'NONE') lowerOverlappedBackgrounds(graph, node, placed)
   return node
+}
+
+/** The width of a line in a box that stacks its children; none where it places them in a row. */
+function lineBox(
+  graph: SceneGraph,
+  parentId: string,
+  style: DesignStyleDeclaration,
+  placement: Placement | undefined
+): number | undefined {
+  if (!placement || graph.getNode(parentId)?.layoutMode !== 'VERTICAL') return undefined
+  const padding =
+    (firstCSSNumber(style, 'padding-left') ?? 0) + (firstCSSNumber(style, 'padding-right') ?? 0)
+  return placement.parentBox.width - padding
 }
 
 function createDesignNode(
@@ -370,8 +391,23 @@ function createDesignNode(
       text.textAutoResize = node.layoutBox.height < lineHeight * 1.5 ? 'WIDTH_AND_HEIGHT' : 'HEIGHT'
       text.width = Math.ceil(node.layoutBox.width) + 1
       text.height = node.layoutBox.height
+      const line = placement?.byMeasure
+        ? undefined
+        : lineBox(graph, parentId, inheritedStyle, placement)
+      // Loose text among stacked blocks is a line as wide as they are: centered, it keeps that
+      // width, or it would hug its words and sit at the start.
+      if (line && line > node.layoutBox.width + 2 && alignsAwayFromStart(inheritedStyle)) {
+        text.width = line
+        text.textAutoResize = 'HEIGHT'
+      }
     }
     if (placement?.byMeasure && node.layoutBox) placeAtMeasure(text, node.layoutBox, placement)
+    // Text that began mid-line, after an inline box, starts its first line there again.
+    if (node.firstLineIndent)
+      text.style = {
+        ...text.style,
+        'text-indent': `${Math.round(node.firstLineIndent * 100) / 100}px`
+      }
     return text
   }
 
@@ -406,6 +442,14 @@ const sameValue = (a: string, b: string | undefined) =>
 const PLACEMENT_PROPERTIES = new Set(['position', 'left', 'top', 'right', 'bottom', 'inset'])
 
 /**
+ * A limit a placed box takes from the box it is placed in. On the page that box can be an
+ * ancestor further up; here it is the parent layer, so the share would be of another size.
+ */
+const SIZE_LIMIT = /^(min|max)-(width|height)$/
+const sharesContainer = (property: string, value: string) =>
+  SIZE_LIMIT.test(property) && value.includes('%')
+
+/**
  * Of the CSS an import noted as the layer's author wrote it, what the layer's fields do not
  * give back as written: the rest the fields hold already.
  */
@@ -420,6 +464,7 @@ function authoredOverrides(graph: SceneGraph, node: SceneNode): DesignStyleDecla
   const clippedToText = clipsBackgroundToText(written)
   for (const [property, value] of Object.entries(node.style)) {
     if (placed && PLACEMENT_PROPERTIES.has(property)) continue
+    if (placed && sharesContainer(property, value)) continue
     if (clippedToText && property === 'background') continue
     if (!sameValue(value, written[property])) kept[property] = value
   }

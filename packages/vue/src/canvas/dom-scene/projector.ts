@@ -351,12 +351,29 @@ export class DomSceneProjector {
     for (const slot of this.artboards.values()) if (slot.live) this.options.onReflow?.(slot.id)
   }
 
-  /** A font loaded after the artboards opened: every artboard gets it. */
+  /** A font loaded after the artboards opened: every artboard gets it, and text set in it reflows. */
   addFont(face: ArtboardFontFace): void {
     for (const slot of this.artboards.values()) {
       slot.version++
-      if (slot.doc) addArtboardFont(slot.doc, face)
+      const doc = slot.doc
+      if (doc) void addArtboardFont(doc, face).then(() => this.fontArrived(slot, doc))
     }
+  }
+
+  /** Text in an artboard's document reflowed: its boxes are read back as derived layout. */
+  private fontArrived(slot: ArtboardSlot, doc: Document): void {
+    if (this.destroyed || slot.doc !== doc) return
+    slot.derived = true
+    this.reflowed(slot, doc)
+  }
+
+  /** An artboard's document changed on its own: its boxes are read back on the next frame. */
+  private reflowed(slot: ArtboardSlot, doc: Document): void {
+    if (slot.doc !== doc) return
+    slot.stale = true
+    slot.patched = null
+    slot.version++
+    this.options.onReflow?.(slot.id)
   }
 
   invalidateAll(): void {
@@ -675,21 +692,10 @@ export class DomSceneProjector {
     const doc = slot.doc
     if (doc) {
       setDeviceScale(doc, this.#deviceScale)
-      for (const face of this.options.fonts?.() ?? []) addArtboardFont(doc, face)
+      for (const face of this.options.fonts?.() ?? []) void addArtboardFont(doc, face)
       setArtboardTokens(doc, this.#tokensCSS)
-      const reflowed = () => {
-        if (slot.doc !== doc) return
-        slot.stale = true
-        slot.patched = null
-        slot.version++
-        this.options.onReflow?.(slot.id)
-      }
-      doc.fonts.addEventListener('loadingdone', () => {
-        if (slot.doc !== doc) return
-        slot.derived = true
-        reflowed()
-      })
-      slot.observer = new ResizeObserver(reflowed)
+      doc.fonts.addEventListener('loadingdone', () => this.fontArrived(slot, doc))
+      slot.observer = new ResizeObserver(() => this.reflowed(slot, doc))
       slot.observer.observe(doc.body)
       const node = this.graph.getNode(slot.id)
       if (node) placeArtboardFrame(slot.frame, doc, this.graph, node)

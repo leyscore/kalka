@@ -2,6 +2,20 @@
 // carries the styles the browser computed for it, URLs made absolute, pseudo-elements turned
 // into real elements and the fonts it uses declared. Kalka pastes that HTML as editable layers;
 // any other editor reads it as plain HTML and CSS.
+import {
+  backInPlace,
+  finalDeclarations,
+  parseDeclarations,
+  shifted,
+  statesOrigin,
+  unplaced,
+  UNSCROLLED,
+  unscrolled,
+  wholePage,
+  writeDeclarations
+} from './declarations'
+import { fontStackRewriter } from './drawn-font'
+import { hiddenFaces } from './hidden-sheets'
 import type { Shots } from './shots'
 
 /** How the styles are written: inline on each element (Kalka) or as classes in a stylesheet. */
@@ -18,7 +32,7 @@ export interface Capture {
 }
 
 /** The properties that decide how an element looks and lays out. */
-const PROPERTIES = [
+export const PROPERTIES = [
   'display',
   'position',
   'top',
@@ -45,8 +59,10 @@ const PROPERTIES = [
   'flex-wrap',
   'justify-content',
   'align-items',
+  'justify-items',
   'align-content',
   'align-self',
+  'justify-self',
   'flex-grow',
   'flex-shrink',
   'flex-basis',
@@ -56,6 +72,9 @@ const PROPERTIES = [
   'column-gap',
   'grid-template-columns',
   'grid-template-rows',
+  // The names `grid-column: hero` places by, and the direction the unplaced ones fill in.
+  'grid-template-areas',
+  'grid-auto-flow',
   'grid-column',
   'grid-row',
   'overflow',
@@ -72,6 +91,7 @@ const PROPERTIES = [
   'border-radius',
   'box-shadow',
   'opacity',
+  'visibility',
   'transform',
   'translate',
   'rotate',
@@ -141,10 +161,21 @@ const INHERITED = new Set<string>([
   'hyphens',
   'text-indent',
   'word-spacing',
-  'list-style-type'
+  'list-style-type',
+  'visibility'
 ])
 
-const DROPPED_TAGS = new Set(['SCRIPT', 'NOSCRIPT', 'STYLE', 'LINK', 'META', 'TEMPLATE'])
+// A `<source>` only offers its parent files to choose from: the copy keeps the one chosen.
+const DROPPED_TAGS = new Set([
+  'SCRIPT',
+  'NOSCRIPT',
+  'STYLE',
+  'LINK',
+  'META',
+  'TEMPLATE',
+  'SOURCE',
+  'TRACK'
+])
 
 /** Elements whose size is their own, not their content's: they keep a width and height. */
 const SIZED = new Set([
@@ -202,9 +233,7 @@ class BrowserDefaults {
 
 /** Whether anything turns, scales or moves the element: only then does its origin matter. */
 function transformed(style: CSSStyleDeclaration): boolean {
-  return [style.transform, style.translate, style.rotate, style.scale].some(
-    (value) => value !== '' && value !== 'none'
-  )
+  return statesOrigin([style.transform, style.translate, style.rotate, style.scale])
 }
 
 /** A value an animation left a hair away from its rest, which would only add noise. */
@@ -266,7 +295,8 @@ interface Baseline {
 
 /** Whether a property's value is what the pasted element would get without being told. */
 function given(property: string, value: string, base: Baseline): boolean {
-  if (property === 'transform-origin' && !transformed(base.style)) return true
+  // Its default is the middle of each box, so the tag's own value says nothing about this one.
+  if (property === 'transform-origin') return !transformed(base.style)
   if (INHERITED.has(property)) {
     const tagSetsIt = base.own.get(property) !== base.plain.get(property)
     return !!base.parent && !tagSetsIt && base.parent.getPropertyValue(property) === value
@@ -288,7 +318,12 @@ function declarations(
   defaults: BrowserDefaults,
   sized: Sized = { width: true, height: true }
 ): string {
-  const base: Baseline = { style, parent, own: defaults.of(tag), plain: defaults.of('div') }
+  const base: Baseline = {
+    style,
+    parent,
+    own: defaults.of(tag),
+    plain: defaults.of('div')
+  }
   const out: string[] = []
   for (const property of PROPERTIES) {
     // Other boxes size to their content and their layout, as on the page.
@@ -320,6 +355,8 @@ interface Walk {
   images: number
   replaced: number
   families: Set<string>
+  /** Starts each font stack with the family the page draws: see `fontStackRewriter`. */
+  fonts: (declared: string) => string
   rules: string[]
   format: CaptureFormat
   /** Elements to keep even where the page does not show them, hidden: see `captureElement`. */
@@ -327,6 +364,47 @@ interface Walk {
   defaults: BrowserDefaults
   /** Pictures of canvases that keep their pixels to themselves, such as WebGL ones. */
   canvases: ReadonlyMap<Element, string>
+  /** Where each element sat at the page's own width: see `CaptureOptions.home`. */
+  home: Home | null
+}
+
+/** The place of each element under a root: its parent, and each parent's children in order. */
+export interface Home {
+  parent: ReadonlyMap<Element, Element>
+  children: ReadonlyMap<Element, readonly Element[]>
+}
+
+/** Where every element under `root` sits now. */
+export function homeOf(root: Element): Home {
+  const parent = new Map<Element, Element>()
+  const children = new Map<Element, Element[]>()
+  for (const element of root.querySelectorAll('*')) {
+    const above = element.parentElement
+    if (!above) continue
+    parent.set(element, above)
+    children.set(above, [...(children.get(above) ?? []), element])
+  }
+  return { parent, children }
+}
+
+/** Whether the page moved an element out of the parent it had at its own width. */
+function movedAway(element: Element, home: Home | null): boolean {
+  const from = home?.parent.get(element)
+  return from !== undefined && from !== element.parentElement
+}
+
+/**
+ * The nodes to copy under `source`, in the order they had at the page's own width. A page's
+ * script may move an element at a narrower width, such as a menu into a drawer: the element is
+ * left out of where it went and written back where it was, hidden, so every copy keeps the same
+ * elements in the same order.
+ */
+function nodesInPlace(source: Element, live: NodeListOf<ChildNode>, home: Home | null): Node[] {
+  if (!home) return [...live]
+  const nodes: Node[] = [...live].filter(
+    (node) => !(node instanceof Element) || (home.parent.get(node) ?? source) === source
+  )
+  return backInPlace(nodes, home.children.get(source) ?? [])
 }
 
 /** How an element the page hides at this width is written: hidden, taking no room. */
@@ -388,7 +466,7 @@ function copyReplaced(
   try {
     const image = document.createElement('img')
     image.src = walk.canvases.get(source) ?? source.toDataURL('image/png')
-    applyStyle(image, declarations(style, parent, 'img', walk.defaults), walk)
+    applyStyle(image, finalDeclarations(declarations(style, parent, 'img', walk.defaults)), walk)
     walk.layers++
     walk.images++
     return image
@@ -423,7 +501,8 @@ function copyAttributes(copy: Element, source: Element, walk: Walk): void {
 
 /**
  * How an SVG sits among its siblings, which the page's stylesheets set and which do not come
- * along: an icon beside wrapping text keeps its size only with `flex-shrink: 0`.
+ * along: an icon beside wrapping text keeps its size only with `flex-shrink: 0`, and one centred
+ * with `translate(-50%)` its place only with its transform.
  */
 const SVG_PLACEMENT: readonly string[] = [
   'position',
@@ -437,13 +516,30 @@ const SVG_PLACEMENT: readonly string[] = [
   'margin-bottom',
   'margin-left',
   'align-self',
+  'justify-self',
   'flex-grow',
   'flex-shrink',
   'flex-basis',
   'order',
   'grid-column',
-  'grid-row'
+  'grid-row',
+  'opacity',
+  'transform',
+  'translate',
+  'rotate',
+  'scale',
+  'transform-origin'
 ]
+
+/** The element a copy starts from, before its attributes, style and children. */
+function emptyCopy(source: Element): Node {
+  // A video is its poster, and the page's body a box that pasted markup can hold.
+  if (source instanceof HTMLVideoElement)
+    return Object.assign(document.createElement('img'), {
+      src: absolute(source.poster)
+    })
+  return pageRoot(source.localName) ? document.createElement('div') : source.cloneNode(false)
+}
 
 /** An SVG keeps its own markup at its size; its paint is in its attributes. */
 function copySVG(source: Element, style: CSSStyleDeclaration, walk: Walk): Element | null {
@@ -455,10 +551,11 @@ function copySVG(source: Element, style: CSSStyleDeclaration, walk: Walk): Eleme
   svg.setAttribute('height', String(box.height))
   const base = walk.defaults.of('svg')
   const placement = SVG_PLACEMENT.flatMap((property) => {
+    if (property === 'transform-origin' && !transformed(style)) return []
     const value = settled(property, style.getPropertyValue(property))
     return value && base.get(property) !== value ? [`${property}: ${value}`] : []
   })
-  applyStyle(svg, [`color: ${style.color}`, ...placement].join('; '), walk)
+  applyStyle(svg, finalDeclarations([`color: ${style.color}`, ...placement].join('; ')), walk)
   paintSVG(source, svg)
   return svg
 }
@@ -527,7 +624,7 @@ const SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
 /** An element's children copied in its place, for a box the page does not draw. */
 function copyChildren(source: Element, parent: CSSStyleDeclaration | null, walk: Walk): Node {
   const fragment = document.createDocumentFragment()
-  for (const child of source.childNodes) {
+  for (const child of nodesInPlace(source, source.childNodes, walk.home)) {
     const copied = copyNode(child, parent, walk)
     if (copied) fragment.append(copied)
   }
@@ -540,6 +637,14 @@ function screenReaderOnly(source: Element, style: CSSStyleDeclaration): boolean 
   return box.width <= 1 && box.height <= 1 && (style.overflow === 'hidden' || style.clip !== 'auto')
 }
 
+/**
+ * Whether a tag is the page's own root. Pasted markup cannot hold a second `<body>`: a parser
+ * drops the tag with its width, font and background, so the copy of one is a plain box.
+ */
+export function pageRoot(localName: string): boolean {
+  return localName === 'body' || localName === 'html'
+}
+
 function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk): Node | null {
   if (source.nodeType === Node.TEXT_NODE) return document.createTextNode(source.textContent ?? '')
   if (!(source instanceof Element) || DROPPED_TAGS.has(source.tagName)) return null
@@ -548,15 +653,18 @@ function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk):
   if (style.display === 'contents' && source.namespaceURI !== SVG_NAMESPACE)
     return copyChildren(source, parent, walk)
   if (screenReaderOnly(source, style)) return null
-  const hidden = style.display === 'none'
+  const hidden = style.display === 'none' || movedAway(source, walk.home)
   if (hidden && !walk.keep.has(source)) return null
   const replaced = copyReplaced(source, style, parent, walk)
   if (replaced) return replaced
+  const picture =
+    source instanceof HTMLPictureElement ? copyPicture(source, style, parent, walk) : null
+  if (picture) {
+    applyStyle(picture.copy, hiddenWhere(picture.declared, hidden), walk)
+    return picture.copy
+  }
 
-  const copy =
-    source instanceof HTMLVideoElement
-      ? Object.assign(document.createElement('img'), { src: absolute(source.poster) })
-      : source.cloneNode(false)
+  const copy = emptyCopy(source)
   if (!(copy instanceof Element)) return null
   walk.layers++
   copyAttributes(copy, source, walk)
@@ -564,14 +672,66 @@ function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk):
   for (const family of families(style)) walk.families.add(family)
   if (source.namespaceURI === SVG_NAMESPACE) return copySVG(source, style, walk)
 
-  const declared = elementStyle(source, style, parent, walk.defaults)
-  applyStyle(
-    copy,
-    hidden ? `${declared.replace(/(^|; )display: none/, '$1')}; ${HIDDEN}` : declared,
-    walk
-  )
+  const declared = walk.fonts(finalDeclarations(elementStyle(source, style, parent, walk.defaults)))
+  applyStyle(copy, hiddenWhere(declared, hidden), walk)
   fillChildren(copy, source, style, walk)
   return copy
+}
+
+/** An element's declarations, written hidden where the page hides it at this width. */
+function hiddenWhere(declared: string, hidden: boolean): string {
+  return hidden ? `${declared.replace(/(^|; )display: none/, '$1')}; ${HIDDEN}` : declared
+}
+
+/**
+ * A `<picture>` as the one image it shows: its `<img>` with the file the browser chose, named
+ * after the picture and placed as the picture is, so the picture and its image are one layer.
+ * A positioned picture takes the image's box, where the image is smaller than it.
+ */
+function copyPicture(
+  source: HTMLPictureElement,
+  style: CSSStyleDeclaration,
+  parent: CSSStyleDeclaration | null,
+  walk: Walk
+): { copy: Element; declared: string } | null {
+  const image = [...source.children].find((child) => child instanceof HTMLImageElement)
+  if (!(image instanceof HTMLImageElement)) return null
+  const copy = image.cloneNode(false)
+  if (!(copy instanceof HTMLImageElement)) return null
+  walk.layers++
+  copyAttributes(copy, image, walk)
+  if (walk.format === 'kalka' && source.classList.length > 0)
+    copy.setAttribute('class', [...source.classList].join(' '))
+  const imageStyle = getComputedStyle(image)
+  // A picture left inline draws no box of its own: the image is all there is.
+  if (style.display === 'inline')
+    return {
+      copy,
+      declared: finalDeclarations(elementStyle(image, imageStyle, style, walk.defaults))
+    }
+  const own = parseDeclarations(declarations(style, parent, 'img', walk.defaults))
+  const outer = source.getBoundingClientRect()
+  const inner = image.getBoundingClientRect()
+  const positioned = style.position === 'absolute' || style.position === 'fixed'
+  const smaller = inner.width < outer.width - 1 || inner.height < outer.height - 1
+  const moved =
+    positioned && smaller ? shifted(own, inner.left - outer.left, inner.top - outer.top) : null
+  const box = moved ?? own
+  if (moved) {
+    box.set('width', `${inner.width}px`)
+    box.set('height', `${inner.height}px`)
+    for (const [side, by] of [
+      ['right', outer.right - inner.right],
+      ['bottom', outer.bottom - inner.bottom]
+    ] as const) {
+      const value = own.get(side)
+      if (value !== undefined) box.set(side, `${Number.parseFloat(value) + by}px`)
+    }
+  }
+  for (const property of ['object-fit', 'object-position'] as const)
+    box.set(property, imageStyle.getPropertyValue(property))
+  if (Number(imageStyle.opacity) === 0) box.set('opacity', '0')
+  return { copy, declared: finalDeclarations(writeDeclarations(box)) }
 }
 
 /** A copy's content: its pseudo-elements, and its children or its shadow root's. */
@@ -584,7 +744,7 @@ function fillChildren(
   const before = pseudo(source, '::before', style, walk)
   if (before) copy.append(before)
   const children = source.shadowRoot ? source.shadowRoot.childNodes : source.childNodes
-  for (const child of children) {
+  for (const child of nodesInPlace(source, children, walk.home)) {
     const copied = copyNode(child, style, walk)
     if (copied) copy.append(copied)
   }
@@ -592,7 +752,6 @@ function fillChildren(
   if (after) copy.append(after)
 }
 
-/** The page's `@font-face` rules for the families the copy uses, with absolute URLs. */
 /** Every `@font-face` rule of a list, including those inside `@media`, `@supports` or `@layer`. */
 function faceRules(rules: CSSRuleList, out: CSSFontFaceRule[]): void {
   for (const rule of rules) {
@@ -601,14 +760,41 @@ function faceRules(rules: CSSRuleList, out: CSSFontFaceRule[]): void {
   }
 }
 
-function fontFaces(families: Set<string>): string[] {
+/** Where the web font stylesheets Kalka reads come from. */
+const WEB_FONT_STYLESHEET_HOST = 'fonts.googleapis.com'
+
+/** A web font stylesheet the page links from another site, which hides its rules from the page. */
+export function webFontLink(href: string | null): string | null {
+  if (!href) return null
+  try {
+    if (new URL(href).hostname !== WEB_FONT_STYLESHEET_HOST) return null
+  } catch {
+    return null
+  }
+  return `<link rel="stylesheet" href="${href.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}">`
+}
+
+/**
+ * The page's `@font-face` rules for the families the copy uses, with absolute URLs, and links to
+ * the web font stylesheets whose rules the page cannot read, such as Google Fonts': without them
+ * Kalka measures the text in a fallback font and wraps it where the page does not.
+ */
+function fontFaces(used: Set<string>): { faces: string[]; links: string[] } {
+  // A stack may spell a family unlike its rule does: CSS matches them whatever the case.
+  const families = new Set([...used].map((family) => family.toLowerCase()))
   const faces = new Set<string>()
+  const links = new Set<string>()
   for (const sheet of document.styleSheets) {
     const rules: CSSFontFaceRule[] = []
     try {
       faceRules(sheet.cssRules, rules)
     } catch {
       // A stylesheet from another site hides its rules.
+      const link = webFontLink(sheet.href)
+      if (link) links.add(link)
+      // Read again where its site allows it: see `readHiddenSheets`.
+      for (const face of hiddenFaces(sheet.href))
+        if (families.has(face.family.toLowerCase())) faces.add(face.rule)
       continue
     }
     const base = sheet.href ?? document.baseURI
@@ -617,7 +803,7 @@ function fontFaces(families: Set<string>): string[] {
         .getPropertyValue('font-family')
         .trim()
         .replace(/^["']|["']$/g, '')
-      if (!families.has(family)) continue
+      if (!families.has(family.toLowerCase())) continue
       faces.add(
         rule.cssText.replace(/url\((["']?)([^"')]+)\1\)/g, (_match, quote: string, url: string) => {
           try {
@@ -629,7 +815,7 @@ function fontFaces(families: Set<string>): string[] {
       )
     }
   }
-  return [...faces]
+  return { faces: [...faces], links: [...links] }
 }
 
 const TRANSPARENT_COLORS = new Set(['rgba(0, 0, 0, 0)', 'transparent'])
@@ -679,23 +865,30 @@ export interface CaptureOptions {
   keep?: ReadonlySet<Element>
   /** What the screen showed: the backdrop behind the element and its unreadable canvases. */
   shots?: Shots
+  /**
+   * Where the elements sat at the page's own width, for a copy made at another: an element the
+   * page moved since is written where it was, hidden.
+   */
+  home?: Home
 }
 
 /** Copies an element as standalone HTML. */
 export function captureElement(
   element: Element,
   format: CaptureFormat,
-  { keep = new Set(), shots }: CaptureOptions = {}
+  { keep = new Set(), shots, home }: CaptureOptions = {}
 ): Capture {
   const defaults = new BrowserDefaults()
   const walk: Walk = {
     keep,
+    home: home ?? null,
     defaults,
     canvases: shots?.canvases ?? new Map(),
     layers: 0,
     images: 0,
     replaced: 0,
     families: new Set(),
+    fonts: fontStackRewriter(),
     rules: [],
     format
   }
@@ -710,6 +903,21 @@ export function captureElement(
     const behind = shownBackground(background, pageBackground(element))
     const extra = ['box-sizing: border-box', `width: ${Math.round(box.width)}px`, 'margin: 0']
     if (behind) extra.push(`background-color: ${behind}`)
+    extra.push(...unplaced(getComputedStyle(element).position))
+    const root = pageRoot(element.localName)
+    if (root) {
+      const own = getComputedStyle(element)
+      extra.push(
+        ...wholePage(
+          {
+            width: document.documentElement.clientWidth,
+            height: document.documentElement.scrollHeight
+          },
+          { left: box.left + scrollX, right: box.right + scrollX },
+          { left: Number.parseFloat(own.paddingLeft), right: Number.parseFloat(own.paddingRight) }
+        )
+      )
+    }
     // What the page drew behind it, from the screen, under the element's own background.
     if (shots?.backdrop) {
       const own = getComputedStyle(element).backgroundImage
@@ -721,9 +929,11 @@ export function captureElement(
       walk.images++
     }
     if (format === 'kalka') {
-      const own = copy.getAttribute('style')
+      const written = copy.getAttribute('style')
+      const own = written && root ? unscrolled(written) : written
       copy.setAttribute('style', [...(own ? [own] : []), ...extra].join('; '))
     } else {
+      if (root) extra.push(...UNSCROLLED)
       walk.rules.push(`.k-root { ${extra.join('; ')} }`)
       copy.classList.add('k-root')
     }
@@ -731,14 +941,18 @@ export function captureElement(
     container.append(copy)
   }
   defaults.release()
-  const faces = fontFaces(walk.families)
+  const { faces, links } = fontFaces(walk.families)
   const sheet = [...faces, ...walk.rules].join('\n')
-  const html = `${sheet ? `<style>\n${sheet}\n</style>\n` : ''}${container.innerHTML}`
+  const html = `${links.map((link) => `${link}\n`).join('')}${sheet ? `<style>\n${sheet}\n</style>\n` : ''}${container.innerHTML}`
   return {
     html,
     layers: walk.layers,
     images: walk.images,
-    fonts: [...walk.families].filter((family) => faces.some((face) => face.includes(family))),
+    fonts: [...walk.families].filter(
+      (family) =>
+        faces.some((face) => face.includes(family)) ||
+        links.some((link) => link.includes(`family=${family.replaceAll(' ', '+')}`))
+    ),
     replaced: walk.replaced
   }
 }

@@ -101,7 +101,7 @@ export class GhostLayer {
   /** A font loaded after the previews opened. */
   addFont(face: ArtboardFontFace): void {
     for (const ghost of this.ghosts.values()) {
-      for (const slot of ghost.frames) if (slot.doc) addArtboardFont(slot.doc, face)
+      for (const slot of ghost.frames) if (slot.doc) void addArtboardFont(slot.doc, face)
     }
   }
 
@@ -159,7 +159,7 @@ export class GhostLayer {
       () => {
         slot.doc = frame.contentDocument
         if (!slot.doc) return
-        for (const face of this.options.fonts?.() ?? []) addArtboardFont(slot.doc, face)
+        for (const face of this.options.fonts?.() ?? []) void addArtboardFont(slot.doc, face)
         this.drawSlot(slot)
         this.hideReplaced()
       },

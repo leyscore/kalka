@@ -364,6 +364,25 @@ function textBox(node: Node, origin: DOMRect): LayoutBox | undefined {
   return rect.width > 0 || rect.height > 0 ? boxOf(rect, origin) : undefined
 }
 
+/**
+ * How far into its box a text node's first line starts: text after an inline box on the same
+ * line begins mid-line and wraps back to the block's edge, so its box starts left of its words.
+ */
+function firstLineIndent(node: Node): number | undefined {
+  const range = node.ownerDocument?.createRange()
+  if (!range) return undefined
+  range.selectNodeContents(node)
+  const box = range.getBoundingClientRect()
+  // From its first word: the space before it is not part of the layer's text.
+  const blank = (node.nodeValue ?? '').search(/\S/)
+  if (blank > 0) range.setStart(node, blank)
+  const lines = range.getClientRects()
+  const first = lines.item(0)
+  if (!first || lines.length < 2) return undefined
+  const indent = first.left - box.left
+  return indent >= 1 ? indent : undefined
+}
+
 /** Motion is not part of a design at rest. */
 const UNKEPT_RULE_PROPERTY = /^(animation|transition)(-|$)/
 
@@ -419,10 +438,14 @@ function ruleDeclarations(
     if (!matches) continue
     for (const property of Array.from(rule.style)) {
       if (UNKEPT_RULE_PROPERTY.test(property)) continue
-      const value = rule.style.getPropertyValue(property)
+      const written = rule.style.getPropertyValue(property)
       // A shorthand writes every longhand it leaves out as `initial`; those say nothing.
-      if (value === 'initial') continue
-      declared[property] = value.includes('var(') ? computed.getPropertyValue(property) : value
+      if (written === 'initial') continue
+      // A variable is the page's value, read once substituted. The longhands of a shorthand
+      // written with one (`background: var(--paper)`) read empty until then.
+      const value =
+        written === '' || written.includes('var(') ? computed.getPropertyValue(property) : written
+      if (value) declared[property] = value
     }
   }
   return declared
@@ -466,7 +489,11 @@ function readElementBoxes(designElement: DesignElement, domElement: Element, ori
   for (const child of designElement.children) {
     if (child.type !== 'text') continue
     const domText = texts.at(next++)
-    if (domText) child.layoutBox = textBox(domText, origin)
+    if (!domText) continue
+    child.layoutBox = textBox(domText, origin)
+    const indent = firstLineIndent(domText)
+    if (indent === undefined) delete child.firstLineIndent
+    else child.firstLineIndent = indent
   }
 }
 

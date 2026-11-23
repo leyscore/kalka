@@ -54,6 +54,8 @@ export interface DesignText {
   text: string
   /** Where a browser rendered the text, when the document was measured. */
   layoutBox?: LayoutBox
+  /** How far into its box the first line starts, for text that begins mid-line and wraps. */
+  firstLineIndent?: number
 }
 
 export interface DesignStyleSheet {

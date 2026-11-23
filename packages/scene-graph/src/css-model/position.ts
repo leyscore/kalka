@@ -13,9 +13,12 @@ export const position: PropertyFamily = {
   fields: ['layoutPositioning', 'layoutMode', 'type', 'childIds', 'x', 'y'],
   properties: ['position', 'left', 'top'],
   write(style, node, { parent }) {
+    // A top-level layer is its own artboard: its coordinates place the artboard on the page,
+    // not the layer inside it.
+    const topLevel = parent?.type === 'CANVAS'
     const placed =
-      node.layoutPositioning === 'ABSOLUTE' ||
-      (parent !== undefined && parent.type !== 'CANVAS' && parent.layoutMode === 'NONE')
+      (node.layoutPositioning === 'ABSOLUTE' && !topLevel) ||
+      (parent !== undefined && !topLevel && parent.layoutMode === 'NONE')
     if (placed) {
       style.position = 'absolute'
       style.left = `${node.x}px`
