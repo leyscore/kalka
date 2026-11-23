@@ -104,6 +104,10 @@ export function applyCopy(
   shift = 0
 ): void {
   if (!root && !sameLayer(target, source)) return
+  // A fill names its picture by hash: one the page shows only at this width comes with it.
+  if (root)
+    for (const [hash, bytes] of copyGraph.images)
+      if (!graph.images.has(hash)) graph.images.set(hash, bytes)
   graph.updateNode(target.id, valuesOf(source, root ? target.width : undefined, shift))
   // Without auto layout the children sit at their own coordinates, so they carry the margin.
   const childShift = root && source.layoutMode === 'NONE' ? sideGutter(source, target.width) : 0

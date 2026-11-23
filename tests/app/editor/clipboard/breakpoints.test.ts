@@ -57,6 +57,23 @@ describe('applyCopy', () => {
     expect(graph.getNode(actions.id)?.x).toBe(166)
   })
 
+  test('brings the pictures only this width shows', () => {
+    const graph = new SceneGraph()
+    const target = header(graph, 390)
+    const kept = new Uint8Array([1])
+    graph.images.set('shared', kept)
+
+    const copyGraph = new SceneGraph()
+    const source = header(copyGraph, 390)
+    copyGraph.images.set('shared', new Uint8Array([9]))
+    copyGraph.images.set('phone-only', new Uint8Array([2]))
+
+    applyCopy(graph, target, copyGraph, source, true)
+
+    expect(graph.images.get('phone-only')).toEqual(new Uint8Array([2]))
+    expect(graph.images.get('shared')).toBe(kept)
+  })
+
   test('leaves an unpaired layer the copy shows as the wider breakpoint has it', () => {
     const graph = new SceneGraph()
     const target = header(graph, 390)
