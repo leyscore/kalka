@@ -570,6 +570,14 @@ function screenReaderOnly(source: Element, style: CSSStyleDeclaration): boolean 
   return box.width <= 1 && box.height <= 1 && (style.overflow === 'hidden' || style.clip !== 'auto')
 }
 
+/**
+ * Whether a tag is the page's own root. Pasted markup cannot hold a second `<body>`: a parser
+ * drops the tag with its width, font and background, so the copy of one is a plain box.
+ */
+export function pageRoot(localName: string): boolean {
+  return localName === 'body' || localName === 'html'
+}
+
 function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk): Node | null {
   if (source.nodeType === Node.TEXT_NODE) return document.createTextNode(source.textContent ?? '')
   if (!(source instanceof Element) || DROPPED_TAGS.has(source.tagName)) return null
@@ -592,7 +600,9 @@ function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk):
   const copy =
     source instanceof HTMLVideoElement
       ? Object.assign(document.createElement('img'), { src: absolute(source.poster) })
-      : source.cloneNode(false)
+      : pageRoot(source.localName)
+        ? document.createElement('div')
+        : source.cloneNode(false)
   if (!(copy instanceof Element)) return null
   walk.layers++
   copyAttributes(copy, source, walk)

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { pseudoText, webFontLink } from '../src/content/capture'
+import { pageRoot, pseudoText, webFontLink } from '../src/content/capture'
 import { foldTranslation, hideFaded, unplaced } from '../src/content/declarations'
 import { hexColor } from '../src/content/describe'
 import { inlineImages } from '../src/content/images'
@@ -83,6 +83,15 @@ describe('hideFaded', () => {
 
   test('leaves a translucent element as it is', () => {
     expect(hideFaded('display: block; opacity: 0.5')).toBe('display: block; opacity: 0.5')
+  })
+})
+
+describe('pageRoot', () => {
+  test('the page’s own root is copied as a plain box, which pasted markup can hold', () => {
+    expect(pageRoot('body')).toBe(true)
+    expect(pageRoot('html')).toBe(true)
+    expect(pageRoot('main')).toBe(false)
+    expect(pageRoot('div')).toBe(false)
   })
 })
 
