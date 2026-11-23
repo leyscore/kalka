@@ -8,7 +8,8 @@ import {
   hideFaded,
   statesOrigin,
   unplaced,
-  unscrolled
+  unscrolled,
+  wholePage
 } from '../src/content/declarations'
 import { hexColor } from '../src/content/describe'
 import { drawnFirst } from '../src/content/drawn-font'
@@ -346,5 +347,25 @@ describe('backInPlace', () => {
 
   test('leaves a list that lost nothing as it is', () => {
     expect(backInPlace(['a', 'b'], ['a', 'b'])).toEqual(['a', 'b'])
+  })
+})
+
+describe('wholePage', () => {
+  test('a root centred by its margins takes the window’s width, the margins as padding', () => {
+    expect(
+      wholePage({ width: 1440, height: 3676 }, { left: 384, right: 1056 }, { left: 20, right: 20 })
+    ).toEqual([
+      'width: 1440px',
+      'max-width: none',
+      'min-height: 3676px',
+      'padding-left: 404px',
+      'padding-right: 404px'
+    ])
+  })
+
+  test('a root as wide as the window keeps its padding and is as tall as the page', () => {
+    expect(
+      wholePage({ width: 1440, height: 900 }, { left: 0, right: 1440 }, { left: 0, right: 0 })
+    ).toEqual(['width: 1440px', 'max-width: none', 'min-height: 900px'])
   })
 })

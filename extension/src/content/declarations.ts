@@ -100,6 +100,31 @@ export function unscrolled(declared: string): string {
   return writeDeclarations(declarations)
 }
 
+/** A page as its window shows it: how wide the window is and how tall the page scrolls. */
+export interface PageSize {
+  width: number
+  height: number
+}
+
+/**
+ * What makes a copy of the page's root the whole page. The root may be narrower than the window,
+ * as a `<body>` with a `max-width` centred by its margins is, or shorter than what the window
+ * scrolls, as one whose content is all placed over it is: the artboard is the window, so the
+ * copy takes the window's width with the room on each side as padding, and is at least as tall
+ * as the page. `sides` is the root's left and right edge in the window, `padding` its own.
+ */
+export function wholePage(
+  page: PageSize,
+  sides: { left: number; right: number },
+  padding: { left: number; right: number }
+): string[] {
+  const out = [`width: ${page.width}px`, 'max-width: none', `min-height: ${page.height}px`]
+  const room = { left: sides.left, right: page.width - sides.right }
+  for (const side of ['left', 'right'] as const)
+    if (room[side] > 0.5) out.push(`padding-${side}: ${padding[side] + room[side]}px`)
+  return out
+}
+
 /**
  * Whether a copy states the point an element turns and scales about: whenever something turns,
  * scales or moves it. A box scaled from its corner would otherwise scale about its middle.

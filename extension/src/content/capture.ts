@@ -11,6 +11,7 @@ import {
   unplaced,
   UNSCROLLED,
   unscrolled,
+  wholePage,
   writeDeclarations
 } from './declarations'
 import { fontStackRewriter } from './drawn-font'
@@ -904,6 +905,19 @@ export function captureElement(
     if (behind) extra.push(`background-color: ${behind}`)
     extra.push(...unplaced(getComputedStyle(element).position))
     const root = pageRoot(element.localName)
+    if (root) {
+      const own = getComputedStyle(element)
+      extra.push(
+        ...wholePage(
+          {
+            width: document.documentElement.clientWidth,
+            height: document.documentElement.scrollHeight
+          },
+          { left: box.left + scrollX, right: box.right + scrollX },
+          { left: Number.parseFloat(own.paddingLeft), right: Number.parseFloat(own.paddingRight) }
+        )
+      )
+    }
     // What the page drew behind it, from the screen, under the element's own background.
     if (shots?.backdrop) {
       const own = getComputedStyle(element).backgroundImage
