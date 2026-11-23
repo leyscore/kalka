@@ -35,6 +35,10 @@ export const STYLES = `
 .palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(28px, 1fr)); gap: 6px; }
 .chip-color { aspect-ratio: 1; border: 1px solid #FFFFFF26; border-radius: 6px; padding: 0; cursor: pointer; }
 .chip-color:hover { box-shadow: 0 0 0 2px #9DB7F5; }
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.thumb { display: block; aspect-ratio: 1; border-radius: 6px; overflow: hidden; background: #FFFFFF0D; border: 1px solid #FFFFFF14; }
+.thumb:hover, .thumb:focus-visible { outline: 2px solid #9DB7F5; outline-offset: 1px; }
+.thumb img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .head { display: flex; align-items: center; gap: 8px; padding: 12px 14px; }
 .head b { font: 500 12px ui-monospace, 'Geist Mono', monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .head .dim { margin-left: auto; color: #8B8B95; white-space: nowrap; }

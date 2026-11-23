@@ -5,7 +5,7 @@
 ### Added
 
 - Design check flags a small label in spaced capitals above a heading, a display heading set tighter than -0.03em or with lines closer than 0.95 once it wraps, and an image whose source cannot load, and a button floating on a colored shadow, with a fix for the tight heading. The agent's design guide asks it to keep the key content on the first screen, take colors from the subject's real materials instead of its sector's cliché, and never leave a placeholder image.
-- Kalka Snapshot's panel can be dragged anywhere on the page or docked along its right edge, and remembers where it was. Before an element is hovered it sums up the page: its title, preview image, the typefaces of its headings and text, and its most used colors, each copied with a click. The element path along the bottom now runs the page's full width.
+- Kalka Snapshot's panel can be dragged anywhere on the page or docked along its right edge, and remembers where it was. Before an element is hovered it sums up the page: its title, preview image, the typefaces of its headings and text and its most used colors, each copied with a click, and its images, each opened at full size to be saved. The element path along the bottom now runs the page's full width.
 
 ### Fixed
 

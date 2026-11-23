@@ -17,7 +17,7 @@ import { drawnFirst } from '../src/content/drawn-font'
 import { fontURLs } from '../src/content/fonts'
 import { sheetFaces } from '../src/content/hidden-sheets'
 import { inlineImages } from '../src/content/images'
-import { firstFamily, mostUsed } from '../src/content/overview'
+import { backgroundUrls, firstFamily, mostUsed } from '../src/content/overview'
 import { seeThrough } from '../src/content/see-through'
 
 describe('hexColor', () => {
@@ -400,5 +400,12 @@ describe('page summary', () => {
   test('names a font stack by its first family, without quotes', () => {
     expect(firstFamily('"Hanken Grotesk", sans-serif')).toBe('Hanken Grotesk')
     expect(firstFamily('')).toBeNull()
+  })
+
+  test('reads the images of a background, leaving gradients out', () => {
+    expect(
+      backgroundUrls('linear-gradient(red, blue), url("https://a.test/hero.jpg"), url(/b.png)')
+    ).toEqual(['https://a.test/hero.jpg', '/b.png'])
+    expect(backgroundUrls('none')).toEqual([])
   })
 })

@@ -13,6 +13,16 @@ export interface PanelLayout {
   top?: number
 }
 
+/** The file name an image address ends with, for its tooltip. */
+function imageName(address: string): string {
+  if (address.startsWith('data:')) return 'Embedded image'
+  try {
+    return decodeURIComponent(new URL(address).pathname.split('/').pop() ?? '') || address
+  } catch {
+    return address
+  }
+}
+
 export class Panel {
   readonly element = make('aside', 'panel')
   readonly body = make('div', 'body')
@@ -128,7 +138,7 @@ export class Panel {
 
   private renderOverview(): void {
     this.overview ??= readOverview()
-    const { title, address, image, headings, body, colors } = this.overview
+    const { title, address, image, headings, body, colors, images } = this.overview
     this.body.textContent = ''
     const page = make('div', 'sec page')
     if (image) {
@@ -177,6 +187,30 @@ export class Panel {
       }
       palette.append(grid)
       this.body.append(palette)
+    }
+
+    if (images.length > 0) {
+      const gallery = make('div', 'sec')
+      gallery.append(make('h3', '', `IMAGES (${images.length})`))
+      const grid = make('div', 'gallery')
+      for (const address of images) {
+        // Opens the image at full size in a new tab, where Chrome can save it.
+        const link = make('a', 'thumb')
+        link.href = address
+        link.target = '_blank'
+        link.rel = 'noopener noreferrer'
+        const name = imageName(address)
+        link.title = `${name}, click to open`
+        const thumb = make('img')
+        thumb.alt = name
+        thumb.loading = 'lazy'
+        thumb.src = address
+        thumb.addEventListener('error', () => link.remove())
+        link.append(thumb)
+        grid.append(link)
+      }
+      gallery.append(grid)
+      this.body.append(gallery)
     }
   }
 

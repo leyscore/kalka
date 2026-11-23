@@ -1,5 +1,6 @@
 // What the inspector panel says about the page before an element is picked: its title, address
-// and preview image, the typefaces of its headings and text, and the colors it uses most.
+// and preview image, the typefaces of its headings and text, the colors it uses most, and its
+// images, to open one at full size.
 import { hexColor } from './describe'
 
 export interface Overview {
@@ -9,11 +10,16 @@ export interface Overview {
   headings: string | null
   body: string | null
   colors: string[]
+  /** Addresses of the pictures and background images shown on the page. */
+  images: string[]
 }
 
 /** How many elements the page summary reads at most, so a huge page opens the inspector fast. */
 const MAX_ELEMENTS = 4000
 const MAX_COLORS = 12
+const MAX_IMAGES = 36
+/** Images smaller than this on screen are icons and bullets, not pictures. */
+const MIN_IMAGE = 40
 
 /** The first family of a computed `font-family`, without its quotes. */
 export function firstFamily(fontFamily: string): string | null {
@@ -35,6 +41,22 @@ export function mostUsed(values: Iterable<string>, limit: number): string[] {
     .map(([value]) => value)
 }
 
+/** The addresses in a computed `background-image`, gradients left out. */
+export function backgroundUrls(value: string): string[] {
+  return [...value.matchAll(/url\(\s*(["']?)(.*?)\1\s*\)/g)].flatMap((match) =>
+    match[2] ? [match[2]] : []
+  )
+}
+
+/** An address resolved against the page, or null when it is not one. */
+function absolute(address: string): string | null {
+  try {
+    return new URL(address, document.baseURI).href
+  } catch {
+    return null
+  }
+}
+
 /** An opaque computed color as hex, or null for transparent and translucent ones. */
 function solid(color: string): string | null {
   const hex = hexColor(color)
@@ -46,12 +68,7 @@ function previewImage(): string | null {
     'meta[property="og:image"], meta[name="og:image"], meta[name="twitter:image"], meta[property="twitter:image"]'
   )
   const content = meta?.content.trim()
-  if (!content) return null
-  try {
-    return new URL(content, document.baseURI).href
-  } catch {
-    return null
-  }
+  return content ? absolute(content) : null
 }
 
 function shown(element: Element): boolean {
@@ -59,16 +76,33 @@ function shown(element: Element): boolean {
   return box.width > 0 && box.height > 0
 }
 
+/** Whether an element is drawn big enough to hold a picture rather than an icon. */
+function large(element: Element): boolean {
+  const box = element.getBoundingClientRect()
+  return box.width >= MIN_IMAGE && box.height >= MIN_IMAGE
+}
+
 export function readOverview(): Overview {
   const elements = [...document.body.querySelectorAll('*')].slice(0, MAX_ELEMENTS).filter(shown)
   const colors: string[] = []
   const headingFonts: string[] = []
   const textFonts: string[] = []
+  const images: string[] = []
   for (const element of elements) {
     const style = getComputedStyle(element)
     if (style.visibility === 'hidden') continue
     const background = solid(style.backgroundColor)
     if (background) colors.push(background)
+    if (large(element)) {
+      const sources =
+        element instanceof HTMLImageElement
+          ? [element.currentSrc || element.src]
+          : backgroundUrls(style.backgroundImage)
+      for (const source of sources) {
+        const address = source ? absolute(source) : null
+        if (address) images.push(address)
+      }
+    }
     const hasText = [...element.childNodes].some(
       (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim()
     )
@@ -86,6 +120,8 @@ export function readOverview(): Overview {
     image: previewImage(),
     headings: mostUsed(headingFonts, 1)[0] ?? null,
     body: mostUsed(textFonts, 1)[0] ?? firstFamily(getComputedStyle(document.body).fontFamily),
-    colors: mostUsed(page ? [page, ...colors] : colors, MAX_COLORS)
+    colors: mostUsed(page ? [page, ...colors] : colors, MAX_COLORS),
+    // In page order, each once: a logo strip repeated for its scroll would otherwise come first.
+    images: [...new Map(images.map((address) => [address, true])).keys()].slice(0, MAX_IMAGES)
   }
 }
