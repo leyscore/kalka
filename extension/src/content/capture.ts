@@ -592,7 +592,6 @@ function fillChildren(
   if (after) copy.append(after)
 }
 
-/** The page's `@font-face` rules for the families the copy uses, with absolute URLs. */
 /** Every `@font-face` rule of a list, including those inside `@media`, `@supports` or `@layer`. */
 function faceRules(rules: CSSRuleList, out: CSSFontFaceRule[]): void {
   for (const rule of rules) {
@@ -601,14 +600,36 @@ function faceRules(rules: CSSRuleList, out: CSSFontFaceRule[]): void {
   }
 }
 
-function fontFaces(families: Set<string>): string[] {
+/** Where the web font stylesheets Kalka reads come from. */
+const WEB_FONT_STYLESHEET_HOST = 'fonts.googleapis.com'
+
+/** A web font stylesheet the page links from another site, which hides its rules from the page. */
+export function webFontLink(href: string | null): string | null {
+  if (!href) return null
+  try {
+    if (new URL(href).hostname !== WEB_FONT_STYLESHEET_HOST) return null
+  } catch {
+    return null
+  }
+  return `<link rel="stylesheet" href="${href.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}">`
+}
+
+/**
+ * The page's `@font-face` rules for the families the copy uses, with absolute URLs, and links to
+ * the web font stylesheets whose rules the page cannot read, such as Google Fonts': without them
+ * Kalka measures the text in a fallback font and wraps it where the page does not.
+ */
+function fontFaces(families: Set<string>): { faces: string[]; links: string[] } {
   const faces = new Set<string>()
+  const links = new Set<string>()
   for (const sheet of document.styleSheets) {
     const rules: CSSFontFaceRule[] = []
     try {
       faceRules(sheet.cssRules, rules)
     } catch {
       // A stylesheet from another site hides its rules.
+      const link = webFontLink(sheet.href)
+      if (link) links.add(link)
       continue
     }
     const base = sheet.href ?? document.baseURI
@@ -629,7 +650,7 @@ function fontFaces(families: Set<string>): string[] {
       )
     }
   }
-  return [...faces]
+  return { faces: [...faces], links: [...links] }
 }
 
 const TRANSPARENT_COLORS = new Set(['rgba(0, 0, 0, 0)', 'transparent'])
@@ -731,14 +752,18 @@ export function captureElement(
     container.append(copy)
   }
   defaults.release()
-  const faces = fontFaces(walk.families)
+  const { faces, links } = fontFaces(walk.families)
   const sheet = [...faces, ...walk.rules].join('\n')
-  const html = `${sheet ? `<style>\n${sheet}\n</style>\n` : ''}${container.innerHTML}`
+  const html = `${links.map((link) => `${link}\n`).join('')}${sheet ? `<style>\n${sheet}\n</style>\n` : ''}${container.innerHTML}`
   return {
     html,
     layers: walk.layers,
     images: walk.images,
-    fonts: [...walk.families].filter((family) => faces.some((face) => face.includes(family))),
+    fonts: [...walk.families].filter(
+      (family) =>
+        faces.some((face) => face.includes(family)) ||
+        links.some((link) => link.includes(`family=${family.replaceAll(' ', '+')}`))
+    ),
     replaced: walk.replaced
   }
 }

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { pseudoText } from '../src/content/capture'
+import { pseudoText, webFontLink } from '../src/content/capture'
 import { hexColor } from '../src/content/describe'
 
 describe('hexColor', () => {
@@ -29,5 +29,20 @@ describe('pseudoText', () => {
 
   test('keeps an empty string for decorative pseudo-elements', () => {
     expect(pseudoText('""')).toBe('')
+  })
+})
+
+describe('webFontLink', () => {
+  test('links a Google Fonts stylesheet, whose rules the page cannot read', () => {
+    expect(
+      webFontLink('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap')
+    ).toBe(
+      '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap">'
+    )
+  })
+
+  test('leaves out stylesheets from other sites and inline ones', () => {
+    expect(webFontLink('https://cdn.example.com/site.css')).toBeNull()
+    expect(webFontLink(null)).toBeNull()
   })
 })

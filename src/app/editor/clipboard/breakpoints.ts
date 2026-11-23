@@ -6,6 +6,8 @@ import {
   type SceneNode
 } from '@kalka/scene-graph'
 
+import { linkedStylesheets, webFontCSS } from '@/app/document/io/web-fonts'
+
 /**
  * A page copied at several widths, as Kalka Snapshot writes it: the widest copy is the HTML
  * itself, and each narrower one sits in a `<template data-kalka-breakpoint="<width>">` beside it,
@@ -93,7 +95,7 @@ function sameLayer(target: SceneNode, source: SceneNode): boolean {
  * different layer at one width, its neighbours still pair by type and name, and an unpaired
  * layer keeps following the wider breakpoint.
  */
-function applyCopy(
+export function applyCopy(
   graph: SceneGraph,
   target: SceneNode,
   copyGraph: SceneGraph,
@@ -111,15 +113,33 @@ function applyCopy(
     let found = next
     while (found < copies.length && !sameLayer(child, copies[found] ?? child)) found++
     const copy = copies.at(found)
-    if (!copy) continue
+    if (!copy) {
+      // The importer can make a different layer for an element the page hides at one width,
+      // such as one text for a hidden row of links: the element in its place still says
+      // whether the page shows it there.
+      const placed = copies.at(next)
+      if (placed && placed.visible !== child.visible) {
+        graph.updateNode(child.id, { visible: placed.visible })
+        next++
+      }
+      continue
+    }
     applyCopy(graph, child, copyGraph, copy, false, childShift)
     next = found + 1
   }
 }
 
-async function importCopy(html: string): Promise<{ graph: SceneGraph; root: SceneNode } | null> {
+async function importCopy(
+  html: string,
+  fonts: Map<string, Promise<string>>
+): Promise<{ graph: SceneGraph; root: SceneNode } | null> {
   const { browserHTMLToSceneGraph } = await import('@kalka/dom-css/browser')
-  const graph = await browserHTMLToSceneGraph(html, { pageName: 'Pasted HTML' })
+  // Measured in the page's web fonts, as the widest copy is, or its text wraps differently.
+  const cssText = await webFontCSS(linkedStylesheets(html), fonts)
+  const graph = await browserHTMLToSceneGraph(html, {
+    pageName: 'Pasted HTML',
+    cssText: cssText || undefined
+  })
   const root = graph
     .getPages()
     .flatMap((page) => graph.getChildren(page.id))
@@ -139,7 +159,10 @@ export async function addSnapshotBreakpoints(
   const pageId = editor.graph.getNode(primaryId)?.parentId
   if (!pageId) return
   // Laid out before the edit starts, so the recorded step holds only the breakpoints.
-  const copies = await Promise.all(breakpoints.map((breakpoint) => importCopy(breakpoint.html)))
+  const fonts = new Map<string, Promise<string>>()
+  const copies = await Promise.all(
+    breakpoints.map((breakpoint) => importCopy(breakpoint.html, fonts))
+  )
   const finish = editor.captureDocumentChange(pageId)
   const created: string[] = []
   breakpoints.forEach((breakpoint, index) => {

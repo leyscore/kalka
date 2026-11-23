@@ -156,7 +156,11 @@ export function setArtboardTokens(doc: Document, css: string): void {
   style.textContent = css
 }
 
-export function addArtboardFont(doc: Document, face: ArtboardFontFace): void {
+/**
+ * Adds a font to an artboard document. Resolves once it can draw: a face built from bytes fires
+ * no `loadingdone`, so a caller that adds one to a laid-out document re-reads it then.
+ */
+export async function addArtboardFont(doc: Document, face: ArtboardFontFace): Promise<void> {
   const view = doc.defaultView
   if (!view) return
   const fontFace = new view.FontFace(face.family, face.data, {
@@ -165,5 +169,5 @@ export function addArtboardFont(doc: Document, face: ArtboardFontFace): void {
     ...(face.unicodeRange ? { unicodeRange: face.unicodeRange } : {})
   })
   doc.fonts.add(fontFace)
-  void fontFace.load().catch(() => doc.fonts.delete(fontFace))
+  await fontFace.load().catch(() => doc.fonts.delete(fontFace))
 }

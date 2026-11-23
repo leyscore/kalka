@@ -419,10 +419,14 @@ function ruleDeclarations(
     if (!matches) continue
     for (const property of Array.from(rule.style)) {
       if (UNKEPT_RULE_PROPERTY.test(property)) continue
-      const value = rule.style.getPropertyValue(property)
+      const written = rule.style.getPropertyValue(property)
       // A shorthand writes every longhand it leaves out as `initial`; those say nothing.
-      if (value === 'initial') continue
-      declared[property] = value.includes('var(') ? computed.getPropertyValue(property) : value
+      if (written === 'initial') continue
+      // A variable is the page's value, read once substituted. The longhands of a shorthand
+      // written with one (`background: var(--paper)`) read empty until then.
+      const value =
+        written === '' || written.includes('var(') ? computed.getPropertyValue(property) : written
+      if (value) declared[property] = value
     }
   }
   return declared
