@@ -4,7 +4,7 @@ Every field to fill, in the order the dashboard asks for it. Copy each block as 
 
 ## Package
 
-Upload `extension/release/kalka-snapshot-0.1.0.zip`.
+Upload `extension/release/kalka-snapshot-0.1.1.zip`.
 
 To rebuild it: `bun run --cwd extension package`.
 
