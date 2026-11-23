@@ -129,6 +129,36 @@ describe('measured HTML import', () => {
     expect(children[0]?.width).toBe(200)
   })
 
+  test('a stacked block stays where the flow put it', () => {
+    const column = element(
+      'div',
+      box(0, 0, 400, 300),
+      { ...BLOCK, display: 'flex', 'flex-direction': 'column' },
+      [
+        element('header', box(0, 0, 400, 50), {
+          ...BLOCK,
+          position: 'absolute',
+          'z-index': '10',
+          'background-color': 'rgb(1, 1, 1)'
+        }),
+        element('main', box(0, 0, 400, 200), {
+          ...BLOCK,
+          'z-index': '9',
+          'background-color': 'rgb(2, 2, 2)'
+        }),
+        element('footer', box(0, 200, 400, 100), {
+          ...BLOCK,
+          position: 'relative',
+          'z-index': '0',
+          'background-color': 'rgb(3, 3, 3)'
+        })
+      ]
+    )
+    const { graph, artboard } = graphOf(measured([column]))
+    const children = graph.getChildren(graph.getChildren(artboard?.id ?? '')[0]?.id ?? '')
+    expect(children.map((child) => child.height)).toEqual([200, 100, 50])
+  })
+
   test('a rotation reads from transform or rotate; scaling is not one', () => {
     expect(
       rotationFromTransform('matrix(0.994522, -0.104528, 0.104528, 0.994522, 0, 0)')

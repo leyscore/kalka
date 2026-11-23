@@ -332,7 +332,7 @@ function createElementLayer(
 
   const node = createFrameNode(graph, parentId, element, style, placement)
   const placed: Array<[DesignNode, SceneNode]> = []
-  for (const child of paintOrder(element.children)) {
+  for (const child of paintOrder(element.children, node.layoutMode !== 'NONE')) {
     const layer = createDesignNode(
       graph,
       node.id,

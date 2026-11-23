@@ -126,12 +126,20 @@ function zIndexOf(node: DesignNode): number {
   return Number.isFinite(value) ? value : 0
 }
 
+function leavesFlow(node: DesignNode): boolean {
+  if (node.type === 'text') return false
+  const position = pickStyle(mergedStyle(node), 'position')
+  return position === 'absolute' || position === 'fixed'
+}
+
 /**
  * Children in the order they paint: by z-index, lowest first, and in document order among
- * equals, as layers paint in their order.
+ * equals, as layers paint in their order. Where the parent lays its children out, the ones in
+ * the flow keep their document order, since moving one would move what follows it.
  */
-export function paintOrder(children: readonly DesignNode[]): DesignNode[] {
-  return [...children].sort((a, b) => zIndexOf(a) - zIndexOf(b))
+export function paintOrder(children: readonly DesignNode[], flows = false): DesignNode[] {
+  const rank = (node: DesignNode) => (flows && !leavesFlow(node) ? 0 : zIndexOf(node))
+  return [...children].sort((a, b) => rank(a) - rank(b))
 }
 
 /**
