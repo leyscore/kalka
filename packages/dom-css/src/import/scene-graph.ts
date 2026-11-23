@@ -372,6 +372,12 @@ function createDesignNode(
       text.height = node.layoutBox.height
     }
     if (placement?.byMeasure && node.layoutBox) placeAtMeasure(text, node.layoutBox, placement)
+    // Text that began mid-line, after an inline box, starts its first line there again.
+    if (node.firstLineIndent)
+      text.style = {
+        ...text.style,
+        'text-indent': `${Math.round(node.firstLineIndent * 100) / 100}px`
+      }
     return text
   }
 

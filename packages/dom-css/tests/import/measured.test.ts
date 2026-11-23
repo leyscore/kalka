@@ -183,6 +183,33 @@ describe('measured HTML import', () => {
     expect(pill.fills.map((fill) => fill.type)).toEqual(['GRADIENT_LINEAR'])
   })
 
+  test('text that wraps after an inline box starts its first line past the box', () => {
+    const { graph, artboard } = graphOf(
+      measured([
+        element('p', box(0, 0, 540, 42), BLOCK, [
+          { type: 'text', text: 'Render UI before ', layoutBox: box(0, 2, 110, 21) },
+          element(
+            'code',
+            box(113, 0, 105, 24),
+            { ...BLOCK, display: 'inline', 'background-color': 'rgb(240, 240, 240)' },
+            [{ type: 'text', text: 'vehicle_state', layoutBox: box(117, 2, 97, 21) }]
+          ),
+          {
+            type: 'text',
+            text: ' sync when the minimum state is ready for the first paint',
+            layoutBox: box(0, 2, 520, 42),
+            firstLineIndent: 222.5
+          }
+        ])
+      ])
+    )
+    const [paragraph] = graph.getChildren(artboard.id)
+    const [before, , after] = graph.getChildren(paragraph.id)
+    expect(before.style['text-indent']).toBeUndefined()
+    expect(after.x).toBe(0)
+    expect(after.style['text-indent']).toBe('222.5px')
+  })
+
   test('a gradient clipped to its text paints the letters, not a box', () => {
     const { graph, artboard } = graphOf(
       measured([
