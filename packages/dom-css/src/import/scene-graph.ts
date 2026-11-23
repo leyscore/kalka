@@ -391,7 +391,9 @@ function createDesignNode(
       text.textAutoResize = node.layoutBox.height < lineHeight * 1.5 ? 'WIDTH_AND_HEIGHT' : 'HEIGHT'
       text.width = Math.ceil(node.layoutBox.width) + 1
       text.height = node.layoutBox.height
-      const line = placement?.byMeasure ? undefined : lineBox(graph, parentId, inheritedStyle, placement)
+      const line = placement?.byMeasure
+        ? undefined
+        : lineBox(graph, parentId, inheritedStyle, placement)
       // Loose text among stacked blocks is a line as wide as they are: centered, it keeps that
       // width, or it would hug its words and sit at the start.
       if (line && line > node.layoutBox.width + 2 && alignsAwayFromStart(inheritedStyle)) {
