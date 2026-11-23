@@ -127,6 +127,16 @@ describe('inlineImages', () => {
     )
   })
 
+  test('carries the images a style draws: a background, a mask', async () => {
+    const html = await inlineImages(
+      '<div style="background-image: url(&quot;https://cdn.example.com/grain.png?a=1&amp;b=2&quot;); mask-image: url(&quot;https://cdn.example.com/mask.svg&quot;)"></div><style>@font-face { src: url("https://cdn.example.com/a.woff2") }</style>',
+      async (url) => `data:image/png;base64,${url.includes('grain.png?a=1&b=2') ? 'GRAIN' : 'MASK'}`
+    )
+    expect(html).toBe(
+      '<div style="background-image: url(&quot;data:image/png;base64,GRAIN&quot;); mask-image: url(&quot;data:image/png;base64,MASK&quot;)"></div><style>@font-face { src: url("https://cdn.example.com/a.woff2") }</style>'
+    )
+  })
+
   test('leaves an image the page cannot fetch as a link', async () => {
     const html = '<img src="https://cdn.example.com/private.png">'
     expect(await inlineImages(html, async () => null)).toBe(html)

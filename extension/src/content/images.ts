@@ -8,7 +8,11 @@ const MAX_IMAGE_BYTES = 4_000_000
 /** All the images of a copy together, as data URLs, stop growing it past this. */
 const MAX_TOTAL_CHARACTERS = 24_000_000
 
-const IMAGE_SOURCE = /(<img\b[^>]*?\ssrc=")(https?:[^"]+)"/g
+/**
+ * Where a copy links an image: an `<img>`'s source, and a `url()` in an element's style (a
+ * background, a mask), whose quotes the serializer wrote as `&quot;`.
+ */
+const IMAGE_SOURCE = /(<img\b[^>]*?\ssrc="|url\(&quot;)(https?:(?:(?!&quot;)[^"])+)/g
 
 /** An attribute value as the serializer escaped it, back to the URL it names. */
 function unescapeAttribute(value: string): string {
@@ -16,8 +20,8 @@ function unescapeAttribute(value: string): string {
 }
 
 /**
- * Replaces each `<img>`'s link with the file itself, in every copy the HTML carries. Each file
- * is fetched once, however many copies show it; one the page cannot fetch stays a link.
+ * Replaces each image's link with the file itself, in every copy the HTML carries. Each file is
+ * fetched once, however many copies show it; one the page cannot fetch stays a link.
  */
 export async function inlineImages(
   html: string,
@@ -44,6 +48,6 @@ export async function inlineImages(
   }
   return html.replace(IMAGE_SOURCE, (match, start: string, url: string) => {
     const data = inlined.has(url) ? files.get(url) : undefined
-    return data ? `${start}${data}"` : match
+    return data ? `${start}${data}` : match
   })
 }
