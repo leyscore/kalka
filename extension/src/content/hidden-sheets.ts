@@ -80,12 +80,9 @@ export async function readHiddenSheets(readFiles?: ReadFiles): Promise<void> {
   )
   const refused = hidden.filter((href) => !texts.has(href))
   if (readFiles && refused.length > 0) {
-    try {
-      for (const [href, css] of Object.entries(await readFiles(refused, 'text')))
-        texts.set(href, css)
-    } catch {
-      // Without the extension's reading, those stylesheets keep their rules.
-    }
+    // Without the extension's reading, those stylesheets keep their rules.
+    const again = await readFiles(refused, 'text').catch(() => ({}))
+    for (const [href, css] of Object.entries(again)) texts.set(href, css)
   }
   for (const href of hidden) {
     const css = texts.get(href) ?? ''

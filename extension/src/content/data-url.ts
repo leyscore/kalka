@@ -51,11 +51,9 @@ export async function dataURLs(
   )
   const refused = urls.filter((url) => !files.has(url))
   if (!read || refused.length === 0) return files
-  try {
-    for (const [url, data] of Object.entries(await read(refused, 'data')))
-      if (data.length <= maxBytes * DATA_URL_GROWTH) files.set(url, data)
-  } catch {
-    // Without the extension's reading, the refused files stay links.
-  }
+  // Without the extension's reading, the refused files stay links.
+  const again = await read(refused, 'data').catch(() => ({}))
+  for (const [url, data] of Object.entries(again))
+    if (data.length <= maxBytes * DATA_URL_GROWTH) files.set(url, data)
   return files
 }

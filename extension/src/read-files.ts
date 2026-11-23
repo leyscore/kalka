@@ -96,12 +96,9 @@ export async function readFiles(
   const files: Record<string, string> = {}
   await Promise.all(
     urls.map(async (url) => {
-      try {
-        const file = await readFile(target, frameId, url, kind)
-        if (file !== null) files[url] = file
-      } catch {
-        // The file stays out of the answer; the copy keeps its link.
-      }
+      // A file that cannot be read stays out of the answer; the copy keeps its link.
+      const file = await readFile(target, frameId, url, kind).catch(() => null)
+      if (file !== null) files[url] = file
     })
   )
   return files
