@@ -107,3 +107,17 @@ export function unscrolled(declared: string): string {
 export function statesOrigin(transforms: readonly string[]): boolean {
   return transforms.some((value) => value !== '' && value !== 'none')
 }
+
+/**
+ * `present` with every item of `before` it lacks put back ahead of the next item of `before`
+ * it still holds, or at the end: the order `before` had, whatever else `present` gained.
+ */
+export function backInPlace<T>(present: readonly T[], before: readonly T[]): T[] {
+  const out = [...present]
+  before.forEach((item, index) => {
+    if (out.includes(item)) return
+    const next = before.slice(index + 1).find((later) => out.includes(later))
+    out.splice(next === undefined ? out.length : out.indexOf(next), 0, item)
+  })
+  return out
+}

@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { pageRoot, PROPERTIES, pseudoText, webFontLink } from '../src/content/capture'
 import { dataURLs } from '../src/content/data-url'
 import {
+  backInPlace,
   foldTranslation,
   hideFaded,
   statesOrigin,
@@ -327,5 +328,23 @@ describe('seeThrough', () => {
     expect([...seeThrough(pixels(10, 10, 10, 255), pixels(90, 120, 60, 255))]).toEqual([
       90, 120, 60, 255
     ])
+  })
+})
+
+describe('backInPlace', () => {
+  test('puts an element the page moved away back before its next sibling', () => {
+    expect(backInPlace(['logo', 'tools'], ['logo', 'menu', 'tools'])).toEqual([
+      'logo',
+      'menu',
+      'tools'
+    ])
+  })
+
+  test('puts a last child back at the end and keeps what the parent gained', () => {
+    expect(backInPlace(['text', 'logo'], ['logo', 'menu'])).toEqual(['text', 'logo', 'menu'])
+  })
+
+  test('leaves a list that lost nothing as it is', () => {
+    expect(backInPlace(['a', 'b'], ['a', 'b'])).toEqual(['a', 'b'])
   })
 })

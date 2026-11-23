@@ -3,6 +3,7 @@
 // into real elements and the fonts it uses declared. Kalka pastes that HTML as editable layers;
 // any other editor reads it as plain HTML and CSS.
 import {
+  backInPlace,
   finalDeclarations,
   parseDeclarations,
   shifted,
@@ -362,6 +363,47 @@ interface Walk {
   defaults: BrowserDefaults
   /** Pictures of canvases that keep their pixels to themselves, such as WebGL ones. */
   canvases: ReadonlyMap<Element, string>
+  /** Where each element sat at the page's own width: see `CaptureOptions.home`. */
+  home: Home | null
+}
+
+/** The place of each element under a root: its parent, and each parent's children in order. */
+export interface Home {
+  parent: ReadonlyMap<Element, Element>
+  children: ReadonlyMap<Element, readonly Element[]>
+}
+
+/** Where every element under `root` sits now. */
+export function homeOf(root: Element): Home {
+  const parent = new Map<Element, Element>()
+  const children = new Map<Element, Element[]>()
+  for (const element of root.querySelectorAll('*')) {
+    const above = element.parentElement
+    if (!above) continue
+    parent.set(element, above)
+    children.set(above, [...(children.get(above) ?? []), element])
+  }
+  return { parent, children }
+}
+
+/** Whether the page moved an element out of the parent it had at its own width. */
+function movedAway(element: Element, home: Home | null): boolean {
+  const from = home?.parent.get(element)
+  return from !== undefined && from !== element.parentElement
+}
+
+/**
+ * The nodes to copy under `source`, in the order they had at the page's own width. A page's
+ * script may move an element at a narrower width, such as a menu into a drawer: the element is
+ * left out of where it went and written back where it was, hidden, so every copy keeps the same
+ * elements in the same order.
+ */
+function nodesInPlace(source: Element, live: NodeListOf<ChildNode>, home: Home | null): Node[] {
+  if (!home) return [...live]
+  const nodes: Node[] = [...live].filter(
+    (node) => !(node instanceof Element) || (home.parent.get(node) ?? source) === source
+  )
+  return backInPlace(nodes, home.children.get(source) ?? [])
 }
 
 /** How an element the page hides at this width is written: hidden, taking no room. */
@@ -581,7 +623,7 @@ const SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
 /** An element's children copied in its place, for a box the page does not draw. */
 function copyChildren(source: Element, parent: CSSStyleDeclaration | null, walk: Walk): Node {
   const fragment = document.createDocumentFragment()
-  for (const child of source.childNodes) {
+  for (const child of nodesInPlace(source, source.childNodes, walk.home)) {
     const copied = copyNode(child, parent, walk)
     if (copied) fragment.append(copied)
   }
@@ -610,7 +652,7 @@ function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk):
   if (style.display === 'contents' && source.namespaceURI !== SVG_NAMESPACE)
     return copyChildren(source, parent, walk)
   if (screenReaderOnly(source, style)) return null
-  const hidden = style.display === 'none'
+  const hidden = style.display === 'none' || movedAway(source, walk.home)
   if (hidden && !walk.keep.has(source)) return null
   const replaced = copyReplaced(source, style, parent, walk)
   if (replaced) return replaced
@@ -701,7 +743,7 @@ function fillChildren(
   const before = pseudo(source, '::before', style, walk)
   if (before) copy.append(before)
   const children = source.shadowRoot ? source.shadowRoot.childNodes : source.childNodes
-  for (const child of children) {
+  for (const child of nodesInPlace(source, children, walk.home)) {
     const copied = copyNode(child, style, walk)
     if (copied) copy.append(copied)
   }
@@ -822,17 +864,23 @@ export interface CaptureOptions {
   keep?: ReadonlySet<Element>
   /** What the screen showed: the backdrop behind the element and its unreadable canvases. */
   shots?: Shots
+  /**
+   * Where the elements sat at the page's own width, for a copy made at another: an element the
+   * page moved since is written where it was, hidden.
+   */
+  home?: Home
 }
 
 /** Copies an element as standalone HTML. */
 export function captureElement(
   element: Element,
   format: CaptureFormat,
-  { keep = new Set(), shots }: CaptureOptions = {}
+  { keep = new Set(), shots, home }: CaptureOptions = {}
 ): Capture {
   const defaults = new BrowserDefaults()
   const walk: Walk = {
     keep,
+    home: home ?? null,
     defaults,
     canvases: shots?.canvases ?? new Map(),
     layers: 0,
