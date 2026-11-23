@@ -83,7 +83,7 @@ Inspectez n'importe quel site et copiez un élément dans Kalka en calques modif
 
 - **Official URL:** kalka.design, if the domain is verified for your account. Otherwise leave it empty.
 - **Homepage URL:** https://kalka.design/tools/kalka-snapshot
-- **Support URL:** https://kalka.design/tools/kalka-snapshot
+- **Support URL:** https://github.com/leyscore/kalka/issues (the store's check could not reach a kalka.design page and refused the submission)
 
 ## Privacy practices tab
 
