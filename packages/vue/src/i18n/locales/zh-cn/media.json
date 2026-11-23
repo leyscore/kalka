@@ -7,5 +7,7 @@
   "stockPhotoToolOptional": "可选，用于 stock_photo 工具",
   "pexelsAlternativeOptional": "可选，作为 Pexels 的替代",
   "getPexelsAPIKey": "获取免费 Pexels API 密钥 →",
-  "getUnsplashAccessKey": "获取免费的 Unsplash 访问密钥 →"
+  "getUnsplashAccessKey": "获取免费的 Unsplash 访问密钥 →",
+  "agentReferences": "在智能体提问中显示图片",
+  "agentReferencesDescription": "询问设计风格时，显示上方服务中的照片，方便你直接挑选。需要先在上方设置密钥。"
 }

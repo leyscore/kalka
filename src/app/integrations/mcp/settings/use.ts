@@ -62,10 +62,11 @@ export function useMCPConnectionSettings(
     return !disposed && request === version
   }
 
-  function startAdd(): void {
+  /** Opens a new connection, empty or filled in from a suggestion. */
+  function startAdd(prefilled?: MCPConnectionDraft): void {
     version++
     saveResult.value = null
-    draft.value = createMCPConnectionDraft()
+    draft.value = prefilled ?? createMCPConnectionDraft()
     credentialCleared.value = false
     tokenDraft.value = ''
     tokenStatus.value = 'missing'
@@ -211,7 +212,7 @@ export function useMCPConnectionSettings(
   return {
     draft,
     busy,
-    cancel: startAdd,
+    cancel: () => startAdd(),
     tokenStatus,
     credentialCleared,
     error,

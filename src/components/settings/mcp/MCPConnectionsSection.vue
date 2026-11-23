@@ -4,7 +4,12 @@ import { computed, ref, useTemplateRef, watch } from 'vue'
 
 import { useAutomationMessages, useCommonMessages, useSettingsMessages } from '@kalka/vue'
 
-import { mcpConnectionSettings } from '@/app/integrations/mcp'
+import {
+  availableSuggestedMCPConnections,
+  mcpConnectionSettings,
+  suggestedMCPConnectionDraft,
+  type SuggestedMCPConnection
+} from '@/app/integrations/mcp'
 import { useMCPConnectionForm } from '@/app/integrations/mcp/settings/form'
 import { useMCPOAuthSignIn } from '@/app/integrations/mcp/settings/oauth'
 import { useMCPConnectionSettings } from '@/app/integrations/mcp/settings/use'
@@ -50,8 +55,11 @@ const dirty = computed(
 )
 const busy = computed(() => connection.busy.value || form.isSubmitting.value)
 useSettingsFormGuard({ dirty, busy, cancel }, editing)
-function startAdd() {
-  connection.startAdd()
+const suggestions = computed(() =>
+  availableSuggestedMCPConnections(mcpConnectionSettings.value.connections)
+)
+function startAdd(suggestion?: SuggestedMCPConnection) {
+  connection.startAdd(suggestion && suggestedMCPConnectionDraft(suggestion))
   editing.value = true
 }
 async function startEdit(id: string) {
@@ -108,7 +116,7 @@ async function remove() {
       <SettingsSection :aria-busy="busy" data-mcp-connections>
         <template #title>{{ automation.connections }}</template>
         <template #description>{{ automation.connectionsDescription }}</template>
-        <AppButton class="self-start" variant="outline" :loading="busy" @click="startAdd">
+        <AppButton class="self-start" variant="outline" :loading="busy" @click="startAdd()">
           <template #leading><icon-hugeicons-plus class="size-3.5" /></template>
           {{ automation.addConnection }}
         </AppButton>
@@ -131,6 +139,28 @@ async function remove() {
           </AppActionRow>
         </div>
         <AppPlaceholder v-else :label="automation.noConnections" />
+      </SettingsSection>
+      <SettingsSection v-if="suggestions.length" data-mcp-suggested-connections>
+        <template #title>{{ automation.suggestedConnections }}</template>
+        <template #description>{{ automation.suggestedConnectionsDescription }}</template>
+        <div class="flex flex-col gap-1.5">
+          <AppActionRow
+            v-for="suggestion in suggestions"
+            :key="suggestion.key"
+            :disabled="busy"
+            :data-suggested-connection="suggestion.key"
+            @click="startAdd(suggestion)"
+          >
+            <template #leading><icon-hugeicons-plug class="size-3.5" /></template>
+            {{ suggestion.name }}
+            <template #description>{{
+              suggestion.paid ? automation.suggestedPaid : automation.suggestedFree
+            }}</template>
+            <template #trailing>
+              <icon-hugeicons-plus class="size-3.5" />
+            </template>
+          </AppActionRow>
+        </div>
       </SettingsSection>
     </div>
   </SettingsPage>

@@ -11,6 +11,8 @@ import type { DesignStyleDeclaration } from '../types'
 
 export const DOM_CSS_PLUGIN_ID = 'kalka-dom-css'
 export const IMAGE_SOURCE_URL_KEY = 'image-source-url'
+/** What an `<img data-photo>` was written to show, kept so export writes it back. */
+export const PHOTO_DESCRIPTION_KEY = 'photo-description'
 
 /** Layers whose shape only paths describe, which CSS boxes cannot draw. */
 export const VECTOR_SHAPES = new Set<SceneNode['type']>([
@@ -27,12 +29,22 @@ export function imageSourceURL(node: SceneNode): string | undefined {
   )?.value
 }
 
+/** The photograph an image layer stands in for, from the `data-photo` it was written with. */
+export function photoDescription(node: SceneNode): string | undefined {
+  return node.pluginData.find(
+    (entry) => entry.pluginId === DOM_CSS_PLUGIN_ID && entry.key === PHOTO_DESCRIPTION_KEY
+  )?.value
+}
+
 /** The tag a layer's element takes when the layer sets none. */
 export function defaultTagForNode(node: SceneNode): string {
   if (node.type === 'TEXT') return 'span'
   if (node.type === 'SECTION') return 'section'
   const fill = node.fills.at(0)
-  if (((fill && drawsImage(fill)) || imageSourceURL(node)) && node.childIds.length === 0)
+  if (
+    ((fill && drawsImage(fill)) || imageSourceURL(node) || photoDescription(node) !== undefined) &&
+    node.childIds.length === 0
+  )
     return 'img'
   return 'div'
 }

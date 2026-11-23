@@ -7,5 +7,7 @@
   "stockPhotoToolOptional": "Facultatif — active l’outil de photos de stock",
   "pexelsAlternativeOptional": "Facultatif — source alternative de photos",
   "getPexelsAPIKey": "Obtenir une clé API Pexels gratuite →",
-  "getUnsplashAccessKey": "Obtenir une clé d’accès Unsplash gratuite →"
+  "getUnsplashAccessKey": "Obtenir une clé d’accès Unsplash gratuite →",
+  "agentReferences": "Images dans les questions de l’agent",
+  "agentReferencesDescription": "Quand Kalka AI demande l’allure d’un design, il montre des photos du service ci-dessus pour que vous choisissiez à l’œil. Nécessite une clé Pexels ou Unsplash."
 }

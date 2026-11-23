@@ -13,6 +13,7 @@ import { croppedImageStyle, patternBackground, tiledImageStyle } from './pattern
 import { asAutoLayoutSizes, flowMargins } from './sizing'
 import {
   imageSourceURL,
+  photoDescription,
   INTERACTIVE_TAGS,
   nestedTag,
   VECTOR_SHAPES,
@@ -129,6 +130,8 @@ function attrsForNode(
   const attrs: Record<string, string> = includeSourceIds ? { 'data-kalka-node-id': node.id } : {}
   const sourceURL = imageSourceURL(node)
   if (sourceURL) attrs.src = sourceURL
+  const photo = photoDescription(node)
+  if (photo !== undefined) attrs['data-photo'] = photo
   if (node.htmlClasses.length > 0) attrs.class = node.htmlClasses.join(' ')
   if (node.shader) {
     // Paper Shaders mounts on elements marked so; the layer's settings travel with the export.

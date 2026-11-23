@@ -21,16 +21,34 @@ step it needs and keep the existing system.
   - the sections or features it needs (multiple choice)
   - the brand: colours, fonts or a logo they have, and anything to avoid
   - the tone, and two or three sites or brands they like
+  - the style: the two or three entries of the style index that fit the subject, each with
+    its one-line reason, plus "none of these, my own direction" and "I'll send an image".
+    Offer this only when a style really fits; never push one
 - Give each question two to six concrete suggested answers drawn from what they said, never
   placeholders such as "Option A". When ask_user is not available, ask the same in your reply and
   wait for the answers. When they skip, decide and say what you assumed.
 
 ## 2. References
 
-- Use the references the person gives (sites, screenshots, brands they like) first.
-- Otherwise name two or three references from the product's own world (a print magazine, a
-  train timetable, a hardware manual, a well-known site of the same category) and say for each
-  what you take from it: the grid, the type, the colour, the density, the tone of the words.
+- Use the references the person gives (sites, screenshots, images, brands they like) first.
+- Otherwise propose some, as pictures the person picks by eye in ask_user.
+  - Websites and app screens first. When this session has a tool from a design-reference
+    library the person connected (Inspo, Mobbin, Refero, or another that returns screenshots of
+    real products), search it for pages of products like this one and pass four to eight of its
+    screenshots as the images of one question: the label names the product, the link is its
+    page, the credit names the library. Use only the https pictures it returns.
+  - Photos for the mood. With find_references, search the stock photo service the person
+    connected (Pexels or Unsplash) for the style and the subject; tell them which service the
+    pictures come from.
+  - Without either, when this session has a tool that searches or browses the web, find three
+    to five public pages of products like this one and list them as links; when it has none,
+    name references from the product's own world (a print magazine, a train timetable, a
+    hardware manual, a well-known site of the same category).
+  - Say for each what you would take from it: the grid, the type, the colour, the density, the
+    tone of the words.
+- Let the person keep some, refuse them all, or send their own image instead; ask_user with
+  the references as images does this in one step, and a picture they send reaches you with
+  their answers. Never insist on a reference they refused.
 - Take principles, never a copy: no layout, artwork or wording lifted from another product.
 
 ## 3. Direction
@@ -40,20 +58,15 @@ Write a short brief in the conversation before drawing:
 - the mood, as a concrete place or material (a print shop, a greenhouse, a ferry terminal);
   list three and keep one that is not your first idea. A warm-paper "atelier" or "editorial"
   mood is everyone's first idea; choose it only when the product really lives there
-- a palette with roles: one ground, one ink, one strong accent, two or three supporting tones
-  taken from that place, with their hex values and enough contrast for text. Take the colours
-  from the real materials of the subject (the steel of a container, the ink of an invoice, the
-  clay of a pot), not from the sector's cliché: signal yellow or amber on navy now reads as
-  generated, and so do hazard stripes for logistics or a leaf green for plants
-- two typefaces: a display face with character and a quiet text face, and a type scale with
-  strong contrast between display and labels (for example 72 / 48 / 28 / 18 / 16 / 13). Cap
-  the display size so the headline, the key content and the main action fit on the first
-  screen; set headings with letter spacing of -0.03 em or more, a line height of 0.95 or more
-  once they wrap, and `text-wrap: balance`. Find them with search_fonts and keep each with the document with add_font before setting text in
-  it: the document then carries the files and their licence, so it draws the same offline, for
-  teammates and in exported HTML
-- before building, hold the palette and the typefaces against the generated look listed under
-  Taste rules; if they match it, pick again from the product's own world
+- the style, from the style index, or none when none fits the subject: when one is chosen,
+  read its guide with read_style and follow it; when none is, the global rules and the colour
+  and type direction are the whole frame. Put the choice in the HTML comment on the first
+  line of the page, as the global rules show
+- a palette with roles (ground, ink, one accent, two or three supporting tones) and two
+  typefaces, built with the colour procedure and the colour and type direction. Find the
+  faces with search_fonts and keep each with the document with add_font before setting text
+  in it: the document then carries the files and their licence, so it draws the same offline,
+  for teammates and in exported HTML
 - a spacing scale on a 4 px base (4, 8, 12, 16, 24, 32, 48, 64, 96, 128) and a radius scale
 - the one device that carries the hero (product shot, type, photography, illustration, or a
   piece of Kalka Fresh adapted to the idea, below)
@@ -111,9 +124,10 @@ In every section:
   no fixed heights on text containers, so content can grow.
 - **Real content:** the product's words, real numbers with their source, real names. No lorem
   ipsum, no "Your text here", no invented logos. Images from stock_photo or the person's files.
-- **No placeholder images.** When no real image exists, compose without one: a real photo from
-  stock_photo, a visual drawn in CSS from the product's own parts, or a layout that needs no
-  image. Never leave a grey block, an empty `img` or a broken source.
+- **Photos where the subject wants them.** Use the person's files or stock_photo. When no photo
+  exists yet, leave a placeholder the person fills later: `<img data-photo="what it shows,
+concretely" alt="…">` with no src, at its real size and crop, as the global rules describe.
+  Never a grey block, an empty frame or a broken source.
 - **Names by role** for every layer that matters (Hero, Pricing card, Primary CTA).
 
 Change a section with edit_html, update_styles or update_css_class; rewrite a whole section only
@@ -175,23 +189,6 @@ and never a reason to have an idea.
 - Give the page a world, not a theme: one place or material from the brief carried through every
   section, so the page could not be swapped for another product's.
 - Show the real product: screens and parts captured from it, never drawn look-alikes.
-- Avoid what reads as generated. People spot these at once, and one is enough to make a page
-  look machine-made:
-  - colour: purple-to-blue gradients on white; cyan or neon on dark grey; a glowing dark mode by
-    default; a cream or warm-paper ground with a serif display and a terracotta, rust or
-    burnt-orange accent; signal yellow or amber on navy; the sector's cliché (hazard stripes for
-    logistics, a leaf for plants, a shield for security)
-  - type: the reflex faces (Inter, Space Grotesk, Playfair Display, Fraunces, DM Sans) chosen
-    because they come first; monospace as a "technical" signal; gradient text; one headline word
-    set apart in italic or colour; a tracked all-caps eyebrow above every heading (write a
-    sentence-case subtitle below the heading, or nothing); huge condensed capitals set with
-    tight tracking and tight leading
-  - layout: three identical cards with an icon, a heading and a line; cards nested in cards;
-    everything centred; thick coloured side stripes on cards and callouts; 01 / 02 / 03 markers
-    on things that are not a sequence
-  - surface: one radius and one soft grey shadow on everything; glass as decoration; a gradient
-    on every heading
-  - motion: a fade-up on every section, a lift on every card on hover, bounce easing
-  - details: emoji as icons; an arrow added to every link; meta lines joined with middle dots
-- The anti-slop catalogue (returned with this guide by get_design_guide, `/anti-slop` in Kalka's chat)
-  lists every sign, what replaces it and how to check for it; go through it in step 7.
+- The anti-slop catalogue (`/anti-slop` in Kalka's chat) lists every sign that makes a page look
+  machine-made, what replaces it and how to check for it; a chosen style may lift only the items
+  its guide names. Go through it in step 7.

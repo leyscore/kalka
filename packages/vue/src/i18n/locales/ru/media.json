@@ -7,5 +7,7 @@
   "stockPhotoToolOptional": "Необязательно — включает инструмент стоковых фото",
   "pexelsAlternativeOptional": "Необязательно — альтернативный источник фото",
   "getPexelsAPIKey": "Получить бесплатный API-ключ Pexels →",
-  "getUnsplashAccessKey": "Получить бесплатный ключ доступа Unsplash →"
+  "getUnsplashAccessKey": "Получить бесплатный ключ доступа Unsplash →",
+  "agentReferences": "Изображения в вопросах агента",
+  "agentReferencesDescription": "Когда Kalka AI спрашивает о стиле дизайна, он показывает фото из сервиса выше, чтобы вы выбрали на глаз. Нужен ключ Pexels или Unsplash."
 }

@@ -1,4 +1,12 @@
-export { ANTI_SLOP_GUIDE, CODEGEN_PROMPT, DESIGN_GUIDE } from './prompts'
+export {
+  ANTI_SLOP_GUIDE,
+  CODEGEN_PROMPT,
+  DESIGN_GUIDE,
+  STYLE_NAMES,
+  STYLE_SYSTEM,
+  styleGuide,
+  type StyleName
+} from './prompts'
 
 export { getComponentCatalog, registerComponentCatalog } from './component-catalog'
 // Kalka Fresh is built with the Figma API, so it ships with the tools rather than `library`.
@@ -64,5 +72,11 @@ export {
 export { setPexelsAPIKey, setUnsplashAccessKey } from './stock-photo'
 export { importSVG } from './create'
 export { editCSSClass, setHTMLElement } from './html'
-export { askUser, finishWorkingOnNodes, setStatus } from './presence'
+export { askUser, finishWorkingOnNodes, readStyle, setStatus, styleNamed } from './presence'
+export {
+  findReferences,
+  REFERENCE_COUNT,
+  searchReferences,
+  type VisualReference
+} from './references'
 export { claimWaitingComments } from './comments'

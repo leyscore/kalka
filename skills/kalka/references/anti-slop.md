@@ -108,9 +108,11 @@ problems.
 - Frosted glass cards with a highlight and a colored shadow.
 - A colored glow under a button: a blue button floating on a blue shadow (the `lint` tool reports
   it as button-glow).
-- Everything a pill. "New" and "Pro" badges on things that are neither. A pill above the hero
-  headline that announces nothing.
-- The same large radius and the same soft shadow on every surface.
+- Pills for every control at once: buttons, inputs, tags and badges all fully round. "New" and
+  "Pro" badges on things that are neither. A pill above the hero headline that announces
+  nothing.
+- The same soft grey shadow on every surface. Rounded corners are not the sign; a radius kept
+  consistent through the system is fine.
 - A thin border and a wide soft shadow on the same card.
 - A fake dashboard built from rectangles, shown as the product; a window with three colored
   dots around a made-up panel.
@@ -219,8 +221,9 @@ Removing a default is half the work. Here is what replaces each family.
   as a header floating over the page.
 - In place of a glowing button: a flat fill. If it must feel pressable, a darker edge along its
   bottom, like a key.
-- In place of pills everywhere: the radius scale from the design system. A block that meets
-  the edge of the window has square corners on that side.
+- In place of pills everywhere: the radius scale from the design system, soft corners by
+  default, pill buttons when the direction chose them. A block that meets the edge of the
+  window has square corners on that side.
 - In place of a fake dashboard: the real product, or one real part of it shown large.
 - In place of colored dots: the icon or the word that names the thing.
 - In place of the default focus ring: a ring drawn for the design, in its accent, that follows
