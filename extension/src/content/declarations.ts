@@ -86,6 +86,14 @@ export function unplaced(position: string): string[] {
 }
 
 /**
+ * What lets a copy of the page's root hold the whole page: on the page it is one window tall and
+ * the window scrolls the rest, where an artboard is as tall as what it holds.
+ */
+export function unscrolled(root: boolean): string[] {
+  return root ? ['height: auto', 'overflow: visible'] : []
+}
+
+/**
  * Whether a copy states the point an element turns and scales about: whenever something turns,
  * scales or moves it. A box scaled from its corner would otherwise scale about its middle.
  */

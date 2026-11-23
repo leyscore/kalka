@@ -1,7 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 
 import { pageRoot, PROPERTIES, pseudoText, webFontLink } from '../src/content/capture'
-import { foldTranslation, hideFaded, statesOrigin, unplaced } from '../src/content/declarations'
+import {
+  foldTranslation,
+  hideFaded,
+  statesOrigin,
+  unplaced,
+  unscrolled
+} from '../src/content/declarations'
 import { hexColor } from '../src/content/describe'
 import { inlineImages } from '../src/content/images'
 
@@ -108,6 +114,16 @@ describe('unplaced', () => {
   test('a root in the flow keeps its own position', () => {
     expect(unplaced('static')).toEqual([])
     expect(unplaced('relative')).toEqual([])
+  })
+})
+
+describe('unscrolled', () => {
+  test('the page’s root grows to the page instead of staying one window tall', () => {
+    expect(unscrolled(true)).toEqual(['height: auto', 'overflow: visible'])
+  })
+
+  test('any other root keeps its height and how it scrolls', () => {
+    expect(unscrolled(false)).toEqual([])
   })
 })
 

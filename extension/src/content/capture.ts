@@ -8,6 +8,7 @@ import {
   shifted,
   statesOrigin,
   unplaced,
+  unscrolled,
   writeDeclarations
 } from './declarations'
 import type { Shots } from './shots'
@@ -836,6 +837,7 @@ export function captureElement(
     const extra = ['box-sizing: border-box', `width: ${Math.round(box.width)}px`, 'margin: 0']
     if (behind) extra.push(`background-color: ${behind}`)
     extra.push(...unplaced(getComputedStyle(element).position))
+    extra.push(...unscrolled(pageRoot(element.localName)))
     // What the page drew behind it, from the screen, under the element's own background.
     if (shots?.backdrop) {
       const own = getComputedStyle(element).backgroundImage
