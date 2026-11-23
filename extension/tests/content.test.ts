@@ -14,6 +14,7 @@ import { drawnFirst } from '../src/content/drawn-font'
 import { fontURLs } from '../src/content/fonts'
 import { sheetFaces } from '../src/content/hidden-sheets'
 import { inlineImages } from '../src/content/images'
+import { seeThrough } from '../src/content/see-through'
 
 describe('hexColor', () => {
   test('writes an opaque computed color as hex', () => {
@@ -299,5 +300,32 @@ describe('drawnFirst', () => {
     expect(drawnFirst('"Brand Sans", sans-serif, Arial', none, installed)).toBe(
       '"Brand Sans", sans-serif, Arial'
     )
+  })
+})
+
+describe('seeThrough', () => {
+  const pixels = (...values: number[]) => new Uint8ClampedArray(values)
+
+  test('keeps a pixel that looks the same over white and over black opaque', () => {
+    const shot = pixels(200, 40, 10, 255)
+    expect([...seeThrough(shot, shot)]).toEqual([200, 40, 10, 255])
+  })
+
+  test('clears a pixel that only shows what is behind it', () => {
+    expect([...seeThrough(pixels(255, 255, 255, 255), pixels(0, 0, 0, 255))]).toEqual([0, 0, 0, 0])
+  })
+
+  test('gives a half-clear pixel its own color back', () => {
+    // Pure red at half strength: (255, 128, 128) over white, (128, 0, 0) over black.
+    const [red, green, blue, alpha] = seeThrough(pixels(255, 128, 128, 255), pixels(128, 0, 0, 255))
+    expect([red, green, blue]).toEqual([255, 0, 0])
+    expect(alpha).toBeGreaterThan(125)
+    expect(alpha).toBeLessThan(131)
+  })
+
+  test('keeps a pixel that moved between the two pictures opaque', () => {
+    expect([...seeThrough(pixels(10, 10, 10, 255), pixels(90, 120, 60, 255))]).toEqual([
+      90, 120, 60, 255
+    ])
   })
 })

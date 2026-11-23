@@ -70,6 +70,10 @@ export async function captureAtWidths(
   // Elements the page shows at any of the widths, so each copy holds them all.
   const keep = shown(element)
   const copies: string[] = []
+  // The pictures are taken at the page's own width. A narrower copy keeps the ones of the
+  // canvases, stretched to the box each has there, rather than an empty box; the backdrop
+  // would not sit behind the same things.
+  const narrow = shots && { backdrop: null, canvases: shots.canvases }
   try {
     for (const { width } of breakpoints) {
       await emulate(width)
@@ -79,7 +83,9 @@ export async function captureAtWidths(
     for (const { width, name } of breakpoints) {
       await emulate(width)
       await settle()
-      copies.push(template(width, name, captureElement(element, 'kalka', { keep }).html))
+      copies.push(
+        template(width, name, captureElement(element, 'kalka', { keep, shots: narrow }).html)
+      )
     }
   } finally {
     await emulate(null)
