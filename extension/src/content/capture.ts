@@ -25,7 +25,7 @@ export interface Capture {
 }
 
 /** The properties that decide how an element looks and lays out. */
-const PROPERTIES = [
+export const PROPERTIES = [
   'display',
   'position',
   'top',
@@ -65,6 +65,9 @@ const PROPERTIES = [
   'column-gap',
   'grid-template-columns',
   'grid-template-rows',
+  // The names `grid-column: hero` places by, and the direction the unplaced ones fill in.
+  'grid-template-areas',
+  'grid-auto-flow',
   'grid-column',
   'grid-row',
   'overflow',

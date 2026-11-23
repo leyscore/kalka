@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { pageRoot, pseudoText, webFontLink } from '../src/content/capture'
+import { pageRoot, PROPERTIES, pseudoText, webFontLink } from '../src/content/capture'
 import { foldTranslation, hideFaded, unplaced } from '../src/content/declarations'
 import { hexColor } from '../src/content/describe'
 import { inlineImages } from '../src/content/images'
@@ -140,5 +140,13 @@ describe('inlineImages', () => {
   test('leaves an image the page cannot fetch as a link', async () => {
     const html = '<img src="https://cdn.example.com/private.png">'
     expect(await inlineImages(html, async () => null)).toBe(html)
+  })
+})
+
+describe('PROPERTIES', () => {
+  test('copies the areas a grid names, which its children are placed by', () => {
+    expect(PROPERTIES).toContain('grid-template-areas')
+    expect(PROPERTIES).toContain('grid-auto-flow')
+    expect(PROPERTIES).toContain('grid-column')
   })
 })
