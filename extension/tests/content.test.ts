@@ -9,6 +9,8 @@ import {
   unscrolled
 } from '../src/content/declarations'
 import { hexColor } from '../src/content/describe'
+import { fontURLs } from '../src/content/fonts'
+import { sheetFaces } from '../src/content/hidden-sheets'
 import { inlineImages } from '../src/content/images'
 
 describe('hexColor', () => {
@@ -174,5 +176,33 @@ describe('PROPERTIES', () => {
     expect(PROPERTIES).toContain('grid-template-areas')
     expect(PROPERTIES).toContain('grid-auto-flow')
     expect(PROPERTIES).toContain('grid-column')
+  })
+})
+
+describe('fontURLs', () => {
+  test('a font file is known by its rule, not by its name', () => {
+    const html =
+      '<style>@font-face { font-family: acumin-pro; src: url("https://use.typekit.net/af/aee3f7/31/l?subset_id=2&fvd=n5&v=3") format("woff2"), url(https://cdn.example.com/a.woff) format("woff"); }' +
+      '.k-root { background-image: url("https://cdn.example.com/hero.jpg") }</style>' +
+      '<div style="background-image: url(https://cdn.example.com/card.woff2)"></div>'
+    expect([...fontURLs(html)]).toEqual([
+      'https://use.typekit.net/af/aee3f7/31/l?subset_id=2&fvd=n5&v=3',
+      'https://cdn.example.com/a.woff'
+    ])
+  })
+})
+
+describe('sheetFaces', () => {
+  test('font rules read from a stylesheet point at its own site', () => {
+    const css =
+      'body{margin:0}@font-face{font-family:"Clarkson";font-weight:400;src:url(../fonts/clarkson.woff2) format("woff2")}' +
+      "@media print{@font-face{font-family:Mono;src:url('/m.woff')}}"
+    expect(sheetFaces(css, 'https://assets.example.com/www/styles/fonts.css')).toEqual([
+      {
+        family: 'Clarkson',
+        rule: '@font-face{font-family:"Clarkson";font-weight:400;src:url("https://assets.example.com/www/fonts/clarkson.woff2") format("woff2")}'
+      },
+      { family: 'Mono', rule: '@font-face{font-family:Mono;src:url("https://assets.example.com/m.woff")}' }
+    ])
   })
 })

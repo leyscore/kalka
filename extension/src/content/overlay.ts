@@ -12,6 +12,7 @@ import {
 import { captureElement, type Capture, type CaptureFormat } from './capture'
 import { describe, elementLabel } from './describe'
 import { inlineFonts } from './fonts'
+import { readHiddenSheets } from './hidden-sheets'
 import { inlineImages } from './images'
 import { takeShots, type Shoot, type Shots } from './shots'
 import { STYLES } from './styles'
@@ -349,6 +350,7 @@ export class Inspector {
     format: CaptureFormat
   ): Promise<{ capture: Capture; widths: number[] }> {
     const shots = format === 'kalka' ? await this.shotsFor(element) : undefined
+    await readHiddenSheets()
     const emulate = this.widths.emulate
     if (format !== 'kalka' || !emulate || this.breakpoints.length === 0)
       return { capture: captureElement(element, format, { shots }), widths: [] }

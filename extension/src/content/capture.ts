@@ -12,6 +12,7 @@ import {
   unscrolled,
   writeDeclarations
 } from './declarations'
+import { hiddenFaces } from './hidden-sheets'
 import type { Shots } from './shots'
 
 /** How the styles are written: inline on each element (Kalka) or as classes in a stylesheet. */
@@ -736,6 +737,9 @@ function fontFaces(families: Set<string>): { faces: string[]; links: string[] } 
       // A stylesheet from another site hides its rules.
       const link = webFontLink(sheet.href)
       if (link) links.add(link)
+      // Read again where its site allows it: see `readHiddenSheets`.
+      for (const face of hiddenFaces(sheet.href))
+        if (families.has(face.family)) faces.add(face.rule)
       continue
     }
     const base = sheet.href ?? document.baseURI
