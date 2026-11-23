@@ -26,28 +26,49 @@ async function pause(ms: number): Promise<void> {
   })
 }
 
-/** Sets `visibility` on elements for the time of `run`, then gives each its own value back. */
+/** How an element is kept out of a picture: see `withVisibility`. */
+type Showing = 'hidden' | 'visible' | 'gone'
+
+/** What each way of showing sets; the transition is cut so the picture does not catch a fade. */
+const SHOWING: Record<Showing, readonly (readonly [string, string])[]> = {
+  hidden: [['visibility', 'hidden']],
+  visible: [['visibility', 'visible']],
+  gone: [
+    ['opacity', '0'],
+    ['transition', 'none']
+  ]
+}
+
+/**
+ * Shows or hides elements for the time of `run`, then gives each its own styles back. `hidden`
+ * leaves a descendant that asks to be visible on the screen, which is how one canvas is shot
+ * alone; `gone` takes the element out with everything in it, whatever its descendants ask.
+ */
 async function withVisibility<T>(
-  changes: readonly (readonly [HTMLElement | SVGElement, 'hidden' | 'visible'])[],
+  changes: readonly (readonly [HTMLElement | SVGElement, Showing])[],
   run: () => Promise<T>
 ): Promise<T> {
-  const saved = changes.map(
-    ([element]) =>
+  const set = changes.flatMap(([element, showing]) =>
+    SHOWING[showing].map(([property, value]) => [element, property, value] as const)
+  )
+  const saved = set.map(
+    ([element, property]) =>
       [
         element,
-        element.style.getPropertyValue('visibility'),
-        element.style.getPropertyPriority('visibility')
+        property,
+        element.style.getPropertyValue(property),
+        element.style.getPropertyPriority(property)
       ] as const
   )
-  for (const [element, value] of changes)
-    element.style.setProperty('visibility', value, 'important')
+  for (const [element, property, value] of set)
+    element.style.setProperty(property, value, 'important')
   try {
     await nextFrame()
     return await run()
   } finally {
-    for (const [element, value, priority] of saved) {
-      if (value) element.style.setProperty('visibility', value, priority)
-      else element.style.removeProperty('visibility')
+    for (const [element, property, value, priority] of saved) {
+      if (value) element.style.setProperty(property, value, priority)
+      else element.style.removeProperty(property)
     }
   }
 }
@@ -150,8 +171,8 @@ async function dataURL(canvas: OffscreenCanvas): Promise<string> {
  * that is one flat color, which the copy gives as its background color.
  */
 async function backdropOf(element: HTMLElement | SVGElement, shoot: Shoot): Promise<string | null> {
-  const covering = overlays(element).map((overlay) => [overlay, 'hidden'] as const)
-  const picture = await withVisibility([[element, 'hidden'], ...covering], () =>
+  const covering = overlays(element).map((overlay) => [overlay, 'gone'] as const)
+  const picture = await withVisibility([[element, 'gone'], ...covering], () =>
     pictureOf(element.getBoundingClientRect(), shoot)
   )
   if (!picture || flat(picture)) return null
@@ -183,7 +204,9 @@ async function canvasPicture(canvas: HTMLCanvasElement, shoot: Shoot): Promise<s
   const picture = await withVisibility(
     [
       [document.documentElement, 'hidden'],
-      [canvas, 'visible']
+      [canvas, 'visible'],
+      // A bar that stays on the screen would be drawn over the canvas.
+      ...overlays(canvas).map((overlay) => [overlay, 'gone'] as const)
     ],
     () => pictureOf(canvas.getBoundingClientRect(), shoot)
   )
