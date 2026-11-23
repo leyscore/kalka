@@ -6,6 +6,7 @@ import {
   finalDeclarations,
   parseDeclarations,
   shifted,
+  statesOrigin,
   unplaced,
   writeDeclarations
 } from './declarations'
@@ -226,9 +227,7 @@ class BrowserDefaults {
 
 /** Whether anything turns, scales or moves the element: only then does its origin matter. */
 function transformed(style: CSSStyleDeclaration): boolean {
-  return [style.transform, style.translate, style.rotate, style.scale].some(
-    (value) => value !== '' && value !== 'none'
-  )
+  return statesOrigin([style.transform, style.translate, style.rotate, style.scale])
 }
 
 /** A value an animation left a hair away from its rest, which would only add noise. */
@@ -290,7 +289,8 @@ interface Baseline {
 
 /** Whether a property's value is what the pasted element would get without being told. */
 function given(property: string, value: string, base: Baseline): boolean {
-  if (property === 'transform-origin' && !transformed(base.style)) return true
+  // Its default is the middle of each box, so the tag's own value says nothing about this one.
+  if (property === 'transform-origin') return !transformed(base.style)
   if (INHERITED.has(property)) {
     const tagSetsIt = base.own.get(property) !== base.plain.get(property)
     return !!base.parent && !tagSetsIt && base.parent.getPropertyValue(property) === value
@@ -477,6 +477,14 @@ const SVG_PLACEMENT: readonly string[] = [
   'transform-origin'
 ]
 
+/** The element a copy starts from, before its attributes, style and children. */
+function emptyCopy(source: Element): Node {
+  // A video is its poster, and the page's body a box that pasted markup can hold.
+  if (source instanceof HTMLVideoElement)
+    return Object.assign(document.createElement('img'), { src: absolute(source.poster) })
+  return pageRoot(source.localName) ? document.createElement('div') : source.cloneNode(false)
+}
+
 /** An SVG keeps its own markup at its size; its paint is in its attributes. */
 function copySVG(source: Element, style: CSSStyleDeclaration, walk: Walk): Element | null {
   if (source.tagName.toLowerCase() !== 'svg') return null
@@ -600,12 +608,7 @@ function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk):
     return picture.copy
   }
 
-  const copy =
-    source instanceof HTMLVideoElement
-      ? Object.assign(document.createElement('img'), { src: absolute(source.poster) })
-      : pageRoot(source.localName)
-        ? document.createElement('div')
-        : source.cloneNode(false)
+  const copy = emptyCopy(source)
   if (!(copy instanceof Element)) return null
   walk.layers++
   copyAttributes(copy, source, walk)

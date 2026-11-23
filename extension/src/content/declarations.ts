@@ -84,3 +84,11 @@ export function unplaced(position: string): string[] {
   if (position !== 'fixed' && position !== 'absolute' && position !== 'sticky') return []
   return ['position: relative', 'top: auto', 'right: auto', 'bottom: auto', 'left: auto']
 }
+
+/**
+ * Whether a copy states the point an element turns and scales about: whenever something turns,
+ * scales or moves it. A box scaled from its corner would otherwise scale about its middle.
+ */
+export function statesOrigin(transforms: readonly string[]): boolean {
+  return transforms.some((value) => value !== '' && value !== 'none')
+}

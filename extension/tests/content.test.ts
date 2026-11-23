@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
 import { pageRoot, PROPERTIES, pseudoText, webFontLink } from '../src/content/capture'
-import { foldTranslation, hideFaded, unplaced } from '../src/content/declarations'
+import { foldTranslation, hideFaded, statesOrigin, unplaced } from '../src/content/declarations'
 import { hexColor } from '../src/content/describe'
 import { inlineImages } from '../src/content/images'
 
@@ -140,6 +140,18 @@ describe('inlineImages', () => {
   test('leaves an image the page cannot fetch as a link', async () => {
     const html = '<img src="https://cdn.example.com/private.png">'
     expect(await inlineImages(html, async () => null)).toBe(html)
+  })
+})
+
+describe('statesOrigin', () => {
+  test('states the origin of a box that something scales, turns or moves', () => {
+    expect(statesOrigin(['matrix(0.5, 0, 0, 0.5, 0, 0)', 'none', 'none', 'none'])).toBe(true)
+    expect(statesOrigin(['none', 'none', 'none', '0.5'])).toBe(true)
+  })
+
+  test('leaves it out for a box at rest', () => {
+    expect(statesOrigin(['none', 'none', 'none', 'none'])).toBe(false)
+    expect(statesOrigin(['', '', '', ''])).toBe(false)
   })
 })
 
