@@ -2,7 +2,13 @@
 // carries the styles the browser computed for it, URLs made absolute, pseudo-elements turned
 // into real elements and the fonts it uses declared. Kalka pastes that HTML as editable layers;
 // any other editor reads it as plain HTML and CSS.
-import { finalDeclarations, parseDeclarations, shifted, writeDeclarations } from './declarations'
+import {
+  finalDeclarations,
+  parseDeclarations,
+  shifted,
+  unplaced,
+  writeDeclarations
+} from './declarations'
 import type { Shots } from './shots'
 
 /** How the styles are written: inline on each element (Kalka) or as classes in a stylesheet. */
@@ -813,6 +819,7 @@ export function captureElement(
     const behind = shownBackground(background, pageBackground(element))
     const extra = ['box-sizing: border-box', `width: ${Math.round(box.width)}px`, 'margin: 0']
     if (behind) extra.push(`background-color: ${behind}`)
+    extra.push(...unplaced(getComputedStyle(element).position))
     // What the page drew behind it, from the screen, under the element's own background.
     if (shots?.backdrop) {
       const own = getComputedStyle(element).backgroundImage

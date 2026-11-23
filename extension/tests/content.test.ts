@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
 import { pseudoText, webFontLink } from '../src/content/capture'
-import { foldTranslation, hideFaded } from '../src/content/declarations'
+import { foldTranslation, hideFaded, unplaced } from '../src/content/declarations'
 import { hexColor } from '../src/content/describe'
 import { inlineImages } from '../src/content/images'
 
@@ -83,6 +83,22 @@ describe('hideFaded', () => {
 
   test('leaves a translucent element as it is', () => {
     expect(hideFaded('display: block; opacity: 0.5')).toBe('display: block; opacity: 0.5')
+  })
+})
+
+describe('unplaced', () => {
+  test('a root the page pinned or placed is not placed in its own copy', () => {
+    for (const position of ['fixed', 'absolute', 'sticky']) {
+      const freed = unplaced(position)
+      expect(freed).toContain('position: relative')
+      expect(freed).toContain('left: auto')
+      expect(freed).toContain('top: auto')
+    }
+  })
+
+  test('a root in the flow keeps its own position', () => {
+    expect(unplaced('static')).toEqual([])
+    expect(unplaced('relative')).toEqual([])
   })
 })
 

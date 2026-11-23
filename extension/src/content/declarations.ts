@@ -75,3 +75,12 @@ export function hideFaded(declared: string): string {
 export function finalDeclarations(declared: string): string {
   return hideFaded(foldTranslation(declared))
 }
+
+/**
+ * What frees a copy's root from where the page put it: the copy is the artboard, so a root the
+ * page pinned or placed is not placed anywhere in it, and still holds the children it places.
+ */
+export function unplaced(position: string): string[] {
+  if (position !== 'fixed' && position !== 'absolute' && position !== 'sticky') return []
+  return ['position: relative', 'top: auto', 'right: auto', 'bottom: auto', 'left: auto']
+}
