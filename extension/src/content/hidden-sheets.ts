@@ -1,6 +1,8 @@
 // A stylesheet served from another site hides its rules from the page, and with them the
 // `@font-face` rules that say which files draw the page's text. Where that site lets the page
-// fetch the stylesheet again, its text gives those rules back.
+// fetch the stylesheet again, its text gives those rules back; where it does not, the extension
+// reads it.
+import type { ReadFiles } from './data-url'
 
 /** A `@font-face` rule read from a stylesheet's text. */
 export interface SheetFace {
@@ -50,24 +52,45 @@ function hides(sheet: CSSStyleSheet): boolean {
   }
 }
 
-/** Reads again the stylesheets that hide their rules, so a copy can take their fonts. */
-export async function readHiddenSheets(): Promise<void> {
+async function fetched(href: string): Promise<string | null> {
+  try {
+    const response = await fetch(href, { credentials: 'omit' })
+    return response.ok ? await response.text() : null
+  } catch {
+    // A site that refuses the page keeps its rules from it.
+    return null
+  }
+}
+
+/**
+ * Reads again the stylesheets that hide their rules, so a copy can take their fonts: the page
+ * fetches them, and `readFiles` reads the ones their site refuses to the page.
+ */
+export async function readHiddenSheets(readFiles?: ReadFiles): Promise<void> {
   const hidden = [...document.styleSheets]
     .filter((sheet) => hides(sheet))
     .map((sheet) => sheet.href)
     .filter((href): href is string => href !== null && !read.has(href))
+  const texts = new Map<string, string>()
   await Promise.all(
     hidden.map(async (href) => {
-      try {
-        const response = await fetch(href, { credentials: 'omit' })
-        const css = response.ok ? await response.text() : ''
-        read.set(href, css.length <= MAX_SHEET_BYTES ? sheetFaces(css, href) : [])
-      } catch {
-        // A site that refuses the page keeps its rules to itself.
-        read.set(href, [])
-      }
+      const css = await fetched(href)
+      if (css !== null) texts.set(href, css)
     })
   )
+  const refused = hidden.filter((href) => !texts.has(href))
+  if (readFiles && refused.length > 0) {
+    try {
+      for (const [href, css] of Object.entries(await readFiles(refused, 'text')))
+        texts.set(href, css)
+    } catch {
+      // Without the extension's reading, those stylesheets keep their rules.
+    }
+  }
+  for (const href of hidden) {
+    const css = texts.get(href) ?? ''
+    read.set(href, css.length <= MAX_SHEET_BYTES ? sheetFaces(css, href) : [])
+  }
 }
 
 /** The font rules of a stylesheet that hides them, once `readHiddenSheets` read it. */

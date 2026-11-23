@@ -10,6 +10,7 @@ import {
   type Emulate
 } from './breakpoints'
 import { captureElement, type Capture, type CaptureFormat } from './capture'
+import type { ReadFiles } from './data-url'
 import { describe, elementLabel } from './describe'
 import { inlineFonts } from './fonts'
 import { readHiddenSheets } from './hidden-sheets'
@@ -127,6 +128,8 @@ export class Inspector {
       save?: (keys: BreakpointKey[]) => void
       /** Takes a picture of the tab, for what the markup cannot say. */
       shoot?: Shoot
+      /** Reads the files their site refuses to the page. */
+      read?: ReadFiles
     } = {}
   ) {
     this.host.setAttribute('data-kalka-snapshot', '')
@@ -350,14 +353,14 @@ export class Inspector {
     format: CaptureFormat
   ): Promise<{ capture: Capture; widths: number[] }> {
     const shots = format === 'kalka' ? await this.shotsFor(element) : undefined
-    await readHiddenSheets()
+    await readHiddenSheets(this.widths.read)
     const emulate = this.widths.emulate
     if (format !== 'kalka' || !emulate || this.breakpoints.length === 0)
       return { capture: captureElement(element, format, { shots }), widths: [] }
     // The inspector stays out of sight while the page is shown at other widths.
     this.host.style.visibility = 'hidden'
     try {
-      return await captureAtWidths(element, this.breakpoints, emulate, shots)
+      return await captureAtWidths(element, this.breakpoints, emulate, shots, this.widths.read)
     } catch {
       this.showToast('Other widths could not be shown; copying at this width only.', 0)
       return { capture: captureElement(element, format, { shots }), widths: [] }
@@ -373,8 +376,8 @@ export class Inspector {
     this.showToast(`Capturing ${elementLabel(element)}…`, 0)
     const { capture, widths } = await this.captureFor(element, format)
     // Kalka shows only the images a copy carries; other editors load the links themselves.
-    const fonts = await inlineFonts(capture.html)
-    const html = format === 'kalka' ? await inlineImages(fonts) : fonts
+    const fonts = await inlineFonts(capture.html, this.widths.read)
+    const html = format === 'kalka' ? await inlineImages(fonts, undefined, this.widths.read) : fonts
     await writeClipboard({ html, text: html })
     const what = [
       `${capture.layers} layer${capture.layers === 1 ? '' : 's'}`,

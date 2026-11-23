@@ -22,3 +22,40 @@ export async function dataURL(url: string, maxBytes: number): Promise<string | n
     return null
   }
 }
+
+/**
+ * Reads files through the extension, for the ones their site refuses to the page: each file's
+ * text, or the file as a data URL, by its address. A file it cannot read is left out.
+ */
+export type ReadFiles = (urls: string[], kind: 'text' | 'data') => Promise<Record<string, string>>
+
+/** A data URL is about a third longer than the file it holds. */
+const DATA_URL_GROWTH = 1.37
+
+/**
+ * Files as data URLs, by address: fetched by the page where their site lets it, and read by
+ * `read` otherwise. A file neither can get, or larger than `maxBytes`, is left out.
+ */
+export async function dataURLs(
+  urls: readonly string[],
+  maxBytes: number,
+  read?: ReadFiles,
+  load: (url: string) => Promise<string | null> = (url) => dataURL(url, maxBytes)
+): Promise<Map<string, string>> {
+  const files = new Map<string, string>()
+  await Promise.all(
+    urls.map(async (url) => {
+      const data = await load(url)
+      if (data) files.set(url, data)
+    })
+  )
+  const refused = urls.filter((url) => !files.has(url))
+  if (!read || refused.length === 0) return files
+  try {
+    for (const [url, data] of Object.entries(await read(refused, 'data')))
+      if (data.length <= maxBytes * DATA_URL_GROWTH) files.set(url, data)
+  } catch {
+    // Without the extension's reading, the refused files stay links.
+  }
+  return files
+}

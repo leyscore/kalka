@@ -3,6 +3,7 @@
 // element is copied there. Every copy has the same elements in the same order, those the page
 // hides at a width written as hidden, so Kalka pairs the layers of each breakpoint by position.
 import { captureElement, type Capture } from './capture'
+import type { ReadFiles } from './data-url'
 import { readHiddenSheets } from './hidden-sheets'
 import type { Shots } from './shots'
 
@@ -56,9 +57,10 @@ export async function captureAtWidths(
   element: Element,
   keys: readonly BreakpointKey[],
   emulate: Emulate,
-  shots?: Shots
+  shots?: Shots,
+  read?: ReadFiles
 ): Promise<{ capture: Capture; widths: number[] }> {
-  await readHiddenSheets()
+  await readHiddenSheets(read)
   const own = window.innerWidth
   const breakpoints = BREAKPOINTS.filter(
     (breakpoint) => keys.includes(breakpoint.key) && breakpoint.width < own

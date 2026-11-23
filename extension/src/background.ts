@@ -1,3 +1,5 @@
+import { readFiles, type FileKind } from './read-files'
+
 // The shortcut (Alt+Shift+K by default) turns the inspector on or off in the current tab, as
 // the popup's button does. The inspector is injected only then, never into every page.
 export async function toggleInspector(tabId: number): Promise<void> {
@@ -101,5 +103,52 @@ chrome.runtime.onMessage.addListener((message: unknown, sender, reply) => {
   const windowId = sender.tab?.windowId
   if (!isShoot || windowId === undefined) return false
   void answerShoot(windowId, reply)
+  return true
+})
+
+interface ReadMessage {
+  type: 'kalka-read'
+  urls: string[]
+  kind: FileKind
+}
+
+function isReadMessage(message: unknown): message is ReadMessage {
+  if (typeof message !== 'object' || message === null) return false
+  if (!('type' in message) || message.type !== 'kalka-read') return false
+  if (!('kind' in message) || (message.kind !== 'text' && message.kind !== 'data')) return false
+  return (
+    'urls' in message &&
+    Array.isArray(message.urls) &&
+    message.urls.every((url) => typeof url === 'string' && /^https?:/.test(url))
+  )
+}
+
+/**
+ * Files a page shows but may not fetch again, read through the debugger, which is attached for
+ * the time of the reading unless the tab is already shown at another width.
+ */
+async function answerRead(
+  tabId: number,
+  message: ReadMessage,
+  reply: (answer: { files: Record<string, string> }) => void
+): Promise<void> {
+  const target = { tabId }
+  const attached = emulating.has(tabId)
+  try {
+    if (!attached) await chrome.debugger.attach(target, '1.3')
+    try {
+      reply({ files: await readFiles(target, message.urls, message.kind) })
+    } finally {
+      if (!attached) await chrome.debugger.detach(target).catch(() => undefined)
+    }
+  } catch {
+    reply({ files: {} })
+  }
+}
+
+chrome.runtime.onMessage.addListener((message: unknown, sender, reply) => {
+  const tabId = sender.tab?.id
+  if (!isReadMessage(message) || tabId === undefined) return false
+  void answerRead(tabId, message, reply)
   return true
 })

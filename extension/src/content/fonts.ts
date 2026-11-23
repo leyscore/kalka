@@ -1,7 +1,7 @@
 // Puts the fonts a copy uses inside it. Kalka lays a paste out on its own page, and a site's font
 // files usually refuse other sites, so a copy that only links them would be measured, and drawn,
 // in a fallback font. The page itself may read them: the copy carries them as data URLs.
-import { dataURL } from './data-url'
+import { dataURLs, type ReadFiles } from './data-url'
 
 /** Every file the page loaded: only the fonts among them are drawn, so only those come along. */
 function loadedFiles(): Set<string> {
@@ -29,20 +29,14 @@ export function fontURLs(html: string): Set<string> {
 
 /**
  * Replaces the links to the font files the page loaded with the files themselves, in the
- * `@font-face` rules of the copy's `<style>` blocks only. A font the page cannot fetch again
- * stays a link.
+ * `@font-face` rules of the copy's `<style>` blocks only. A font neither the page nor `read`
+ * can fetch again stays a link.
  */
-export async function inlineFonts(html: string): Promise<string> {
+export async function inlineFonts(html: string, read?: ReadFiles): Promise<string> {
   const loaded = loadedFiles()
   const urls = [...fontURLs(html)].filter((url) => loaded.has(url))
   if (urls.length === 0) return html
-  const files = new Map<string, string>()
-  await Promise.all(
-    urls.map(async (url) => {
-      const data = await dataURL(url, MAX_FONT_BYTES)
-      if (data) files.set(url, data)
-    })
-  )
+  const files = await dataURLs(urls, MAX_FONT_BYTES, read)
   return html.replace(/<style>[\s\S]*?<\/style>/g, (style) =>
     style.replace(FACE_RULE, (rule) =>
       rule.replace(FONT_URL, (match, quote: string, url: string) => {

@@ -2,6 +2,7 @@
 // inspector off, so the shortcut and the popup button both work as a toggle.
 import type { BreakpointKey, Emulate } from './breakpoints'
 import type { CaptureFormat } from './capture'
+import type { ReadFiles } from './data-url'
 import { Inspector } from './overlay'
 import type { Shoot } from './shots'
 
@@ -57,6 +58,17 @@ const shoot: Shoot = async () => {
   throw new Error('The tab could not be pictured.')
 }
 
+/** Asks the extension's worker for files their site refuses to the page; only it can read them. */
+const read: ReadFiles = async (urls, kind) => {
+  const reply: unknown = await chrome.runtime.sendMessage({ type: 'kalka-read', urls, kind })
+  if (typeof reply !== 'object' || reply === null || !('files' in reply)) return {}
+  const files = reply.files
+  if (typeof files !== 'object' || files === null) return {}
+  return Object.fromEntries(
+    Object.entries(files).filter((entry): entry is [string, string] => typeof entry[1] === 'string')
+  )
+}
+
 if (window.kalkaSnapshot) {
   window.kalkaSnapshot.stop()
 } else {
@@ -65,7 +77,7 @@ if (window.kalkaSnapshot) {
     () => {
       window.kalkaSnapshot = undefined
     },
-    { emulate, save: saveBreakpoints, shoot }
+    { emulate, save: saveBreakpoints, shoot, read }
   )
   window.kalkaSnapshot = inspector
   inspector.start()

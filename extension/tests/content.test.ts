@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
 import { pageRoot, PROPERTIES, pseudoText, webFontLink } from '../src/content/capture'
+import { dataURLs } from '../src/content/data-url'
 import {
   foldTranslation,
   hideFaded,
@@ -157,6 +158,62 @@ describe('inlineImages', () => {
   test('leaves an image the page cannot fetch as a link', async () => {
     const html = '<img src="https://cdn.example.com/private.png">'
     expect(await inlineImages(html, async () => null)).toBe(html)
+  })
+
+  test('takes from the extension the images their site refuses to the page', async () => {
+    const asked: string[][] = []
+    const html = await inlineImages(
+      '<img src="https://cdn.example.com/open.png"><img src="https://cdn.example.com/closed.png?a=1&amp;b=2">',
+      async (url) => (url.endsWith('open.png') ? 'data:image/png;base64,OPEN' : null),
+      async (urls) => {
+        asked.push(urls)
+        return { 'https://cdn.example.com/closed.png?a=1&b=2': 'data:image/png;base64,CLOSED' }
+      }
+    )
+    expect(asked).toEqual([['https://cdn.example.com/closed.png?a=1&b=2']])
+    expect(html).toBe(
+      '<img src="data:image/png;base64,OPEN"><img src="data:image/png;base64,CLOSED">'
+    )
+  })
+})
+
+describe('dataURLs', () => {
+  test('asks the extension only for the files the page could not fetch', async () => {
+    const asked: string[][] = []
+    const files = await dataURLs(
+      ['https://a.example/one.woff2', 'https://b.example/two.woff2'],
+      1000,
+      async (urls, kind) => {
+        asked.push([kind, ...urls])
+        return { 'https://b.example/two.woff2': 'data:font/woff2;base64,TWO' }
+      },
+      async (url) => (url.includes('one') ? 'data:font/woff2;base64,ONE' : null)
+    )
+    expect(asked).toEqual([['data', 'https://b.example/two.woff2']])
+    expect([...files]).toEqual([
+      ['https://a.example/one.woff2', 'data:font/woff2;base64,ONE'],
+      ['https://b.example/two.woff2', 'data:font/woff2;base64,TWO']
+    ])
+  })
+
+  test('leaves out a file larger than allowed, and all refused ones when the reading fails', async () => {
+    const none = async () => null
+    const large = await dataURLs(
+      ['https://a.example/big.png'],
+      10,
+      async () => ({ 'https://a.example/big.png': `data:image/png;base64,${'A'.repeat(40)}` }),
+      none
+    )
+    expect(large.size).toBe(0)
+    const failed = await dataURLs(
+      ['https://a.example/big.png'],
+      10,
+      async () => {
+        throw new Error('no debugger')
+      },
+      none
+    )
+    expect(failed.size).toBe(0)
   })
 })
 
