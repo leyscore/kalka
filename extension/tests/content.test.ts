@@ -9,6 +9,7 @@ import {
   unscrolled
 } from '../src/content/declarations'
 import { hexColor } from '../src/content/describe'
+import { drawnFirst } from '../src/content/drawn-font'
 import { fontURLs } from '../src/content/fonts'
 import { sheetFaces } from '../src/content/hidden-sheets'
 import { inlineImages } from '../src/content/images'
@@ -202,7 +203,44 @@ describe('sheetFaces', () => {
         family: 'Clarkson',
         rule: '@font-face{font-family:"Clarkson";font-weight:400;src:url("https://assets.example.com/www/fonts/clarkson.woff2") format("woff2")}'
       },
-      { family: 'Mono', rule: '@font-face{font-family:Mono;src:url("https://assets.example.com/m.woff")}' }
+      {
+        family: 'Mono',
+        rule: '@font-face{font-family:Mono;src:url("https://assets.example.com/m.woff")}'
+      }
     ])
+  })
+})
+
+describe('drawnFirst', () => {
+  const loaded = (family: string) =>
+    family.toLowerCase() === 'wix-madefor-display-v2' ? 'wix-madefor-display-v2' : undefined
+  const installed = (family: string) => family === 'Arial'
+  const none = () => undefined
+
+  test('starts with the web font the page loaded when the first family never did', () => {
+    expect(drawnFirst('madefor-display, "wix-madefor-display-v2", Arial', loaded, installed)).toBe(
+      '"wix-madefor-display-v2", madefor-display, Arial'
+    )
+  })
+
+  test('spells a loaded family as its font face does', () => {
+    expect(drawnFirst('Wix-Madefor-Display-V2, Arial', loaded, installed)).toBe(
+      '"wix-madefor-display-v2", Arial'
+    )
+  })
+
+  test('starts with a font of the computer when no family before it draws', () => {
+    expect(drawnFirst('"Brand Sans", Arial, sans-serif', none, installed)).toBe(
+      'Arial, "Brand Sans", sans-serif'
+    )
+  })
+
+  test('keeps a stack whose first family draws, or that names nothing the page can draw', () => {
+    expect(drawnFirst('Arial, "wix-madefor-display-v2"', loaded, installed)).toBe(
+      'Arial, "wix-madefor-display-v2"'
+    )
+    expect(drawnFirst('"Brand Sans", sans-serif, Arial', none, installed)).toBe(
+      '"Brand Sans", sans-serif, Arial'
+    )
   })
 })

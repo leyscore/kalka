@@ -12,6 +12,7 @@ import {
   unscrolled,
   writeDeclarations
 } from './declarations'
+import { fontStackRewriter } from './drawn-font'
 import { hiddenFaces } from './hidden-sheets'
 import type { Shots } from './shots'
 
@@ -315,7 +316,12 @@ function declarations(
   defaults: BrowserDefaults,
   sized: Sized = { width: true, height: true }
 ): string {
-  const base: Baseline = { style, parent, own: defaults.of(tag), plain: defaults.of('div') }
+  const base: Baseline = {
+    style,
+    parent,
+    own: defaults.of(tag),
+    plain: defaults.of('div')
+  }
   const out: string[] = []
   for (const property of PROPERTIES) {
     // Other boxes size to their content and their layout, as on the page.
@@ -347,6 +353,8 @@ interface Walk {
   images: number
   replaced: number
   families: Set<string>
+  /** Starts each font stack with the family the page draws: see `fontStackRewriter`. */
+  fonts: (declared: string) => string
   rules: string[]
   format: CaptureFormat
   /** Elements to keep even where the page does not show them, hidden: see `captureElement`. */
@@ -484,7 +492,9 @@ const SVG_PLACEMENT: readonly string[] = [
 function emptyCopy(source: Element): Node {
   // A video is its poster, and the page's body a box that pasted markup can hold.
   if (source instanceof HTMLVideoElement)
-    return Object.assign(document.createElement('img'), { src: absolute(source.poster) })
+    return Object.assign(document.createElement('img'), {
+      src: absolute(source.poster)
+    })
   return pageRoot(source.localName) ? document.createElement('div') : source.cloneNode(false)
 }
 
@@ -619,7 +629,7 @@ function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk):
   for (const family of families(style)) walk.families.add(family)
   if (source.namespaceURI === SVG_NAMESPACE) return copySVG(source, style, walk)
 
-  const declared = finalDeclarations(elementStyle(source, style, parent, walk.defaults))
+  const declared = walk.fonts(finalDeclarations(elementStyle(source, style, parent, walk.defaults)))
   applyStyle(copy, hiddenWhere(declared, hidden), walk)
   fillChildren(copy, source, style, walk)
   return copy
@@ -726,7 +736,9 @@ export function webFontLink(href: string | null): string | null {
  * the web font stylesheets whose rules the page cannot read, such as Google Fonts': without them
  * Kalka measures the text in a fallback font and wraps it where the page does not.
  */
-function fontFaces(families: Set<string>): { faces: string[]; links: string[] } {
+function fontFaces(used: Set<string>): { faces: string[]; links: string[] } {
+  // A stack may spell a family unlike its rule does: CSS matches them whatever the case.
+  const families = new Set([...used].map((family) => family.toLowerCase()))
   const faces = new Set<string>()
   const links = new Set<string>()
   for (const sheet of document.styleSheets) {
@@ -739,7 +751,7 @@ function fontFaces(families: Set<string>): { faces: string[]; links: string[] } 
       if (link) links.add(link)
       // Read again where its site allows it: see `readHiddenSheets`.
       for (const face of hiddenFaces(sheet.href))
-        if (families.has(face.family)) faces.add(face.rule)
+        if (families.has(face.family.toLowerCase())) faces.add(face.rule)
       continue
     }
     const base = sheet.href ?? document.baseURI
@@ -748,7 +760,7 @@ function fontFaces(families: Set<string>): { faces: string[]; links: string[] } 
         .getPropertyValue('font-family')
         .trim()
         .replace(/^["']|["']$/g, '')
-      if (!families.has(family)) continue
+      if (!families.has(family.toLowerCase())) continue
       faces.add(
         rule.cssText.replace(/url\((["']?)([^"')]+)\1\)/g, (_match, quote: string, url: string) => {
           try {
@@ -827,6 +839,7 @@ export function captureElement(
     images: 0,
     replaced: 0,
     families: new Set(),
+    fonts: fontStackRewriter(),
     rules: [],
     format
   }
