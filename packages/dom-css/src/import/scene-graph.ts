@@ -412,6 +412,14 @@ const sameValue = (a: string, b: string | undefined) =>
 const PLACEMENT_PROPERTIES = new Set(['position', 'left', 'top', 'right', 'bottom', 'inset'])
 
 /**
+ * A limit a placed box takes from the box it is placed in. On the page that box can be an
+ * ancestor further up; here it is the parent layer, so the share would be of another size.
+ */
+const SIZE_LIMIT = /^(min|max)-(width|height)$/
+const sharesContainer = (property: string, value: string) =>
+  SIZE_LIMIT.test(property) && value.includes('%')
+
+/**
  * Of the CSS an import noted as the layer's author wrote it, what the layer's fields do not
  * give back as written: the rest the fields hold already.
  */
@@ -426,6 +434,7 @@ function authoredOverrides(graph: SceneGraph, node: SceneNode): DesignStyleDecla
   const clippedToText = clipsBackgroundToText(written)
   for (const [property, value] of Object.entries(node.style)) {
     if (placed && PLACEMENT_PROPERTIES.has(property)) continue
+    if (placed && sharesContainer(property, value)) continue
     if (clippedToText && property === 'background') continue
     if (!sameValue(value, written[property])) kept[property] = value
   }

@@ -210,6 +210,33 @@ describe('measured HTML import', () => {
     expect(after.style['text-indent']).toBe('222.5px')
   })
 
+  test('a placed picture drops the limit it took from a box further up the page', () => {
+    const { graph, artboard } = graphOf(
+      measured([
+        element('div', box(0, 0, 676, 507), { ...BLOCK, position: 'relative' }, [
+          element('span', box(0, 253, 0, 0), { ...BLOCK, display: 'inline' }, [
+            {
+              ...element('div', box(0, 0, 676, 507), {
+                ...BLOCK,
+                position: 'absolute',
+                top: '0px',
+                'max-height': '100%',
+                'background-color': 'rgb(0, 0, 0)'
+              }),
+              inlineStyle: { 'max-height': '100%', 'text-indent': '4px' }
+            }
+          ])
+        ])
+      ])
+    )
+    const [banner] = graph.getChildren(artboard.id)
+    const [span] = graph.getChildren(banner.id)
+    const [picture] = graph.getChildren(span.id)
+    expect(picture.height).toBe(507)
+    expect(picture.style['max-height']).toBeUndefined()
+    expect(picture.style['text-indent']).toBe('4px')
+  })
+
   test('a gradient clipped to its text paints the letters, not a box', () => {
     const { graph, artboard } = graphOf(
       measured([
