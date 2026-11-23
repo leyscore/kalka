@@ -2,7 +2,11 @@ import { describe, expect, test } from 'bun:test'
 
 import { SceneGraph } from '@kalka/scene-graph'
 
-import { applyCopy, splitSnapshotBreakpoints } from '@/app/editor/clipboard/breakpoints'
+import {
+  adoptLayers,
+  applyCopy,
+  splitSnapshotBreakpoints
+} from '@/app/editor/clipboard/breakpoints'
 
 describe('splitSnapshotBreakpoints', () => {
   test('separates the narrower copies from the widest, widest first', () => {
@@ -74,7 +78,7 @@ describe('applyCopy', () => {
     expect(graph.images.get('shared')).toBe(kept)
   })
 
-  test('leaves an unpaired layer the copy shows as the wider breakpoint has it', () => {
+  test('hides a layer the page does not have at that width', () => {
     const graph = new SceneGraph()
     const target = header(graph, 390)
     const nav = graph.createNode('FRAME', target.id, { name: 'nav-main', width: 419 })
@@ -85,6 +89,108 @@ describe('applyCopy', () => {
 
     applyCopy(graph, target, copyGraph, source, true)
 
-    expect(graph.getNode(nav.id)).toMatchObject({ visible: true, width: 419 })
+    expect(graph.getNode(nav.id)).toMatchObject({ visible: false, width: 419 })
+  })
+
+  test('gives a text what the one text shown in its element says at that width', () => {
+    const graph = new SceneGraph()
+    const target = header(graph, 390)
+    const title = graph.createNode('TEXT', target.id, {
+      name: 'Grow faster. Take payments',
+      text: 'Grow faster. Take payments anywhere.',
+      width: 745
+    })
+
+    // The page hides the second sentence there, so the heading came in as a frame of two texts.
+    const copyGraph = new SceneGraph()
+    const source = header(copyGraph, 390)
+    const heading = copyGraph.createNode('FRAME', source.id, {
+      name: 'hero-title',
+      x: 16,
+      y: 53,
+      style: { 'grid-column': '1 / -1', color: 'rgb(129, 184, 26)' }
+    })
+    copyGraph.createNode('TEXT', heading.id, {
+      name: 'Grow faster.',
+      text: 'Grow faster.',
+      y: -4,
+      width: 311,
+      style: { display: 'inline', color: 'rgb(6, 27, 49)' }
+    })
+    copyGraph.createNode('TEXT', heading.id, { name: 'Take payments', visible: false })
+
+    applyCopy(graph, target, copyGraph, source, true)
+
+    expect(graph.getNode(title.id)).toMatchObject({
+      name: 'Grow faster. Take payments',
+      text: 'Grow faster.',
+      x: 16,
+      y: 49,
+      width: 311,
+      // Placed as the element is, and read as its text is.
+      style: { 'grid-column': '1 / -1', color: 'rgb(6, 27, 49)' }
+    })
+  })
+})
+
+describe('adoptLayers', () => {
+  function hero(graph: SceneGraph, width: number) {
+    const page = graph.getPages()[0]?.id ?? ''
+    return graph.createNode('FRAME', page, { name: 'hero', width, height: 600 })
+  }
+
+  /** A hero whose phone copy has a field with its label where the wide one has a button. */
+  function copies() {
+    const graph = new SceneGraph()
+    const target = hero(graph, 1440)
+    graph.createNode('TEXT', target.id, { name: 'Create a site' })
+    const button = graph.createNode('FRAME', target.id, { name: 'button' })
+    graph.createNode('FRAME', target.id, { name: 'video' })
+
+    const copyGraph = new SceneGraph()
+    const source = hero(copyGraph, 390)
+    copyGraph.createNode('TEXT', source.id, { name: 'Create a site' })
+    const field = copyGraph.createNode('FRAME', source.id, { name: 'text-input', width: 350 })
+    copyGraph.createNode('TEXT', field.id, { name: 'Email', text: 'Email' })
+    copyGraph.createNode('FRAME', source.id, { name: 'menu', visible: false })
+    copyGraph.createNode('FRAME', source.id, { name: 'video' })
+    return { graph, target, button, copyGraph, source }
+  }
+
+  test('adds the layers only a narrower copy shows, hidden, where the copy has them', () => {
+    const { graph, target, copyGraph, source } = copies()
+
+    adoptLayers(graph, target, copyGraph, source)
+
+    const children = graph.getChildren(target.id)
+    expect(children.map((child) => child.name)).toEqual([
+      'Create a site',
+      'button',
+      'text-input',
+      'video'
+    ])
+    expect(children.map((child) => child.visible)).toEqual([true, true, false, true])
+    const [label] = graph.getChildren(children[2]?.id ?? '')
+    expect(label).toMatchObject({ type: 'TEXT', text: 'Email', visible: true })
+  })
+
+  test('adds a layer once, whichever copies have it', () => {
+    const { graph, target, copyGraph, source } = copies()
+
+    adoptLayers(graph, target, copyGraph, source)
+    adoptLayers(graph, target, copyGraph, source)
+
+    expect(graph.getChildren(target.id)).toHaveLength(4)
+  })
+
+  test('shows at the breakpoint what the page shows there', () => {
+    const { graph, target, button, copyGraph, source } = copies()
+
+    adoptLayers(graph, target, copyGraph, source)
+    applyCopy(graph, target, copyGraph, source, true)
+
+    const field = graph.getChildren(target.id).find((child) => child.name === 'text-input')
+    expect(field).toMatchObject({ visible: true, width: 350 })
+    expect(graph.getNode(button.id)?.visible).toBe(false)
   })
 })
