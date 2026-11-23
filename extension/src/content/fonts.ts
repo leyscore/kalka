@@ -1,6 +1,7 @@
 // Puts the fonts a copy uses inside it. Kalka lays a paste out on its own page, and a site's font
 // files usually refuse other sites, so a copy that only links them would be measured, and drawn,
 // in a fallback font. The page itself may read them: the copy carries them as data URLs.
+import { dataURL } from './data-url'
 
 /** A font file the page loaded: only those are drawn, so only those come along. */
 function loadedFonts(): Set<string> {
@@ -14,27 +15,6 @@ function loadedFonts(): Set<string> {
 
 /** Fonts larger than this stay links: a copy is meant to fit in the clipboard. */
 const MAX_FONT_BYTES = 1_500_000
-
-async function dataURL(url: string): Promise<string | null> {
-  try {
-    const response = await fetch(url, { credentials: 'omit' })
-    if (!response.ok) return null
-    const blob = await response.blob()
-    if (blob.size > MAX_FONT_BYTES) return null
-    return await new Promise<string | null>((resolve) => {
-      const reader = new FileReader()
-      reader.addEventListener('load', () => {
-        resolve(typeof reader.result === 'string' ? reader.result : null)
-      })
-      reader.addEventListener('error', () => {
-        resolve(null)
-      })
-      reader.readAsDataURL(blob)
-    })
-  } catch {
-    return null
-  }
-}
 
 const FONT_URL = /url\((["']?)(https?:[^"')]+)\1\)/g
 
@@ -54,7 +34,7 @@ export async function inlineFonts(html: string): Promise<string> {
   const files = new Map<string, string>()
   await Promise.all(
     [...urls].map(async (url) => {
-      const data = await dataURL(url)
+      const data = await dataURL(url, MAX_FONT_BYTES)
       if (data) files.set(url, data)
     })
   )

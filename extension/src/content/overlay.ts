@@ -12,6 +12,7 @@ import {
 import { captureElement, type Capture, type CaptureFormat } from './capture'
 import { describe, elementLabel } from './describe'
 import { inlineFonts } from './fonts'
+import { inlineImages } from './images'
 import { takeShots, type Shoot, type Shots } from './shots'
 import { STYLES } from './styles'
 
@@ -369,7 +370,9 @@ export class Inspector {
     if (!element) return
     this.showToast(`Capturing ${elementLabel(element)}…`, 0)
     const { capture, widths } = await this.captureFor(element, format)
-    const html = await inlineFonts(capture.html)
+    // Kalka shows only the images a copy carries; other editors load the links themselves.
+    const fonts = await inlineFonts(capture.html)
+    const html = format === 'kalka' ? await inlineImages(fonts) : fonts
     await writeClipboard({ html, text: html })
     const what = [
       `${capture.layers} layer${capture.layers === 1 ? '' : 's'}`,

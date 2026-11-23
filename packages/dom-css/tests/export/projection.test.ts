@@ -28,6 +28,27 @@ describe('DOM projection', () => {
     })
   })
 
+  test('a layer placed in an imported grid drops its grid area, which would offset its left', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const hero = graph.createNode('FRAME', page.id, { name: 'Hero', width: 1440, height: 900 })
+    hero.style = { display: 'grid', 'grid-template-columns': '[full-start] 1fr [main-start] 1fr' }
+    const content = graph.createNode('FRAME', hero.id, {
+      name: 'Content',
+      x: 187,
+      y: 40,
+      width: 600,
+      height: 200
+    })
+    content.style = { 'grid-column': 'main', 'grid-row-start': '1', 'row-gap': '8px' }
+
+    const root = element(sceneNodeToDesignDocument(graph, hero.id).children[0])
+    const style = element(root.children[0]).inlineStyle
+    expect(style).toMatchObject({ position: 'absolute', left: '187px', 'row-gap': '8px' })
+    expect(style?.['grid-column']).toBeUndefined()
+    expect(style?.['grid-row-start']).toBeUndefined()
+  })
+
   test('an auto layout frame leaves its layers to flexbox', () => {
     const graph = new SceneGraph()
     const page = graph.getPages()[0]

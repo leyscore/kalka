@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 
 import { pseudoText, webFontLink } from '../src/content/capture'
+import { foldTranslation, hideFaded } from '../src/content/declarations'
 import { hexColor } from '../src/content/describe'
+import { inlineImages } from '../src/content/images'
 
 describe('hexColor', () => {
   test('writes an opaque computed color as hex', () => {
@@ -44,5 +46,64 @@ describe('webFontLink', () => {
   test('leaves out stylesheets from other sites and inline ones', () => {
     expect(webFontLink('https://cdn.example.com/site.css')).toBeNull()
     expect(webFontLink(null)).toBeNull()
+  })
+})
+
+describe('foldTranslation', () => {
+  test('moves a translated element by its offsets, where the page draws it', () => {
+    expect(
+      foldTranslation(
+        'position: absolute; left: 720px; top: 860px; transform: matrix(1, 0, 0, 1, -17, 0); transform-origin: 17px 20px'
+      )
+    ).toBe('position: absolute; left: 703px; top: 860px')
+  })
+
+  test('moves the right and bottom offsets the other way', () => {
+    expect(
+      foldTranslation(
+        'position: relative; left: 0px; top: 0px; right: 0px; bottom: 10px; transform: matrix(1, 0, 0, 1, 5, -5)'
+      )
+    ).toBe('position: relative; left: 5px; top: -5px; right: -5px; bottom: 15px')
+  })
+
+  test('keeps transforms that do more than move, and elements offsets do not move', () => {
+    const rotated = 'position: absolute; left: 0px; top: 0px; transform: matrix(0, 1, -1, 0, 0, 0)'
+    expect(foldTranslation(rotated)).toBe(rotated)
+    const inFlow = 'position: static; transform: matrix(1, 0, 0, 1, 10, 0)'
+    expect(foldTranslation(inFlow)).toBe(inFlow)
+    const percent = 'position: absolute; left: 50%; top: 0px; transform: matrix(1, 0, 0, 1, -17, 0)'
+    expect(foldTranslation(percent)).toBe(percent)
+  })
+})
+
+describe('hideFaded', () => {
+  test('pastes an element faded out to nothing as a hidden layer', () => {
+    expect(hideFaded('display: block; opacity: 0')).toBe('display: block; visibility: hidden')
+  })
+
+  test('leaves a translucent element as it is', () => {
+    expect(hideFaded('display: block; opacity: 0.5')).toBe('display: block; opacity: 0.5')
+  })
+})
+
+describe('inlineImages', () => {
+  test('carries each image once as a data URL, however many copies show it', async () => {
+    const loaded: string[] = []
+    const html = await inlineImages(
+      '<img src="https://cdn.example.com/a.jpg?w=1&amp;h=2"><template><img alt="" src="https://cdn.example.com/a.jpg?w=1&amp;h=2"></template>',
+      async (url) => {
+        loaded.push(url)
+        return 'data:image/jpeg;base64,AAAA'
+      }
+    )
+    expect(loaded).toEqual(['https://cdn.example.com/a.jpg?w=1&h=2'])
+    expect(html).toBe(
+      '<img src="data:image/jpeg;base64,AAAA"><template><img alt="" src="data:image/jpeg;base64,AAAA"></template>'
+    )
+  })
+
+  test('leaves an image the page cannot fetch as a link', async () => {
+    const html = '<img src="https://cdn.example.com/private.png">'
+    expect(await inlineImages(html, async () => null)).toBe(html)
   })
 })

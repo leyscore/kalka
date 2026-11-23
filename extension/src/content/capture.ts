@@ -2,6 +2,7 @@
 // carries the styles the browser computed for it, URLs made absolute, pseudo-elements turned
 // into real elements and the fonts it uses declared. Kalka pastes that HTML as editable layers;
 // any other editor reads it as plain HTML and CSS.
+import { finalDeclarations, parseDeclarations, shifted, writeDeclarations } from './declarations'
 import type { Shots } from './shots'
 
 /** How the styles are written: inline on each element (Kalka) or as classes in a stylesheet. */
@@ -45,8 +46,10 @@ const PROPERTIES = [
   'flex-wrap',
   'justify-content',
   'align-items',
+  'justify-items',
   'align-content',
   'align-self',
+  'justify-self',
   'flex-grow',
   'flex-shrink',
   'flex-basis',
@@ -72,6 +75,7 @@ const PROPERTIES = [
   'border-radius',
   'box-shadow',
   'opacity',
+  'visibility',
   'transform',
   'translate',
   'rotate',
@@ -141,10 +145,21 @@ const INHERITED = new Set<string>([
   'hyphens',
   'text-indent',
   'word-spacing',
-  'list-style-type'
+  'list-style-type',
+  'visibility'
 ])
 
-const DROPPED_TAGS = new Set(['SCRIPT', 'NOSCRIPT', 'STYLE', 'LINK', 'META', 'TEMPLATE'])
+// A `<source>` only offers its parent files to choose from: the copy keeps the one chosen.
+const DROPPED_TAGS = new Set([
+  'SCRIPT',
+  'NOSCRIPT',
+  'STYLE',
+  'LINK',
+  'META',
+  'TEMPLATE',
+  'SOURCE',
+  'TRACK'
+])
 
 /** Elements whose size is their own, not their content's: they keep a width and height. */
 const SIZED = new Set([
@@ -388,7 +403,7 @@ function copyReplaced(
   try {
     const image = document.createElement('img')
     image.src = walk.canvases.get(source) ?? source.toDataURL('image/png')
-    applyStyle(image, declarations(style, parent, 'img', walk.defaults), walk)
+    applyStyle(image, finalDeclarations(declarations(style, parent, 'img', walk.defaults)), walk)
     walk.layers++
     walk.images++
     return image
@@ -423,7 +438,8 @@ function copyAttributes(copy: Element, source: Element, walk: Walk): void {
 
 /**
  * How an SVG sits among its siblings, which the page's stylesheets set and which do not come
- * along: an icon beside wrapping text keeps its size only with `flex-shrink: 0`.
+ * along: an icon beside wrapping text keeps its size only with `flex-shrink: 0`, and one centred
+ * with `translate(-50%)` its place only with its transform.
  */
 const SVG_PLACEMENT: readonly string[] = [
   'position',
@@ -437,12 +453,19 @@ const SVG_PLACEMENT: readonly string[] = [
   'margin-bottom',
   'margin-left',
   'align-self',
+  'justify-self',
   'flex-grow',
   'flex-shrink',
   'flex-basis',
   'order',
   'grid-column',
-  'grid-row'
+  'grid-row',
+  'opacity',
+  'transform',
+  'translate',
+  'rotate',
+  'scale',
+  'transform-origin'
 ]
 
 /** An SVG keeps its own markup at its size; its paint is in its attributes. */
@@ -455,10 +478,11 @@ function copySVG(source: Element, style: CSSStyleDeclaration, walk: Walk): Eleme
   svg.setAttribute('height', String(box.height))
   const base = walk.defaults.of('svg')
   const placement = SVG_PLACEMENT.flatMap((property) => {
+    if (property === 'transform-origin' && !transformed(style)) return []
     const value = settled(property, style.getPropertyValue(property))
     return value && base.get(property) !== value ? [`${property}: ${value}`] : []
   })
-  applyStyle(svg, [`color: ${style.color}`, ...placement].join('; '), walk)
+  applyStyle(svg, finalDeclarations([`color: ${style.color}`, ...placement].join('; ')), walk)
   paintSVG(source, svg)
   return svg
 }
@@ -552,6 +576,12 @@ function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk):
   if (hidden && !walk.keep.has(source)) return null
   const replaced = copyReplaced(source, style, parent, walk)
   if (replaced) return replaced
+  const picture =
+    source instanceof HTMLPictureElement ? copyPicture(source, style, parent, walk) : null
+  if (picture) {
+    applyStyle(picture.copy, hiddenWhere(picture.declared, hidden), walk)
+    return picture.copy
+  }
 
   const copy =
     source instanceof HTMLVideoElement
@@ -564,14 +594,66 @@ function copyNode(source: Node, parent: CSSStyleDeclaration | null, walk: Walk):
   for (const family of families(style)) walk.families.add(family)
   if (source.namespaceURI === SVG_NAMESPACE) return copySVG(source, style, walk)
 
-  const declared = elementStyle(source, style, parent, walk.defaults)
-  applyStyle(
-    copy,
-    hidden ? `${declared.replace(/(^|; )display: none/, '$1')}; ${HIDDEN}` : declared,
-    walk
-  )
+  const declared = finalDeclarations(elementStyle(source, style, parent, walk.defaults))
+  applyStyle(copy, hiddenWhere(declared, hidden), walk)
   fillChildren(copy, source, style, walk)
   return copy
+}
+
+/** An element's declarations, written hidden where the page hides it at this width. */
+function hiddenWhere(declared: string, hidden: boolean): string {
+  return hidden ? `${declared.replace(/(^|; )display: none/, '$1')}; ${HIDDEN}` : declared
+}
+
+/**
+ * A `<picture>` as the one image it shows: its `<img>` with the file the browser chose, named
+ * after the picture and placed as the picture is, so the picture and its image are one layer.
+ * A positioned picture takes the image's box, where the image is smaller than it.
+ */
+function copyPicture(
+  source: HTMLPictureElement,
+  style: CSSStyleDeclaration,
+  parent: CSSStyleDeclaration | null,
+  walk: Walk
+): { copy: Element; declared: string } | null {
+  const image = [...source.children].find((child) => child instanceof HTMLImageElement)
+  if (!(image instanceof HTMLImageElement)) return null
+  const copy = image.cloneNode(false)
+  if (!(copy instanceof HTMLImageElement)) return null
+  walk.layers++
+  copyAttributes(copy, image, walk)
+  if (walk.format === 'kalka' && source.classList.length > 0)
+    copy.setAttribute('class', [...source.classList].join(' '))
+  const imageStyle = getComputedStyle(image)
+  // A picture left inline draws no box of its own: the image is all there is.
+  if (style.display === 'inline')
+    return {
+      copy,
+      declared: finalDeclarations(elementStyle(image, imageStyle, style, walk.defaults))
+    }
+  const own = parseDeclarations(declarations(style, parent, 'img', walk.defaults))
+  const outer = source.getBoundingClientRect()
+  const inner = image.getBoundingClientRect()
+  const positioned = style.position === 'absolute' || style.position === 'fixed'
+  const smaller = inner.width < outer.width - 1 || inner.height < outer.height - 1
+  const moved =
+    positioned && smaller ? shifted(own, inner.left - outer.left, inner.top - outer.top) : null
+  const box = moved ?? own
+  if (moved) {
+    box.set('width', `${inner.width}px`)
+    box.set('height', `${inner.height}px`)
+    for (const [side, by] of [
+      ['right', outer.right - inner.right],
+      ['bottom', outer.bottom - inner.bottom]
+    ] as const) {
+      const value = own.get(side)
+      if (value !== undefined) box.set(side, `${Number.parseFloat(value) + by}px`)
+    }
+  }
+  for (const property of ['object-fit', 'object-position'] as const)
+    box.set(property, imageStyle.getPropertyValue(property))
+  if (Number(imageStyle.opacity) === 0) box.set('opacity', '0')
+  return { copy, declared: finalDeclarations(writeDeclarations(box)) }
 }
 
 /** A copy's content: its pseudo-elements, and its children or its shadow root's. */
