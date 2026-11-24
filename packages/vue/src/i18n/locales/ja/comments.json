@@ -33,7 +33,6 @@
   "noTasks": "まだありません。エージェントの作業内容が新しい順にここに表示されます。",
   "taskRunning": "作業中",
   "taskDone": "完了",
-  "designing": "{name} がデザイン中…",
   "markReady": "開発準備完了にする",
   "moveToDraft": "下書きに戻す",
   "ready": "開発準備完了 · {name}",

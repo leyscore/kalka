@@ -111,7 +111,6 @@
   "sourceOther": "Anderes",
   "aiTitle": "Verbinde deine KI",
   "aiIntro": "Beschreibe eine Seite und dein Agent zeichnet sie, in Ebenen, die du bearbeiten kannst. Das geht auch später in den Einstellungen.",
-  "aiLater": "Später",
   "tourStep": "{current} von {total}",
   "tourNext": "Weiter",
   "tourDone": "Fertig",

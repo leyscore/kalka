@@ -94,6 +94,34 @@ export function noteAgentStatus(
     announced.add(session)
 }
 
+/** Sessions that announced their sections with `plan_sections`, or were already asked to. */
+const planned = new Set<string>()
+
+/** The agent of `session` ran `tool`; `plan_sections` with some sections counts as planning. */
+export function noteAgentPlan(session: string, tool: string, args: Record<string, unknown>): void {
+  if (tool === 'plan_sections' && Array.isArray(args.sections) && args.sections.length > 0)
+    planned.add(session)
+}
+
+/**
+ * For a session that starts a page without announcing its sections, the nudge to announce them,
+ * said once: `written` are the layers its call wrote, and a page starts with a top-level one.
+ */
+export function planReminder(
+  graph: SceneGraph,
+  session: string,
+  written: readonly string[]
+): string | null {
+  if (planned.has(session)) return null
+  const startsPage = written.some((id) => {
+    const parentId = graph.getNode(id)?.parentId
+    return !!parentId && graph.getNode(parentId)?.type === 'CANVAS'
+  })
+  if (!startsPage) return null
+  planned.add(session)
+  return 'You started a page without announcing its sections. Call plan_sections now with every section in order, the ones you already built included, each with a short name and its approximate height: the canvas shows those to come as outlines, so the person sees the whole page coming.'
+}
+
 /** For a session that edits without saying what it is doing, the nudge to say it. */
 export function statusReminder(session: string): string | null {
   if (announced.has(session)) return null

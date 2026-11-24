@@ -21,11 +21,12 @@ test('keeps recovery independent from cancelling an unsaved-document close', asy
   })
 
   await page.keyboard.press('ControlOrMeta+t')
-  await expect(page.getByTestId('tabbar-tab')).toHaveCount(2)
+  await expect(page.getByTestId('recent-files-home')).toBeVisible()
+  await expect(page.getByTestId('tabbar-tab')).toHaveCount(1)
   await page.locator('[data-slot="tab-item"]').first().getByTestId('tabbar-close').click()
   await expect(page.getByRole('alertdialog', { name: /Save changes to/ })).toBeVisible()
   await page.getByRole('button', { name: 'Cancel', exact: true }).click()
-  await expect(page.getByTestId('tabbar-tab')).toHaveCount(2)
+  await expect(page.getByTestId('tabbar-tab')).toHaveCount(1)
   await expect(page.getByTestId('recent-files-home')).toBeVisible()
   await expect
     .poll(() =>

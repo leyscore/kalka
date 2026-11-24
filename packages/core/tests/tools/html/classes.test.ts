@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 
+import { expectDefined } from '#core-tests/helpers/assert'
+
 import { FigmaAPI } from '@kalka/core/figma-api'
 import { ALL_TOOLS } from '@kalka/core/tools'
 import { findCSSClass, SceneGraph } from '@kalka/scene-graph'
-
-import { expectDefined } from '#core-tests/helpers/assert'
 
 const tool = (name: string) =>
   expectDefined(
@@ -35,7 +35,10 @@ describe('CSS class tools', () => {
     expect(graph.getNode(first.id)?.cornerRadius).toBe(999)
 
     graph.updateNode(second.id, { cornerRadius: 4 })
-    await tool('update_css_class').execute(figma, { name: 'btn', styles: { 'border-radius': '12px' } })
+    await tool('update_css_class').execute(figma, {
+      name: 'btn',
+      styles: { 'border-radius': '12px' }
+    })
     expect(graph.getNode(first.id)?.cornerRadius).toBe(12)
     expect(graph.getNode(second.id)?.cornerRadius).toBe(4)
 
@@ -54,7 +57,11 @@ describe('CSS class tools', () => {
       ]
     })
 
-    await tool('edit_css_class').execute(figma, { action: 'rename', name: 'btn', new_name: 'button' })
+    await tool('edit_css_class').execute(figma, {
+      action: 'rename',
+      name: 'btn',
+      new_name: 'button'
+    })
     expect(graph.getNode(first.id)?.htmlClasses).toEqual(['button'])
     await tool('edit_css_class').execute(figma, { action: 'delete', name: 'button' })
     expect(await tool('get_css_classes').execute(figma, {})).toEqual({ classes: [] })

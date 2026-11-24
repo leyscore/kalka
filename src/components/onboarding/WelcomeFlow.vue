@@ -411,12 +411,12 @@ function onOpenChange(open: boolean): void {
             <div :class="styles.frame()">
               <div :class="styles.card()">
                 <div :class="styles.actions()">
-                  <div :class="styles.buttons()">
+                  <div :class="styles.stack()">
                     <AppButton
                       size="lg"
                       color="primary"
                       variant="solid"
-                      :class="styles.primary()"
+                      :class="styles.primary({ class: styles.stacked() })"
                       data-test-id="welcome-continue"
                       @click="connectAgent"
                     >
@@ -426,7 +426,7 @@ function onOpenChange(open: boolean): void {
                     <AppButton
                       size="lg"
                       variant="outline"
-                      :class="styles.secondary()"
+                      :class="styles.secondary({ class: styles.stacked() })"
                       data-test-id="welcome-mcp"
                       @click="showMCP"
                     >
@@ -438,14 +438,6 @@ function onOpenChange(open: boolean): void {
                 </div>
                 <div :class="styles.nav()">
                   <AppButton size="lg" variant="link" @click="back">{{ welcome.back }}</AppButton>
-                  <div class="flex-1" />
-                  <AppButton
-                    size="lg"
-                    variant="link"
-                    data-test-id="welcome-later"
-                    @click="finish"
-                    >{{ welcome.aiLater }}</AppButton
-                  >
                 </div>
               </div>
             </div>

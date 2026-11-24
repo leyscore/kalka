@@ -38,6 +38,7 @@ const hidden = computed(() => people.length - shown.value.length)
       <slot name="person" :person="person">
         <PersonAvatar
           :name="person.name || common.you"
+          :picture="person.picture"
           :color="person.color"
           :agent-count="person.agents.length"
           :size="size"

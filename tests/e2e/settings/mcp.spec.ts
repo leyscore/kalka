@@ -5,7 +5,7 @@ import { CanvasHelper } from '#tests/helpers/canvas'
 async function selectMCPSection(page: Page, mobile: boolean) {
   if (mobile) {
     await page.getByTestId('app-settings').getByTestId('shell-menu').click()
-    await page.getByRole('tab', { name: 'External agents', exact: true }).click()
+    await page.getByRole('tab', { name: 'Agents and MCP', exact: true }).click()
   } else {
     await page.getByTestId('settings-section-mcp').click()
     await page.getByTestId('settings-mcp-advanced').getByRole('button').first().click()

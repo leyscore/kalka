@@ -61,6 +61,7 @@ import {
   tabCount,
   type Tab
 } from '@/app/tabs'
+import { tabsInTopBar } from '@/app/tabs/placement'
 import { isTauri } from '@/app/tauri/env'
 import { teamPageFromPath } from '@/app/team/route'
 import ColorSpaceBanner from '@/components/canvas/ColorSpaceBanner.vue'
@@ -430,7 +431,8 @@ onUnmounted(() => {
     <FontStatusBanner />
     <RenameSelectionDialog />
     <CommandPalette />
-    <TabBar />
+    <!-- A canvas shown bare, as an embed or a capture, has no bar at all. -->
+    <TabBar v-if="!tabsInTopBar && appRuntimeConfig.showChrome" />
     <HomeWorkspace v-show="activeTab?.kind === 'home'" />
     <EditorWorkspace
       v-if="activeTab && activeTab.kind !== 'home'"

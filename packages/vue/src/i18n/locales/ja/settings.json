@@ -68,5 +68,13 @@
   "modelNameHint": "モデル選択画面で見分けやすい名前を付けてください。",
   "modelIDHint": "プロバイダーが指定する正確なモデル ID を使用してください。",
   "baseURLHint": "必要なパスを含めて API エンドポイントを入力してください。",
-  "designToolsRequired": "デザイン用モデルはツールに対応している必要があります。対応モデルを選ぶか、詳細設定でツール対応を有効にしてください。"
+  "designToolsRequired": "デザイン用モデルはツールに対応している必要があります。対応モデルを選ぶか、詳細設定でツール対応を有効にしてください。",
+  "workflow": "ワークフロー",
+  "workflowFocus": "ワークフローの種類",
+  "workflowFocusAI": "AI 中心",
+  "workflowFocusDesign": "AI なしのデザイン",
+  "workflowFocusDesignDescription": "シンプルなデザインエディターです。エージェント、チャット、すべての AI 機能を隠します。",
+  "workflowFocusBalanced": "バランス",
+  "workflowFocusBalancedDescription": "手で作業し、必要なときにエージェントを呼び出します。ドキュメントはレイヤーで開きます。",
+  "workflowFocusAIDescription": "エージェントが主役です。ドキュメントはチャットで開き、すぐに依頼できます。"
 }

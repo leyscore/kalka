@@ -1,30 +1,62 @@
 import { toRaw } from 'vue'
 
 import type { SceneGraph } from '@kalka/scene-graph'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 import type { EditorStore } from '@/app/editor/active-store'
 
+import { glideViewTo } from './cursor-motion'
+import { centerViewForAgent } from './registry'
+
 /**
- * After a person asks the agent for something, the view goes to the first layer the agent then
- * creates, when it is out of view, so the result is watched as it lands. Once per request.
+ * After a person asks the agent for something, the view goes to where the agent builds: first to
+ * the place its work loads, then to the first layer it creates, when either is not wholly in view,
+ * so the result is watched as it lands. The view glides there; it never jumps.
  */
 const awaiting = new WeakSet<SceneGraph>()
 
-/** A request went to the agent: its first new layer, wherever it lands, is brought into view. */
+/** Screen pixels kept free around what the view goes to. */
+const MARGIN = 80
+
+/** A request went to the agent: where it builds, wherever that is, is brought into view. */
 export function flyToNextCreation(store: EditorStore): void {
   awaiting.add(toRaw(store.graph))
 }
 
-function visible(store: EditorStore, x: number, y: number, width: number, height: number): boolean {
+function inView(store: EditorStore, rect: Rect): boolean {
   const { panX, panY, zoom } = store.state
-  const view = store.viewportCanvasCenter()
-  const screenWidth = view.x * 2
-  const screenHeight = view.y * 2
-  const left = x * zoom + panX
-  const top = y * zoom + panY
+  const screen = store.viewportCanvasCenter()
+  const left = rect.x * zoom + panX
+  const top = rect.y * zoom + panY
   return (
-    left < screenWidth && top < screenHeight && left + width * zoom > 0 && top + height * zoom > 0
+    left >= 0 &&
+    top >= 0 &&
+    left + rect.width * zoom <= screen.x * 2 &&
+    // A page is taller than the screen: its top is what has to show.
+    top + Math.min(rect.height * zoom, screen.y) <= screen.y * 2
   )
+}
+
+function glideTo(store: EditorStore, rect: Rect): void {
+  if (inView(store, rect)) return
+  const screen = store.viewportCanvasCenter()
+  const width = screen.x * 2
+  const height = screen.y * 2
+  // Fit the width, and never zoom in on the way: the person chose how close they look.
+  const zoom = Math.min(store.state.zoom, (width - MARGIN * 2) / rect.width)
+  if (!(zoom > 0)) return
+  const shown = Math.min(rect.height, (height - MARGIN * 2) / zoom)
+  glideViewTo(
+    store,
+    { x: rect.x + rect.width / 2, y: rect.y + shown / 2 },
+    zoom,
+    (x, y, nextZoom) => centerViewForAgent(store, x, y, nextZoom)
+  )
+}
+
+/** The agent's work starts loading at `rect`: if a request waits for its result, the view goes. */
+export function flyToPlace(store: EditorStore, rect: Rect): void {
+  if (awaiting.has(toRaw(store.graph))) glideTo(store, rect)
 }
 
 /** The agent created `created`: if a request waits for its result, the view goes to the first. */
@@ -39,7 +71,6 @@ export function flyToCreation(store: EditorStore, created: readonly string[]): v
     const node = store.graph.getNode(first)
     if (!node) return
     const origin = store.graph.getAbsolutePosition(node.id)
-    if (visible(store, origin.x, origin.y, node.width, node.height)) return
-    store.centerOn(origin.x + node.width / 2, origin.y + node.height / 2, store.state.zoom)
+    glideTo(store, { x: origin.x, y: origin.y, width: node.width, height: node.height })
   }, 0)
 }

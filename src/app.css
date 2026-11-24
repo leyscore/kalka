@@ -102,6 +102,8 @@
   --pill-active-bg: color-mix(in srgb, white 12%, transparent);
   --pill-active-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
   --pill-hover-bg: color-mix(in srgb, white 5%, transparent);
+  /* Menus float on their own surface, so their highlight is tinted against it, not against a panel. */
+  --menu-hover-bg: color-mix(in srgb, white 8%, transparent);
 }
 
 /* Backdrop light: two soft lights over the page color; the light theme sets its own. */
@@ -112,6 +114,14 @@
   --backdrop-grain-blend: screen;
   --toolbar-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
   --loader-tile-border: rgb(255 255 255 / 0.16);
+  --chat-sky-top: #0c1238;
+  --chat-sky-mid: #141a3c;
+  --chat-sky-glow: rgb(47 91 234 / 0.62);
+  --chat-sky-haze: rgb(124 139 184 / 0.34);
+  --chat-sky-star: #ffffff;
+  --chat-sky-cloud: rgb(157 183 245 / 0.45);
+  --chat-tile-edge: rgb(250 250 250 / 0.16);
+  --chat-tile-shadow: inset 0 1px 0 rgb(250 250 250 / 0.14), 0 4px 14px -6px rgb(10 14 40 / 0.5);
   --float-shadow: 0 16px 48px -8px rgb(0 0 0 / 0.5), 0 2px 8px rgb(0 0 0 / 0.18);
 }
 
@@ -240,6 +250,73 @@
 
 @utility animate-liquid-fill {
   animation: kalka-liquid-fill 1.8s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+
+/*
+ * The AI chat's sky: the strip at the top of the chat where the agent lives. Night blue in the dark
+ * theme and a pale morning in the light one, with a glow from the top left; it fades into the
+ * panel below so the conversation starts under it without an edge.
+ */
+@utility chat-sky {
+  background-image:
+    radial-gradient(120% 95% at 12% 0%, var(--chat-sky-glow), transparent 62%),
+    radial-gradient(80% 80% at 100% 8%, var(--chat-sky-haze), transparent 66%),
+    linear-gradient(180deg, var(--chat-sky-top) 0%, var(--chat-sky-mid) 58%, transparent 100%);
+}
+
+/* The agent's creature breathes in its tile: a slow two pixel bob. */
+@keyframes kalka-creature-bob {
+  0%,
+  100% {
+    transform: translateY(1px);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+}
+
+@utility animate-creature-bob {
+  animation: kalka-creature-bob 2.4s ease-in-out infinite;
+}
+
+/*
+ * A section the agent is drawing: placeholder bars a band of light crosses from left to right,
+ * so the place reads as being filled, not as an empty box.
+ */
+@keyframes kalka-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@utility animate-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--color-accent) 12%, transparent) 25%,
+    color-mix(in oklab, var(--color-accent) 34%, transparent) 50%,
+    color-mix(in oklab, var(--color-accent) 12%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: kalka-shimmer 1.6s linear infinite;
+}
+
+/* The thin line under the agent while it works: liquid that swells and settles, never a percentage. */
+@keyframes kalka-liquid-breathe {
+  0%,
+  100% {
+    transform: scaleX(0.38);
+  }
+  50% {
+    transform: scaleX(0.52);
+  }
+}
+
+@utility animate-liquid-breathe {
+  transform-origin: left center;
+  animation: kalka-liquid-breathe 3s ease-in-out infinite;
 }
 
 /*
@@ -511,9 +588,18 @@
 
 html[data-theme='light'] {
   --loader-tile-border: rgb(255 255 255 / 0.6);
+  --chat-sky-top: #c3d2ff;
+  --chat-sky-mid: #dce4fb;
+  --chat-sky-glow: rgb(47 91 234 / 0.3);
+  --chat-sky-haze: rgb(124 139 184 / 0.2);
+  --chat-sky-star: #2f5bea;
+  --chat-sky-cloud: rgb(36 72 196 / 0.3);
+  --chat-tile-edge: rgb(255 255 255 / 0.9);
+  --chat-tile-shadow: inset 0 1px 0 rgb(255 255 255 / 1), 0 4px 14px -6px rgb(20 30 80 / 0.22);
   --pill-active-bg: color-mix(in srgb, white 92%, transparent);
   --pill-active-shadow: 0 1px 2px rgb(20 20 20 / 0.08);
   --pill-hover-bg: color-mix(in srgb, white 45%, transparent);
+  --menu-hover-bg: rgb(36 52 110 / 0.09);
   --backdrop-glow-a: 0.4;
   --backdrop-glow-b: 0.5;
   --backdrop-grain: 0.12;
@@ -614,6 +700,21 @@ html[data-theme='light'][data-effects='reduced'] {
   --color-glass-strong: rgb(255 255 255 / 0.92);
   --color-float: rgb(250 250 250 / 0.97);
   --color-shell: rgb(255 255 255 / 0.9);
+}
+
+/*
+ * Home, Settings and the other pages of the shell sit on the sky, so what floats over them (a
+ * dialog, a menu) takes the sky's night blue instead of the editor's neutral glass, and plain white
+ * by day. `src/app/shell/place.ts` says which place is on screen.
+ */
+:root[data-place='shell'] {
+  --color-float: rgb(15 22 64 / 0.92);
+  --color-float-border: rgb(157 183 245 / 0.16);
+}
+
+html[data-theme='light'][data-place='shell'] {
+  --color-float: rgb(255 255 255 / 0.94);
+  --color-float-border: rgb(36 52 110 / 0.12);
 }
 
 :root[data-effects='reduced'] *,

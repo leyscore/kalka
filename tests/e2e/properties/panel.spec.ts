@@ -402,6 +402,8 @@ test('bound NumberField detach edit is one undo step', async () => {
 
   const field = propertyField(editor.page, 'cornerRadius')
   await field.getByLabel('Apply variable').click()
+  // The list previews the variable under the pointer; leave it before reading the field's own value.
+  await editor.page.getByRole('button', { name: /^Create number variable from/ }).hover()
   await editor.page.getByText('Create number variable from 0').click()
   await editor.page.getByPlaceholder('Variable name').fill('Radius/default')
   await editor.page.getByRole('button', { name: 'Create', exact: true }).click()

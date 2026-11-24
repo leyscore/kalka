@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { compact } from 'es-toolkit/array'
+import { compact, partition } from 'es-toolkit/array'
 import {
   SelectContent,
   SelectGroup,
@@ -19,20 +19,38 @@ import { useI18n } from '@kalka/vue'
 
 import {
   aiModelSettings,
+  designModelProfile,
   designModelProfiles,
+  isAgentModelProfile,
   modelConnection,
   setModelRoleAssignment
 } from '@/app/ai/models'
 import type { AIModelProfile, AIModelProfileId } from '@/app/ai/models'
 import { openSettings } from '@/app/settings/open'
+import AgentCreature from '@/components/chat/AgentCreature.vue'
 import ChatProfileItem from '@/components/chat/ChatProfileItem.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import { useSelectUI } from '@/components/ui/select/select'
 import { chatProfileTheme } from '@/theme/chat/profile'
 
+/** `seed` and `color` draw the creature of the agent that answers in this conversation. */
+const { seed, color } = defineProps<{ seed: string; color: string }>()
 const { ai } = useI18n()
 const open = ref(false)
-const profiles = computed(designModelProfiles)
+// Kalka's own agent runs on a model; a connected agent brings its own.
+const groups = computed(() => {
+  const [agents, models] = partition(designModelProfiles(), isAgentModelProfile)
+  return [
+    { label: ai.value.agentGroupKalka, profiles: models },
+    { label: ai.value.agentGroupConnected, profiles: agents }
+  ].filter((group) => group.profiles.length > 0)
+})
+const selectedName = computed(() => designModelProfile.value?.name ?? '')
+const selectedMeta = computed(() => {
+  const profile = designModelProfile.value
+  if (!profile) return ''
+  return isAgentModelProfile(profile) ? ai.value.agentGroupConnected : ai.value.agentGroupKalka
+})
 const ui = chatProfileTheme()
 const selectCls = useSelectUI({
   trigger: ui.trigger(),
@@ -52,7 +70,7 @@ function profileMetadata(profile: AIModelProfile): string {
   const provider = AI_PROVIDERS.find((candidate) => candidate.id === connection?.providerID)
   const modelID = profile.customModelID || profile.modelID
   const modelName = provider?.models.find((model) => model.id === modelID)?.name || modelID
-  return compact([modelName, provider?.name ?? connection?.providerID]).join(' · ')
+  return compact([modelName, provider?.name ?? connection?.providerID]).join(', ')
 }
 
 function manageModels(): void {
@@ -68,8 +86,11 @@ function manageModels(): void {
       :aria-label="ai.selectDesignModel"
       :class="selectCls.trigger"
     >
-      <icon-hugeicons-sparkle :class="ui.triggerIcon()" />
-      <span :class="ui.triggerValue()"><slot name="value" /></span>
+      <span :class="ui.triggerTile()">
+        <AgentCreature :seed="seed" :class="ui.triggerCreature()" :style="{ color }" />
+      </span>
+      <span :class="ui.triggerName()">{{ selectedName }}</span>
+      <span :class="ui.triggerMeta()">{{ selectedMeta }}</span>
       <icon-hugeicons-chevron-down :class="ui.triggerChevron()" />
     </SelectTrigger>
     <SelectPortal>
@@ -82,13 +103,10 @@ function manageModels(): void {
         :class="selectCls.content"
       >
         <SelectViewport :class="selectCls.viewport">
-          <SelectGroup>
-            <div :class="ui.header()">
-              <SelectLabel :class="ui.headerLabel()">{{ ai.modelRoleDesign }}</SelectLabel>
-              <p :class="ui.headerDescription()">{{ ai.modelRoleDesignDescription }}</p>
-            </div>
+          <SelectGroup v-for="group in groups" :key="group.label">
+            <SelectLabel :class="ui.groupLabel()">{{ group.label }}</SelectLabel>
             <SelectItem
-              v-for="profile in profiles"
+              v-for="profile in group.profiles"
               :key="profile.id"
               :value="profile.id"
               :text-value="`${profile.name} ${profileMetadata(profile)}`"

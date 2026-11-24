@@ -17,7 +17,7 @@ test('current selection toggles and remains visible in history', async ({
     store.select([node.id])
     return node.id
   })
-  const toggle = chat.page.getByRole('button', { name: 'Add current selection as context' })
+  const toggle = chat.page.getByRole('button', { name: 'Point on canvas' })
   await toggle.click()
   await expect(toggle).toHaveAttribute('data-state', 'on')
   await expect(toggle).toBeEnabled()
@@ -72,7 +72,7 @@ test('node context stays hidden when combined with an image', async ({ configure
     store.select([node.id])
   })
   await chat.input.fill('Use this reference')
-  await chat.page.getByRole('button', { name: 'Add current selection as context' }).click()
+  await chat.page.getByRole('button', { name: 'Point on canvas' }).click()
   const chooser = chat.page.waitForEvent('filechooser')
   await chat.page.getByRole('button', { name: 'Attach images' }).click()
   await (await chooser).setFiles(PILOT)

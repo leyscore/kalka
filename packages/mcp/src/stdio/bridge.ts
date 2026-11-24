@@ -2,6 +2,7 @@ import { request } from 'node:http'
 import type { ClientRequest, RequestOptions } from 'node:http'
 
 import { APP_NOT_RUNNING_MESSAGE } from '#mcp/app-status'
+import { rpcTimeoutMs } from '#mcp/rpc-timeout'
 import { type DiscoveryInfo, readDiscoveryFile } from '#mcp/transport/discovery'
 import { getSocketPath, platformHasUnixSockets } from '#mcp/transport/paths'
 
@@ -17,8 +18,9 @@ type StdioRPCBridgeOptions = {
   onDiscovery?: (info: DiscoveryInfo) => void
 }
 
-// 35s gives a 5s margin over the worst case (10s app wait + 20s RPC timeout = 30s)
-const RPC_TIMEOUT = 35_000
+// The server's own timeout for the call plus its 10s app wait and a 5s margin: 35s for most calls.
+const RPC_MARGIN = 15_000
+const DEFAULT_TIMEOUT = 35_000
 // A health probe answers at once from a live server; waiting longer only delays telling the agent
 // that Kalka is closed.
 const HEALTH_TIMEOUT = 5_000
@@ -145,7 +147,7 @@ export function createStdioRPCBridge({
     method: string,
     path: string,
     body?: Record<string, unknown>,
-    timeoutMs = RPC_TIMEOUT - 5_000
+    timeoutMs = DEFAULT_TIMEOUT - 5_000
   ): Promise<{ status: number; data: unknown; req: ClientRequest }> {
     return new Promise((resolve, reject) => {
       const bodyJSON = body ? JSON.stringify(body) : undefined
@@ -183,7 +185,7 @@ export function createStdioRPCBridge({
 
       req.on('error', reject)
       // Socket-level idle timeout to prevent indefinite hangs on
-      // unresponsive connections. Set 5s shorter than the outer RPC_TIMEOUT
+      // unresponsive connections. Set 5s shorter than the outer call timeout
       // so this fires deterministically first, producing a clear "server
       // unreachable" signal rather than racing with the outer timer.
       // If the outer sendRPC timer already rejected, the error handler
@@ -333,11 +335,12 @@ export function createStdioRPCBridge({
       () =>
         new Promise((resolve, reject) => {
           let settled = false
+          const timeout = rpcTimeoutMs(body) + RPC_MARGIN
           const timer = setTimeout(() => {
             if (settled) return
             settled = true
-            reject(new Error(`RPC timeout (${Math.round(RPC_TIMEOUT / 1000)}s)`))
-          }, RPC_TIMEOUT)
+            reject(new Error(`RPC timeout (${Math.round(timeout / 1000)}s)`))
+          }, timeout)
 
           /**
            * Performs one HTTP request attempt. `allowAuthRetry` controls whether
@@ -345,7 +348,7 @@ export function createStdioRPCBridge({
            * It is set to `false` for the second attempt to prevent infinite loops.
            */
           function attempt(allowAuthRetry: boolean) {
-            httpRequest('POST', '/rpc', body)
+            httpRequest('POST', '/rpc', body, timeout - 5_000)
               .then(({ status, data, req }) => {
                 // If the overall RPC timeout fired while the request was in-flight,
                 // the server may have already executed the tool. Destroying the
@@ -362,7 +365,7 @@ export function createStdioRPCBridge({
                     // Auto-discovered token may have rotated — re-read the
                     // discovery file for a fresh token and retry transparently.
                     // IMPORTANT: Do NOT clear the timer here — the retry must
-                    // still be protected by the overall 35-second timeout.
+                    // still be protected by the overall call timeout.
                     resolvedAuthToken = null
                     // A new token means a restarted server, which may share other tools.
                     void readDiscovery()

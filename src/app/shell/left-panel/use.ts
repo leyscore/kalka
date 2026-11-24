@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 
 import { useAIChat } from '@/app/ai/chat/use'
+import { aiHidden } from '@/app/settings/preferences/store'
 
 /**
  * `file` is the layers of the document; `folder` is its files on the computer; `history` is the
@@ -27,9 +28,11 @@ const documentPanel = ref<DocumentPanel>('file')
  */
 export function useLeftPanel() {
   const { activeTab } = useAIChat()
-  const activePanel = computed<RailPanel>(() =>
-    isRequested(activeTab.value) ? activeTab.value : documentPanel.value
-  )
+  const activePanel = computed<RailPanel>(() => {
+    // Without AI the agent's conversation is never what the panel shows, whatever asked for it.
+    if (activeTab.value === 'ai' && aiHidden.value) return documentPanel.value
+    return isRequested(activeTab.value) ? activeTab.value : documentPanel.value
+  })
 
   function show(panel: RailPanel): void {
     if (isRequested(panel)) {
@@ -42,6 +45,7 @@ export function useLeftPanel() {
 
   /** Opens the agent's conversation, or goes back to the document panel shown before it. */
   function toggleAgent(): void {
+    if (aiHidden.value) return
     activeTab.value = activeTab.value === 'ai' ? 'design' : 'ai'
   }
 

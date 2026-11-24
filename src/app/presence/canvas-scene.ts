@@ -4,8 +4,6 @@ import type { DomScenePreview, RevealStep } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
 
-import { skeletonLive, type AgentSkeleton } from './skeletons'
-
 /** A DOM scene drawing this document, as `useDomScene` returns it. */
 export interface CanvasScene {
   reveal(steps: readonly RevealStep[]): void
@@ -17,12 +15,8 @@ export interface CanvasScene {
   readonly settled: boolean
 }
 
-/** Skeletons kept at once; the newest are kept. */
-export const MAX_AGENT_SKELETONS = 96
-
 interface SceneEffects {
   previews: ShallowRef<readonly DomScenePreview[]>
-  skeletons: ShallowRef<readonly AgentSkeleton[]>
   scenes: Set<CanvasScene>
 }
 
@@ -31,7 +25,7 @@ const effects = new WeakMap<EditorStore, SceneEffects>()
 function effectsOf(store: EditorStore): SceneEffects {
   let entry = effects.get(store)
   if (!entry) {
-    entry = { previews: shallowRef([]), skeletons: shallowRef([]), scenes: new Set() }
+    entry = { previews: shallowRef([]), scenes: new Set() }
     effects.set(store, entry)
   }
   return entry
@@ -56,29 +50,6 @@ export function hideScenePreview(store: EditorStore, preview: DomScenePreview): 
   const { previews } = effectsOf(store)
   if (!previews.value.includes(preview)) return
   previews.value = previews.value.filter((entry) => entry !== preview)
-}
-
-/**
- * Skeletons where agents' work is loading, as every pane draws them. The array is
- * replaced on each change and holds only skeletons still showing or about to.
- */
-export function agentSkeletons(store: EditorStore): readonly AgentSkeleton[] {
-  return effectsOf(store).skeletons.value
-}
-
-/** Shows skeletons, replacing those under the same keys; finished ones are dropped. */
-export function showAgentSkeletons(
-  store: EditorStore,
-  skeletons: readonly AgentSkeleton[],
-  now = performance.now()
-): void {
-  if (skeletons.length === 0) return
-  const entry = effectsOf(store).skeletons
-  const keys = new Set(skeletons.map((skeleton) => skeleton.key))
-  const kept = entry.value.filter(
-    (skeleton) => !keys.has(skeleton.key) && skeletonLive(skeleton, now)
-  )
-  entry.value = [...kept, ...skeletons].slice(-MAX_AGENT_SKELETONS)
 }
 
 /** A pane's DOM scene replays agent edits for this document until the returned detach. */

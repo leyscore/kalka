@@ -68,5 +68,13 @@
   "modelNameHint": "Un nom que vous reconnaîtrez dans le sélecteur de modèles.",
   "modelIDHint": "Utilisez l’identifiant exact du modèle fourni par votre fournisseur.",
   "baseURLHint": "Saisissez le point d’accès de l’API, y compris le chemin requis.",
-  "designToolsRequired": "Le modèle de conception doit prendre en charge les outils. Choisissez un modèle compatible ou activez les outils dans les paramètres avancés."
+  "designToolsRequired": "Le modèle de conception doit prendre en charge les outils. Choisissez un modèle compatible ou activez les outils dans les paramètres avancés.",
+  "workflow": "Flux de travail",
+  "workflowFocus": "Type de workflow",
+  "workflowFocusAI": "Centré IA",
+  "workflowFocusDesign": "Design sans IA",
+  "workflowFocusDesignDescription": "Un éditeur de design simple. L'agent, sa discussion et toutes les fonctions IA sont cachés.",
+  "workflowFocusBalanced": "Modéré",
+  "workflowFocusBalancedDescription": "Vous dessinez à la main et appelez l'agent quand vous voulez. Un document s'ouvre sur ses calques.",
+  "workflowFocusAIDescription": "L'agent passe en premier. Un document s'ouvre sur la discussion, prêt pour une demande."
 }

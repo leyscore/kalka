@@ -1,14 +1,15 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 
 import { FigmaAPI } from '@kalka/core/figma-api'
+import { CORE_TOOLS, findReferences, isToolExposed, searchReferences } from '@kalka/core/tools'
+import { SceneGraph } from '@kalka/scene-graph'
+
 import {
   registerStockPhotoProvider,
   setActiveStockPhotoProvider,
   type StockPhotoProvider,
   type StockPhotoResult
 } from '#core/tools/stock-photo/providers'
-import { CORE_TOOLS, findReferences, isToolExposed, searchReferences } from '@kalka/core/tools'
-import { SceneGraph } from '@kalka/scene-graph'
 
 const figma = new FigmaAPI(new SceneGraph())
 
@@ -46,7 +47,10 @@ describe('searchReferences', () => {
   })
 
   test('keeps https pictures only, up to the count asked', async () => {
-    const photos = [photo('a', 'http://images.example.com/a.jpg'), ...'bcdef'.split('').map((id) => photo(id))]
+    const photos = [
+      photo('a', 'http://images.example.com/a.jpg'),
+      ...'bcdef'.split('').map((id) => photo(id))
+    ]
     const { fake } = provider('unsplash', photos)
     const references = await searchReferences(fake, 'bakery', 4)
     expect(references.map((reference) => reference.link)).toEqual([
@@ -59,11 +63,12 @@ describe('searchReferences', () => {
 })
 
 describe('find_references', () => {
-  test('without a connected service, the agent is told to offer styles in words', async () => {
+  test('without a connected service, the agent goes on without telling the person', async () => {
     setActiveStockPhotoProvider(null)
     const result = await findReferences.execute(figma, { query: 'swiss grid' })
     expect(result).toMatchObject({ references: [] })
-    expect(JSON.stringify(result)).toContain('Images and photos')
+    expect(JSON.stringify(result)).toContain('do not mention it to the person')
+    expect(JSON.stringify(result)).not.toContain('settings')
   })
 
   test('names the service, and turns a failed search into an error the agent can read', async () => {

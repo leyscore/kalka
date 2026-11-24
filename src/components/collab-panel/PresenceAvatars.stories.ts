@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
 
+import { roomPicture } from '@/app/collab/avatar'
 import type { FollowTarget } from '@/app/presence/types'
 import { colors, room } from '@/components/presence/examples/room'
 import type { PresencePersonRow } from '@/components/presence/rows'
@@ -9,9 +10,27 @@ import PresenceAvatars from './PresenceAvatars.vue'
 
 const crowd: PresencePersonRow[] = [
   ...room,
-  { clientId: 4, name: 'Cleo', color: colors.cleo, agents: [] },
-  { clientId: 5, name: 'Eli', color: colors.ben, agents: [] },
-  { clientId: 6, name: 'Fay', color: colors.ana, agents: [] }
+  {
+    clientId: 4,
+    name: 'Cleo',
+    color: colors.cleo,
+    picture: roomPicture({ name: 'Cleo', color: colors.cleo }),
+    agents: []
+  },
+  {
+    clientId: 5,
+    name: 'Eli',
+    color: colors.ben,
+    picture: roomPicture({ name: 'Eli', color: colors.ben }),
+    agents: []
+  },
+  {
+    clientId: 6,
+    name: 'Fay',
+    color: colors.ana,
+    picture: roomPicture({ name: 'Fay', color: colors.ana }),
+    agents: []
+  }
 ]
 
 type Args = {

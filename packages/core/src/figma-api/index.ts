@@ -602,6 +602,11 @@ export class FigmaAPI implements NodeProxyHost {
    */
   setAgentStatus?: (text: string) => void
   /**
+   * Shows the sections the calling agent is about to build as empty outlines on the canvas, in
+   * order, or clears them with an empty list. Absent in hosts that show no agents.
+   */
+  setAgentPlan?: (sections: PlannedSection[]) => void
+  /**
    * Shows the calling agent's questions to the person, one at a time with suggested answers, and
    * resolves with what they answered, or null when they skipped. Absent in hosts with no person
    * to ask.
@@ -609,6 +614,13 @@ export class FigmaAPI implements NodeProxyHost {
   askUser?: (questions: AgentQuestion[]) => Promise<AgentAnswer[] | null>
   /** The name the calling agent's comment replies carry, when the host knows it. */
   commentAuthorName?: string
+}
+
+/** A section an agent says it will build: what it is called and roughly how tall it will be. */
+export interface PlannedSection {
+  name: string
+  /** In pixels; an estimate until the section exists. */
+  height: number
 }
 
 /** A question an agent asks the person, with answers they can pick in one click. */

@@ -1,3 +1,4 @@
+ja:ai.agentGroupKalka
 ja:ai.agentsNeedDirectModel
 ja:ai.aiSetupAccessAPI
 ja:ai.aiSetupAccessAgentsDesktop
@@ -248,6 +249,9 @@ ja:settings.storageDescription
 ja:settings.temporaryDisableSnappingHint
 ja:settings.toolsDescription
 ja:settings.usageDescription
+ja:settings.workflowFocusAI
+ja:settings.workflowFocusDesign
+ja:settings.workflowFocusDesignDescription
 ja:storage.accessKeyID
 ja:storage.copyCors
 ja:storage.providerS3
@@ -305,6 +309,7 @@ ja:welcome.tourCodeBody
 ja:welcome.tourFolderBody
 ja:welcome.tourHistoryBody
 ja:welcome.tourToolbarBody
+zh-cn:ai.agentGroupKalka
 zh-cn:ai.agentsNeedDirectModel
 zh-cn:ai.aiSetupAccessAPI
 zh-cn:ai.aiSetupAccessAgentsDesktop
@@ -552,6 +557,9 @@ zh-cn:settings.storageDescription
 zh-cn:settings.temporaryDisableSnappingHint
 zh-cn:settings.toolsDescription
 zh-cn:settings.usageDescription
+zh-cn:settings.workflowFocusAI
+zh-cn:settings.workflowFocusDesign
+zh-cn:settings.workflowFocusDesignDescription
 zh-cn:storage.accessKeyID
 zh-cn:storage.copyCors
 zh-cn:storage.providerS3

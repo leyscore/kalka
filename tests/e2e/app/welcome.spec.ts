@@ -30,7 +30,7 @@ test('the welcome asks about the person step by step and keeps the answers', asy
   await welcome.getByTestId('welcome-next').click()
 
   await expect(welcome.getByTestId('welcome-continue')).toBeVisible()
-  await welcome.getByTestId('welcome-later').click()
+  await welcome.getByTestId('welcome-skip').click()
   await expect(welcome).toHaveCount(0)
   await expect(page).not.toHaveURL(/\/welcome/)
 

@@ -90,11 +90,6 @@ function replaying(page: Page) {
   })
 }
 
-/** The skeletons shown where an agent's new layers are loading. */
-function skeletons(page: Page) {
-  return page.locator('[data-slot="agent-skeleton"]')
-}
-
 async function open(page: Page) {
   await page.goto('/?test')
   await new CanvasHelper(page).waitForInit()
@@ -115,15 +110,6 @@ test("an agent's new layers appear in turn, then rest as written", async ({ page
   await expect(artboard.getByText('Everything you need to ship.')).toBeVisible()
 })
 
-test("an agent's new layers load as skeleton blocks, which go as their content appears", async ({
-  page
-}) => {
-  await open(page)
-  await renderAsAgent(page, 40)
-  await expect(skeletons(page).first()).toBeAttached()
-  await expect(skeletons(page)).toHaveCount(0)
-})
-
 test('two quick edits from an agent replay in turn and both end fully shown', async ({ page }) => {
   await open(page)
   await renderAsAgent(page, 40)
@@ -142,7 +128,6 @@ test('with reduced motion the edit shows at once', async ({ page }) => {
   const artboard = page.locator('iframe[data-kalka-artboard]').contentFrame()
   await expect(artboard.getByText('Everything you need to ship.')).toBeAttached()
   expect(await replaying(page)).toEqual({ animations: 0, typing: 0 })
-  await expect(skeletons(page)).toHaveCount(0)
 })
 
 test('new layers stay hidden until they animate in, instead of showing first', async ({ page }) => {

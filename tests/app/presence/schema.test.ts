@@ -23,6 +23,12 @@ describe('parsePeer', () => {
     })
   })
 
+  test('keeps the seed of the pixel creature a person shares', () => {
+    expect(parsePeer(7, { user: { ...user, avatar: 'c0ffee12' } })?.avatarSeed).toBe('c0ffee12')
+    expect(parsePeer(7, { user })?.avatarSeed).toBeUndefined()
+    expect(parsePeer(7, { user: { ...user, avatar: 42 } })).toMatchObject({ name: 'Ana' })
+  })
+
   test('ignores a state without a user', () => {
     expect(parsePeer(7, { cursor: { x: 1, y: 2, pageId: '0:1' } })).toBeNull()
   })

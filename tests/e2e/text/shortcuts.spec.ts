@@ -12,9 +12,6 @@ test('document shortcuts work while text is edited, and canvas shortcuts stay wi
     store.select([id])
     store.startTextEditing(id)
   })
-  const tabs = page.getByTestId('tabbar-tab')
-  const before = await tabs.count()
-
   // A canvas shortcut is a letter of the text.
   await page.keyboard.press('KeyR')
   await expect
@@ -23,5 +20,5 @@ test('document shortcuts work while text is edited, and canvas shortcuts stay wi
 
   // A document shortcut still reaches the app.
   await page.keyboard.press('ControlOrMeta+KeyT')
-  await expect(tabs).toHaveCount(before + 1)
+  await expect(page.getByTestId('recent-files-home')).toBeVisible()
 })

@@ -37,7 +37,6 @@ export const commentsMessageDefaults = {
   noTasks: 'Nothing yet. What agents say they work on shows here, newest first.',
   taskRunning: 'Working',
   taskDone: 'Done',
-  designing: params('{name} is designing…'),
   markReady: 'Mark ready for dev',
   moveToDraft: 'Move to draft',
   ready: params('Ready for dev · {name}'),

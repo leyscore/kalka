@@ -108,7 +108,7 @@ test('configured storage lists previews through ranges before opening the docume
   await entry.click()
   await expect(page).toHaveURL(/\/$/)
   await canvas.waitForInit()
-  await expect(page.getByText('Remote design').first()).toBeVisible()
+  await expect(page.getByTestId('tabbar-tab').filter({ hasText: 'Remote design' })).toBeVisible()
   expect(fullDocumentGets).toBe(1)
 })
 

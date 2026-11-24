@@ -146,7 +146,7 @@ function agentCursor(agent: AgentPresence, color: Color, pageId: string): Tracke
     {
       id: `agent:${agent.id}`,
       kind: 'agent',
-      name: agent.note ? `${agent.name} · ${agent.note}` : agent.name,
+      name: agent.note ? `${agent.name}: ${agent.note}` : agent.name,
       color,
       x,
       y,
@@ -312,6 +312,20 @@ function keepFollowing(store: EditorStore): void {
       presence.moving = false
     }
   })
+}
+
+/**
+ * Centers the view for something an agent made, as a move of ours: the person did not move the
+ * view, so whoever is followed stays followed and the glide is not cut short.
+ */
+export function centerViewForAgent(store: EditorStore, x: number, y: number, zoom: number): void {
+  const presence = presenceOf(store)
+  presence.moving = true
+  try {
+    store.centerOn(x, y, zoom)
+  } finally {
+    presence.moving = false
+  }
 }
 
 /** A page change following did not make is yours, so it ends following, even of a resting agent. */

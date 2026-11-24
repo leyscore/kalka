@@ -4,6 +4,7 @@ import type { UIMessage } from 'ai'
 import { computed, shallowRef, useTemplateRef, watch } from 'vue'
 
 import { ACP_AGENTS } from '@kalka/core/constants'
+import { colorToCSS } from '@kalka/scene-graph/color'
 import { useI18n } from '@kalka/vue'
 
 import { revokeImagePreviewURL } from '@/app/ai/attachment/image/prepare'
@@ -29,24 +30,34 @@ import { useAIChat } from '@/app/ai/chat/use'
 import { designModelProfile } from '@/app/ai/models'
 import { openAISetup } from '@/app/ai/models/settings/onboarding/dialog'
 import { openModelProfileSettings } from '@/app/ai/models/settings/request'
+import { currentQuestions } from '@/app/ai/questions/queue'
 import { didHitStepLimit } from '@/app/ai/tools'
 import { runAgentName } from '@/app/ai/tools/run'
 import { getActiveEditorStore } from '@/app/editor/active-store'
+import {
+  referenceLibrariesDismissed,
+  useReferenceLibraries
+} from '@/app/integrations/mcp/libraries'
 import { flyToNextCreation } from '@/app/presence/fly-to-work'
+import { localAgentColor, presenceOf } from '@/app/presence/registry'
 import { openSettings } from '@/app/settings/open'
+import { aiHidden } from '@/app/settings/preferences/store'
 import { toast, type ToastAction } from '@/app/shell/ui'
 import { activeTab } from '@/app/tabs'
 import ACPPermissionDialog from '@/components/chat/ACPPermissionDialog.vue'
 import AgentQuestions from '@/components/chat/AgentQuestions.vue'
 import AgentTabs, { type AgentTab } from '@/components/chat/AgentTabs.vue'
+import ChatAgentBanner from '@/components/chat/ChatAgentBanner.vue'
 import ChatHistory from '@/components/chat/ChatHistory.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
 import ChatReconnectNotice from '@/components/chat/ChatReconnectNotice.vue'
 import ChatRunLocation from '@/components/chat/ChatRunLocation.vue'
 import ChatTranscript from '@/components/chat/ChatTranscript.vue'
 import ConnectAgent from '@/components/chat/connect/ConnectAgent.vue'
+import ReferenceLibraries from '@/components/chat/connect/ReferenceLibraries.vue'
 import FollowAgentsToggle from '@/components/chat/FollowAgentsToggle.vue'
 import { useImageDrop } from '@/components/chat/input/useImageDrop'
+import type { AgentBannerState } from '@/theme/chat/sky'
 
 const {
   isConfigured,
@@ -340,6 +351,48 @@ const failureMessage = computed(() => {
 })
 const failureHasSettingsAction = computed(() => chatFailure.value?.reason === 'model-not-found')
 const status = computed(() => (teamAgent.value?.chat ?? chat.value)?.status ?? 'ready')
+/** The agent whose conversation is on screen, as the sky at the top of the chat shows it. */
+const banner = computed(() => {
+  const tab = activeTab.value
+  if (!tab || tab.kind === 'home') return null
+  const store = tab.store
+  const name = teamAgent.value?.name ?? runAgentName(store) ?? ai.value.designAgent
+  const working = status.value === 'submitted' || status.value === 'streaming'
+  let state: AgentBannerState = 'ready'
+  if (currentQuestions.value && !teamAgent.value) state = 'waiting'
+  else if (working) state = 'working'
+  const agents = presenceOf(store).agents.value
+  const busy = agents.filter((agent) => agent.status !== 'idle' && agent.name !== name)
+  const others = busy.map((agent) => agent.name)
+  const note = agents.find((agent) => agent.name === name)?.note
+  let line: string = ai.value.agentReady
+  if (state === 'waiting') line = ai.value.agentWaiting
+  else if (state === 'working') line = note || ai.value.agentWorking
+  const count = busy.length + (working ? 1 : 0)
+  if (state !== 'waiting' && count > 1) line = ai.value.agentsWorking({ count })
+  else if (state !== 'waiting' && busy[0]) {
+    line = `${busy[0].name}: ${busy[0].note || ai.value.agentWorking}`
+  }
+  return { name, color: colorToCSS(localAgentColor(store)), state, status: line, others }
+})
+// The offer to connect a reference library comes up with the first run and stays until closed,
+// so it never appears over an idle chat and never vanishes mid-read.
+const referenceLibraries = useReferenceLibraries()
+const librariesOffered = shallowRef(false)
+watch(
+  () => banner.value?.state,
+  (state) => {
+    if (state !== 'working' || referenceLibrariesDismissed.value) return
+    if (!referenceLibraries.connected.value) librariesOffered.value = true
+  }
+)
+const showLibraries = computed(
+  () =>
+    !aiHidden.value &&
+    librariesOffered.value &&
+    !referenceLibrariesDismissed.value &&
+    banner.value !== null
+)
 const showContinue = computed(() => {
   if (teamAgent.value || history.readOnly.value || agentHistoryReadOnly.value) return false
   if (status.value !== 'ready') return false
@@ -428,6 +481,14 @@ function handleStop() {
       @delete="historyAction(() => history.remove($event))"
     >
       <template #actions><FollowAgentsToggle /></template>
+      <ChatAgentBanner
+        v-if="banner"
+        :name="banner.name"
+        :color="banner.color"
+        :state="banner.state"
+        :status="banner.status"
+        :others="banner.others"
+      />
     </ChatHistory>
     <p v-if="history.storageError.value" role="alert" class="px-3 py-2 text-xs text-red-400">
       {{ ai.chatStorageFailed }}
@@ -506,5 +567,15 @@ function handleStop() {
 
       <ACPPermissionDialog />
     </template>
+    <Teleport to="body">
+      <ReferenceLibraries
+        v-if="showLibraries && banner"
+        :agent="banner.name"
+        :color="banner.color"
+        :libraries="referenceLibraries.libraries.value"
+        @connect="referenceLibraries.connect"
+        @dismiss="referenceLibrariesDismissed = true"
+      />
+    </Teleport>
   </div>
 </template>

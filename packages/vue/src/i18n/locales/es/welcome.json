@@ -111,7 +111,6 @@
   "sourceOther": "Otro",
   "aiTitle": "Conecta tu IA",
   "aiIntro": "Describe una página y tu agente la dibuja, en capas que puedes editar. También puedes hacerlo más tarde en Ajustes.",
-  "aiLater": "Más tarde",
   "tourStep": "{current} de {total}",
   "tourNext": "Siguiente",
   "tourDone": "Listo",

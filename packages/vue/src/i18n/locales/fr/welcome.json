@@ -111,7 +111,6 @@
   "sourceOther": "Autre",
   "aiTitle": "Branchez votre IA",
   "aiIntro": "Décrivez une page et votre agent la dessine, en calques modifiables. Vous pouvez aussi le faire plus tard dans les Réglages.",
-  "aiLater": "Plus tard",
   "tourStep": "{current} sur {total}",
   "tourNext": "Suivant",
   "tourDone": "Terminé",

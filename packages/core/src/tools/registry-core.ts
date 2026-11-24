@@ -32,7 +32,14 @@ import {
   setTextProperties,
   updateNode
 } from './modify'
-import { askUser, finishWorkingOnNodes, getDesignGuide, readStyle, setStatus } from './presence'
+import {
+  askUser,
+  finishWorkingOnNodes,
+  getDesignGuide,
+  planSections,
+  readStyle,
+  setStatus
+} from './presence'
 import { addFont, diffJSX, findNodes, getJSX, getNode, getSelection, searchFonts } from './read'
 import { findReferences } from './references'
 import type { ToolDef } from './schema'
@@ -94,6 +101,7 @@ export const CORE_TOOLS: ToolDef[] = [
   // Presence
   finishWorkingOnNodes,
   setStatus,
+  planSections,
   getDesignGuide,
   readStyle,
   findReferences,

@@ -12,21 +12,21 @@ for (const width of [1280, 390]) {
     await canvas.waitForInit()
     async function open() {
       await page.keyboard.press(process.platform === 'darwin' ? 'Meta+,' : 'Control+,')
-      // Tool access is a page inside External agents.
+      // Tool access is a page inside Agents and MCP.
       if (width < 640) {
         await page.getByTestId('app-settings').getByTestId('shell-menu').click()
-        await page.getByRole('tab', { name: 'External agents', exact: true }).click()
+        await page.getByRole('tab', { name: 'Agents and MCP', exact: true }).click()
       } else await page.getByTestId('settings-section-mcp').click()
       await page.getByTestId('settings-choose-tools').click()
     }
     await open()
     const search = page.getByRole('searchbox', { name: 'Search tools' })
-    const create = page.getByRole('switch', { name: 'create_component', exact: true })
-    await search.fill('create_component')
+    const create = page.getByRole('switch', { name: 'create_slot', exact: true })
+    await search.fill('create_slot')
     await expect(create).toHaveAttribute('data-state', 'unchecked')
     await create.click()
     await page.getByRole('button', { name: 'Local MCP', exact: true }).click()
-    await expect(search).toHaveValue('create_component')
+    await expect(search).toHaveValue('create_slot')
     await expect(create).toHaveAttribute('data-state', 'checked')
     await create.click()
     await page.getByRole('button', { name: 'Built-in AI', exact: true }).click()
@@ -34,7 +34,7 @@ for (const width of [1280, 390]) {
     await page.reload()
     await canvas.waitForInit()
     await open()
-    await search.fill('create_component')
+    await search.fill('create_slot')
     await expect(create).toHaveAttribute('data-state', 'checked')
     await page.getByRole('button', { name: 'Restore defaults' }).click()
     await expect(create).toHaveAttribute('data-state', 'unchecked')

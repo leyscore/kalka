@@ -1,11 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import {
-  colorsIn,
-  cssValueMatches,
-  declaredValue,
-  textMatches
-} from '#core/tools/read/find/values'
+import { colorsIn, cssValueMatches, declaredValue, textMatches } from '#core/tools/read/find/values'
 
 const tolerance = { color: 1, number: 0.01 }
 

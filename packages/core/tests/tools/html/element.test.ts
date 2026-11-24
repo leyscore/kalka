@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 
+import { expectDefined } from '#core-tests/helpers/assert'
+
 import { FigmaAPI } from '@kalka/core/figma-api'
 import { ALL_TOOLS } from '@kalka/core/tools'
 import { SceneGraph } from '@kalka/scene-graph'
-
-import { expectDefined } from '#core-tests/helpers/assert'
 
 const tool = expectDefined(
   ALL_TOOLS.find((candidate) => candidate.name === 'set_html_element'),
@@ -17,7 +17,11 @@ describe('set_html_element', () => {
     const frame = graph.createNode('FRAME', graph.getPages()[0].id, { name: 'Menu' })
     const figma = new FigmaAPI(graph)
 
-    const set = await tool.execute(figma, { id: frame.id, tag: 'nav', classes: 'site-nav  site-nav x"y' })
+    const set = await tool.execute(figma, {
+      id: frame.id,
+      tag: 'nav',
+      classes: 'site-nav  site-nav x"y'
+    })
     expect(set).toEqual({ id: frame.id, name: 'Menu', tag: 'nav', classes: ['site-nav'] })
     expect(graph.getNode(frame.id)?.htmlTag).toBe('nav')
 

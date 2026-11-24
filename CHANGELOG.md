@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+### Added
+
+- Settings has a workflow type with three levels: "Design without AI" hides the agent, its chat and the AI features, "Balanced" opens a document on its layers, and "AI-centered" opens it on the chat.
+- While the agent designs, the chat shows its steps (questions, references, style, building, check) and the sections of the page it announced, each marked as built or to come.
+- The chat offers to connect a reference library (Inspo, Mobbin or Refero) over MCP, and the agent picker groups the Kalka agent apart from the connected agents.
+
+### Changed
+
+- In the browser, the document tabs sit in the editor's top bar next to a Dashboard button, instead of in a second bar above it.
+- The welcome's cards are glass over the sky instead of flat black or white, and its AI step shows "Connect my agent" and "Drive over MCP" one above the other, with "Skip setup" as the only way to pass.
+- The "External agents" settings tab is named "Agents and MCP".
+- A beta of the desktop app is offered release candidates as updates, and a release candidate is offered the next one or the stable release, never an earlier-stage build.
+- The design agent takes its references from the design libraries connected over MCP first, and works without them when none is connected instead of asking for a stock-photo key.
+
+### Fixed
+
+- The agent's questions wait for the answer instead of giving up after 20 seconds, and questions left by a stopped agent go away.
+- While an agent designs, its placeholder shows only once it really starts, has the size of the page to come, and settles onto the design where it lands. The view glides to the work instead of jumping.
+- The choices of an agent's question wrap inside its card instead of running past its edge.
+- In a variable picker, "Create variable from" and "Detach" use the field's own value instead of the value of the variable last previewed in the list.
+- The people in the top bar, the presence list and the page hover show their photo or pixel creature, the same one as in Settings, instead of initials. Collaborators see each other's pixel creature.
+- The Code tab shows the new language's code when you switch from HTML/CSS with a large selection, instead of keeping the HTML.
+
 ## 0.2.0-beta.9 — 2026-11-23
 
 ### Added

@@ -57,6 +57,32 @@ const described = part({
   output: { id: '12:4', role: 'section', issues: ['Text overflows its frame'] }
 })
 
+const planned = part({
+  type: 'tool-plan_sections',
+  toolCallId: 'plan',
+  state: 'output-available',
+  input: {
+    sections: [
+      { name: 'Hero', height: 720 },
+      { name: 'Roasts', height: 480 },
+      { name: 'Story', height: 700 },
+      { name: 'Subscribe', height: 400 },
+      { name: 'Footer', height: 280 }
+    ]
+  },
+  output: { sections: [] }
+})
+
+function wrote(id: string): ToolCallPart {
+  return part({
+    type: 'tool-write_html',
+    toolCallId: id,
+    state: 'output-available',
+    input: { html: '<section></section>' },
+    output: { id: '12:9' }
+  })
+}
+
 interface Args {
   parts: ToolCallPart[]
 }
@@ -80,4 +106,16 @@ export const ExportedImage: Story = { args: { parts: [exported] } }
 export const Failed: Story = { args: { parts: [failed] } }
 export const LongRun: Story = {
   args: { parts: [described, rendered, failed, exported, { ...streaming, toolCallId: 'last' }] }
+}
+/** The agent announced five sections and built two; the last write is still streaming. */
+export const PlannedSections: Story = {
+  args: {
+    parts: [
+      planned,
+      wrote('shell'),
+      wrote('hero'),
+      wrote('roasts'),
+      part({ type: 'tool-write_html', toolCallId: 'story', input: { html: '<section>' } })
+    ]
+  }
 }

@@ -6,9 +6,8 @@ import type { EditorStore } from '@/app/editor/active-store'
 import { flyToCreation } from '@/app/presence/fly-to-work'
 import { agentAnimationsEnabled } from '@/app/shell/motion'
 
-import { holdOnCanvas, releaseOnCanvas, revealOnCanvas, showAgentSkeletons } from './canvas-scene'
+import { holdOnCanvas, releaseOnCanvas, revealOnCanvas } from './canvas-scene'
 import type { AgentHandle } from './registry'
-import { SKELETON_EXIT_MS, type AgentSkeleton } from './skeletons'
 
 /** New layers one edit keeps hidden until its reveal; the outermost come first. */
 export const MAX_HELD_LAYERS = 64
@@ -18,8 +17,11 @@ export const MAX_HELD_LAYERS = 64
  * Held layers show by themselves after a few seconds, which this stays well within.
  */
 export const MAX_REVEAL_QUEUE_MS = 2000
-/** A new layer shows as a skeleton block this long before its content fades in. */
-export const SKELETON_LEAD_MS = 400
+/**
+ * A new layer waits this long before its content fades in, which is when the outline of its
+ * section settles on it, and what keeps a frame's background ahead of the blocks it holds.
+ */
+export const PAINT_LEAD_MS = 240
 
 /** What an edit created and which text it wrote, from what it changed on its page. */
 export function agentEditFromChange(change: DocumentChange): AgentEdit {
@@ -51,7 +53,7 @@ function queueReveal(
 ): number {
   if (!agent || steps.length === 0) return 0
   const wait = Math.min(MAX_REVEAL_QUEUE_MS, Math.max(0, (revealQueues.get(agent) ?? 0) - now))
-  revealQueues.set(agent, now + wait + SKELETON_LEAD_MS + revealEnd(steps))
+  revealQueues.set(agent, now + wait + PAINT_LEAD_MS + revealEnd(steps))
   return wait
 }
 
@@ -68,37 +70,17 @@ export function paintersOrder(graph: SceneGraph, steps: readonly RevealStep[]): 
     let holder = graph.getNode(step.id)?.parentId
     while (holder && !contentAt.has(holder)) holder = graph.getNode(holder)?.parentId
     const delay = Math.max(step.delay, holder ? (contentAt.get(holder) ?? 0) : 0)
-    contentAt.set(step.id, delay + SKELETON_LEAD_MS)
+    contentAt.set(step.id, delay + PAINT_LEAD_MS)
     ordered.push({ ...step, delay })
   }
   return ordered
 }
 
 /**
- * A skeleton block for each layer that appears: it shows at the layer's turn and fades as the
- * layer's content fades in `SKELETON_LEAD_MS` later.
- */
-export function revealSkeletons(
-  steps: readonly RevealStep[],
-  owner: string,
-  start: number
-): AgentSkeleton[] {
-  return steps
-    .filter((step) => step.kind === 'appear')
-    .map((step) => ({
-      key: `${owner}:${step.id}`,
-      nodeId: step.id,
-      from: start + step.delay,
-      until: start + step.delay + SKELETON_LEAD_MS,
-      fade: SKELETON_EXIT_MS
-    }))
-}
-
-/**
  * Show an agent's edit as it happens: after its earlier edits have played, its new blocks load
  * one by one in painter's order, top to bottom and each frame's background before what it holds,
- * each first a skeleton that then fades into its content. Only the canvas animates: the document already holds the whole edit, and nothing
- * here waits, so the tool's result is never delayed.
+ * each fading in. Only the canvas animates: the document already holds the whole edit, and
+ * nothing here waits, so the tool's result is never delayed.
  */
 export function showAgentEdit(
   store: EditorStore,
@@ -113,14 +95,12 @@ export function showAgentEdit(
       planReveal(store.graph, edit, { reducedMotion, typing: false, blocks: true })
     )
     const now = performance.now()
-    const owner = options.agent?.id ?? 'agent'
     const wait = queueReveal(options.agent, planned, now)
     const steps = planned.map((step) => ({
       ...step,
-      delay: step.delay + wait + SKELETON_LEAD_MS
+      delay: step.delay + wait + PAINT_LEAD_MS
     }))
     revealOnCanvas(store, steps)
-    showAgentSkeletons(store, revealSkeletons(planned, owner, now + wait), now)
     // New layers the reveal leaves out, past its limit or hidden, show now.
     const revealed = new Set(steps.map((step) => step.id))
     releaseOnCanvas(

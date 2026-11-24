@@ -30,6 +30,18 @@ const personPoint = v.object({
 })
 /** How long an agent's `set_status` line may be. */
 export const MAX_AGENT_NOTE_LENGTH = 80
+/** Sections one agent announces at once, as `plan_sections` allows. */
+export const MAX_PLAN_SECTIONS = 16
+const MAX_SECTION_HEIGHT = 8000
+const plan = v.pipe(
+  v.array(
+    v.object({
+      name,
+      height: v.pipe(finite, v.minValue(1), v.maxValue(MAX_SECTION_HEIGHT))
+    })
+  ),
+  v.maxLength(MAX_PLAN_SECTIONS)
+)
 const selection = v.pipe(v.array(id), v.maxLength(MAX_SELECTION))
 const extent = v.pipe(finite, v.minValue(0))
 const outline = v.pipe(
@@ -44,6 +56,7 @@ const agent = v.object({
   model: lenient(v.pipe(v.string(), v.maxLength(MAX_NAME_LENGTH))),
   status: v.picklist(AGENT_STATUSES),
   note: lenient(v.pipe(v.string(), v.maxLength(MAX_AGENT_NOTE_LENGTH))),
+  plan: lenient(plan),
   pageId: lenient(id),
   cursor: lenient(point),
   selection: lenient(selection),
@@ -52,7 +65,7 @@ const agent = v.object({
 })
 
 const peerState = v.object({
-  user: v.object({ name: lenient(name), color: lenient(color) }),
+  user: v.object({ name: lenient(name), color: lenient(color), avatar: lenient(id) }),
   cursor: lenient(personPoint),
   selection: lenient(selection),
   treeFormat: lenient(v.pipe(v.number(), v.integer(), v.minValue(1))),
@@ -74,6 +87,7 @@ export function parsePeer(clientId: number, state: unknown): RemotePeer | null {
     clientId,
     name: user.name ?? 'Anonymous',
     color: user.color ?? PEER_COLORS[clientId % PEER_COLORS.length],
+    avatarSeed: user.avatar,
     cursor,
     selection: selected,
     agents: (agents ?? []).flatMap((entry) => (entry ? [entry] : [])),

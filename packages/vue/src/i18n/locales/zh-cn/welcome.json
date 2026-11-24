@@ -111,7 +111,6 @@
   "sourceOther": "其他",
   "aiTitle": "连接你的 AI",
   "aiIntro": "描述一个页面，你的智能体会用可编辑的图层把它画出来。你也可以稍后在设置中完成。",
-  "aiLater": "稍后",
   "tourStep": "{current}/{total}",
   "tourNext": "下一步",
   "tourDone": "完成",

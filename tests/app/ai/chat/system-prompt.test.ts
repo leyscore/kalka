@@ -28,6 +28,7 @@ test('the tools the design process names are on by default in the chat', () => {
     'get_screenshot',
     'add_breakpoint',
     'finish_working_on_nodes',
+    'plan_sections',
     'read_style',
     'find_references',
     'ask_user'

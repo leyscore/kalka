@@ -8,12 +8,23 @@ export const settingsMessageDefaults = {
   reduceAgentAnimations: 'Reduce agent animations',
   reduceAgentAnimationsDescription:
     "Show agents' new layers and text at once instead of animating them in.",
+  workflow: 'Workflow',
+  workflowFocus: 'Workflow type',
+  workflowFocusDesign: 'Design without AI',
+  workflowFocusDesignDescription:
+    'A plain design editor. The agent, its chat and every AI feature are hidden.',
+  workflowFocusBalanced: 'Balanced',
+  workflowFocusBalancedDescription:
+    'Design by hand and call the agent when you want it. A document opens on its layers.',
+  workflowFocusAI: 'AI-centered',
+  workflowFocusAIDescription:
+    'The agent comes first. A document opens on the chat, ready for a prompt.',
   title: 'Settings',
   description: 'Manage integrations and app preferences.',
   general: 'General',
   groupAI: 'AI',
   navKalkaAI: 'Kalka AI',
-  navAgents: 'External agents',
+  navAgents: 'Agents and MCP',
   navSharedStorage: 'Shared storage',
   navImages: 'Images and photos',
   chooseTools: 'Choose tool by tool',

@@ -6,9 +6,9 @@ import type { WebSocket } from 'ws'
 import { APP_NOT_CONNECTED_MESSAGE } from '#mcp/app-status'
 import { isAuthorized } from '#mcp/auth'
 import type { RPCJSONObject } from '#mcp/json'
+import { rpcTimeoutMs } from '#mcp/rpc-timeout'
 import type { PendingRequest } from '#mcp/rpc-types'
 
-const RPC_TIMEOUT = 20_000
 const APP_WAIT_TIMEOUT = 10_000
 
 type BrowserRPCBridgeOptions = {
@@ -196,10 +196,11 @@ export function createBrowserRPCBridge({
         }
         const id = randomUUID()
         const settle = createSettler(resolve, reject)
+        const timeout = rpcTimeoutMs(body)
         const timer = setTimeout(() => {
           pending.delete(id)
-          settle.reject(new Error(`RPC timeout (${Math.round(RPC_TIMEOUT / 1000)}s)`))
-        }, RPC_TIMEOUT)
+          settle.reject(new Error(`RPC timeout (${Math.round(timeout / 1000)}s)`))
+        }, timeout)
         pending.set(id, { resolve: settle.resolve, reject: settle.reject, timer })
         try {
           ws.send(JSON.stringify({ ...body, type: 'request', id }))
@@ -247,7 +248,7 @@ export function createBrowserRPCBridge({
     browserRegistered = true
     if (previousBrowserWs && previousBrowserWs !== ws) {
       // Reject in-flight requests to the old browser. Without this, pending
-      // requests sit in the pending map until RPC_TIMEOUT (20s), because
+      // requests sit in the pending map until their timeout (20s for most), because
       // handleClose for the old socket returns early (browserWs is already
       // set to the new socket, so browserWs !== previousBrowserWs).
       rejectAllPending('Browser reconnected')

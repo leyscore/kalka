@@ -8,6 +8,8 @@ const glideMotion =
 export const glidePills = {
   /** A hover highlight in menus, lists, and navigation. */
   hover: `rounded-md bg-(--pill-hover-bg) ${glideMotion}`,
+  /** The highlight in a floating menu or list box, tinted against the menu's own surface. */
+  menu: `rounded-md bg-(--menu-hover-bg) ${glideMotion}`,
   /** The pill behind the active item of a panel's tabs or a segmented control. */
   active: `rounded-md bg-(--pill-active-bg) shadow-(--pill-active-shadow) ${glideMotion}`,
   /** The chosen option of a segmented control: a raised chip in the track. */

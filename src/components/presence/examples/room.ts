@@ -1,3 +1,5 @@
+import { roomPicture } from '@/app/collab/avatar'
+
 import type { PresencePersonRow } from '../rows'
 
 /** Sample collaborators for presence stories: you, then Ana with two agents, then Ben. */
@@ -12,16 +14,24 @@ export const room: PresencePersonRow[] = [
   {
     name: 'Dana',
     color: colors.you,
+    picture: roomPicture({ name: 'Dana', color: colors.you }),
     agents: [{ id: 'fern', name: 'Fern', status: 'editing', page: 'Checkout', renamable: true }]
   },
   {
     clientId: 2,
     name: 'Ana',
     color: colors.ana,
+    picture: roomPicture({ name: 'Ana', color: colors.ana }),
     agents: [
       { id: 'orbit', name: 'Orbit', status: 'thinking', page: 'Cover', renamable: false },
       { id: 'pixel', name: 'Pixel', status: 'idle', renamable: false }
     ]
   },
-  { clientId: 3, name: 'Ben', color: colors.ben, agents: [] }
+  {
+    clientId: 3,
+    name: 'Ben',
+    color: colors.ben,
+    picture: roomPicture({ name: 'Ben', color: colors.ben }),
+    agents: []
+  }
 ]

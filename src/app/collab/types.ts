@@ -7,6 +7,8 @@ export interface RemotePeer {
   clientId: number
   name: string
   color: Color
+  /** The seed their pixel creature is drawn from, when their build shares it. */
+  avatarSeed?: string
   cursor?: PersonPoint
   selection?: string[]
   /** Agents this person runs, as they publish them. */

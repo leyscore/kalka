@@ -8,6 +8,7 @@ import { useEditorStore } from '@/app/editor/active-store'
 import { countIssues } from '@/app/editor/design-check/issues'
 import { toggleVariablesPage } from '@/app/editor/tokens/dialog'
 import { openSettings } from '@/app/settings/open'
+import { aiHidden } from '@/app/settings/preferences/store'
 import { useLeftPanel, type RailPanel } from '@/app/shell/left-panel/use'
 import { openExternalLink } from '@/app/shell/ui'
 import { useGlide } from '@/components/ui/motion/useGlide'
@@ -83,7 +84,7 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
     :class="rail.root()"
   >
     <!-- The agent's conversation: one more press closes it and gives the panel back to the document. -->
-    <Tip :label="panels.ai" side="right">
+    <Tip v-if="!aiHidden" :label="panels.ai" side="right">
       <button
         type="button"
         role="tab"
@@ -99,7 +100,7 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
       </button>
     </Tip>
     <!-- What the agent is told: under it, in the same group. -->
-    <Tip :label="panels.instructions" side="right">
+    <Tip v-if="!aiHidden" :label="panels.instructions" side="right">
       <button
         type="button"
         role="tab"
