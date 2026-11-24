@@ -30,6 +30,20 @@ test('fits only the first visit and preserves a custom viewport on return', asyn
   }
 })
 
+test('frames a page the way the caller asks on its first visit', async () => {
+  const editor = createEditor()
+  const next = editor.graph.addPage('Next')
+  let fitted = 0
+  const stop = fitDemoPagesOnFirstVisit(editor, [next.id], () => fitted++)
+  try {
+    await editor.switchPage(next.id)
+    expect(fitted).toBe(1)
+  } finally {
+    stop()
+    editor.dispose()
+  }
+})
+
 test('stops fitting after the demo graph is replaced', async () => {
   const editor = createEditor()
   const replacement = new SceneGraph()
