@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.2.0-beta.10 — 2026-11-24
+
 ### Added
 
 - Settings has a workflow type with three levels: "Design without AI" hides the agent, its chat and the AI features, "Balanced" opens a document on its layers, and "AI-centered" opens it on the chat.
