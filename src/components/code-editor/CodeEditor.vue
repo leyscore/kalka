@@ -191,11 +191,14 @@ watch(
     const editor = view.value
     if (!editor || editor.state.doc.toString() === value) return
     externalUpdate = true
-    editor.dispatch({
-      changes: minimalChange(editor.state.doc.toString(), value),
-      annotations: Transaction.addToHistory.of(false)
-    })
-    externalUpdate = false
+    try {
+      editor.dispatch({
+        changes: minimalChange(editor.state.doc.toString(), value),
+        annotations: Transaction.addToHistory.of(false)
+      })
+    } finally {
+      externalUpdate = false
+    }
     syncLayers()
   }
 )

@@ -419,7 +419,9 @@ watch(
     </AppPlaceholder>
 
     <div v-else class="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <!-- A new language gets a new editor: parsing one language's large document as another fails. -->
       <CodeEditor
+        :key="source"
         ref="codeEditor"
         :autofocus="composing"
         :model-value="draft"
