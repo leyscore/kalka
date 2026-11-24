@@ -1,0 +1,21 @@
+diff --git a/out/providers/GitHubProvider.js b/out/providers/GitHubProvider.js
+index e768d24e7a957caf32a4b8ca6c68cb50eb5865ee..151b865a3b535e8cea59e854320084354684a070 100644
+--- a/out/providers/GitHubProvider.js
++++ b/out/providers/GitHubProvider.js
+@@ -71,10 +71,12 @@ class GitHubProvider extends BaseGitHubProvider {
+                         }
+                         //Get Channel from this release's tag
+                         const hrefChannel = ((_c = semver.prerelease(hrefTag)) === null || _c === void 0 ? void 0 : _c[0]) || null;
+-                        const shouldFetchVersion = !currentChannel || ["alpha", "beta"].includes(currentChannel);
+-                        const isCustomChannel = hrefChannel !== null && !["alpha", "beta"].includes(String(hrefChannel));
+-                        // Allow moving from alpha to beta but not down
+-                        const channelMismatch = currentChannel === "beta" && hrefChannel === "alpha";
++                        // Kalka patch: release candidates are a channel, ranked after beta.
++                        const releaseChannels = ["alpha", "beta", "rc"];
++                        const shouldFetchVersion = !currentChannel || releaseChannels.includes(String(currentChannel));
++                        const isCustomChannel = hrefChannel !== null && !releaseChannels.includes(String(hrefChannel));
++                        // Allow moving to a later stage or to stable, but not down
++                        const channelMismatch = hrefChannel !== null && releaseChannels.indexOf(String(hrefChannel)) < releaseChannels.indexOf(String(currentChannel));
+                         if (shouldFetchVersion && !isCustomChannel && !channelMismatch) {
+                             tag = hrefTag;
+                             latestRelease = element;

@@ -694,6 +694,9 @@
   "trustedDependencies": [
     "electron",
   ],
+  "patchedDependencies": {
+    "electron-updater@6.8.10": "patches/electron-updater@6.8.10.patch",
+  },
   "overrides": {
     "@codemirror/view": "6.43.9",
     "dompurify": "3.4.17",
