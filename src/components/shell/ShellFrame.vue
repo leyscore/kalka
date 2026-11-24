@@ -14,7 +14,8 @@ import { shellFrame } from '@/theme/shell/sidebar'
 const {
   label,
   menuLabel,
-  titleBar = false
+  titleBar = false,
+  underBar = false
 } = defineProps<{
   /** The sidebar's name for assistive technology. */
   label: string
@@ -24,6 +25,8 @@ const {
    * that covers the desktop app's tab bar, as Settings does.
    */
   titleBar?: boolean
+  /** The tab bar sits above this frame, as on Home. */
+  underBar?: boolean
 }>()
 defineSlots<{
   sidebar: () => unknown
@@ -31,7 +34,7 @@ defineSlots<{
   phoneTitle?: () => unknown
 }>()
 
-const ui = computed(() => shellFrame({ titleBar }))
+const ui = computed(() => shellFrame({ titleBar, underBar }))
 const drawerOpen = ref(false)
 
 function closeOnPlace(event: MouseEvent): void {

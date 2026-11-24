@@ -3,7 +3,6 @@ import { colorToCSS } from '@kalka/scene-graph/color'
 import { useI18n, useInlineRename } from '@kalka/vue'
 
 import type { FollowTarget } from '@/app/presence/types'
-import { initials } from '@/app/shell/ui'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import { avatar } from '@/theme/collaboration/avatar'
 import { presenceList } from '@/theme/collaboration/presence-list'
@@ -55,9 +54,7 @@ function followLabel(name: string, target: FollowTarget): string {
   <ul data-test-id="collab-presence-list" :class="ui.root()">
     <li v-for="person in rows" :key="person.clientId ?? 'self'">
       <div data-slot="person" :class="ui.person()">
-        <div :class="avatar()" :style="{ background: colorToCSS(person.color) }">
-          {{ initials(person.name || common.you) }}
-        </div>
+        <img :src="person.picture" alt="" draggable="false" :class="avatar()" />
         <span :class="ui.name()">
           {{
             person.clientId === undefined

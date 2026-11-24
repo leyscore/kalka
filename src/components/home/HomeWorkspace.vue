@@ -6,6 +6,7 @@ import { useI18n } from '@kalka/vue'
 
 import { useCollabIdentity } from '@/app/collab/identity'
 import { filesListFromPath } from '@/app/home/files-route'
+import { aiHidden } from '@/app/settings/preferences/store'
 import { teamPageFromPath } from '@/app/team/route'
 import HomeFiles from '@/components/home/files/HomeFiles.vue'
 import HomePrompt from '@/components/home/prompt/HomePrompt.vue'
@@ -32,7 +33,7 @@ const teamPage = computed(() => teamPageFromPath(route.path))
 </script>
 
 <template>
-  <ShellFrame :label="files.placesLabel" :menu-label="files.openMenu">
+  <ShellFrame :label="files.placesLabel" :menu-label="files.openMenu" under-bar>
     <template #sidebar>
       <AppSidebar />
     </template>
@@ -53,7 +54,7 @@ const teamPage = computed(() => teamPageFromPath(route.path))
               : welcome.homeTitle
           }}
         </h1>
-        <HomePrompt :class="homeHero.prompt" />
+        <HomePrompt v-if="!aiHidden" :class="homeHero.prompt" />
         <HomeStart />
       </section>
 

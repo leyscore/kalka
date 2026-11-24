@@ -14,6 +14,7 @@ import {
 } from '@/app/document/instructions/invoke'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import InputGroup from '@/components/ui/input/InputGroup.vue'
+import { chatComposerTheme } from '@/theme/chat/composer'
 import { chatSuggest } from '@/theme/chat/suggest'
 
 const MAX_SUGGESTIONS = 8
@@ -41,6 +42,7 @@ const input = ref('')
 const { triggerResize } = useTextareaAutosize({ element: textarea, input, maxHeight: 160 })
 const isStreaming = computed(() => disabled || status === 'streaming' || status === 'submitted')
 const suggest = chatSuggest()
+const ui = chatComposerTheme()
 const pending = ref<SuggestionQuery | null>(null)
 const activeIndex = ref(0)
 const suggestions = computed(() => {
@@ -159,6 +161,7 @@ defineExpose({ restoreDraft, focus: () => textarea.value?.focus() })
           </li>
         </ul>
         <InputGroup :disabled="isStreaming">
+          <template v-if="$slots.about" #header><slot name="about" /></template>
           <template v-if="$slots.attachment" #attachment><slot name="attachment" /></template>
 
           <textarea
@@ -201,10 +204,10 @@ defineExpose({ restoreDraft, focus: () => textarea.value?.focus() })
               :label="ai.stopGenerating"
               size="sm"
               data-test-id="chat-stop-button"
-              class="border border-border"
+              :class="ui.stop()"
               @click="emit('stop')"
             >
-              <icon-hugeicons-square class="size-3" />
+              <span :class="ui.stopMark()" />
             </IconButton>
             <IconButton
               v-else
@@ -212,10 +215,10 @@ defineExpose({ restoreDraft, focus: () => textarea.value?.focus() })
               size="sm"
               type="submit"
               data-test-id="chat-send-button"
-              class="bg-accent text-white hover:bg-accent/90 hover:text-white"
+              :class="ui.send()"
               :disabled="!input.trim()"
             >
-              <icon-hugeicons-send class="size-3.5" />
+              <icon-hugeicons-arrow-up-02 class="size-3.5" />
             </IconButton>
           </template>
         </InputGroup>

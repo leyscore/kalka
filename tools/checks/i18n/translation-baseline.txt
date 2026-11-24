@@ -27,6 +27,7 @@ de:common.ok
 de:diagnostics.categoryMCP
 de:diagnostics.categoryRenderer
 de:diagnostics.durationMs
+de:files.dashboard
 de:menu.text
 de:panels.alpha
 de:panels.behaviourMax
@@ -157,6 +158,8 @@ fr:ai.modelAgentConnection
 fr:ai.modelCapabilityVisionShort
 fr:ai.modelRoleVision
 fr:ai.responses
+fr:ai.stepAsk
+fr:ai.stepStyle
 fr:ai.suggestDocuments
 fr:ai.suggestSkills
 fr:ai.thinkingMinimal
@@ -177,6 +180,7 @@ fr:diagnostics.categoryDocument
 fr:diagnostics.categoryMCP
 fr:diagnostics.durationMs
 fr:diagnostics.title
+fr:files.dashboard
 fr:fonts.documentSource
 fr:fonts.variable
 fr:menu.documentation
@@ -286,6 +290,7 @@ it:diagnostics.categoryMCP
 it:diagnostics.categoryRenderer
 it:diagnostics.categoryRuntime
 it:diagnostics.durationMs
+it:files.dashboard
 it:menu.file
 it:panels.ai
 it:panels.auto

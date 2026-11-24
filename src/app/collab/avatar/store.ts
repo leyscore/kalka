@@ -60,5 +60,5 @@ export const useAvatar = createGlobalState(() => {
     photo.value = canvas.toDataURL('image/webp', PHOTO_QUALITY)
   }
 
-  return { url, pixel, hasPhoto, shuffle, removePhoto, choosePhoto }
+  return { seed, url, pixel, hasPhoto, shuffle, removePhoto, choosePhoto }
 })

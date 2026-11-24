@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 
+import { expectDefined } from '#core-tests/helpers/assert'
+
 import { FigmaAPI } from '@kalka/core/figma-api'
 import { ALL_TOOLS } from '@kalka/core/tools'
 import { SceneGraph } from '@kalka/scene-graph'
 import { colorToFill } from '@kalka/scene-graph/color'
-
-import { expectDefined } from '#core-tests/helpers/assert'
 
 const tool = expectDefined(
   ALL_TOOLS.find((candidate) => candidate.name === 'find_nodes'),
@@ -164,7 +164,9 @@ describe('find_nodes by style', () => {
       {
         property: 'background-color',
         value: '#2F5BEA',
-        variables: [{ id: primary.id, name: 'color/primary', collection: 'Colors', field: 'fills/0/color' }]
+        variables: [
+          { id: primary.id, name: 'color/primary', collection: 'Colors', field: 'fills/0/color' }
+        ]
       }
     ])
     expect(raw.styles?.[0].variables).toBeUndefined()
@@ -253,9 +255,7 @@ describe('find_nodes by variable', () => {
         modes: ['Mode 1']
       }
     ])
-    expect(result.nodes.find((node) => node.name === 'Night')?.tokens?.[0].modes).toEqual([
-      'Dark'
-    ])
+    expect(result.nodes.find((node) => node.name === 'Night')?.tokens?.[0].modes).toEqual(['Dark'])
   })
 
   test('limits unbound number candidates to the token scopes', () => {

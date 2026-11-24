@@ -97,7 +97,7 @@ const groups = computed<SettingsSidebarGroup[]>(() => [
     sections: [{ value: 'diagnostics', label: settings.value.diagnostics, icon: IconActivity }]
   }
 ])
-/** Tool access is a page inside External agents: reached from it, with a way back to it. */
+/** Tool access is a page inside Agents and MCP: reached from it, with a way back to it. */
 const parentSection = computed<SettingsSection | undefined>(() =>
   settingsSection.value === 'tools' ? 'mcp' : undefined
 )

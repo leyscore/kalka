@@ -86,7 +86,7 @@ const pageStates = [
             </span>
           </button>
         </div>
-        <button aria-label="New tab" :class="tabStyles().newTab()">
+        <button aria-label="New design" :class="tabStyles().newTab()">
           <icon-hugeicons-plus :class="tabStyles().newIcon()" />
         </button>
       </div>

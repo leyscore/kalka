@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+
 import * as v from 'valibot'
 
 import { FigmaAPI } from '@kalka/core/figma-api'
@@ -8,6 +9,9 @@ import {
   CORE_TOOLS,
   finishWorkingOnNodes,
   isToolExposed,
+  planSections,
+  SECTION_HEIGHT_MAX,
+  SECTION_PLAN_MAX,
   readStyle,
   styleNamed,
   STYLE_NAMES,
@@ -42,6 +46,53 @@ describe('finish_working_on_nodes', () => {
     expect(isToolExposed(finishWorkingOnNodes, 'mcp')).toBe(true)
     expect(isToolExposed(finishWorkingOnNodes, 'ai')).toBe(true)
     expect(finishWorkingOnNodes.mutates).toBe(false)
+  })
+})
+
+describe('plan_sections', () => {
+  test('hands the host tidy sections, in order, with bounded names and heights', () => {
+    const figma = new FigmaAPI(new SceneGraph())
+    const plans: unknown[] = []
+    figma.setAgentPlan = (sections) => plans.push(sections)
+    const result = planSections.execute(figma, {
+      sections: [
+        { name: '  Hero   band ', height: 720.4 },
+        { name: '', height: 300 },
+        { name: 'Footer', height: 99_999 },
+        { name: 'Thin', height: -5 }
+      ]
+    })
+    const tidy = [
+      { name: 'Hero band', height: 720 },
+      { name: 'Footer', height: SECTION_HEIGHT_MAX },
+      { name: 'Thin', height: 40 }
+    ]
+    expect(result).toEqual({ sections: tidy })
+    expect(plans).toEqual([tidy])
+  })
+
+  test('keeps a plan to a size the canvas can show, and clears it with an empty list', () => {
+    const figma = new FigmaAPI(new SceneGraph())
+    const plans: { name: string }[][] = []
+    figma.setAgentPlan = (sections) => plans.push(sections)
+    const many = Array.from({ length: SECTION_PLAN_MAX + 4 }, (_, index) => ({
+      name: `Section ${index}`,
+      height: 400
+    }))
+    planSections.execute(figma, { sections: many })
+    planSections.execute(figma, { sections: [] })
+    expect(plans.map((plan) => plan.length)).toEqual([SECTION_PLAN_MAX, 0])
+  })
+
+  test('says so in a host that shows no plan, and is a default tool that changes nothing', () => {
+    const result = planSections.execute(new FigmaAPI(new SceneGraph()), {
+      sections: [{ name: 'Hero', height: 600 }]
+    })
+    expect(result).toMatchObject({ note: expect.any(String) })
+    expect(CORE_TOOLS).toContain(planSections)
+    expect(isToolExposed(planSections, 'mcp')).toBe(true)
+    expect(isToolExposed(planSections, 'ai')).toBe(true)
+    expect(planSections.mutates).toBe(false)
   })
 })
 
@@ -139,7 +190,9 @@ describe('ask_user', () => {
       base64: 'AAAA'
     }))
     figma.askUser = () =>
-      Promise.resolve([{ question: 'Which look?', answer: 'Ref 0', references: references.slice(0, 1) }])
+      Promise.resolve([
+        { question: 'Which look?', answer: 'Ref 0', references: references.slice(0, 1) }
+      ])
     const single = await askUser.execute(figma, { questions })
     expect(single).toMatchObject({ base64: 'AAAA', mimeType: 'image/jpeg' })
     expect(single).not.toHaveProperty('images')
@@ -157,10 +210,14 @@ describe('ask_user', () => {
 
   test('shows https pictures only', () => {
     const picture = { url: 'https://example.org/a.jpg', label: 'Poster', credit: 'Ada, CC BY 2.0' }
-    expect(v.safeParse(askUser.input, { questions: [{ question: 'Which?', images: [picture] }] }).success).toBe(true)
+    expect(
+      v.safeParse(askUser.input, { questions: [{ question: 'Which?', images: [picture] }] }).success
+    ).toBe(true)
     expect(
       v.safeParse(askUser.input, {
-        questions: [{ question: 'Which?', images: [{ ...picture, url: 'http://example.org/a.jpg' }] }]
+        questions: [
+          { question: 'Which?', images: [{ ...picture, url: 'http://example.org/a.jpg' }] }
+        ]
       }).success
     ).toBe(false)
   })

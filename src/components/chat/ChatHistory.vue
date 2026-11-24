@@ -23,6 +23,7 @@ import { menuItem, useMenuUI } from '@/components/ui/menu/menu'
 import Tip from '@/components/ui/overlay/Tip.vue'
 import iconButtonTheme from '@/theme/button/icon-button'
 import { chatHistoryTheme } from '@/theme/chat/history'
+import { chatSkyTheme } from '@/theme/chat/sky'
 
 const {
   conversations,
@@ -43,8 +44,20 @@ const emit = defineEmits<{
   delete: [id: string]
 }>()
 const { ai } = useI18n()
+/** The few stars and dotted clouds of the sky, kept to the right so nothing moves behind the agent's tile. */
+const SKY_STARS = [
+  { id: 'a', right: '18px', top: '46px', size: '9px', duration: '3.2s', delay: '0s' },
+  { id: 'b', right: '58px', top: '70px', size: '5px', duration: '2.6s', delay: '0.7s' },
+  { id: 'c', right: '96px', top: '50px', size: '6px', duration: '3.8s', delay: '1.3s' },
+  { id: 'd', right: '38px', top: '84px', size: '4px', duration: '2.9s', delay: '0.4s' }
+] as const
+const SKY_CLOUDS = [
+  { id: 'a', right: '64px', top: '58px', width: '34px' },
+  { id: 'b', right: '12px', top: '78px', width: '22px' }
+] as const
 const triggerClass = tv(iconButtonTheme)({ size: 'sm' })
 const styles = chatHistoryTheme()
+const sky = chatSkyTheme()
 const menu = useMenuUI({ content: 'min-w-44' })
 const item = menuItem({ justify: 'start' })
 const open = ref(false)
@@ -103,6 +116,27 @@ function closeMenu(event: Event) {
 
 <template>
   <div :class="styles.root()">
+    <div v-if="$slots.default" aria-hidden="true" :class="sky.decor()">
+      <span
+        v-for="star in SKY_STARS"
+        :key="star.id"
+        :class="sky.star()"
+        :style="{
+          right: star.right,
+          top: star.top,
+          width: star.size,
+          height: star.size,
+          '--glow-duration': star.duration,
+          '--glow-delay': star.delay
+        }"
+      />
+      <span
+        v-for="cloud in SKY_CLOUDS"
+        :key="cloud.id"
+        :class="sky.cloud()"
+        :style="{ right: cloud.right, top: cloud.top, width: cloud.width }"
+      />
+    </div>
     <div :class="styles.header()">
       <PopoverRoot v-model:open="open">
         <PopoverTrigger :class="styles.trigger()" :disabled="disabled" :aria-label="ai.chatHistory">
@@ -193,6 +227,7 @@ function closeMenu(event: Event) {
         </DropdownMenuPortal>
       </DropdownMenuRoot>
     </div>
+    <slot />
     <form
       v-if="editing"
       :class="styles.form()"

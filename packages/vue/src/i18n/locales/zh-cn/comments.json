@@ -33,7 +33,6 @@
   "noTasks": "暂无内容。智能体正在处理的工作会按时间倒序显示在这里。",
   "taskRunning": "进行中",
   "taskDone": "已完成",
-  "designing": "{name} 正在设计…",
   "markReady": "标记为可开发",
   "moveToDraft": "改回草稿",
   "ready": "可开发 · {name}",

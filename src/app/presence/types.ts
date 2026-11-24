@@ -1,3 +1,4 @@
+import type { PlannedSection } from '@kalka/core/figma-api'
 import type { Rect } from '@kalka/scene-graph/primitives'
 
 export const AGENT_KINDS = ['chat', 'acp', 'harness', 'mcp'] as const
@@ -20,6 +21,9 @@ export interface PersonPoint extends PresencePoint {
 /** Who to keep in view: a person in the room, or any agent, ours or theirs. */
 export type FollowTarget = { kind: 'person'; clientId: number } | { kind: 'agent'; agentId: string }
 
+/** A section an agent announced: its name and its approximate height in pixels. */
+export type AgentPlanSection = PlannedSection
+
 /**
  * An agent as its owner publishes it: metadata only, never prompts or tool arguments. What its
  * streamed `render` call builds travels apart from presence (`./preview-stream.ts`).
@@ -36,6 +40,11 @@ export interface AgentPresence {
    * after its name while it works, and cleared when it rests.
    */
   note?: string
+  /**
+   * The sections the agent says it will build, top to bottom, from `plan_sections`; the canvas
+   * shows those not built yet as outlines, and the chat lists them under the build step.
+   */
+  plan?: AgentPlanSection[]
   /** The page the agent works on, known before its first edit. */
   pageId?: string
   /** Where the agent last worked, derived from the nodes it touched. */

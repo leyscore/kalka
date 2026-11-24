@@ -3,7 +3,7 @@ import type { Page } from '@playwright/test'
 import { expect, test } from '#tests/helpers/chat/fixture'
 
 async function openHomePrompt(page: Page) {
-  await page.getByTestId('tabbar-new').click()
+  await page.getByTestId('tabbar-dashboard').click()
   const home = page.getByTestId('recent-files-home')
   await expect(home).toBeVisible()
   return {

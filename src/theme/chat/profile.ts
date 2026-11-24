@@ -7,6 +7,12 @@ export const chatProfileTheme = tv({
     trigger:
       'min-w-0 max-w-full gap-1 rounded border-none bg-transparent px-1.5 py-0.5 text-[10px] text-muted',
     triggerIcon: 'size-3 shrink-0',
+    // The agent's creature in a small glass tile, as in the sky at the top of the chat.
+    triggerTile:
+      'grid size-5 shrink-0 place-items-center rounded-md border border-hairline bg-hover',
+    triggerCreature: 'size-3',
+    triggerName: 'min-w-0 truncate text-[11px] font-medium text-surface',
+    triggerMeta: 'hidden min-w-0 truncate text-[10px] text-muted @[18rem]:inline',
     triggerValue: 'min-w-0 truncate',
     triggerChevron: 'size-2.5 shrink-0',
     content: ['w-72 max-w-[calc(100vw-1rem)] overflow-hidden', motionStyles.floating],
@@ -14,6 +20,7 @@ export const chatProfileTheme = tv({
     header: 'px-2 pt-1.5 pb-2',
     headerLabel: 'text-[11px] text-muted',
     headerDescription: 'mt-0.5 text-[9px] leading-3 text-muted',
+    groupLabel: 'block px-2 pt-2 pb-1 text-[10px] text-muted',
     item: 'grid h-auto min-h-11 grid-cols-[14px_minmax(0,1fr)_auto] gap-2 rounded px-2 py-1.5',
     indicator: 'flex size-3.5 shrink-0 items-center justify-center text-primary',
     indicatorIcon: 'size-3',

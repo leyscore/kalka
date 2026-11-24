@@ -56,7 +56,10 @@ describe('AI adapter model output', () => {
     const output = {
       mimeType: 'image/png',
       base64: 'AAAA',
-      images: [{ mimeType: 'image/webp', base64: 'BBBB' }, { mimeType: 'text/plain', base64: 'CC' }],
+      images: [
+        { mimeType: 'image/webp', base64: 'BBBB' },
+        { mimeType: 'text/plain', base64: 'CC' }
+      ],
       note: 'Two pictures'
     }
     expect(adapt(output).toModelOutput({ output })).toEqual({

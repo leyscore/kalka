@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 
+import { expectDefined } from '#core-tests/helpers/assert'
+
 import { FigmaAPI } from '@kalka/core/figma-api'
 import { ALL_TOOLS, registerComponentCatalog, type ComponentCatalog } from '@kalka/core/tools'
 import { SceneGraph } from '@kalka/scene-graph'
 import { colorToFill } from '@kalka/scene-graph/color'
-
-import { expectDefined } from '#core-tests/helpers/assert'
 
 const tool = expectDefined(
   ALL_TOOLS.find((candidate) => candidate.name === 'search_design_system'),

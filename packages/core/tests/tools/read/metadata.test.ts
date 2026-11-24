@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 
+import { expectDefined } from '#core-tests/helpers/assert'
+
 import { FigmaAPI } from '@kalka/core/figma-api'
 import { ALL_TOOLS } from '@kalka/core/tools'
 import { SceneGraph } from '@kalka/scene-graph'
-
-import { expectDefined } from '#core-tests/helpers/assert'
 
 const tool = expectDefined(
   ALL_TOOLS.find((candidate) => candidate.name === 'get_metadata'),

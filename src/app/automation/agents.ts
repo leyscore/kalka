@@ -2,6 +2,7 @@ import * as v from 'valibot'
 
 import type { AgentEdit } from '@kalka/vue'
 
+import { dropSessionQuestions } from '@/app/ai/questions/queue'
 import { isUnknownRecord } from '@/app/automation/bridge/target'
 import type { EditorStore } from '@/app/editor/active-store'
 import {
@@ -11,11 +12,17 @@ import {
   recordLayerActivity
 } from '@/app/presence/activity'
 import { showAgentEdit, stopAgentReveals } from '@/app/presence/edit-effect'
-import { addAgent, agentPlacement, type AgentHandle } from '@/app/presence/registry'
+import { addAgent, agentPlacement, presenceOf, type AgentHandle } from '@/app/presence/registry'
 import { MAX_NAME_LENGTH } from '@/app/presence/schema'
+import type { AgentPlanSection } from '@/app/presence/types'
 
 /** After this long without a tool call, a session's agent rests and leaves the canvas. */
 export const MCP_AGENT_IDLE_MS = 20_000
+/**
+ * An agent that said what it builds writes its next section between two calls, which takes far
+ * longer than reading does: it stays at work this long, so its loading never blinks out mid-page.
+ */
+export const MCP_AGENT_BUILDING_MS = 3 * 60_000
 /** A session that never says goodbye, such as one whose client crashed, is dropped after this. */
 export const MCP_AGENT_GONE_MS = 10 * 60_000
 const MAX_SESSION_ID = 128
@@ -87,15 +94,22 @@ function remove(sessionId: string, store: EditorStore): void {
 function restartTimers(store: EditorStore, sessionId: string, agent: SessionAgent): void {
   clearTimeout(agent.idleTimer)
   clearTimeout(agent.goneTimer)
-  agent.idleTimer = setTimeout(() => {
-    stopAgentReveals(agent.handle)
-    agent.handle.update({
-      status: 'idle',
-      note: undefined,
-      cursor: undefined,
-      selection: undefined
-    })
-  }, MCP_AGENT_IDLE_MS)
+  const building = presenceOf(store).agents.value.find(
+    (entry) => entry.id === agent.handle.id
+  )?.note
+  agent.idleTimer = setTimeout(
+    () => {
+      stopAgentReveals(agent.handle)
+      agent.handle.update({
+        status: 'idle',
+        note: undefined,
+        plan: undefined,
+        cursor: undefined,
+        selection: undefined
+      })
+    },
+    building ? MCP_AGENT_BUILDING_MS : MCP_AGENT_IDLE_MS
+  )
   agent.goneTimer = setTimeout(() => remove(sessionId, store), MCP_AGENT_GONE_MS)
 }
 
@@ -219,6 +233,18 @@ export function setSessionStatus(store: EditorStore, session: AgentSession, text
     ?.handle.update({ note: text || undefined })
 }
 
+/** A session's agent announces the sections it will build; an empty list clears them. */
+export function setSessionPlan(
+  store: EditorStore,
+  session: AgentSession,
+  sections: readonly AgentPlanSection[]
+): void {
+  sessions
+    .get(session.session)
+    ?.get(store)
+    ?.handle.update({ plan: sections.length > 0 ? [...sections] : undefined })
+}
+
 export function finishSessionWork(
   store: EditorStore,
   session: AgentSession,
@@ -243,6 +269,7 @@ export function restAgents(kind: Exclude<AgentSession['kind'], 'mcp'>): void {
       agent.handle.update({
         status: 'idle',
         note: undefined,
+        plan: undefined,
         cursor: undefined,
         selection: undefined
       })
@@ -253,6 +280,7 @@ export function restAgents(kind: Exclude<AgentSession['kind'], 'mcp'>): void {
 
 /** The MCP server says a session ended: its agents leave every document. */
 export function endAgentSession(sessionId: string): void {
+  dropSessionQuestions(sessionId)
   // Removing entries while iterating a Map is safe: visited ones stay visited.
   for (const store of sessions.get(sessionId)?.keys() ?? []) remove(sessionId, store)
 }

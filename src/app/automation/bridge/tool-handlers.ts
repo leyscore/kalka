@@ -19,6 +19,7 @@ import {
   agentStarted,
   finishSessionWork,
   sessionAgentName,
+  setSessionPlan,
   setSessionStatus,
   readAgentSession,
   targetNodeIds,
@@ -36,9 +37,11 @@ import {
 } from '@/app/automation/execution/editor'
 import {
   noteAgentLook,
+  noteAgentPlan,
   noteAgentStatus,
   noteAgentWrites,
   reviewReminder,
+  planReminder,
   statusReminder
 } from '@/app/automation/review'
 import { noteAgentEdit } from '@/app/document/versions/bursts'
@@ -98,6 +101,7 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
       const graph = target.store.graph
       noteAgentLook(graph, session.session, toolName, toolArgs, target.pageId)
       noteAgentStatus(session.session, toolName, toolArgs)
+      noteAgentPlan(session.session, toolName, toolArgs)
       // People's requests reach the agent in its next result: MCP gives a server no way to call it.
       if (toolName !== 'get_comments' && isPlainObject(result)) {
         const asked = claimWaitingComments(graph)
@@ -112,15 +116,15 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
       }
       const tool = ALL_TOOLS.find((candidate) => candidate.name === toolName)
       if (tool && toolChangesDocument(tool) && isPlainObject(result)) {
-        noteAgentWrites(graph, session.session, [
-          ...(response.activity?.written ?? []),
-          ...extractNodeIds(response.result)
-        ])
+        const written = [...(response.activity?.written ?? []), ...extractNodeIds(response.result)]
+        noteAgentWrites(graph, session.session, written)
         const review = reviewReminder(graph, session.session)
         const status = statusReminder(session.session)
         const notes: Record<string, string> = {}
         if (review) notes.review = review
         if (status) notes.status_note = status
+        const plan = planReminder(graph, session.session, written)
+        if (plan) notes.plan_note = plan
         result = { ...result, ...notes }
       }
       const nodeIds = touchedNodeIds(target.store, toolArgs, response.result)
@@ -159,13 +163,18 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
     // Set by the host hook, which TypeScript cannot see run.
     const call = { released: false }
     figma.askUser = (questions) =>
-      askInAIPanel(questions, session ? sessionAgentName(store, session) : null)
+      askInAIPanel(
+        questions,
+        session ? sessionAgentName(store, session) : null,
+        session?.session ?? null
+      )
     if (session) {
       figma.finishWorking = (ids) => {
         call.released = true
         return finishSessionWork(store, session, ids)
       }
       figma.setAgentStatus = (text) => setSessionStatus(store, session, text)
+      figma.setAgentPlan = (sections) => setSessionPlan(store, session, sections)
       figma.commentAuthorName = sessionAgentName(store, session)
     }
     const response = await executeTool(target, def, figma, toolArgs, figma.commentAuthorName)

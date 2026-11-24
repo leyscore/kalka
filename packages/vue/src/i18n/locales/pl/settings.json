@@ -68,5 +68,13 @@
   "modelNameHint": "Nazwa, którą rozpoznasz na liście modeli.",
   "modelIDHint": "Użyj dokładnego identyfikatora modelu podanego przez dostawcę.",
   "baseURLHint": "Wpisz adres API wraz z wymaganą ścieżką.",
-  "designToolsRequired": "Model projektowy musi obsługiwać narzędzia. Wybierz zgodny model lub włącz obsługę narzędzi w ustawieniach zaawansowanych."
+  "designToolsRequired": "Model projektowy musi obsługiwać narzędzia. Wybierz zgodny model lub włącz obsługę narzędzi w ustawieniach zaawansowanych.",
+  "workflow": "Sposób pracy",
+  "workflowFocus": "Typ pracy",
+  "workflowFocusAI": "Skupiony na AI",
+  "workflowFocusDesign": "Projektowanie bez AI",
+  "workflowFocusDesignDescription": "Prosty edytor projektów. Agent, jego czat i wszystkie funkcje AI są ukryte.",
+  "workflowFocusBalanced": "Zrównoważony",
+  "workflowFocusBalancedDescription": "Projektujesz ręcznie i wołasz agenta, kiedy chcesz. Dokument otwiera się na warstwach.",
+  "workflowFocusAIDescription": "Agent jest na pierwszym miejscu. Dokument otwiera się na czacie, gotowy na polecenie."
 }

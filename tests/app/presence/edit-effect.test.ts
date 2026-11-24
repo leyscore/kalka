@@ -6,7 +6,7 @@ import { SceneGraph } from '@kalka/scene-graph'
 import { MAX_REVEALED_LAYERS, type RevealStep } from '@kalka/vue'
 
 import { createEditorStore } from '@/app/editor/session'
-import { agentSkeletons, attachCanvasScene } from '@/app/presence/canvas-scene'
+import { attachCanvasScene } from '@/app/presence/canvas-scene'
 import {
   agentEditFromChange,
   holdAgentCreations,
@@ -14,7 +14,7 @@ import {
   MAX_REVEAL_QUEUE_MS,
   paintersOrder,
   showAgentEdit,
-  SKELETON_LEAD_MS,
+  PAINT_LEAD_MS,
   stopAgentReveals
 } from '@/app/presence/edit-effect'
 import { addAgent, presenceOf } from '@/app/presence/registry'
@@ -96,7 +96,7 @@ describe("showing an agent's edit", () => {
     expect(edit.written).toEqual([heading.id])
   })
 
-  test('the canvas replays it block by block, each after its skeleton', () => {
+  test('the canvas replays it block by block, each after a short lead', () => {
     const { store, pageId, shown } = editor()
     const agent = addAgent(store, 'mcp')
     const { change, card, title, button } = cardEdit(store, pageId)
@@ -109,26 +109,7 @@ describe("showing an agent's edit", () => {
     ])
     expect(shown.flat().map((step) => step.id)).not.toContain(title.id)
     expect(shown.flat().map((step) => step.id)).not.toContain(button.id)
-    expect(shown[0]?.[0]?.delay).toBe(SKELETON_LEAD_MS)
-    stopAgentReveals(agent)
-  })
-
-  test('each new layer first shows as a skeleton, which fades as its content appears', () => {
-    const { store, pageId, shown } = editor()
-    const agent = addAgent(store, 'mcp')
-    const { change, card } = cardEdit(store, pageId)
-
-    showAgentEdit(store, agentEditFromChange(change), { agent })
-
-    const skeletons = agentSkeletons(store)
-    expect(skeletons.map((skeleton) => skeleton.nodeId)).toEqual([card.id])
-    const origin = Math.min(...skeletons.map((skeleton) => skeleton.from))
-    for (const step of shown[0] ?? []) {
-      const skeleton = skeletons.find((entry) => entry.nodeId === step.id)
-      // It shows before its layer and gives way as the layer starts to appear.
-      expect((skeleton?.from ?? Infinity) - origin).toBeLessThan(step.delay)
-      expect((skeleton?.until ?? 0) - origin).toBeCloseTo(step.delay, 3)
-    }
+    expect(shown[0]?.[0]?.delay).toBe(PAINT_LEAD_MS)
     stopAgentReveals(agent)
   })
 
@@ -145,18 +126,12 @@ describe("showing an agent's edit", () => {
     })
     showAgentEdit(store, agentEditFromChange(finish()), { agent })
 
-    const skeletons = agentSkeletons(store)
-    const of = (id: string) => skeletons.find((skeleton) => skeleton.nodeId === id)
     const contentOf = (id: string) => shown[0]?.find((step) => step.id === id)?.delay ?? Infinity
-    // The page loads first; nothing inside it shows a skeleton before its background appears.
-    expect(Math.min(...skeletons.map((skeleton) => skeleton.from))).toBe(of(page.id)?.from ?? -1)
-    expect(of(row.id)?.from).toBeGreaterThanOrEqual(of(page.id)?.until ?? Infinity)
-    for (const card of cards) {
-      expect(of(card.id)?.from).toBeGreaterThanOrEqual(of(row.id)?.until ?? Infinity)
-      expect(contentOf(card.id)).toBeGreaterThan(contentOf(row.id))
-    }
+    // The page shows first, then the row on it, then the cards on the row.
+    expect(contentOf(row.id)).toBeGreaterThan(contentOf(page.id))
+    for (const card of cards) expect(contentOf(card.id)).toBeGreaterThan(contentOf(row.id))
     // The cards still come one after another.
-    const starts = cards.map((card) => of(card.id)?.from ?? 0)
+    const starts = cards.map((card) => contentOf(card.id))
     expect(starts).toEqual([...starts].sort((a, b) => a - b))
     stopAgentReveals(agent)
   })
@@ -192,7 +167,7 @@ describe("showing an agent's edit", () => {
     const second = addAgent(store, 'mcp')
     showAgentEdit(store, agentEditFromChange(cardEdit(store, pageId).change), { agent: first })
     showAgentEdit(store, agentEditFromChange(cardEdit(store, pageId).change), { agent: second })
-    expect(shown[1]?.[0]?.delay).toBe(SKELETON_LEAD_MS)
+    expect(shown[1]?.[0]?.delay).toBe(PAINT_LEAD_MS)
     stopAgentReveals(first)
     stopAgentReveals(second)
   })

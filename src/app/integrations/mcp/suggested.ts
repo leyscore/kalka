@@ -43,16 +43,23 @@ function sameServer(a: string, b: string): boolean {
   return a.trim().replace(/\/+$/, '').toLowerCase() === b.replace(/\/+$/, '').toLowerCase()
 }
 
+/** The connection the person saved for a suggestion, matched by server URL. */
+export function suggestedMCPConnectionOf(
+  connections: readonly MCPConnection[],
+  suggestion: SuggestedMCPConnection
+): MCPConnection | undefined {
+  return connections.find(
+    ({ transport }) =>
+      transport.type === 'streamable-http' && sameServer(transport.url, suggestion.url)
+  )
+}
+
 /** The suggestions the person has not connected yet, matched by server URL. */
 export function availableSuggestedMCPConnections(
   connections: readonly MCPConnection[]
 ): SuggestedMCPConnection[] {
   return SUGGESTED_MCP_CONNECTIONS.filter(
-    (suggestion) =>
-      !connections.some(
-        ({ transport }) =>
-          transport.type === 'streamable-http' && sameServer(transport.url, suggestion.url)
-      )
+    (suggestion) => !suggestedMCPConnectionOf(connections, suggestion)
   )
 }
 

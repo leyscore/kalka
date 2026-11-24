@@ -33,7 +33,6 @@
   "noTasks": "Na razie nic. Tu pojawia się to, nad czym pracują agenci, od najnowszych.",
   "taskRunning": "W toku",
   "taskDone": "Gotowe",
-  "designing": "{name} projektuje…",
   "markReady": "Oznacz jako gotowe do wdrożenia",
   "moveToDraft": "Przywróć do szkicu",
   "ready": "Gotowe do wdrożenia · {name}",

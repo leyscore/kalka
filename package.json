@@ -278,5 +278,8 @@
   "packageManager": "bun@1.4.2",
   "trustedDependencies": [
     "electron"
-  ]
+  ],
+  "patchedDependencies": {
+    "electron-updater@6.8.10": "patches/electron-updater@6.8.10.patch"
+  }
 }

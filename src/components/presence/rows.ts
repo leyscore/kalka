@@ -1,5 +1,6 @@
 import type { Color } from '@kalka/scene-graph/primitives'
 
+import { roomPicture } from '@/app/collab/avatar'
 import type { RemotePeer } from '@/app/collab/types'
 import { agentPage } from '@/app/presence/registry'
 import type { AgentPresence, AgentStatus, FollowTarget } from '@/app/presence/types'
@@ -18,7 +19,17 @@ export interface PresencePersonRow {
   clientId?: number
   name: string
   color: Color
+  /** Their picture: our own photo or pixel creature, or the creature a collaborator shares. */
+  picture: string
   agents: PresenceAgentRow[]
+}
+
+/** Ourselves in a room, with the picture this device keeps. */
+export interface PresenceSelf {
+  name: string
+  color: Color
+  picture: string
+  agents: readonly AgentPresence[]
 }
 
 function agentRows(
@@ -37,16 +48,22 @@ function agentRows(
 
 /** Ourselves first, then everyone else in the room, each with the agents they run. */
 export function presenceRows(
-  self: { name: string; color: Color; agents: readonly AgentPresence[] },
+  self: PresenceSelf,
   peers: readonly RemotePeer[],
   pageName: (pageId: string) => string | undefined
 ): PresencePersonRow[] {
   return [
-    { name: self.name, color: self.color, agents: agentRows(self.agents, pageName, true) },
+    {
+      name: self.name,
+      color: self.color,
+      picture: self.picture,
+      agents: agentRows(self.agents, pageName, true)
+    },
     ...peers.map((peer) => ({
       clientId: peer.clientId,
       name: peer.name,
       color: peer.color,
+      picture: roomPicture(peer),
       agents: agentRows(peer.agents, pageName, false)
     }))
   ]
@@ -57,7 +74,7 @@ export function presenceRows(
  * on it, and anyone, you included, whose agents work there.
  */
 export function pagePresenceRows(
-  self: { name: string; color: Color; agents: readonly AgentPresence[] },
+  self: PresenceSelf,
   peers: readonly RemotePeer[],
   pageId: string
 ): PresencePersonRow[] {
@@ -69,11 +86,18 @@ export function pagePresenceRows(
     )
   const rows: PresencePersonRow[] = []
   const ownAgents = onPage(self.agents)
-  if (ownAgents.length > 0) rows.push({ name: self.name, color: self.color, agents: ownAgents })
+  if (ownAgents.length > 0)
+    rows.push({ name: self.name, color: self.color, picture: self.picture, agents: ownAgents })
   for (const peer of peers) {
     const agents = onPage(peer.agents)
     if (peer.cursor?.pageId !== pageId && agents.length === 0) continue
-    rows.push({ clientId: peer.clientId, name: peer.name, color: peer.color, agents })
+    rows.push({
+      clientId: peer.clientId,
+      name: peer.name,
+      color: peer.color,
+      picture: roomPicture(peer),
+      agents
+    })
   }
   return rows
 }

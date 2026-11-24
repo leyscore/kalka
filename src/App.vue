@@ -21,8 +21,10 @@ import { settingsOpen } from '@/app/settings/open'
 import { syncSettingsRoute } from '@/app/settings/route'
 import { reducedEffects, watchRenderingCapability } from '@/app/shell/effects'
 import { latch } from '@/app/shell/latch'
+import { watchWorkflowLanding } from '@/app/shell/left-panel/landing'
 import { animationsEnabled } from '@/app/shell/motion'
 import { installMenuGlide } from '@/app/shell/motion/menu-glide'
+import { watchShellPlace } from '@/app/shell/place'
 import { useAppTheme } from '@/app/shell/theme'
 import { toast } from '@/app/shell/ui'
 import { useRestartApprovals } from '@/app/shell/updater/approvals'
@@ -83,6 +85,8 @@ useEventListener(window, 'pagehide', () => {
 let stopMenuGlide: (() => void) | null = null
 onScopeDispose(() => stopMenuGlide?.())
 onScopeDispose(watchRenderingCapability())
+watchWorkflowLanding()
+onScopeDispose(watchShellPlace())
 onMounted(() => {
   stopMenuGlide = installMenuGlide()
   toast.setupGlobalErrorHandler()

@@ -76,7 +76,11 @@ export {
   ASK_USER_MAX_SENT_PICTURES,
   askUser,
   finishWorkingOnNodes,
+  planSections,
   readStyle,
+  SECTION_HEIGHT_MAX,
+  SECTION_NAME_MAX_LENGTH,
+  SECTION_PLAN_MAX,
   setStatus,
   styleNamed
 } from './presence'

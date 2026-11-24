@@ -120,7 +120,6 @@ export const welcomeMessageDefaults = {
   aiTitle: 'Bring your AI',
   aiIntro:
     'Describe a page and your agent draws it, in layers you can edit. You can also do this later in Settings.',
-  aiLater: 'Later',
   tourStep: params('{current} of {total}'),
   tourNext: 'Next',
   tourDone: 'Done',

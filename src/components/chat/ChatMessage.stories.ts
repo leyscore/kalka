@@ -138,9 +138,7 @@ export const PartlyUndone: Story = {
   args: { message: partlyUndoneMessage },
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector('[data-slot="chat-turn-undone"]')).toBeVisible()
-    const undone = canvasElement.querySelectorAll(
-      '[data-slot="chat-tool-call"][data-undone="true"]'
-    )
+    const undone = canvasElement.querySelectorAll('[data-slot="chat-tool-undone"]')
     await expect(undone).toHaveLength(1)
   }
 }

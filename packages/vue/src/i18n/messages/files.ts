@@ -39,6 +39,7 @@ export const filesMessageDefaults = {
   recentFiles: 'Recent files',
   recentTab: 'Recent',
   homePlace: 'Home',
+  dashboard: 'Dashboard',
   filesGroup: 'Files',
   accountAndSettings: 'Account and settings',
   openMenu: 'Open the menu',

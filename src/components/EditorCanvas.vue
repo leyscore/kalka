@@ -68,7 +68,6 @@ import CommentLayer from './comments/CommentLayer.vue'
 import FrameReviewBadges from './comments/FrameReviewBadges.vue'
 import NumberField from './inputs/NumberField.vue'
 import AgentGhostFrames from './presence/AgentGhostFrames.vue'
-import AgentSkeletons from './presence/AgentSkeletons.vue'
 
 const { paneId } = defineProps<{
   paneId?: string
@@ -100,7 +99,6 @@ const pageBackground = computed(() =>
   showsKalkaCanvas.value ? 'var(--color-design-canvas)' : colorToCSS(store.state.pageColor)
 )
 /** The color behind the artboards, which agents' loading clouds sit on before a layer does. */
-const canvasColor = computed(() => canvasBackgroundColor(store.state.pageColor))
 const onViewportResize = (width: number, height: number) => {
   if (paneId) store.resizePane(paneId, width, height)
   if (isActivePane.value) store.setViewportSize(width, height)
@@ -356,18 +354,7 @@ const cursor = computed(() =>
           class="absolute inset-0 block size-full touch-none outline-none"
         />
         <PlayIslands :view="paneView" :drawn="drawnView" :canvas="canvasRef" />
-        <AgentSkeletons
-          v-if="!paneView.play"
-          :view="paneView"
-          :drawn="drawnView"
-          :canvas-color="canvasColor"
-        />
-        <AgentGhostFrames
-          v-if="!paneView.play"
-          :view="paneView"
-          :drawn="drawnView"
-          :canvas-color="canvasColor"
-        />
+        <AgentGhostFrames v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
         <FrameReviewBadges v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
         <CommentLayer v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
         <AppDropOverlay :visible="isDraggingOver" />

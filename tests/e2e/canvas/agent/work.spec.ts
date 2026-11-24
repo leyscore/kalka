@@ -29,7 +29,7 @@ async function open(page: Page) {
 
 const Layers = v.object({ layers: v.array(v.object({ id: v.string() })) })
 
-test('a frame shows where an agent will work until it touches its first layer', async ({
+test('an outline shows where an agent will work until it touches its first layer', async ({
   page
 }) => {
   await open(page)
@@ -37,7 +37,8 @@ test('a frame shows where an agent will work until it touches its first layer', 
     html: '<div style="width: 300px; height: 200px; background: #eee"></div>'
   })
   // A new session that has said what it does but touched nothing yet.
-  const ghost = page.locator('[data-slot="agent-ghost-frame"]')
+  const ghost = page.locator('[data-slot="agent-ghost-section"]')
+  const badge = page.locator('[data-slot="agent-ghost-badge"]')
   await page.evaluate(() =>
     window.kalka?.test?.automation?.('tool', {
       name: 'set_status',
@@ -45,8 +46,9 @@ test('a frame shows where an agent will work until it touches its first layer', 
       agent: { session: 'fresh-session', kind: 'mcp', client: 'codex' }
     })
   )
-  await expect(ghost).toBeVisible()
-  await expect(ghost).toContainText('Composing the hero')
+  // Its page is outlined beside the designs, next to the outline under what the first one builds.
+  await expect(badge).toContainText('Composing the hero')
+  await expect(ghost).toHaveCount(2)
 
   await page.evaluate(() =>
     window.kalka?.test?.automation?.('tool', {
@@ -57,7 +59,8 @@ test('a frame shows where an agent will work until it touches its first layer', 
       agent: { session: 'fresh-session', kind: 'mcp', client: 'codex' }
     })
   )
-  await expect(ghost).toHaveCount(0)
+  // Its work is now where it wrote, not in a page of its own.
+  await expect(badge).toHaveCount(0)
 })
 
 test('what an agent says it works on is listed as its tasks, and leads back to where it worked', async ({

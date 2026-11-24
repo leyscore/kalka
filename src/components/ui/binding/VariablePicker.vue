@@ -56,7 +56,13 @@ function color(id: string) {
   return items.find((item) => item.id === id)?.color
 }
 
+// The footer acts on the field's own value, so the preview of a listed variable ends there.
+function endPreview() {
+  emit('highlight', null)
+}
+
 function startCreate() {
+  endPreview()
   creating.value = true
   createName.value = createDefaultName
   void nextTick(() => {
@@ -128,6 +134,7 @@ defineOptions({ inheritAttrs: false })
           size="xs"
           class="w-full justify-start"
           data-slot="action"
+          @pointerenter="endPreview"
           @click="detach"
         >
           <template #leading><icon-hugeicons-unlink-01 class="size-3" /></template>
@@ -162,6 +169,7 @@ defineOptions({ inheritAttrs: false })
           size="xs"
           class="w-full justify-start"
           data-slot="action"
+          @pointerenter="endPreview"
           @click="startCreate"
         >
           <template #leading><icon-hugeicons-plus class="size-3" /></template>

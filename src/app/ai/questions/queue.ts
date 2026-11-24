@@ -6,6 +6,8 @@ import type { AgentAnswer, AgentQuestion } from '@kalka/core/figma-api'
 export interface PendingQuestions {
   /** The agent asking, when the host knows its name. */
   agent: string | null
+  /** The agent's session, so its questions leave with it; null for the in-app agent. */
+  session: string | null
   questions: AgentQuestion[]
   resolve: (answers: AgentAnswer[] | null) => void
 }
@@ -17,15 +19,26 @@ export const currentQuestions = computed(() => queue.value[0] ?? null)
 
 /**
  * Puts an agent's questions in front of the person and resolves with their answers, or null when
- * they skip. Agents that ask at the same time wait in line.
+ * they skip. Agents that ask at the same time wait in line. A session that asks again has given up
+ * on its earlier questions, so those leave first.
  */
 export function askUserInPanel(
   questions: AgentQuestion[],
-  agent: string | null
+  agent: string | null,
+  session: string | null = null
 ): Promise<AgentAnswer[] | null> {
+  if (session) dropSessionQuestions(session)
   return new Promise((resolve) => {
-    queue.value = [...queue.value, { agent, questions, resolve }]
+    queue.value = [...queue.value, { agent, session, questions, resolve }]
   })
+}
+
+/** Removes the questions of a session that ended or stopped waiting; nobody reads the answers. */
+export function dropSessionQuestions(session: string): void {
+  const dropped = queue.value.filter((entry) => entry.session === session)
+  if (!dropped.length) return
+  queue.value = queue.value.filter((entry) => entry.session !== session)
+  for (const entry of dropped) entry.resolve(null)
 }
 
 function settle(answers: AgentAnswer[] | null): void {

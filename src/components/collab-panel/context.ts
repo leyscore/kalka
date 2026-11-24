@@ -4,6 +4,7 @@ import type { InjectionKey, ShallowUnwrapRef } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
+import { useAvatar } from '@/app/collab/avatar'
 import { useJoinRoom } from '@/app/collab/join'
 import { serverAccount, serverSessionExpired } from '@/app/collab/server/account'
 import { isServerRoom, serverDocumentLink, shareToServer } from '@/app/collab/server/documents'
@@ -18,6 +19,7 @@ import { getShareURL } from '@/constants'
 
 function createCollabPanelContext() {
   const collab = useCollabInjected()
+  const avatar = useAvatar()
   const joinRoomFromInput = useJoinRoom()
   const { copy, copied } = useClipboard({ copiedDuring: 2000 })
   const { common, collaboration } = useI18n()
@@ -46,6 +48,7 @@ function createCollabPanelContext() {
       {
         name: state.value.localName,
         color: state.value.localColor,
+        picture: avatar.url.value,
         agents: store ? presenceOf(store).agents.value : []
       },
       peers.value,

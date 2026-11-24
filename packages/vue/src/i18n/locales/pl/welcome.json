@@ -111,7 +111,6 @@
   "sourceOther": "Inne",
   "aiTitle": "Podłącz swoją AI",
   "aiIntro": "Opisz stronę, a twój agent ją narysuje, w warstwach, które możesz edytować. Możesz to też zrobić później w Ustawieniach.",
-  "aiLater": "Później",
   "tourStep": "{current} z {total}",
   "tourNext": "Dalej",
   "tourDone": "Gotowe",

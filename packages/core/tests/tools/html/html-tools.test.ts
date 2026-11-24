@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'bun:test'
 
+import { expectDefined } from '#core-tests/helpers/assert'
+
 import { FigmaAPI } from '@kalka/core/figma-api'
 import { ALL_TOOLS } from '@kalka/core/tools'
 import { findCSSClass, SceneGraph } from '@kalka/scene-graph'
 import { computeImageHash } from '@kalka/scene-graph/images'
 
 import type { HTMLImageReference } from '#core/tools/html/images'
-
-import { expectDefined } from '#core-tests/helpers/assert'
 
 interface HTMLWithImages {
   html: string
@@ -40,7 +40,9 @@ describe('HTML tools', () => {
     expect(section.parentId).toBe(frame.id)
     expect(section.layoutMode).toBe('HORIZONTAL')
     expect(section.itemSpacing).toBe(16)
-    const texts = [...graph.nodes.values()].filter((node) => node.type === 'TEXT').map((node) => node.text)
+    const texts = [...graph.nodes.values()]
+      .filter((node) => node.type === 'TEXT')
+      .map((node) => node.text)
     expect(texts).toContain('Ship faster')
     expect(texts.join(' ')).not.toContain('steal')
   })
@@ -217,10 +219,14 @@ describe('HTML tools', () => {
     })) as { layers: { id: string }[] }
     const id = written.layers[0].id
 
-    expect(await tool('edit_html').execute(figma, { id, find: 'Learn more', replace: 'Read' })).toMatchObject({
+    expect(
+      await tool('edit_html').execute(figma, { id, find: 'Learn more', replace: 'Read' })
+    ).toMatchObject({
       error: expect.stringContaining('2 times')
     })
-    expect(await tool('edit_html').execute(figma, { id, find: 'Sold out', replace: 'x' })).toMatchObject({
+    expect(
+      await tool('edit_html').execute(figma, { id, find: 'Sold out', replace: 'x' })
+    ).toMatchObject({
       error: expect.stringContaining('get_html')
     })
 
@@ -232,7 +238,9 @@ describe('HTML tools', () => {
     const row = expectDefined(graph.getNode(edited.layers[0].id), 'row')
     expect(row.layoutMode).toBe('HORIZONTAL')
     expect(graph.getNode(id)).toBeUndefined()
-    const texts = [...graph.nodes.values()].filter((node) => node.type === 'TEXT').map((node) => node.text)
+    const texts = [...graph.nodes.values()]
+      .filter((node) => node.type === 'TEXT')
+      .map((node) => node.text)
     expect(texts).toEqual(['Order today', 'Learn more', 'Learn more'])
   })
 

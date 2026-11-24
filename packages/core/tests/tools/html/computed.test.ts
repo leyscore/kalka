@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'bun:test'
 
+import { expectDefined } from '#core-tests/helpers/assert'
+
 import { FigmaAPI } from '@kalka/core/figma-api'
 import { installLayoutEngine, type LayoutEngine } from '@kalka/core/layout'
 import { ALL_TOOLS } from '@kalka/core/tools'
 import { SceneGraph } from '@kalka/scene-graph'
-
-import { expectDefined } from '#core-tests/helpers/assert'
 
 const tool = expectDefined(
   ALL_TOOLS.find((candidate) => candidate.name === 'get_computed_styles'),
@@ -32,8 +32,15 @@ describe('get_computed_styles', () => {
     const engine = engineDrawing(frame.id)
     const uninstall = installLayoutEngine(engine)
     try {
-      const result = await tool.execute(new FigmaAPI(graph), { id: frame.id, properties: ['width'] })
-      expect(result).toEqual({ id: frame.id, name: 'Card', styles: { width: '320px', display: 'flex' } })
+      const result = await tool.execute(new FigmaAPI(graph), {
+        id: frame.id,
+        properties: ['width']
+      })
+      expect(result).toEqual({
+        id: frame.id,
+        name: 'Card',
+        styles: { width: '320px', display: 'flex' }
+      })
       expect(engine.asked).toEqual([['width']])
     } finally {
       uninstall()
@@ -54,7 +61,10 @@ describe('get_computed_styles', () => {
     }
     const uninstall = installLayoutEngine(engine)
     try {
-      const result = await tool.execute(new FigmaAPI(graph), { id: frame.id, properties: ['width'] })
+      const result = await tool.execute(new FigmaAPI(graph), {
+        id: frame.id,
+        properties: ['width']
+      })
       expect(result).toEqual({ id: frame.id, name: 'Card', styles: { width: '320px' } })
     } finally {
       uninstall()

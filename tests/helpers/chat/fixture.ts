@@ -15,6 +15,13 @@ export const test = base.extend<ChatFixtures>({
   chat: async ({ page }, use) => {
     await routeModelCatalog(page)
     await routeVisionModel(page)
+    // The reference-library offer opens over the canvas; these specs are not about it.
+    await page.addInitScript(() => {
+      // Artboard frames are sandboxed and have no storage of their own.
+      if (window !== window.top) return
+      // oxlint-disable-next-line kalka/no-direct-storage-access -- Seeds the page's own storage before the app loads.
+      localStorage.setItem('kalka:reference-libraries-dismissed', 'true')
+    })
     const harness = new ChatHarness(page)
     await harness.open()
     const canvas = new CanvasHelper(page)

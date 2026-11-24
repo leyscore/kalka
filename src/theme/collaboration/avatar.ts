@@ -1,8 +1,8 @@
 import { tv } from 'tailwind-variants'
 
-/** A person's initials on their color, in the avatar stack, presence lists, and mobile HUD. */
+/** A person's photo or pixel creature, in the avatar stack, presence lists, and mobile HUD. */
 export const avatar = tv({
-  base: 'flex shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white',
+  base: 'shrink-0 rounded-full bg-panel-secondary object-cover [image-rendering:pixelated]',
   variants: {
     size: { sm: 'size-6', md: 'size-7' },
     bordered: { true: 'border-2 border-panel', false: '' },

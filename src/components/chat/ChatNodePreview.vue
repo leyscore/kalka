@@ -8,7 +8,11 @@ import { loadCanvasKit } from '@kalka/vue'
 
 import type { ReferencedNode } from '@/app/ai/chat/context'
 
-const { editor, node } = defineProps<{ editor: Editor; node: ReferencedNode }>()
+const {
+  editor,
+  node,
+  size = 'md'
+} = defineProps<{ editor: Editor; node: ReferencedNode; size?: 'sm' | 'md' }>()
 const blob = shallowRef<Blob | null>(null)
 const previewURL = useObjectUrl(blob)
 let requestId = 0
@@ -42,12 +46,18 @@ watch(
     v-if="previewURL"
     :src="previewURL"
     alt=""
-    class="size-10 shrink-0 rounded-[7px] border border-hairline bg-panel-field object-contain"
+    class="shrink-0 border border-hairline bg-panel-field object-contain"
+    :class="size === 'sm' ? 'size-4 rounded-[4px]' : 'size-10 rounded-[7px]'"
   />
   <div
     v-else
-    class="flex size-10 shrink-0 items-center justify-center rounded-[7px] border border-hairline bg-panel-field"
+    class="flex shrink-0 items-center justify-center border border-hairline bg-panel-field"
+    :class="size === 'sm' ? 'size-4 rounded-[4px]' : 'size-10 rounded-[7px]'"
   >
-    <icon-hugeicons-box class="size-4 text-muted" aria-hidden="true" />
+    <icon-hugeicons-box
+      class="text-muted"
+      :class="size === 'sm' ? 'size-2.5' : 'size-4'"
+      aria-hidden="true"
+    />
   </div>
 </template>

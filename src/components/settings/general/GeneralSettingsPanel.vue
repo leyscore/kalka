@@ -5,11 +5,16 @@ import { type Locale, useI18n } from '@kalka/vue'
 
 import { recoveryEnabled, setRecoveryEnabled } from '@/app/document/recovery/preferences'
 import { setSnappingPreference } from '@/app/settings/preferences/apply'
-import { appPreferences, updateReduceAgentAnimations } from '@/app/settings/preferences/store'
+import {
+  appPreferences,
+  updateReduceAgentAnimations,
+  updateWorkflowFocus
+} from '@/app/settings/preferences/store'
 import { animationPreference } from '@/app/shell/motion'
 import { useAppTheme } from '@/app/shell/theme'
 import CredentialSettingsSection from '@/components/settings/credentials/CredentialSettingsSection.vue'
 import ThemePicker from '@/components/settings/general/ThemePicker.vue'
+import WorkflowFocusRule from '@/components/settings/general/WorkflowFocusRule.vue'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
 import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
@@ -38,6 +43,18 @@ const preserveUnsavedWork = computed({
 const reduceAgentAnimations = computed({
   get: () => appPreferences.value.appearance.reduceAgentAnimations,
   set: updateReduceAgentAnimations
+})
+
+const workflowFocus = computed({
+  get: () => appPreferences.value.workflow.focus,
+  set: updateWorkflowFocus
+})
+
+const workflowFocusDescription = computed(() => {
+  const focus = appPreferences.value.workflow.focus
+  if (focus === 'design') return settings.value.workflowFocusDesignDescription
+  if (focus === 'ai') return settings.value.workflowFocusAIDescription
+  return settings.value.workflowFocusBalancedDescription
 })
 
 const snapToGeometry = computed({
@@ -99,6 +116,19 @@ const snapToPixelGrid = computed({
             data-test-id="settings-reduce-agent-animations"
           />
         </label>
+      </SettingsGroup>
+    </SettingsSection>
+
+    <SettingsSection>
+      <template #title>{{ settings.workflow }}</template>
+      <SettingsGroup>
+        <div class="flex flex-col gap-3 px-4 py-3">
+          <span>
+            <span class="block text-[13px] text-surface">{{ settings.workflowFocus }}</span>
+            <span class="mt-0.5 block text-xs text-muted">{{ workflowFocusDescription }}</span>
+          </span>
+          <WorkflowFocusRule v-model="workflowFocus" />
+        </div>
       </SettingsGroup>
     </SettingsSection>
 

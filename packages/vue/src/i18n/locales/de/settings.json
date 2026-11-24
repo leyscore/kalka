@@ -68,5 +68,13 @@
   "modelNameHint": "Ein Name, den du in der Modellauswahl wiedererkennst.",
   "modelIDHint": "Verwende die genaue Modell-ID deines Anbieters.",
   "baseURLHint": "Gib den API-Endpunkt einschließlich des erforderlichen Pfads ein.",
-  "designToolsRequired": "Das Design-Modell muss Werkzeuge unterstützen. Wähle ein kompatibles Modell oder aktiviere die Werkzeugunterstützung in den erweiterten Einstellungen."
+  "designToolsRequired": "Das Design-Modell muss Werkzeuge unterstützen. Wähle ein kompatibles Modell oder aktiviere die Werkzeugunterstützung in den erweiterten Einstellungen.",
+  "workflow": "Arbeitsweise",
+  "workflowFocus": "Workflow-Typ",
+  "workflowFocusAI": "KI-zentriert",
+  "workflowFocusDesign": "Design ohne KI",
+  "workflowFocusDesignDescription": "Ein schlichter Design-Editor. Der Agent, sein Chat und alle KI-Funktionen sind ausgeblendet.",
+  "workflowFocusBalanced": "Ausgewogen",
+  "workflowFocusBalancedDescription": "Sie gestalten von Hand und rufen den Agenten, wenn Sie ihn brauchen. Ein Dokument öffnet sich bei den Ebenen.",
+  "workflowFocusAIDescription": "Der Agent steht an erster Stelle. Ein Dokument öffnet sich im Chat, bereit für eine Anfrage."
 }

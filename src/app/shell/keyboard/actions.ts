@@ -5,6 +5,7 @@ import type { useEditorCommands, useViewportKind } from '@kalka/vue'
 
 import type { PropertiesTab } from '@/app/ai/chat/use'
 import type { EditorStore } from '@/app/editor/active-store'
+import { aiHidden } from '@/app/settings/preferences/store'
 
 type KeyboardActionsOptions = {
   store: EditorStore
@@ -105,6 +106,7 @@ export function createKeyboardActions({
   }
 
   function toggleAI() {
+    if (aiHidden.value) return
     if (isMobile.value) {
       store.state.activeRibbonTab = store.state.activeRibbonTab === 'ai' ? 'panels' : 'ai'
       if (store.state.mobileDrawerSnap === 'closed') {

@@ -29,10 +29,11 @@ test('multipart assistant messages expose one copy action', async ({ configuredC
 
 test('tool calls render their result', async ({ configuredChat: chat }) => {
   await chat.submit('Create a frame')
-  // The status icon's label leads the call's accessible name.
+  // The call is a step of the work, named for what it is for, with its state on its star.
   await expect(
-    chat.assistantMessage().getByRole('button', { name: /^Done Create Shape\b/ })
+    chat.assistantMessage().getByRole('button', { name: /^Building Create Shape\b/ })
   ).toBeVisible()
+  await expect(chat.assistantMessage().getByRole('img', { name: 'Done' })).toBeVisible()
   await expect(chat.assistantMessage().getByText('Created a frame', { exact: false })).toBeVisible()
 })
 
@@ -42,7 +43,7 @@ test('opening a tool call at the bottom keeps it in place instead of following',
 }) => {
   await chat.submit(Array.from({ length: 60 }, (_, i) => `Context line ${i}`).join('\n'))
   await chat.submit('Create a frame')
-  const trigger = chat.assistantMessage().getByRole('button', { name: /^Done Create Shape\b/ })
+  const trigger = chat.assistantMessage().getByRole('button', { name: /^Building Create Shape\b/ })
   await expect(trigger).toBeVisible()
   const top = async () => (await trigger.boundingBox())?.y ?? 0
   const before = await top()

@@ -1,7 +1,7 @@
 import { useLocalStorage } from '@vueuse/core'
 import { uniq } from 'es-toolkit'
 import * as v from 'valibot'
-import { toRaw } from 'vue'
+import { computed, toRaw } from 'vue'
 
 import { DEFAULT_SNAPPING_PREFERENCES, type SnappingPreferences } from '@kalka/core/editor'
 
@@ -93,7 +93,17 @@ export interface OnboardingProfile {
 export const CODE_SOURCES = ['design-jsx', 'tailwind-jsx', 'html-css'] as const
 export type DefaultCodeSource = (typeof CODE_SOURCES)[number]
 
+/**
+ * How much of the editor is about AI. `design` hides the AI features, `balanced` keeps them at
+ * hand without putting them first, `ai` puts them first.
+ */
+export const WORKFLOW_FOCUSES = ['design', 'balanced', 'ai'] as const
+export type WorkflowFocus = (typeof WORKFLOW_FOCUSES)[number]
+
 export interface AppPreferences {
+  workflow: {
+    focus: WorkflowFocus
+  }
   appearance: {
     animations: AnimationPreference
     /** Agents' edits show at once instead of animating in, whatever the rest of the app does. */
@@ -131,6 +141,7 @@ export interface AppPreferences {
 }
 
 export const DEFAULT_APP_PREFERENCES: Readonly<AppPreferences> = {
+  workflow: { focus: 'balanced' },
   appearance: { animations: 'system', reduceAgentAnimations: false },
   chat: {
     reasoningDisplay: 'collapsed',
@@ -170,6 +181,9 @@ const snapping = defaults.editing.snapping
 
 /** Stored preferences, read field by field so one bad value keeps the rest. */
 const appPreferencesSchema = section({
+  workflow: section({
+    focus: v.fallback(v.picklist(WORKFLOW_FOCUSES), defaults.workflow.focus)
+  }),
   appearance: section({
     animations: v.fallback(v.picklist(ANIMATION_PREFERENCES), defaults.appearance.animations),
     reduceAgentAnimations: v.fallback(v.boolean(), defaults.appearance.reduceAgentAnimations)
@@ -288,6 +302,15 @@ export function updateAnimationPreference(animations: AnimationPreference): void
 export function updateReduceAgentAnimations(reduce: boolean): void {
   editPreferences((draft) => {
     draft.appearance.reduceAgentAnimations = reduce
+  })
+}
+
+/** Whether the person works without AI, so the editor shows none of its AI features. */
+export const aiHidden = computed(() => appPreferences.value.workflow.focus === 'design')
+
+export function updateWorkflowFocus(focus: WorkflowFocus): void {
+  editPreferences((draft) => {
+    draft.workflow.focus = focus
   })
 }
 

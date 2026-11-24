@@ -70,6 +70,7 @@ function toggleFollow(clientId: number) {
           >
             <PersonAvatar
               :name="person.name || common.you"
+              :picture="person.picture"
               :color="person.color"
               :agent-count="person.agents.length"
               interactive
@@ -125,6 +126,7 @@ function toggleFollow(clientId: number) {
           >
             <PersonAvatar
               :name="person.name"
+              :picture="person.picture"
               :color="person.color"
               :agent-count="person.agents.length"
               :following="isFollowing(following, personTarget(person.clientId))"

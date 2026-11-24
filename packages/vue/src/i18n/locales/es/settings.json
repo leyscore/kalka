@@ -68,5 +68,13 @@
   "modelNameHint": "Un nombre que puedas reconocer en el selector de modelos.",
   "modelIDHint": "Usa el identificador exacto del modelo que proporciona tu proveedor.",
   "baseURLHint": "Introduce el endpoint de la API, incluida cualquier ruta necesaria.",
-  "designToolsRequired": "El modelo de diseño debe admitir herramientas. Elige un modelo compatible o activa las herramientas en los ajustes avanzados."
+  "designToolsRequired": "El modelo de diseño debe admitir herramientas. Elige un modelo compatible o activa las herramientas en los ajustes avanzados.",
+  "workflow": "Flujo de trabajo",
+  "workflowFocus": "Tipo de flujo de trabajo",
+  "workflowFocusAI": "Centrado en IA",
+  "workflowFocusDesign": "Diseño sin IA",
+  "workflowFocusDesignDescription": "Un editor de diseño sencillo. El agente, su chat y todas las funciones de IA quedan ocultos.",
+  "workflowFocusBalanced": "Equilibrado",
+  "workflowFocusBalancedDescription": "Diseñas a mano y llamas al agente cuando quieres. Un documento se abre en sus capas.",
+  "workflowFocusAIDescription": "El agente va primero. Un documento se abre en el chat, listo para una petición."
 }

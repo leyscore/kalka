@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 
+import { expectDefined } from '#core-tests/helpers/assert'
+
 import { executeAtomicTool } from '@kalka/core/editor'
 import { FigmaAPI } from '@kalka/core/figma-api'
 import { ALL_TOOLS } from '@kalka/core/tools'
 import { SceneGraph } from '@kalka/scene-graph'
 import { UndoManager } from '@kalka/scene-graph/undo'
-
-import { expectDefined } from '#core-tests/helpers/assert'
 
 const batchUpdate = expectDefined(
   ALL_TOOLS.find((tool) => tool.name === 'batch_update'),

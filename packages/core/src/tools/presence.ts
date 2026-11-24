@@ -1,7 +1,7 @@
 import { compact } from 'es-toolkit'
 import * as v from 'valibot'
 
-import type { AgentAnswer } from '#core/figma-api'
+import type { AgentAnswer, PlannedSection } from '#core/figma-api'
 
 import { readDesignStyle } from './html/design-style'
 import {
@@ -57,6 +57,47 @@ export const setStatus = defineTool({
     if (!figma.setAgentStatus) return { status, note: 'This host shows no agent status.' }
     figma.setAgentStatus(status)
     return { status }
+  }
+})
+
+/** How many sections a plan may list; a page with more is announced in groups. */
+export const SECTION_PLAN_MAX = 16
+/** How long a planned section's name may be; the canvas has room for a word or two. */
+export const SECTION_NAME_MAX_LENGTH = 40
+/** The tallest a planned section may be, in pixels. */
+export const SECTION_HEIGHT_MAX = 8000
+const SECTION_HEIGHT_MIN = 40
+
+export const planSections = defineTool({
+  name: 'plan_sections',
+  description:
+    'Announce the sections of the page you are about to design, top to bottom, before you draw the first one: each with a short name such as "Hero" or "Pricing" and its approximate height in pixels. The canvas shows them as empty outlines that turn into the real sections as you build them, so the user sees the whole page coming. Heights are estimates; the outlines follow what you really build. Call it again with the full list when the plan changes. An empty list clears it.',
+  execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
+  input: v.strictObject({
+    sections: v.pipe(
+      v.array(
+        v.strictObject({
+          name: v.pipe(v.string(), v.description('A word or two, such as "Hero"')),
+          height: v.pipe(v.number(), v.description('Approximate height in pixels'))
+        })
+      ),
+      v.description('Every section of the page, in order from the top')
+    )
+  }),
+  execute: (figma, { sections }) => {
+    const plan: PlannedSection[] = sections
+      .map(({ name, height }) => ({
+        name: name.trim().replaceAll(/\s+/g, ' ').slice(0, SECTION_NAME_MAX_LENGTH),
+        height: Number.isFinite(height)
+          ? Math.round(Math.min(Math.max(height, SECTION_HEIGHT_MIN), SECTION_HEIGHT_MAX))
+          : SECTION_HEIGHT_MIN
+      }))
+      .filter(({ name }) => name.length > 0)
+      .slice(0, SECTION_PLAN_MAX)
+    if (!figma.setAgentPlan) return { sections: plan, note: 'This host shows no section plan.' }
+    figma.setAgentPlan(plan)
+    return { sections: plan }
   }
 })
 

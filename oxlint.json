@@ -1,17 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "typescript",
-    "import",
-    "unicorn",
-    "vue",
-    "promise",
-    "node"
-  ],
-  "jsPlugins": [
-    "./lint/plugin.js",
-    "eslint-plugin-compat"
-  ],
+  "plugins": ["typescript", "import", "unicorn", "vue", "promise", "node"],
+  "jsPlugins": ["./lint/plugin.js", "eslint-plugin-compat"],
   "settings": {
     "browsers": ["chrome 111", "edge 111", "firefox 128", "safari 16.4", "ios_saf 16.4"]
   },
@@ -24,13 +14,7 @@
     "no-console": [
       "warn",
       {
-        "allow": [
-          "warn",
-          "error",
-          "debug",
-          "time",
-          "timeEnd"
-        ]
+        "allow": ["warn", "error", "debug", "time", "timeEnd"]
       }
     ],
     "eqeqeq": [
@@ -52,30 +36,18 @@
           },
           {
             "name": "node:module",
-            "importNames": [
-              "createRequire"
-            ],
+            "importNames": ["createRequire"],
             "message": "Use ESM imports or import.meta.resolve instead of createRequire/require."
           }
         ],
         "patterns": [
           {
-            "group": [
-              "@/engine/*"
-            ],
+            "group": ["@/engine/*"],
             "message": "Import from @kalka/core unless the module adds platform-specific logic.",
-            "allowImportNames": [
-              "loadFont",
-              "listFamilies",
-              "listFonts",
-              "preloadFonts"
-            ]
+            "allowImportNames": ["loadFont", "listFamilies", "listFonts", "preloadFonts"]
           },
           {
-            "group": [
-              "../../packages/*",
-              "../../../packages/*"
-            ],
+            "group": ["../../packages/*", "../../../packages/*"],
             "message": "Use the workspace package name (e.g. @kalka/core) instead of relative paths to packages/."
           }
         ]
@@ -429,7 +401,11 @@
   },
   "overrides": [
     {
-      "files": ["src/components/onboarding/WelcomeArt.vue"],
+      "files": [
+        "src/components/onboarding/WelcomeArt.vue",
+        "src/components/chat/AgentCreature.vue",
+        "src/components/presence/AgentGhostFrames.vue"
+      ],
       "rules": {
         "kalka/no-raw-svg-in-app-vue-templates": "off"
       }
@@ -447,10 +423,7 @@
       }
     },
     {
-      "files": [
-        "tools/checks/lint/src/**/*.ts",
-        "tools/checks/lint/tests/**/*.ts"
-      ],
+      "files": ["tools/checks/lint/src/**/*.ts", "tools/checks/lint/tests/**/*.ts"],
       "rules": {
         "kalka/no-generated-test-id-literals": "off",
         "kalka/no-hardcoded-color-constants": "off",
@@ -458,10 +431,7 @@
       }
     },
     {
-      "files": [
-        "src/**/*.ts",
-        "packages/*/src/**/*.ts"
-      ],
+      "files": ["src/**/*.ts", "packages/*/src/**/*.ts"],
       "rules": {
         "kalka/no-useless-pass-through-wrappers": "error"
       }
@@ -482,10 +452,7 @@
       }
     },
     {
-      "files": [
-        "**/kiwi/schema-runtime/**",
-        "**/kiwi/src/schema-runtime/**"
-      ],
+      "files": ["**/kiwi/schema-runtime/**", "**/kiwi/src/schema-runtime/**"],
       "rules": {
         "typescript/no-explicit-any": "off",
         "typescript/no-non-null-assertion": "off",
@@ -502,18 +469,13 @@
       }
     },
     {
-      "files": [
-        "packages/cli/src/**",
-        "packages/mcp/src/**"
-      ],
+      "files": ["packages/cli/src/**", "packages/mcp/src/**"],
       "rules": {
         "no-console": "off"
       }
     },
     {
-      "files": [
-        "packages/cli/src/commands/**"
-      ],
+      "files": ["packages/cli/src/commands/**"],
       "rules": {
         "kalka/no-raw-console-format": "error"
       }
@@ -529,26 +491,19 @@
       }
     },
     {
-      "files": [
-        "scripts/**/*.ts",
-        "tools/**/*.ts"
-      ],
+      "files": ["scripts/**/*.ts", "tools/**/*.ts"],
       "rules": {
         "no-console": "off"
       }
     },
     {
-      "files": [
-        "packages/scene-graph/src/constants.ts"
-      ],
+      "files": ["packages/scene-graph/src/constants.ts"],
       "rules": {
         "kalka/no-hardcoded-color-constants": "off"
       }
     },
     {
-      "files": [
-        "packages/scene-graph/src/index.ts"
-      ],
+      "files": ["packages/scene-graph/src/index.ts"],
       "rules": {
         "kalka/no-direct-graph-emitter-subscriptions": "off"
       }
@@ -563,12 +518,7 @@
       }
     }
   ],
-  "ignorePatterns": [
-    "node_modules",
-    "dist",
-    "desktop",
-    "*.config.*"
-  ],
+  "ignorePatterns": ["node_modules", "dist", "desktop", "*.config.*"],
   "categories": {
     "correctness": "error"
   }

@@ -57,7 +57,7 @@ export async function searchReferences(
 export const findReferences = defineTool({
   name: 'find_references',
   description:
-    'Search the stock photo service the person connected (Pexels or Unsplash) for visual references that match a style or a subject, such as "bauhaus poster", "minimal coffee packaging", "bakery interior warm light". Use it during the kickoff, then pass the references to ask_user as the images of one question so the person picks those they like, refuses them all, or sends their own picture. References are for direction only: never put them in the design. Write the query in English from the style and the subject, never with a person\'s or a client\'s name.',
+    'Search the stock photo service the person connected, when they connected one, for mood photos that match a style or a subject, such as "bauhaus poster", "minimal coffee packaging", "bakery interior warm light". Use it during the kickoff, then pass the references to ask_user as the images of one question so the person picks those they like, refuses them all, or sends their own picture. Screenshots of real sites from a connected design-reference library come first and need no photo service; these photos are an extra. References are for direction only: never put them in the design. Write the query in English from the style and the subject, never with a person\'s or a client\'s name.',
   execution: { kind: 'async', mutation: 'none' },
   capabilities: ['network:access'],
   exposure: { webmcp: false },
@@ -85,7 +85,7 @@ export const findReferences = defineTool({
     if (!provider) {
       return {
         references: [],
-        note: 'No stock photo service is connected (Images and photos in Kalka settings). Offer the styles in words instead.'
+        note: "No photos to show here. Go on without them and do not mention it to the person: take references from a connected design-reference library when this session has one, or from the product's own world."
       }
     }
     const source = SERVICES[provider.name]?.title ?? provider.name

@@ -708,7 +708,9 @@ export class DomSceneProjector {
       slot.markReady()
       this.options.onTiersChanged?.()
     }
-    if (doc) void doc.fonts.ready.then(ready, ready)
+    // A frame taken out of the page while it loaded has a document without that promise.
+    const fontsReady: Promise<unknown> | undefined = doc?.fonts.ready
+    if (fontsReady) void fontsReady.then(ready, ready)
     else ready()
   }
 

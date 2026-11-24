@@ -35,6 +35,7 @@ import {
   runAgentId,
   finishRunWork,
   runAgentName,
+  setRunPlan,
   setRunStatus,
   markRunChange,
   markRunWork,
@@ -131,6 +132,7 @@ export function createAITools(
         return finishRunWork(store, ids, lane)
       }
       figma.setAgentStatus = (text) => setRunStatus(store, text, lane)
+      figma.setAgentPlan = (sections) => setRunPlan(store, sections, lane)
       figma.commentAuthorName = runAgentName(store, lane)
       figma.askUser = (questions) => askInAIPanel(questions, runAgentName(store, lane) ?? null)
       const result = await def.execute(figma, args)

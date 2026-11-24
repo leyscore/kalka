@@ -33,7 +33,6 @@
   "noTasks": "Nada todavía. Lo que los agentes dicen que hacen aparece aquí, lo más reciente primero.",
   "taskRunning": "En curso",
   "taskDone": "Hecho",
-  "designing": "{name} está diseñando…",
   "markReady": "Marcar como listo para desarrollo",
   "moveToDraft": "Volver a borrador",
   "ready": "Listo para desarrollo · {name}",

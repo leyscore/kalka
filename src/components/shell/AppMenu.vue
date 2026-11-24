@@ -202,8 +202,10 @@ const { menu: menuMessages } = useI18n()
         :appearance="resolvedAppTheme"
         class="me-1 size-6 rounded-md"
       />
+      <!-- With the tabs in the bar, the active tab is the document's name. -->
+      <slot v-if="$slots.default" />
       <input
-        v-if="editingName"
+        v-else-if="editingName"
         ref="nameInput"
         data-test-id="app-document-name-input"
         class="w-40 min-w-0 rounded-md border border-accent bg-input px-1 py-0.5 text-[13px] font-semibold text-surface outline-none"

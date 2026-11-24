@@ -33,7 +33,6 @@
   "noTasks": "Noch nichts. Woran Agenten arbeiten, erscheint hier, das Neueste zuerst.",
   "taskRunning": "In Arbeit",
   "taskDone": "Fertig",
-  "designing": "{name} gestaltet…",
   "markReady": "Als bereit für die Entwicklung markieren",
   "moveToDraft": "Zurück zum Entwurf",
   "ready": "Bereit für die Entwicklung · {name}",

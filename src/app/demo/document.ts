@@ -18,7 +18,8 @@ const FIXTURE = { url: '/demo-fixture.fig', name: 'Demo.fig' }
  * materialized as they are visited. Each page opens on its first screen on its first visit, and
  * design-check markers stay off the canvas until another document opens, so visitors see the
  * design rather than the lint of a page that ships as it is.
- * `fixture` opens the engine showcase instead, on the dev server only.
+ * `fixture` opens the engine showcase instead, on the dev server only, with each page fitted
+ * whole: its pages are short boards the browser tests capture in full.
  */
 export async function openDemoDocument(
   store: EditorStore,
@@ -39,10 +40,12 @@ export async function openDemoDocument(
   if (!untouched) return
   await (fixture ? store.openFigFile(file) : store.openKalkaFile(file))
   store.designCheck.muteMarkers()
-  fitDemoFirstScreen(store)
+  const fit = fixture ? () => store.zoomToFit() : () => fitDemoFirstScreen(store)
+  fit()
   const [, ...later] = store.graph.getPages()
   fitDemoPagesOnFirstVisit(
     store,
-    later.map((page) => page.id)
+    later.map((page) => page.id),
+    fit
   )
 }

@@ -10,6 +10,7 @@ import { pictureAnswer, readAnswerPicture, readPickedPicture } from '@/app/ai/qu
 import { answerQuestions, currentQuestions, skipQuestions } from '@/app/ai/questions/queue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
+import { chatQuestionsTheme } from '@/theme/chat/questions'
 
 const { ai } = useI18n()
 
@@ -21,6 +22,7 @@ const ownPictures = ref<(AgentAnswerImage | null)[]>([])
 const brokenImages = ref<string[]>([])
 const pictureFailed = ref(false)
 const sending = ref(false)
+const ui = chatQuestionsTheme()
 
 // A new set of questions starts from its first one, with nothing picked.
 watch(
@@ -110,6 +112,13 @@ pictureDialog.onChange(async (files) => {
   }
 })
 
+const pickedCount = computed(() => pickedImages.value[step.value]?.length ?? 0)
+
+function segmentState(index: number): 'done' | 'current' | 'todo' {
+  if (index < step.value) return 'done'
+  return index === step.value ? 'current' : 'todo'
+}
+
 function pickedPicturesOf(index: number): AgentQuestionImage[] {
   const asked = questions.value[index]
   return (asked?.images ?? []).filter((image) => pickedImages.value[index]?.includes(image.url))
@@ -154,49 +163,52 @@ async function next(): Promise<void> {
 </script>
 
 <template>
-  <section
-    v-if="question"
-    class="mx-3 mb-2 flex flex-col gap-3 rounded-lg border border-border bg-panel p-3"
-    data-test-id="agent-questions"
-    :aria-label="heading"
-  >
-    <header
-      class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 text-[11px] text-muted"
-    >
-      <span class="font-semibold">{{ heading }}</span>
-      <span v-if="questions.length > 1">
-        {{ ai.questionStep({ current: step + 1, total: questions.length }) }}
+  <section v-if="question" :class="ui.root()" data-test-id="agent-questions" :aria-label="heading">
+    <header :class="ui.header()">
+      <span :class="ui.heading()">{{ heading }}</span>
+      <span v-if="questions.length > 1" :class="ui.count()">
+        {{ ai.questionStepShort({ current: step + 1, total: questions.length }) }}
       </span>
     </header>
-    <p class="text-[13px] leading-snug text-surface">{{ question.question }}</p>
-    <div v-if="question.options?.length" class="flex flex-wrap gap-1.5" role="group">
-      <AppButton
+    <div v-if="questions.length > 1" :class="ui.progress()" aria-hidden="true">
+      <span
+        v-for="(_, index) in questions"
+        :key="index"
+        :class="ui.segment()"
+        :data-state="segmentState(index)"
+      />
+    </div>
+    <p :class="ui.question()">{{ question.question }}</p>
+    <div v-if="question.options?.length" :class="ui.chips()" role="group">
+      <button
         v-for="option in question.options"
         :key="option"
-        size="xs"
-        :variant="isPicked(option) ? 'solid' : 'outline'"
-        :color="isPicked(option) ? 'primary' : 'neutral'"
+        type="button"
+        :class="ui.chip()"
         :aria-pressed="isPicked(option)"
+        :data-state="isPicked(option) ? 'on' : 'off'"
         data-test-id="agent-question-option"
         @click="pick(option)"
       >
+        <icon-hugeicons-tick-02
+          v-if="isPicked(option)"
+          :class="ui.chipCheck()"
+          aria-hidden="true"
+        />
         {{ option }}
-      </AppButton>
+      </button>
     </div>
     <template v-if="question.images?.length">
-      <div class="grid grid-cols-2 gap-1.5" role="group" data-test-id="agent-question-images">
+      <p :class="ui.hint()">{{ ai.referencesLook }}</p>
+      <div :class="ui.tiles()" role="group" data-test-id="agent-question-images">
         <button
           v-for="image in images"
           :key="image.url"
           type="button"
           :aria-pressed="isImagePicked(image)"
           :aria-label="image.label"
-          class="flex min-w-0 flex-col overflow-hidden rounded-md border bg-panel-field text-left transition-colors focus-visible:outline-2 focus-visible:outline-panel-focus"
-          :class="
-            isImagePicked(image)
-              ? 'border-accent ring-2 ring-accent'
-              : 'border-border hover:border-muted'
-          "
+          :class="ui.tile()"
+          :data-state="isImagePicked(image) ? 'on' : 'off'"
           data-test-id="agent-question-image"
           @click="pickImage(image)"
         >
@@ -205,29 +217,24 @@ async function next(): Promise<void> {
             alt=""
             loading="lazy"
             referrerpolicy="no-referrer"
-            class="aspect-[4/3] w-full bg-canvas object-cover"
+            :class="ui.tileImage()"
             @error="brokenImages = [...brokenImages, image.url]"
           />
-          <span class="block truncate px-1.5 pt-1 text-[10px] leading-tight text-surface">
-            {{ image.label }}
+          <span v-if="isImagePicked(image)" :class="ui.tileBadge()">
+            <icon-hugeicons-tick-02 :class="ui.tileBadgeIcon()" aria-hidden="true" />
           </span>
-          <span
-            v-if="image.credit"
-            class="block truncate px-1.5 pb-1 text-[9px] leading-tight text-muted"
-          >
-            {{ image.credit }}
-          </span>
-          <span v-else class="pb-1" />
+          <span :class="ui.tileName()">{{ image.label }}</span>
+          <span :class="ui.tileSource()">{{ image.credit || '\u00A0' }}</span>
         </button>
       </div>
-      <div class="flex min-w-0 flex-wrap items-center gap-1.5">
+      <div :class="ui.own()">
         <template v-if="ownPicture">
           <img
             :src="`data:${ownPicture.mimeType};base64,${ownPicture.base64}`"
             alt=""
-            class="size-8 shrink-0 rounded border border-border object-cover"
+            :class="ui.ownImage()"
           />
-          <span class="min-w-0 flex-1 truncate text-[11px] text-surface">
+          <span :class="ui.ownName()">
             {{ ai.questionPictureSent({ name: ownPicture.name }) }}
           </span>
           <AppButton size="xs" variant="ghost" @click="setOwnPicture(null)">
@@ -244,7 +251,7 @@ async function next(): Promise<void> {
         >
           {{ ai.questionOwnPicture }}
         </AppButton>
-        <span v-if="pictureFailed" class="text-[11px] text-error" role="alert">
+        <span v-if="pictureFailed" :class="ui.error()" role="alert">
           {{ ai.questionPictureFailed }}
         </span>
       </div>
@@ -253,11 +260,11 @@ async function next(): Promise<void> {
       v-model="ownAnswer"
       :placeholder="question.placeholder || ai.questionOwnAnswer"
       :aria-label="ai.questionOwnAnswer"
-      :ui="{ root: 'w-full min-w-0' }"
+      :ui="{ root: 'h-[30px] w-full min-w-0' }"
       data-test-id="agent-question-own-answer"
       @keydown.enter.prevent="sending || next()"
     />
-    <footer class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+    <footer :class="ui.footer()">
       <AppButton
         size="xs"
         variant="ghost"
@@ -266,7 +273,10 @@ async function next(): Promise<void> {
       >
         {{ ai.questionSkip }}
       </AppButton>
-      <div class="ml-auto flex gap-1.5">
+      <span v-if="pickedCount > 0" :class="ui.picked()">
+        {{ ai.referencesPicked({ count: pickedCount }) }}
+      </span>
+      <div :class="ui.actions()">
         <AppButton v-if="step > 0" size="xs" variant="ghost" @click="step -= 1">
           {{ ai.questionBack }}
         </AppButton>

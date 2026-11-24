@@ -2,13 +2,13 @@
 import { colorToCSS } from '@kalka/scene-graph/color'
 import type { Color } from '@kalka/scene-graph/primitives'
 
-import { initials } from '@/app/shell/ui'
 import { avatar } from '@/theme/collaboration/avatar'
 import { avatarStack } from '@/theme/collaboration/avatar-stack'
 
-/** A person's initials on their color, with how many agents they run. */
+/** A person's picture, with how many agents they run. */
 const {
   name,
+  picture,
   color,
   agentCount = 0,
   size = 'sm',
@@ -16,6 +16,8 @@ const {
   interactive = false
 } = defineProps<{
   name: string
+  /** Their photo or pixel creature. */
+  picture: string
   color: Color
   agentCount?: number
   size?: 'sm' | 'md'
@@ -28,12 +30,12 @@ const ui = avatarStack()
 
 <template>
   <span :class="ui.person()">
-    <span
+    <img
+      :src="picture"
+      :alt="name"
+      draggable="false"
       :class="avatar({ size, bordered: true, following, interactive })"
-      :style="{ background: colorToCSS(color) }"
-    >
-      {{ initials(name) }}
-    </span>
+    />
     <span v-if="agentCount > 0" :class="ui.badge()" :style="{ color: colorToCSS(color) }">
       <icon-hugeicons-sparkle :class="ui.badgeIcon()" />{{ agentCount }}
     </span>

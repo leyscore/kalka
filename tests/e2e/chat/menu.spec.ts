@@ -86,9 +86,7 @@ test('a conversation saves its raw trace with tool calls and run events', async 
   // Without a save picker the browser downloads the file.
   await page.evaluate(() => Reflect.deleteProperty(window, 'showSaveFilePicker'))
   await chat.submit('Create a frame')
-  await expect(
-    chat.assistantMessage().getByRole('button', { name: /^Done Create Shape\b/ })
-  ).toBeVisible()
+  await expect(chat.assistantMessage().getByRole('img', { name: 'Done' })).toBeVisible()
 
   await page.getByRole('button', { name: 'Conversation actions' }).click()
   const [download] = await Promise.all([

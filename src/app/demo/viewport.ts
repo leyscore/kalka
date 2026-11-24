@@ -18,12 +18,19 @@ export function fitDemoFirstScreen(
   editor.zoomToBounds(frame.x, frame.y, frame.x + frame.width, frame.y + height)
 }
 
-/** Frame a demo page's first screen once, then preserve the user's own viewport on return visits. */
-export function fitDemoPagesOnFirstVisit(store: DemoViewportEditor, pageIds: string[]) {
+/**
+ * Frames a demo page once, on its first screen unless `fit` frames it another way, then preserves
+ * the user's own viewport on return visits.
+ */
+export function fitDemoPagesOnFirstVisit(
+  store: DemoViewportEditor,
+  pageIds: string[],
+  fit: () => void = () => fitDemoFirstScreen(store)
+) {
   const pending = new Set(pageIds)
   const unbindPage = store.onEditorEvent('page:changed', (pageId) => {
     if (!pending.delete(pageId)) return
-    fitDemoFirstScreen(store)
+    fit()
     if (pending.size === 0) dispose()
   })
   const unbindGraph = store.onEditorEvent('graph:replaced', dispose)

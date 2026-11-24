@@ -13,5 +13,11 @@ export const editorTopBar = tv({
     end: 'col-start-3 flex min-w-0 items-center justify-end gap-1',
     action: 'size-[30px] rounded-lg text-label',
     agentStatus: 'absolute top-1 right-1 size-1.5 rounded-full bg-faint data-connected:bg-success'
+  },
+  variants: {
+    // With the tabs on the left the screens no longer sit dead centre: the tabs take what is left.
+    tabs: {
+      true: { root: 'grid-cols-[minmax(0,1fr)_auto_auto]' }
+    }
   }
 })

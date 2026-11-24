@@ -31,6 +31,13 @@ const cls = computed(() => inputGroup({ size, disabled }))
     :class="cls.root({ class: ui?.root })"
   >
     <div
+      v-if="$slots.header"
+      data-slot="input-group-header"
+      :class="cls.header({ class: ui?.header })"
+    >
+      <slot name="header" />
+    </div>
+    <div
       v-if="$slots.attachment"
       data-slot="input-group-attachment"
       :class="cls.attachment({ class: ui?.attachment })"

@@ -18,7 +18,7 @@ export function installMenuGlide(root: HTMLElement = document.body): () => void 
       attachGlide(menu, {
         items: '[role^="menuitem"], [role="option"]',
         active: '[data-highlighted]',
-        pillClass: glidePills.hover
+        pillClass: glidePills.menu
       })
     )
   }

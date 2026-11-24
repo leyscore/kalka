@@ -97,6 +97,26 @@ export function agentHasWritten(store: EditorStore, agentId: string): boolean {
   return false
 }
 
+/**
+ * The top-level layer of `pageId` that `agentId` wrote in last, such as the page it is
+ * building; null when it wrote nothing there that is still remembered.
+ */
+export function agentRootOnPage(
+  store: EditorStore,
+  agentId: string,
+  pageId: string
+): string | null {
+  let found: string | null = null
+  for (const [nodeId, entry] of activityOf(store).layers) {
+    if (entry.write?.agentId !== agentId) continue
+    let node = store.graph.getNode(nodeId)
+    while (node?.parentId && node.parentId !== pageId) node = store.graph.getNode(node.parentId)
+    // Later entries are more recent, so the last one that sits on this page wins.
+    if (node?.parentId === pageId) found = node.id
+  }
+  return found
+}
+
 function ancestorIn(graph: SceneGraph, nodeId: string, ids: ReadonlySet<string>): boolean {
   let parentId = graph.getNode(nodeId)?.parentId
   while (parentId) {
@@ -238,7 +258,7 @@ export function workingMarks(store: EditorStore, pageId: string): readonly Agent
     const current = agent.status === 'idle' ? undefined : working.at(-1)
     for (const nodeId of working) {
       // The mark reads what the agent says it is doing, from set_status, after its name.
-      const name = agent.note ? `${agent.name} · ${agent.note}` : agent.name
+      const name = agent.note ? `${agent.name}: ${agent.note}` : agent.name
       if (pageOf(store.graph, nodeId) !== pageId) continue
       marks.push(nodeId === current ? { nodeId, name, color, busy: true } : { nodeId, name, color })
     }

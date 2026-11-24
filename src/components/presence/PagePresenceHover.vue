@@ -4,6 +4,7 @@ import { computed } from 'vue'
 
 import { useCollaborationMessages } from '@kalka/vue'
 
+import { useAvatar } from '@/app/collab/avatar'
 import { DEFAULT_COLLAB_STATE, useCollabInjected } from '@/app/collab/use'
 import { useActiveEditorStoreRef } from '@/app/editor/active-store'
 import { follow, presenceOf } from '@/app/presence/registry'
@@ -21,6 +22,7 @@ import { pagePresenceRows } from './rows'
 const { pageId } = defineProps<{ pageId: string }>()
 
 const collab = useCollabInjected()
+const avatar = useAvatar()
 const messages = useCollaborationMessages()
 const tabStore = useActiveEditorStoreRef()
 const ui = pagePresence()
@@ -31,7 +33,12 @@ const people = computed(() => {
   const state = collab?.state.value ?? DEFAULT_COLLAB_STATE
   const presence = presenceOf(store)
   return pagePresenceRows(
-    { name: state.localName, color: state.localColor, agents: presence.agents.value },
+    {
+      name: state.localName,
+      color: state.localColor,
+      picture: avatar.url.value,
+      agents: presence.agents.value
+    },
     presence.peers.value,
     pageId
   )

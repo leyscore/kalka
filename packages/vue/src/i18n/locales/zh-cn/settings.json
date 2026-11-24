@@ -68,5 +68,13 @@
   "modelNameHint": "设置一个便于在模型选择器中识别的名称。",
   "modelIDHint": "请使用提供商给出的准确模型标识。",
   "baseURLHint": "请输入 API 端点，包括所需的路径。",
-  "designToolsRequired": "设计模型必须支持工具。请选择兼容的模型，或在高级设置中启用工具支持。"
+  "designToolsRequired": "设计模型必须支持工具。请选择兼容的模型，或在高级设置中启用工具支持。",
+  "workflow": "工作流",
+  "workflowFocus": "工作流类型",
+  "workflowFocusAI": "以 AI 为中心",
+  "workflowFocusDesign": "不使用 AI 的设计",
+  "workflowFocusDesignDescription": "一个简洁的设计编辑器。智能体、对话和所有 AI 功能都会隐藏。",
+  "workflowFocusBalanced": "均衡",
+  "workflowFocusBalancedDescription": "手动设计，需要时再叫智能体。文档打开后显示图层。",
+  "workflowFocusAIDescription": "智能体优先。文档打开后显示对话，可以直接提出需求。"
 }

@@ -33,7 +33,6 @@
   "noTasks": "Rien pour l’instant. Ce que les agents disent faire s’affiche ici, du plus récent au plus ancien.",
   "taskRunning": "En cours",
   "taskDone": "Terminé",
-  "designing": "{name} dessine…",
   "markReady": "Marquer prêt pour le dev",
   "moveToDraft": "Repasser en brouillon",
   "ready": "Prêt pour le dev · {name}",

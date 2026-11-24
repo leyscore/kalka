@@ -9,6 +9,7 @@ import IconZoomIn from '~icons/hugeicons/zoom-in'
 
 import { useEditorCommands, useI18n } from '@kalka/vue'
 
+import { useAvatar } from '@/app/collab/avatar'
 import { serverAccount } from '@/app/collab/server/account'
 import { isServerRoom } from '@/app/collab/server/documents'
 import { DEFAULT_COLLAB_STATE, useCollabInjected } from '@/app/collab/use'
@@ -28,6 +29,7 @@ type MenuAction = ToolbarActionItem
 
 function createMobileHudContext() {
   const collab = useCollabInjected()
+  const avatar = useAvatar()
   const store = useEditorStore()
   const { copy } = useClipboard()
   const { common, collaboration } = useI18n()
@@ -46,6 +48,7 @@ function createMobileHudContext() {
       {
         name: collabState.value.localName,
         color: collabState.value.localColor,
+        picture: avatar.url.value,
         agents: own ? presenceOf(own).agents.value : []
       },
       collabPeers.value,

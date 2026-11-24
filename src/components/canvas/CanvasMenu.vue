@@ -30,6 +30,7 @@ import { useEditorStore } from '@/app/editor/active-store'
 import { createCanvasMenuActions } from '@/app/editor/canvas/menu/actions'
 import { useCanvasContextMenu } from '@/app/editor/canvas/menu/context'
 import { canvasMenuItemClass, canvasMenuShortcutClass } from '@/app/editor/canvas/menu/model'
+import { aiHidden } from '@/app/settings/preferences/store'
 import { appMenuShortcutLabel } from '@/app/shell/menu/shortcut'
 import AppShortcutText from '@/components/ui/menu/AppShortcutText.vue'
 import { menu, useMenuUI } from '@/components/ui/menu/menu'
@@ -182,6 +183,7 @@ function contextCommandTestId(id: EditorCommandId | undefined): string | undefin
         }}</span>
       </ContextMenuItem>
       <ContextMenuItem
+        v-if="!aiHidden"
         data-test-id="context-ask-agent"
         :class="cls.item"
         @select="askAboutSelection()"

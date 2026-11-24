@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 
 import { aiModelSettings } from '@/app/ai/models/store'
-import { appPreferences, updateAISetupState } from '@/app/settings/preferences/store'
+import { aiHidden, appPreferences, updateAISetupState } from '@/app/settings/preferences/store'
 
 import { isUnconfiguredModelSettings } from './apply'
 
@@ -27,6 +27,7 @@ export function closeAISetup(): void {
 
 /** Offers the welcome to a fresh install; anyone who already configured AI never sees it. */
 export function offerAISetupOnFirstRun(): void {
+  if (aiHidden.value) return
   if (appPreferences.value.onboarding.aiSetup === 'done') return
   if (!isUnconfiguredModelSettings(aiModelSettings.value)) {
     updateAISetupState('done')

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, useTemplateRef, watch } from 'vue'
 
-import { ACP_AGENTS } from '@kalka/core/constants'
+import { colorToCSS } from '@kalka/scene-graph/color'
 import { useI18n, useSelectionState } from '@kalka/vue'
 
 import { revokeImagePreviewURL } from '@/app/ai/attachment/image/prepare'
@@ -9,9 +9,10 @@ import { MAX_IMAGE_ATTACHMENTS } from '@/app/ai/attachment/image/types'
 import { selectionAskPending, takeSelectionAsk } from '@/app/ai/chat/ask-selection'
 import type { ChatSubmission } from '@/app/ai/chat/submission/types'
 import { useAIChat } from '@/app/ai/chat/use'
-import { designModelProfile } from '@/app/ai/models'
+import { runAgentName } from '@/app/ai/tools/run'
 import { useInstructionCatalog } from '@/app/document/instructions/catalog'
 import { useEditorStore } from '@/app/editor/active-store'
+import { localAgentColor } from '@/app/presence/registry'
 import { openSettings } from '@/app/settings/open'
 import ChatNodePreview from '@/components/chat/ChatNodePreview.vue'
 import ChatProfileSelect from '@/components/chat/ChatProfileSelect.vue'
@@ -19,10 +20,12 @@ import ChatThinkingSelect from '@/components/chat/ChatThinkingSelect.vue'
 import { useAttachmentDrafts } from '@/components/chat/input/useAttachments'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppDropOverlay from '@/components/ui/feedback/AppDropOverlay.vue'
+import Tip from '@/components/ui/overlay/Tip.vue'
+import { chatComposerTheme } from '@/theme/chat/composer'
 
 import ChatComposer from './ChatComposer.vue'
 
-const { providerID, providerDef, modelID, customModelID } = useAIChat()
+const { providerID } = useAIChat()
 const { editor, selectedIds } = useSelectionState()
 const store = useEditorStore()
 const { ai } = useI18n()
@@ -115,29 +118,12 @@ defineExpose({ restoreDraft, dropFiles })
 const isAgentProvider = computed(
   () => providerID.value.startsWith('acp:') || providerID.value === 'harness:pi'
 )
-const agentName = computed(() => {
-  if (providerID.value === 'harness:pi') return 'Pi'
-  const agentId = providerID.value.replace('acp:', '')
-  return ACP_AGENTS.find((a) => a.id === agentId)?.name ?? agentId
-})
-const isCustomProvider = computed(
-  () => providerID.value === 'openai-compatible' || providerID.value === 'anthropic-compatible'
-)
-const customModelName = computed(() => customModelID.value.trim())
-const usesCustomModel = computed(
-  () => !!providerDef.value.supportsCustomModel && !!customModelName.value
-)
 
-const selectedModelName = computed(() => {
-  if (usesCustomModel.value) return customModelName.value
-  if (isCustomProvider.value) return 'No model'
-  return providerDef.value.models.find((m) => m.id === modelID.value)?.name ?? modelID.value
-})
-
-// The composer switches configured Design-role profiles; raw provider model selection lives in Settings.
-const selectedProfileName = computed(
-  () => designModelProfile.value?.name ?? selectedModelName.value
-)
+const pageName = computed(() => editor.graph.getNode(editor.state.currentPageId)?.name ?? '')
+// The creature the sky shows for this conversation, so the agent looks the same in both places.
+const creatureSeed = computed(() => runAgentName(store) ?? ai.value.designAgent)
+const creatureColor = computed(() => colorToCSS(localAgentColor(store)))
+const ui = chatComposerTheme()
 </script>
 
 <template>
@@ -152,26 +138,51 @@ const selectedProfileName = computed(
     @paste="handlePaste"
     @settings="openSettings('ai')"
   >
-    <template v-if="images.length || referencedNodes.length" #attachment>
-      <div class="flex flex-wrap gap-1.5">
-        <div
-          v-for="node in referencedNodes"
-          :key="node.id"
-          data-slot="chat-context-chip"
-          class="flex min-w-0 max-w-full items-center gap-2 rounded-[10px] border border-hairline bg-group p-1.5"
-        >
-          <ChatNodePreview :editor="editor" :node="node" />
-          <span class="min-w-0 flex-1 truncate text-[10px] text-surface">
-            {{ node.name || node.type }}
+    <template #about>
+      <div :class="ui.about()" data-slot="chat-about">
+        <span :class="ui.aboutLabel()">{{ ai.aboutLabel }}</span>
+        <span :class="ui.aboutChips()">
+          <span v-if="referencedNodes.length === 0" :class="ui.aboutChip()">
+            <icon-hugeicons-file-02 :class="ui.aboutChipIcon()" aria-hidden="true" />
+            <span :class="ui.aboutChipLabel()">{{ ai.aboutWholePage({ page: pageName }) }}</span>
           </span>
-          <IconButton
-            :label="ai.removeNodeContext"
-            size="xs"
-            @click="removeReferencedNode(node.id)"
+          <span
+            v-for="node in referencedNodes"
+            :key="node.id"
+            :class="ui.aboutChip()"
+            data-slot="chat-context-chip"
           >
-            <icon-hugeicons-x class="size-3" />
-          </IconButton>
-        </div>
+            <ChatNodePreview :editor="editor" :node="node" size="sm" />
+            <span :class="ui.aboutChipLabel()">{{ node.name || node.type }}</span>
+            <button
+              type="button"
+              :class="ui.aboutRemove()"
+              :aria-label="ai.removeNodeContext"
+              @click="removeReferencedNode(node.id)"
+            >
+              <icon-hugeicons-x :class="ui.aboutRemoveIcon()" aria-hidden="true" />
+            </button>
+          </span>
+        </span>
+        <Tip as-child :label="ai.addSelectionContext">
+          <button
+            type="button"
+            :class="ui.point()"
+            :aria-label="ai.pointOnCanvas"
+            :disabled="isStreaming || !canAddSelection"
+            :aria-pressed="selectionContextActive"
+            :data-state="selectionContextActive ? 'on' : 'off'"
+            data-slot="chat-add-selection-context"
+            @click="toggleCurrentSelection"
+          >
+            <icon-hugeicons-cursor-02 :class="ui.pointIcon()" aria-hidden="true" />
+            <span :class="ui.pointLabel()">{{ ai.pointOnCanvas }}</span>
+          </button>
+        </Tip>
+      </div>
+    </template>
+    <template v-if="images.length" #attachment>
+      <div class="flex flex-wrap gap-1.5">
         <div
           v-for="(image, index) in images"
           :key="image.previewURL"
@@ -207,16 +218,6 @@ const selectedProfileName = computed(
     </template>
     <template #leading>
       <IconButton
-        :label="ai.addSelectionContext"
-        size="sm"
-        :active="selectionContextActive"
-        :disabled="isStreaming || !canAddSelection"
-        data-slot="chat-add-selection-context"
-        @click="toggleCurrentSelection"
-      >
-        <icon-hugeicons-cursor-02 class="size-4" />
-      </IconButton>
-      <IconButton
         :label="ai.attachImages"
         size="sm"
         :disabled="isStreaming || images.length >= MAX_IMAGE_ATTACHMENTS"
@@ -227,20 +228,8 @@ const selectedProfileName = computed(
     </template>
     <template #model>
       <div class="@container flex min-w-0 items-center">
-        <template v-if="isAgentProvider">
-          <div class="flex min-w-0 items-center gap-1 px-1.5 text-[10px] text-muted">
-            <icon-hugeicons-sparkle class="size-3 shrink-0" />
-            <span class="truncate">{{ agentName }}</span>
-          </div>
-        </template>
-        <template v-else>
-          <ChatProfileSelect>
-            <template #value>
-              <span class="min-w-0 truncate">{{ selectedProfileName }}</span>
-            </template>
-          </ChatProfileSelect>
-          <ChatThinkingSelect />
-        </template>
+        <ChatProfileSelect :seed="creatureSeed" :color="creatureColor" />
+        <ChatThinkingSelect v-if="!isAgentProvider" />
       </div>
     </template>
   </ChatComposer>

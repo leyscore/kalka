@@ -8,6 +8,7 @@ import type { SceneGraph } from '@kalka/scene-graph'
 import { collaborationMessages } from '@kalka/vue'
 
 import { shareAgentPreviews } from '@/app/collab/agent-preview'
+import { useAvatar } from '@/app/collab/avatar'
 import { buildRemotePeers } from '@/app/collab/awareness'
 import { useCollabIdentity } from '@/app/collab/identity'
 import { publishLocalAgents } from '@/app/collab/local-awareness'
@@ -124,6 +125,7 @@ export function openRoomSession({
   onViewOnlyEdit = noticeViewOnlyEdit
 }: RoomSessionOptions): RoomSession {
   const identity = useCollabIdentity()
+  const avatar = useAvatar()
   const ydoc = new Y.Doc()
   const awareness = new awarenessProtocol.Awareness(ydoc)
   const ynodes: YNodes = ydoc.getMap('nodes')
@@ -201,7 +203,11 @@ export function openRoomSession({
   }
 
   function broadcastIdentity() {
-    awareness.setLocalStateField('user', { name: displayName(), color: identity.color })
+    awareness.setLocalStateField('user', {
+      name: displayName(),
+      color: identity.color,
+      avatar: avatar.seed.value
+    })
     awareness.setLocalStateField('treeFormat', TREE_FORMAT)
   }
 
@@ -332,7 +338,7 @@ export function openRoomSession({
     if (!hasDocument.value) checkConnection()
   }, tickMs)
 
-  const stopNameWatch = watch([identity.name, serverAccount], broadcastIdentity)
+  const stopNameWatch = watch([identity.name, serverAccount, avatar.seed], broadcastIdentity)
   // Signing in, or again, lets a room that was waiting for it in at once.
   const stopSignInWatch = watch(
     () => serverAccount.value !== null && !serverSessionExpired.value,

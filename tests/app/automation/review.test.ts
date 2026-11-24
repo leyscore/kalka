@@ -4,8 +4,10 @@ import { SceneGraph } from '@kalka/scene-graph'
 
 import {
   noteAgentLook,
+  noteAgentPlan,
   noteAgentStatus,
   noteAgentWrites,
+  planReminder,
   reviewReminder,
   statusReminder
 } from '@/app/automation/review'
@@ -55,5 +57,19 @@ describe('agent status nudge', () => {
     expect(statusReminder('quiet-agent')).not.toBeNull()
     noteAgentStatus('quiet-agent', 'set_status', { text: 'Composing the hero' })
     expect(statusReminder('quiet-agent')).toBeNull()
+  })
+})
+
+describe('section plan nudge', () => {
+  test('asks once a session that starts a page without plan_sections, and never one that planned', () => {
+    const graph = new SceneGraph()
+    const pageId = graph.getPages()[0].id
+    const frame = graph.createNode('FRAME', pageId, { name: 'Home' })
+    const inner = graph.createNode('FRAME', frame.id, { name: 'Hero' })
+    expect(planReminder(graph, 'no-plan', [inner.id])).toBeNull()
+    expect(planReminder(graph, 'no-plan', [frame.id])).toContain('plan_sections')
+    expect(planReminder(graph, 'no-plan', [frame.id])).toBeNull()
+    noteAgentPlan('planner', 'plan_sections', { sections: [{ name: 'Hero', height: 600 }] })
+    expect(planReminder(graph, 'planner', [frame.id])).toBeNull()
   })
 })

@@ -16,6 +16,7 @@ import {
 } from '@/app/presence/activity'
 import { showAgentEdit, stopAgentReveals } from '@/app/presence/edit-effect'
 import { addAgent, agentPlacement, type AgentHandle } from '@/app/presence/registry'
+import type { AgentPlanSection } from '@/app/presence/types'
 
 /**
  * One reply's run: the page it works on, its step budget, and the edits it made. It ends once,
@@ -144,6 +145,7 @@ export function endRun(store: EditorStore, run?: Run, lane = LEAD_LANE): void {
   state.agent?.update({
     status: 'idle',
     note: undefined,
+    plan: undefined,
     cursor: undefined,
     selection: undefined,
     outline: undefined
@@ -252,6 +254,16 @@ export function setRunStatus(store: EditorStore, text: string, lane = LEAD_LANE)
   getRunState(store, lane).agent?.update({ note: text || undefined })
 }
 
+/** The run's agent announces the sections it will build; an empty list clears them. */
+export function setRunPlan(
+  store: EditorStore,
+  sections: readonly AgentPlanSection[],
+  lane = LEAD_LANE
+): void {
+  getRunState(store, lane).agent?.update({ plan: sections.length > 0 ? [...sections] : undefined })
+}
+
+/** The run's agent is done with `nodeIds`, or all it builds; returns what it let go of. */
 /** The run's agent is done with `nodeIds`, or all it builds; returns what it let go of. */
 export function finishRunWork(
   store: EditorStore,

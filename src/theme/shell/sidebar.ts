@@ -19,7 +19,9 @@ export const shellFrame = tv({
   },
   variants: {
     /** The desktop app's window controls sit in this strip; the page starts below it. */
-    titleBar: { true: { root: 'flex-col', titleBar: 'title-bar block h-10 shrink-0' } }
+    titleBar: { true: { root: 'flex-col', titleBar: 'title-bar block h-10 shrink-0' } },
+    /** Under the tab bar the frame keeps the editor's margins, so the sidebar sits as its panels do. */
+    underBar: { true: { frame: 'md:px-2 md:pt-0 md:pb-2' } }
   }
 })
 
