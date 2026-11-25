@@ -297,7 +297,18 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
       run: ({ openFileDialog }) => openFileDialog(),
       whileEditingText: true
     },
-    ...commandShortcuts('selection.group', 'selection.frameSelection'),
+    ...commandShortcuts(
+      'selection.group',
+      'selection.frameSelection',
+      'selection.booleanUnion',
+      'selection.booleanSubtract',
+      'selection.booleanIntersect',
+      'selection.booleanExclude',
+      'selection.flatten',
+      'selection.outlineStroke',
+      'selection.distributeHorizontal',
+      'selection.distributeVertical'
+    ),
     // Figma's Option+A, H, D, W, V and S, which the Arrange menu shows. Matched by key position:
     // Option turns the letter into another character on macOS.
     ...(

@@ -82,8 +82,9 @@ export const EDITOR_COMMAND_METADATA = {
     keybinding: 'Shift+KeyV',
     contextTestId: 'context-flip-vertical'
   },
-  'selection.distributeHorizontal': {},
-  'selection.distributeVertical': {},
+  // Figma's ⌥⇧H and ⌥⇧V, matched by key position: Option turns the letter into another character.
+  'selection.distributeHorizontal': { shortcut: 'ALT+SHIFT+H', keybinding: 'Alt+Shift+KeyH' },
+  'selection.distributeVertical': { shortcut: 'ALT+SHIFT+V', keybinding: 'Alt+Shift+KeyV' },
   'selection.booleanUnion': {
     shortcut: 'ALT+SHIFT+U',
     keybinding: 'Alt+Shift+KeyU',
@@ -110,7 +111,11 @@ export const EDITOR_COMMAND_METADATA = {
     contextTestId: 'context-flatten'
   },
   'selection.outlineText': { contextTestId: 'context-outline-text' },
-  'selection.outlineStroke': { contextTestId: 'context-outline-stroke' },
+  'selection.outlineStroke': {
+    shortcut: 'MOD+ALT+O',
+    keybinding: '$mod+Alt+KeyO',
+    contextTestId: 'context-outline-stroke'
+  },
   'selection.moveToPage': {},
   'selection.setOpacity': { shortcut: '1-9, 0' },
   'view.zoom100': { shortcut: 'MOD+0', keybinding: '$mod+Digit0' },

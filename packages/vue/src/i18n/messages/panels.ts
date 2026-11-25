@@ -485,6 +485,7 @@ export const panelMessageDefaults = {
   alignTop: 'Align top',
   alignCenterVertically: 'Align center vertically',
   alignBottom: 'Align bottom',
+  alignMore: 'More alignment options',
   flipHorizontal: 'Flip horizontal',
   flipVertical: 'Flip vertical',
   rotate90: 'Rotate 90°',

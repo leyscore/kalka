@@ -412,7 +412,8 @@
       },
       {
         "id": "selection.outlineStroke",
-        "label": "Outline stroke"
+        "label": "Outline stroke",
+        "accelerator": "CmdOrCtrl+Alt+O"
       },
       {
         "type": "separator"
@@ -542,11 +543,13 @@
       },
       {
         "id": "selection.distributeHorizontal",
-        "label": "Distribute Horizontal Spacing"
+        "label": "Distribute Horizontal Spacing",
+        "accelerator": "Alt+Shift+H"
       },
       {
         "id": "selection.distributeVertical",
-        "label": "Distribute Vertical Spacing"
+        "label": "Distribute Vertical Spacing",
+        "accelerator": "Alt+Shift+V"
       }
     ]
   }
