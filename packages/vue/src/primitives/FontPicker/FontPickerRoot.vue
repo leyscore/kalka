@@ -87,11 +87,31 @@ watch(
   { flush: 'sync' }
 )
 
+/**
+ * Whether the pointer or the arrow keys moved through the list since it opened or the search
+ * changed. The list highlights a family by itself as it opens and as the search filters it; as in
+ * Figma, only one the person reaches is previewed, so opening or searching leaves the text alone.
+ */
+let navigated = false
+const NAVIGATION_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'])
+
+function navigate(event: Event) {
+  if (event instanceof KeyboardEvent && !NAVIGATION_KEYS.has(event.key)) return
+  navigated = true
+}
+
 function highlight(payload: { value: AcceptableValue } | undefined) {
+  if (!navigated) return
   emit('highlight', typeof payload?.value === 'string' ? payload.value : null)
 }
 watch(open, (isOpen) => {
+  navigated = false
   if (!isOpen) emit('highlight', null)
+})
+watch(searchTerm, () => {
+  if (!navigated) return
+  navigated = false
+  emit('highlight', null)
 })
 </script>
 
@@ -126,6 +146,8 @@ watch(open, (isOpen) => {
         @open-auto-focus.prevent
         ref="contentRef"
         @vue:mounted="focusSearchInput"
+        @pointermove.capture="navigate"
+        @keydown.capture="navigate"
       >
         <slot name="search" :search-term="searchTerm">
           <ComboboxInput
