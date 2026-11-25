@@ -153,9 +153,10 @@ test('double-click page to rename', async () => {
   await item.dblclick()
 
   const input = editor.page.getByTestId('pages-item-input')
-  await expect(input).toBeVisible()
-  await input.fill('My Page')
-  await input.press('Enter')
+  await expect(input).toBeFocused()
+  // Typed straight after the double-click, as a person does: the field has the keys.
+  await editor.page.keyboard.type('My Page')
+  await editor.page.keyboard.press('Enter')
 
   await editor.canvas.waitForRender()
   const pages = await getPages()

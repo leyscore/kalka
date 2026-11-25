@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { templateRef } from '@vueuse/core'
 import {
   ContextMenuContent,
   ContextMenuItem,
@@ -8,7 +7,7 @@ import {
   ContextMenuTrigger
 } from 'reka-ui'
 import { tv } from 'tailwind-variants'
-import { computed, ref, useTemplateRef, watch, type ComponentPublicInstance } from 'vue'
+import { computed, ref, useTemplateRef, type ComponentPublicInstance } from 'vue'
 
 import type { SceneNode } from '@kalka/scene-graph'
 import { PageListRoot, useFlatReorderDrag, useI18n, useInlineRename } from '@kalka/vue'
@@ -33,7 +32,6 @@ interface PageActions {
   move: (pageId: string, index: number) => void
 }
 
-const pageInput = templateRef<HTMLInputElement>('pageInput')
 const rename = useInlineRename((id, name) => pageActions.value?.rename(id, name))
 const { panels, pages: pageMessages } = useI18n()
 const menuCls = useMenuUI({
@@ -67,9 +65,13 @@ function setPageActions(renamePage: (pageId: string, name: string) => void) {
   pageActions.value = { rename: renamePage }
 }
 
-watch(pageInput, (input) => {
-  if (input) void rename.focusInput(input)
-})
+/**
+ * Focuses the rename field as it appears. A function ref, because a named ref inside the page
+ * loop collects an array, which left the field unfocused and sent typed keys to the canvas.
+ */
+function setPageInput(value: Element | ComponentPublicInstance | null) {
+  if (value instanceof HTMLInputElement) void rename.focusInput(value)
+}
 
 function startRename(pg: PageItem, renamePage: (pageId: string, name: string) => void) {
   setPageActions(renamePage)
@@ -144,7 +146,7 @@ useGlide(pageList, { items: '[data-slot="page-item"]', hover: true, pillClass: g
                   :class="pageStyles(pg, currentPageId).renameRow()"
                 >
                   <input
-                    ref="pageInput"
+                    :ref="setPageInput"
                     data-test-id="pages-item-input"
                     :aria-label="pageMessages.pageNameLabel"
                     :class="pageStyles(pg, currentPageId).renameInput()"
