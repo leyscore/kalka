@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { useElementSize } from '@vueuse/core'
+import { computed, nextTick, ref, useTemplateRef, watch, type ComponentPublicInstance } from 'vue'
 
 import type { ViewportTransform } from '@kalka/core/geometry'
 import type { CommentAnchor, CommentThread } from '@kalka/scene-graph'
 import type { Vector } from '@kalka/scene-graph/primitives'
 import { useCommentsMessages } from '@kalka/vue'
 
+import { commentCardPlacement } from '@/app/comments/placement'
 import { useComments } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
 
@@ -125,13 +127,22 @@ function pinPosition(pin: { thread: CommentThread; left: number; top: number }) 
   return { left: pin.left, top: pin.top }
 }
 
-/** The open thread or the draft, beside its pin. */
+const card = useTemplateRef<ComponentPublicInstance & { focus: () => void }>('card')
+const layerSize = useElementSize(layer)
+const cardSize = useElementSize(card, undefined, { box: 'border-box' })
+
+/** The open thread or the draft, beside its pin and inside the canvas. */
 const cardPosition = computed(() => {
   const at = draftPosition.value ?? openPin.value
-  return at ? { left: `${at.left + 36}px`, top: `${at.top - 28}px` } : null
+  if (!at) return null
+  const { left, top } = commentCardPlacement(
+    at,
+    { width: cardSize.width.value, height: cardSize.height.value },
+    { width: layerSize.width.value, height: layerSize.height.value }
+  )
+  return { left: `${left}px`, top: `${top}px` }
 })
 
-const card = ref<{ focus: () => void } | null>(null)
 watch(
   () => [comments.state.value.draft, comments.state.value.openThreadId],
   async () => {

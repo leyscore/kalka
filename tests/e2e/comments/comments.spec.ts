@@ -66,7 +66,8 @@ async function comment(page: Page, x: number, y: number, text: string) {
   await canvas.click(point.x, point.y)
   const thread = page.locator('[data-slot="comment-thread"]')
   await thread.getByRole('textbox').fill(text)
-  await thread.getByRole('textbox').press('ControlOrMeta+Enter')
+  // Enter sends, as in Figma; Shift+Enter would start a new line.
+  await thread.getByRole('textbox').press('Enter')
 }
 
 const pins = (page: Page) => page.locator('[data-slot="comment-pin"]')

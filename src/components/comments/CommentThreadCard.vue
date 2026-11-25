@@ -58,8 +58,14 @@ function close() {
   else comments.cancelDraft()
 }
 
+/** In the field Enter sends, as in Figma; Shift+Enter starts a new line, and an input method keeps its Enter. */
+function sends(event: KeyboardEvent): boolean {
+  if (event.target !== field.value || event.shiftKey || event.isComposing) return false
+  return event.code === 'Enter' || event.code === 'NumpadEnter'
+}
+
 function onKeydown(event: KeyboardEvent) {
-  if (event.code === 'Enter' && (event.metaKey || event.ctrlKey)) {
+  if (sends(event)) {
     event.preventDefault()
     submit()
   } else if (event.code === 'Escape') {
