@@ -136,7 +136,27 @@ watch(matches, () => {
 function highlight(payload: { value: AcceptableValue } | undefined) {
   highlighted.value = matches.value.find((item) => item.value === payload?.value) ?? null
 }
-watch(highlighted, (item) => emit('highlight', item?.value ?? null))
+/**
+ * Reka highlights the chosen or first item as the list opens, for the keys; only the pointer or
+ * the keys make that highlight one the owner previews, so opening the list changes nothing.
+ */
+const userHighlight = shallowRef(false)
+watch(open, () => {
+  userHighlight.value = false
+})
+function armHighlight(event: Event) {
+  if (userHighlight.value) return
+  userHighlight.value = true
+  // The pointer may arrive on the item already highlighted, which Reka does not announce again.
+  const onHighlighted =
+    event.type === 'pointermove' &&
+    event.target instanceof Element &&
+    event.target.closest('[data-highlighted]') !== null
+  if (onHighlighted) emit('highlight', highlighted.value?.value ?? null)
+}
+watch(highlighted, (item) => {
+  if (userHighlight.value) emit('highlight', item?.value ?? null)
+})
 
 /** Placeholders shown while loading: the grid's visible rows, or a few list rows. */
 const LOADING_PLACEHOLDERS = computed(() => (layout === 'grid' ? APP_PICKER_GRID_COLUMNS * 7 : 3))
@@ -215,6 +235,8 @@ function select(value: AcceptableValue) {
           @update:model-value="select"
           @highlight="highlight"
           @keydown="moveRow"
+          @keydown.capture="armHighlight"
+          @pointermove.capture="armHighlight"
         >
           <div :class="styles.search({ class: ui?.search })">
             <icon-hugeicons-search-01 :class="styles.searchIcon({ class: ui?.searchIcon })" />

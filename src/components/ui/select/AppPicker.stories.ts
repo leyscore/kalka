@@ -60,6 +60,22 @@ export const CompactWithFooter: Story = {
   }
 }
 
+/** Opening highlights the first variable for the keys without previewing it; the keys do. */
+export const PreviewOnlyWhenChosen: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const page = within(canvasElement.ownerDocument.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Apply variable' }))
+    const search = await page.findByPlaceholderText('Search variables')
+    await waitFor(() => expect(search).toHaveFocus())
+    await expect(canvas.getByText(/^Previewing:/)).toHaveTextContent('Previewing: —')
+    await userEvent.keyboard('{ArrowDown}')
+    await waitFor(() =>
+      expect(canvas.getByText(/^Previewing:/)).toHaveTextContent('Previewing: space/md')
+    )
+  }
+}
+
 export const Grid: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)

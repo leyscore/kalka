@@ -42,6 +42,7 @@ function shapeIcon(value: string) {
   return SHAPE_ICONS[Math.floor(shapes.findIndex((shape) => shape.value === value) / 2)]
 }
 const chosen = ref('')
+const previewed = ref<string | null>(null)
 </script>
 
 <template>
@@ -72,6 +73,7 @@ const chosen = ref('')
         empty-label="No variables found"
         close-label="Close"
         @select="chosen = $event"
+        @highlight="previewed = $event"
       >
         <template #trigger>
           <IconButton label="Apply variable"><IconDiamond class="size-3.5" /></IconButton>
@@ -107,5 +109,6 @@ const chosen = ref('')
       </AppPicker>
     </div>
     <p class="text-[11px] text-muted">Chosen: {{ chosen || '—' }}</p>
+    <p class="text-[11px] text-muted">Previewing: {{ previewed ?? '—' }}</p>
   </div>
 </template>
