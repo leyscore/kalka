@@ -39,6 +39,7 @@ import { createDesignTokenActions } from './design-tokens'
 import { createGraphEventSubscription } from './graph-events'
 import { createGraphReadActions } from './graph-reads'
 import { createGuideActions } from './guides'
+import { createSelectionJournal } from './history/selection'
 import { createStyleJournal } from './history/style-journal'
 import { createIconActions } from './icons'
 import { createDesignIssueActions } from './issues'
@@ -74,9 +75,10 @@ export function createEditor(options?: EditorOptions) {
   registerProjectFonts(_graph)
   const skipInitialGraphSetup = options?.skipInitialGraphSetup ?? false
   const styleJournal = createStyleJournal()
+  const selectionJournal = createSelectionJournal()
   const undo = new UndoManager({
     onChange: () => emitEditorEvent('history:changed'),
-    onRecord: styleJournal.onRecord
+    onRecord: (entry) => selectionJournal.onRecord(styleJournal.onRecord(entry))
   })
   const _loadFont = options?.loadFont ?? fontManager.loadFont.bind(fontManager)
   const _getViewportSize =
@@ -274,6 +276,7 @@ export function createEditor(options?: EditorOptions) {
     subscribeToGraph
   }
   styleJournal.bind(ctx)
+  selectionJournal.bind(ctx)
 
   // Assemble domain modules
   const viewport = createViewportActions(ctx)
