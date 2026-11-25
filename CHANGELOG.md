@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Fixed
+
+- In Settings, a model opens on the same frosted surface as the list instead of a flat grey panel.
+- Review, Fast tasks and Vision follow the design model again when you switch back from an agent such as Claude Code to a regular model, instead of staying on "None", which blocked sending images.
+
 ## 0.2.0-beta.10 — 2026-11-24
 
 ### Added

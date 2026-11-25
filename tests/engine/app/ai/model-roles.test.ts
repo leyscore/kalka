@@ -210,6 +210,49 @@ describe('AI model profiles and role assignments', () => {
     expect(resolveAIModelRole('fast')).toBeNull()
   })
 
+  test('task roles follow the design model again after an agent held the design role', () => {
+    const settings = modelSettingsSnapshot()
+    settings.connections.push({
+      id: 'connection-acp',
+      providerID: 'acp:claude-code',
+      customBaseURL: '',
+      customAPIType: 'completions',
+      credentialProfileId: 'connection-acp'
+    })
+    settings.models.push({
+      id: 'model-acp',
+      name: 'Claude Code',
+      connectionId: 'connection-acp',
+      modelID: '',
+      customModelID: '',
+      maxOutputTokens: 16_384,
+      thinkingLevel: 'default',
+      capabilities: ['tools']
+    })
+    settings.assignments = { design: 'model-acp', review: null, fast: null, vision: null }
+    replaceAIModelSettings(settings)
+
+    setModelRoleAssignment('design', 'model-design')
+    expect(aiModelSettings.value.assignments).toEqual({
+      design: 'model-design',
+      review: 'design',
+      fast: 'design',
+      vision: 'design'
+    })
+    expect(resolveAIModelRole('vision')?.profile.id).toBe('model-design')
+  })
+
+  test('a role cleared while the design model could serve it stays cleared', () => {
+    const settings = modelSettingsSnapshot()
+    settings.assignments = { design: 'model-fast', review: null, fast: null, vision: null }
+    replaceAIModelSettings(settings)
+
+    setModelRoleAssignment('design', 'model-design')
+    expect(aiModelSettings.value.assignments.vision).toBe('design')
+    expect(aiModelSettings.value.assignments.review).toBeNull()
+    expect(aiModelSettings.value.assignments.fast).toBeNull()
+  })
+
   test('normalizes invalid output limits before persistence', () => {
     const draft = createModelProfileDraft('model-fast')
     draft.maxOutputTokens = Number.NaN

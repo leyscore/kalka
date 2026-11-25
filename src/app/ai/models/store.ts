@@ -475,6 +475,27 @@ export function removeModelProfile(profileId: string): void {
   }
 }
 
+/** Whether a design model can also take a task role: agents cannot, and vision needs images. */
+function canServeRole(profile: AIModelProfile | null, role: OptionalAIModelRole): boolean {
+  if (!profile || isAgentModelProfile(profile)) return false
+  return role !== 'vision' || profile.capabilities.includes('vision')
+}
+
+/**
+ * A task role is left without a model when the design model could not take it, an agent for
+ * instance. Once the design model can, the role follows it again, so one model covers everything
+ * without assigning each task by hand. A role the previous design model could serve was cleared
+ * on purpose and stays cleared.
+ */
+function inheritUnservedRoles(previous: AIModelProfile | null, next: AIModelProfile): void {
+  for (const role of ['review', 'fast', 'vision'] as const) {
+    if (aiModelSettings.value.assignments[role] !== null) continue
+    if (!canServeRole(previous, role) && canServeRole(next, role)) {
+      aiModelSettings.value.assignments[role] = 'design'
+    }
+  }
+}
+
 export function setModelRoleAssignment(role: 'design', assignment: AIModelProfileId): void
 export function setModelRoleAssignment(
   role: OptionalAIModelRole,
@@ -485,7 +506,9 @@ export function setModelRoleAssignment(role: AIModelRole, assignment: AIModelRol
     if (assignment === null || assignment === 'design') return
     const profile = modelProfile(assignment)
     if (!profile || !isDesignModelProfile(profile)) return
+    const previous = modelProfile(aiModelSettings.value.assignments.design)
     aiModelSettings.value.assignments.design = assignment
+    inheritUnservedRoles(previous, profile)
     return
   }
   if (assignment !== null && assignment !== 'design' && !modelProfile(assignment)) return

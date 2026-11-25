@@ -21,6 +21,15 @@ import AppButton from '@/components/ui/button/AppButton.vue'
 import AppActionRow from '@/components/ui/list/AppActionRow.vue'
 import PanelDrillIn from '@/components/ui/panel/PanelDrillIn.vue'
 
+/**
+ * Settings sits on the frosted shell, so the editor keeps that surface instead of the opaque
+ * panel fill, and the list fades out under it rather than showing through.
+ */
+const DRILL_IN_UI = {
+  detail: 'bg-transparent',
+  base: 'transition-opacity duration-150 inert:opacity-0 motion-reduce:transition-none'
+} as const
+
 const { ai, collaboration, common } = useI18n()
 const editing = defineModel<boolean>('editing', { default: false })
 const editingProfileId = ref<string>()
@@ -85,6 +94,7 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
     :open="editing"
     :back="common.back"
     :parent="ai.modelsTitle"
+    :ui="DRILL_IN_UI"
     @back="closeEditor"
     @open-auto-focus="focusEditor"
   >
