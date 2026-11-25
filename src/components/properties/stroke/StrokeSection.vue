@@ -17,6 +17,7 @@ import type { BindableValueActions } from '@kalka/vue'
 import FillPicker from '@/components/fill-picker/FillPicker.vue'
 import NumberField from '@/components/inputs/NumberField.vue'
 import VariableBindingPicker from '@/components/properties/binding/VariableBindingPicker.vue'
+import { topFirst } from '@/components/properties/item-list/order'
 import PropertyItemRow from '@/components/properties/item-list/PropertyItemRow.vue'
 import {
   applyPaintMutation,
@@ -133,7 +134,7 @@ function onToggleSides(activeNode: SceneNode | null) {
       <p v-if="isMixed" class="text-[11px] text-muted">{{ panels.mixedStrokesHelp }}</p>
 
       <PropertyItemRow
-        v-for="(stroke, index) in items"
+        v-for="{ item: stroke, index } in topFirst(items)"
         :key="`${index}:${stroke.visible ? 'visible' : 'hidden'}`"
         prop-key="strokes"
         :index="index"

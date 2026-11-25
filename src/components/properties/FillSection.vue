@@ -20,6 +20,7 @@ import {
   useBlendModeOptions
 } from '@/components/properties/blend-mode/use'
 import { fillLabel } from '@/components/properties/fill-label'
+import { topFirst } from '@/components/properties/item-list/order'
 import PropertyItemRow from '@/components/properties/item-list/PropertyItemRow.vue'
 import {
   applyPaintMutation,
@@ -128,7 +129,7 @@ function updateSolidColor(
 
       <p v-if="isMixed" class="text-[11px] text-muted">{{ panels.mixedFillsHelp }}</p>
 
-      <div v-for="(fill, index) in items" :key="`${index}:${fill.visible ? 'visible' : 'hidden'}`">
+      <div v-for="{ item: fill, index } in topFirst(items)" :key="`${index}:${fill.visible ? 'visible' : 'hidden'}`">
         <PropertyItemRow
           class="items-start"
           prop-key="fills"
