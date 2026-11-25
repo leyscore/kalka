@@ -195,7 +195,8 @@ function gridPattern(grid: LayoutGrid): GridPattern {
     </template>
 
     <div v-for="{ grid, index } in rows" :key="index" data-layout-guide>
-      <PanelItemRow>
+      <!-- A hidden guide's row fades, as Figma's does, so its state reads without the eye icon. -->
+      <PanelItemRow :ui="{ content: grid.visible === false ? 'opacity-50' : '' }">
         <div class="flex min-w-0 flex-1 items-center gap-1.5">
           <Tip :label="panels.gridSettings">
             <IconButton
