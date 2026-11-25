@@ -128,12 +128,16 @@ export function createTypographyActions({
     if (current === hover) hoverText([id], { fontWeight: weight })
   }
 
+  /**
+   * Loads the weight's face before the layer takes it, as `setFamily` does: a layer naming a face
+   * still on its way would read as a missing font for that moment.
+   */
   async function setWeight(weight: number) {
     if (!node.value) return
     const { id, fontFamily } = node.value
-    const style = weightToStyle(weight)
+    await doLoadFont(fontFamily, weightToStyle(weight))
+    if (!editor.graph.getNode(id)) return
     editor.updateNodeWithUndo(id, { fontWeight: weight }, 'Change font weight')
-    await doLoadFont(fontFamily, style)
   }
 
   function setAlign(align: TextAlign) {

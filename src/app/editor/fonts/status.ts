@@ -1,3 +1,4 @@
+import { tryOnScopeDispose } from '@vueuse/core'
 import { computed, ref } from 'vue'
 
 import { computeAllLayouts } from '@kalka/core/layout'
@@ -45,6 +46,9 @@ export function useDocumentFontStatus() {
   }
 
   useEditorEvent('font:resolution-changed', refresh)
+  // A face that arrives later, such as a weight loaded when the text first asks for it, settles
+  // the warning it raised; the canvas's own loads do not all pass through the resolver.
+  tryOnScopeDispose(fontManager.onBrowserFace(refresh))
   useEditorEvent('graph:replaced', rebuild)
   useEditorEvent('page:changed', rebuild)
   useEditorEvent('node:created', (node) => updateNode(node.id))
