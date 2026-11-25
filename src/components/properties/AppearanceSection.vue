@@ -58,7 +58,7 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
       </template>
       <PropertyBoundField field="VISIBLE" />
 
-      <PanelGrid :columns="2" distribution="wide-first">
+      <PanelGrid :columns="2">
         <PanelFieldGroup :label="panels.blendMode">
           <AppSelect
             :model-value="blendModeValue === MIXED ? 'MIXED' : blendModeValue"
