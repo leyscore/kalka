@@ -9,6 +9,7 @@ import {
   finishWorking,
   keepWorking,
   markWorking,
+  noteAgentBuilding,
   recordLayerActivity
 } from '@/app/presence/activity'
 import { showAgentEdit, stopAgentReveals } from '@/app/presence/edit-effect'
@@ -165,6 +166,8 @@ export interface AgentActivity {
   read: readonly string[]
   written: readonly string[]
   worked: readonly string[]
+  /** Whether what it wrote added layers, rather than only changing ones already there. */
+  created?: boolean
 }
 
 /**
@@ -208,6 +211,8 @@ export function agentFinished(
   if (activity) {
     recordLayerActivity(store, agent.handle, 'read', activity.read)
     recordLayerActivity(store, agent.handle, 'write', activity.written)
+    if (activity.written.length > 0)
+      noteAgentBuilding(store, agent.handle.id, activity.created ?? false)
     markWorking(store, agent.handle, activity.worked)
   }
   keepWorking(store, agent.handle)
@@ -239,10 +244,11 @@ export function setSessionPlan(
   session: AgentSession,
   sections: readonly AgentPlanSection[]
 ): void {
-  sessions
-    .get(session.session)
-    ?.get(store)
-    ?.handle.update({ plan: sections.length > 0 ? [...sections] : undefined })
+  const agent = sessions.get(session.session)?.get(store)
+  if (!agent) return
+  agent.handle.update({ plan: sections.length > 0 ? [...sections] : undefined })
+  // Announcing sections means it builds again, whatever its last edit was.
+  if (sections.length > 0) noteAgentBuilding(store, agent.handle.id, true)
 }
 
 export function finishSessionWork(

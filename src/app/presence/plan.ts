@@ -34,14 +34,19 @@ export interface PlanProgress {
  * where the next one starts. Before it wrote anything they stack at `start`, where its page will
  * be. An agent that announced nothing gets no invented structure: one unnamed outline, the size
  * of its page at `start` before its first layer, then under what it builds.
+ *
+ * `retouching` is an agent whose last edit only changed layers already on its page: no section is
+ * being drawn, so none is the 'next' one, and one that announced nothing gets no outline.
  */
 export function planGhosts(
   agent: Pick<AgentPresence, 'id' | 'plan'>,
-  place: { progress: PlanProgress | null; start: Rect }
+  place: { progress: PlanProgress | null; start: Rect; retouching?: boolean }
 ): PlanGhost[] {
   const plan = agent.plan ?? []
   const { progress, start } = place
+  const retouching = !!place.retouching && !!progress
   if (plan.length === 0) {
+    if (retouching) return []
     const next = progress
       ? {
           x: progress.root.x,
@@ -64,7 +69,7 @@ export function planGhosts(
       agentId: agent.id,
       index: built + offset,
       name: section.name,
-      state: offset === 0 ? 'next' : 'later',
+      state: offset === 0 && !retouching ? 'next' : 'later',
       x,
       y,
       width,

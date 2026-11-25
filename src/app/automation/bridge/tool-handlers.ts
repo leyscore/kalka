@@ -47,7 +47,7 @@ import {
 import { noteAgentEdit } from '@/app/document/versions/bursts'
 import { ensureGraphFonts } from '@/app/editor/fonts'
 import { useLibraryService } from '@/app/libraries'
-import { workedLayers, writtenLayers } from '@/app/presence/activity'
+import { addsLayers, workedLayers, writtenLayers } from '@/app/presence/activity'
 import { agentEditFromChange, holdAgentCreations } from '@/app/presence/edit-effect'
 
 type FigmaFactory = (store: AutomationTarget['store'], pageId?: string) => FigmaAPI
@@ -234,7 +234,8 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
               activity = {
                 read: [],
                 written: writtenLayers(change),
-                worked: workedLayers(store.graph, change, targetNodeIds(store, toolArgs))
+                worked: workedLayers(store.graph, change, targetNodeIds(store, toolArgs)),
+                created: addsLayers(change)
               }
             }
           )

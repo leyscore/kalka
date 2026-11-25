@@ -12,6 +12,7 @@ import {
   finishWorking,
   keepWorking,
   markWorking,
+  noteAgentBuilding,
   recordLayerActivity
 } from '@/app/presence/activity'
 import { showAgentEdit, stopAgentReveals } from '@/app/presence/edit-effect'
@@ -230,16 +231,20 @@ export function recordRunReads(
   keepWorking(store, agent)
 }
 
-/** The run's agent wrote `written`, and builds `worked` until it finishes or its reply ends. */
+/**
+ * The run's agent wrote `written`, and builds `worked` until it finishes or its reply ends.
+ * `created` says whether the write added layers or only changed ones already there.
+ */
 export function recordRunWrites(
   store: EditorStore,
-  written: readonly string[],
-  worked: readonly string[],
+  work: { written: readonly string[]; worked: readonly string[]; created: boolean },
   lane = LEAD_LANE
 ): void {
   const agent = agentAtWork(store, lane)
   if (!agent) return
+  const { written, worked, created } = work
   recordLayerActivity(store, agent, 'write', written)
+  if (written.length > 0) noteAgentBuilding(store, agent.id, created)
   markWorking(store, agent, worked)
   keepWorking(store, agent)
 }
@@ -260,7 +265,11 @@ export function setRunPlan(
   sections: readonly AgentPlanSection[],
   lane = LEAD_LANE
 ): void {
-  getRunState(store, lane).agent?.update({ plan: sections.length > 0 ? [...sections] : undefined })
+  const agent = getRunState(store, lane).agent
+  if (!agent) return
+  agent.update({ plan: sections.length > 0 ? [...sections] : undefined })
+  // Announcing sections means it builds again, whatever its last edit was.
+  if (sections.length > 0) noteAgentBuilding(store, agent.id, true)
 }
 
 /** The run's agent is done with `nodeIds`, or all it builds; returns what it let go of. */

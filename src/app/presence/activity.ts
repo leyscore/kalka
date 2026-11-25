@@ -1,4 +1,5 @@
 import { uniq } from 'es-toolkit'
+import { shallowRef, type ShallowRef } from 'vue'
 
 import type { DocumentChange } from '@kalka/core/editor'
 import type { SceneGraph } from '@kalka/scene-graph'
@@ -46,6 +47,8 @@ interface Activity {
   /** What each peer's agent was last seen working on and pointing at. */
   peerAgents: Map<string, PeerAgentSeen>
   marks: { key: readonly unknown[]; value: readonly AgentWorkMark[] } | null
+  /** Agents whose last write changed layers that existed and added none; read by the canvas. */
+  retouching: ShallowRef<ReadonlySet<string>>
 }
 
 const activities = new WeakMap<EditorStore, Activity>()
@@ -53,7 +56,13 @@ const activities = new WeakMap<EditorStore, Activity>()
 function activityOf(store: EditorStore): Activity {
   let activity = activities.get(store)
   if (!activity) {
-    activity = { layers: new Map(), releaseTimers: new Map(), peerAgents: new Map(), marks: null }
+    activity = {
+      layers: new Map(),
+      releaseTimers: new Map(),
+      peerAgents: new Map(),
+      marks: null,
+      retouching: shallowRef(new Set())
+    }
     activities.set(store, activity)
   }
   return activity
@@ -95,6 +104,32 @@ export function agentHasWritten(store: EditorStore, agentId: string): boolean {
     if (entry.write?.agentId === agentId) return true
   }
   return false
+}
+
+/**
+ * Note whether an agent's write added layers to the page (`building`) or only changed ones
+ * already there. The canvas outlines what comes next only for an agent that builds.
+ */
+export function noteAgentBuilding(store: EditorStore, agentId: string, building: boolean): void {
+  const { retouching } = activityOf(store)
+  if (retouching.value.has(agentId) !== building) return
+  const next = new Set(retouching.value)
+  if (building) next.delete(agentId)
+  else next.add(agentId)
+  retouching.value = next
+}
+
+/** Whether `agentId` builds: true until a write of its changes layers and adds none. */
+export function agentIsBuilding(store: EditorStore, agentId: string): boolean {
+  return !activityOf(store).retouching.value.has(agentId)
+}
+
+/**
+ * Whether an edit added layers to the page, rather than changing ones already there. Rewriting a
+ * layer in place, as `edit_html` does, creates layers and removes those they replace: a change.
+ */
+export function addsLayers(change: DocumentChange | null): boolean {
+  return !!change && change.created.length > 0 && change.deleted.length === 0
 }
 
 /**

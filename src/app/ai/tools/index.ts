@@ -21,7 +21,7 @@ import { noteAgentEdit } from '@/app/document/versions/bursts'
 import type { EditorStore } from '@/app/editor/active-store'
 import { ensureGraphFonts } from '@/app/editor/fonts'
 import { useLibraryService } from '@/app/libraries'
-import { workedLayers, writtenLayers } from '@/app/presence/activity'
+import { addsLayers, workedLayers, writtenLayers } from '@/app/presence/activity'
 import { frameHeldMessage, heldByOtherAgent } from '@/app/presence/claims'
 import { agentEditFromChange, holdAgentCreations } from '@/app/presence/edit-effect'
 import { documentEditLock } from '@/app/runtime/mutex'
@@ -193,8 +193,11 @@ export function createAITools(
         }
         recordRunWrites(
           store,
-          writtenLayers(change),
-          workedLayers(store.graph, change, targetNodeIds(store, args)),
+          {
+            written: writtenLayers(change),
+            worked: workedLayers(store.graph, change, targetNodeIds(store, args)),
+            created: addsLayers(change)
+          },
           lane
         )
         showRunEdit(store, agentEditFromChange(change), lane)

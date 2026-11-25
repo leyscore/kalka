@@ -5,7 +5,10 @@ import { SceneGraph } from '@kalka/scene-graph'
 import type { RemotePeer } from '@/app/collab/types'
 import { createEditorStore, type EditorStore } from '@/app/editor/session'
 import {
+  addsLayers,
   agentHasWritten,
+  agentIsBuilding,
+  noteAgentBuilding,
   finishWorking,
   layerActivity,
   markWorking,
@@ -70,6 +73,33 @@ describe("each layer's agent activity", () => {
     expect(agentHasWritten(store, fern.id)).toBe(false)
     recordLayerActivity(store, fern, 'write', [frame.id])
     expect(agentHasWritten(store, fern.id)).toBe(true)
+  })
+
+  test('tells an agent that builds from one that only changes layers already there', () => {
+    const fern = addAgent(store, 'mcp')
+    const ash = addAgent(store, 'chat')
+    expect(agentIsBuilding(store, fern.id)).toBe(true)
+    noteAgentBuilding(store, fern.id, false)
+    expect(agentIsBuilding(store, fern.id)).toBe(false)
+    expect(agentIsBuilding(store, ash.id)).toBe(true)
+    noteAgentBuilding(store, fern.id, true)
+    expect(agentIsBuilding(store, fern.id)).toBe(true)
+  })
+
+  test('counts an edit as building only when it adds layers and replaces none', () => {
+    const { frame, button } = section()
+    const finish = store.captureDocumentChange(pageId())
+    store.graph.createNode('FRAME', frame.id, { name: 'Card' })
+    expect(addsLayers(finish())).toBe(true)
+    // A layer rewritten in place: the new one takes the place of the old.
+    const rewrite = store.captureDocumentChange(pageId())
+    store.graph.deleteNode(button.id)
+    store.graph.createNode('FRAME', frame.id, { name: 'Button' })
+    expect(addsLayers(rewrite())).toBe(false)
+    const recolor = store.captureDocumentChange(pageId())
+    store.graph.updateNode(frame.id, { name: 'Renamed' })
+    expect(addsLayers(recolor())).toBe(false)
+    expect(addsLayers(null)).toBe(false)
   })
 
   test('is presence only: it never enters the document or its history', () => {

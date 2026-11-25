@@ -7,7 +7,7 @@ import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { currentQuestions } from '@/app/ai/questions/queue'
 import { useEditorStore } from '@/app/editor/active-store'
-import { agentHasWritten, agentRootOnPage } from '@/app/presence/activity'
+import { agentHasWritten, agentIsBuilding, agentRootOnPage } from '@/app/presence/activity'
 import { flyToPlace } from '@/app/presence/fly-to-work'
 import { planGhosts, planHeight, type PlanGhost, type PlanProgress } from '@/app/presence/plan'
 import { localAgentColor, presenceOf } from '@/app/presence/registry'
@@ -26,6 +26,8 @@ import { agentGhostTheme } from '@/theme/presence/ghost'
  * nothing gets a single outline, the size of a page before its first layer and then under what it
  * builds: never a made-up structure. The outline being built shows placeholder bars filling with
  * light and the agent's cursor on it, which glides to the next outline as each section lands.
+ * While the agent only changes layers that exist, such as a button's color, nothing fills with
+ * light: its announced sections stay as plain outlines and an unannounced one goes.
  */
 const { view, drawn } = defineProps<{
   view: { panX: number; panY: number; zoom: number; currentPageId: string }
@@ -118,7 +120,9 @@ const sections = computed<PlanGhost[]>(() =>
     if (!progress && !waits) return []
     // With no plan, the outline shows before the first layer and then while the agent holds some.
     if (!agent.plan?.length && !waits && !(agent.working?.length ?? 0)) return []
-    return planGhosts(agent, { progress, start: startOf(agent) })
+    // While it only retouches what exists, no section is being drawn under the page.
+    const retouching = !agentIsBuilding(store, agent.id)
+    return planGhosts(agent, { progress, start: startOf(agent), retouching })
   })
 )
 

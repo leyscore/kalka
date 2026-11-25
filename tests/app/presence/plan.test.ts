@@ -46,4 +46,18 @@ describe('section plan outlines', () => {
     expect(ghosts).toHaveLength(1)
     expect(ghosts.at(0)).toMatchObject({ name: '', y: 600, height: NEXT_SECTION_HEIGHT })
   })
+
+  test('show nothing being drawn while the agent only retouches what exists', () => {
+    const progress = { root: { x: 0, y: 0, width: 1440, height: 600 }, built: 1, nextY: 600 }
+    // No plan: the outline under the page goes.
+    expect(planGhosts({ id: 'a' }, { progress, start, retouching: true })).toEqual([])
+    // A plan keeps its outlines, none of them the one being drawn.
+    const ghosts = planGhosts({ id: 'a', plan }, { progress, start, retouching: true })
+    expect(ghosts.map(({ name, state }) => ({ name, state }))).toEqual([
+      { name: 'Roasts', state: 'later' },
+      { name: 'Footer', state: 'later' }
+    ])
+    // Before its first layer an agent has retouched nothing.
+    expect(planGhosts({ id: 'a' }, { progress: null, start, retouching: true })).toHaveLength(1)
+  })
 })

@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- The canvas no longer shows a shimmering "next section" placeholder under a page while the agent only changes layers that already exist, such as the buttons of a dashboard it built.
 - In Settings, a model opens on the same frosted surface as the list instead of a flat grey panel.
 - Review, Fast tasks and Vision follow the design model again when you switch back from an agent such as Claude Code to a regular model, instead of staying on "None", which blocked sending images.
 
