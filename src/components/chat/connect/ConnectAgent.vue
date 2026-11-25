@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
-import { ACP_AGENTS } from '@kalka/core/constants'
+import { ACP_AGENTS, isAPIKeyOptional } from '@kalka/core/constants'
 import { useI18n } from '@kalka/vue'
 
 import { agentSetupView, piSetupView } from '@/app/ai/agents/setup'
+import { apiKeyStatus, isAgentProvider, isConfigured } from '@/app/ai/chat/storage'
+import { designModelConnection, designModelProfile } from '@/app/ai/models'
 import { modelProviderName } from '@/app/ai/models/provider-name'
 import {
   isOnboardingAgent,
@@ -15,6 +17,7 @@ import {
   type OnboardingAccess
 } from '@/app/ai/models/settings/onboarding/plan'
 import { useAIOnboarding } from '@/app/ai/models/settings/onboarding/use'
+import { openModelProfileSettings } from '@/app/ai/models/settings/request'
 import { OPENROUTER_KEY_LABEL } from '@/app/ai/providers/openrouter/sign-in'
 import { openSettings } from '@/app/settings/open'
 import AISetupConnection from '@/components/settings/ai-setup/AISetupConnection.vue'
@@ -39,6 +42,27 @@ const styles = computed(() => connectAgent({ placement }))
 function advanced(): void {
   if (placement === 'dialog') emit('advanced')
   else openSettings('ai')
+}
+
+/**
+ * The Design model is chosen but its provider has no key yet, as Settings shows with Needs key:
+ * the heading names that model and provider, and leads to the field for its key.
+ */
+const missingKey = computed(() => {
+  const profile = designModelProfile.value
+  const connection = designModelConnection.value
+  if (!profile || !connection || isAgentProvider.value || isConfigured.value) return null
+  if (apiKeyStatus.value !== 'missing' || isAPIKeyOptional(connection.providerID)) return null
+  return {
+    profileId: profile.id,
+    model: profile.name,
+    provider: modelProviderName(connection.providerID)
+  }
+})
+
+function addKey(profileId: string): void {
+  openModelProfileSettings(profileId)
+  if (placement === 'dialog') emit('advanced')
 }
 
 type Screen = 'kind' | 'agents' | 'providers' | 'detail'
@@ -118,7 +142,17 @@ onMounted(() => {
     >
       <icon-hugeicons-arrow-left-01 class="size-3" />{{ common.back }}
     </button>
-    <!-- In Settings the section title already says it. -->
+    <!-- In Settings the section title and the model's Needs key already say it. -->
+    <p
+      v-else-if="placement !== 'settings' && missingKey"
+      data-test-id="connect-missing-key"
+      :class="styles.heading()"
+    >
+      {{ ai.designModelNeedsKey({ model: missingKey.model, provider: missingKey.provider }) }}
+      <AppButton size="xs" variant="link" @click="addKey(missingKey.profileId)">
+        {{ ai.addModelKey }}
+      </AppButton>
+    </p>
     <p v-else-if="placement !== 'settings'" :class="styles.heading()">
       {{ ai.connectProvider }}
     </p>
@@ -140,7 +174,7 @@ onMounted(() => {
             }}
           </span>
         </span>
-        <icon-hugeicons-arrow-right-01 :class="styles.chevron()" />
+        <icon-hugeicons-arrow-right-01 v-if="agentsAvailable" :class="styles.chevron()" />
       </button>
       <button
         type="button"

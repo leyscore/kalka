@@ -4,6 +4,7 @@ import { ref, onUnmounted, useTemplateRef, watch } from 'vue'
 import { HARNESS_PROVIDER_ID } from '@kalka/core/constants'
 import { useI18n } from '@kalka/vue'
 
+import { modelConnection, needsServerAddress } from '@/app/ai/models'
 import { openAISetup } from '@/app/ai/models/settings/onboarding/dialog'
 import {
   modelSettingsRequest,
@@ -30,7 +31,7 @@ const DRILL_IN_UI = {
   base: 'transition-opacity duration-150 inert:opacity-0 motion-reduce:transition-none'
 } as const
 
-const { ai, collaboration, common } = useI18n()
+const { ai, collaboration, common, settings } = useI18n()
 const editing = defineModel<boolean>('editing', { default: false })
 const editingProfileId = ref<string>()
 const editingReason = ref<ModelSettingsReason>()
@@ -72,6 +73,10 @@ watch(
 function statusLabel(connectionId: string, providerID: string): string {
   const status = statusByConnection.value[connectionId]
   if (providerID.startsWith('acp:')) return ai.value.modelAgentConnection
+  // A compatible server without its address is not set up, whatever its key; the agent's panel
+  // asks to connect a provider for it too.
+  const connection = modelConnection(connectionId)
+  if (connection && needsServerAddress(connection)) return settings.value.notConfigured
   // Pi uses its own sign-ins unless an AI Gateway key is saved.
   if (providerID === HARNESS_PROVIDER_ID && status !== 'configured') {
     return ai.value.modelAgentConnection

@@ -7,14 +7,14 @@ export type ModelSettingsReason = 'reconnect'
 
 export interface ModelSettingsRequest {
   profileId: string
-  reason: ModelSettingsReason
+  reason?: ModelSettingsReason
 }
 
 /** A model Settings › AI & agents should open on, taken by the models panel once it shows. */
 export const modelSettingsRequest = shallowRef<ModelSettingsRequest | null>(null)
 
-/** Opens Settings › AI & agents on one model's editor, explaining why. */
-export function openModelProfileSettings(profileId: string, reason: ModelSettingsReason): void {
+/** Opens Settings › AI & agents on one model's editor, explaining why when there is a reason. */
+export function openModelProfileSettings(profileId: string, reason?: ModelSettingsReason): void {
   modelSettingsRequest.value = { profileId, reason }
   openSettings('ai')
 }

@@ -176,6 +176,8 @@
   "completions": "Completions",
   "responses": "Responses",
   "connectProvider": "Connectez un fournisseur d’IA pour commencer à discuter.",
+  "designModelNeedsKey": "{model} a besoin d’une clé API {provider} pour commencer à discuter.",
+  "addModelKey": "Ajouter la clé",
   "connectAPIDescription": "Collez une clé Anthropic, OpenAI, Google, OpenRouter, ou l’adresse de votre propre serveur.",
   "connectStart": "Lancer",
   "connectFailed": "Impossible d’enregistrer cette connexion. Réessayez.",

@@ -182,6 +182,8 @@
   "completions": "Completions",
   "responses": "Responses",
   "connectProvider": "Collega un provider AI per iniziare a chattare.",
+  "designModelNeedsKey": "{model} ha bisogno di una chiave API di {provider} per iniziare a chattare.",
+  "addModelKey": "Aggiungi la chiave",
   "connectAPIDescription": "Incolla una chiave di Anthropic, OpenAI, Google o OpenRouter, oppure l’indirizzo del tuo server.",
   "connectStart": "Avvia",
   "connectFailed": "Impossibile salvare questa connessione. Riprova.",

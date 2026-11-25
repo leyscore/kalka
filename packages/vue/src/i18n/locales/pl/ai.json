@@ -176,6 +176,8 @@
   "completions": "Completions",
   "responses": "Responses",
   "connectProvider": "Połącz dostawcę AI, aby rozpocząć czat.",
+  "designModelNeedsKey": "{model} potrzebuje klucza API {provider}, aby rozpocząć czat.",
+  "addModelKey": "Dodaj klucz",
   "connectAPIDescription": "Wklej klucz Anthropic, OpenAI, Google lub OpenRouter albo adres własnego serwera.",
   "connectStart": "Uruchom",
   "connectFailed": "Nie udało się zapisać tego połączenia. Spróbuj ponownie.",

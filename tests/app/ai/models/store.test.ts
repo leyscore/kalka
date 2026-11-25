@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { parseAIModelSettings } from '@/app/ai/models/store'
+import { needsServerAddress, parseAIModelSettings } from '@/app/ai/models/store'
 import type { AIModelConnection } from '@/app/ai/models/types'
 
 const connection = {
@@ -112,5 +112,17 @@ describe('parseAIModelSettings', () => {
       fast: null,
       vision: null
     })
+  })
+})
+
+describe('needsServerAddress', () => {
+  test('a compatible server without its address is not set up', () => {
+    for (const providerID of ['openai-compatible', 'anthropic-compatible'] as const) {
+      expect(needsServerAddress({ providerID, customBaseURL: '' })).toBe(true)
+      expect(needsServerAddress({ providerID, customBaseURL: 'http://localhost:11434/v1' })).toBe(
+        false
+      )
+    }
+    expect(needsServerAddress(connection)).toBe(false)
   })
 })

@@ -265,6 +265,16 @@ export function modelConnection(connectionId: string): AIModelConnection | null 
   )
 }
 
+/** A compatible provider reaches the server at its address, so a connection without one is not set up. */
+export function needsServerAddress(
+  connection: Pick<AIModelConnection, 'providerID' | 'customBaseURL'>
+): boolean {
+  const compatible =
+    connection.providerID === 'openai-compatible' ||
+    connection.providerID === 'anthropic-compatible'
+  return compatible && !connection.customBaseURL
+}
+
 export function isDesignModelProfile(profile: AIModelProfile): boolean {
   return profile.capabilities.includes('tools')
 }

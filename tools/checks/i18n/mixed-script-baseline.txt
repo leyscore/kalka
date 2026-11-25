@@ -70,6 +70,7 @@ ja:ai.connectionTestMissingModel
 ja:ai.connectionTestModelNotFound
 ja:ai.connectionTestNetworkFailed
 ja:ai.customModelID
+ja:ai.designModelNeedsKey
 ja:ai.getProviderAPIKey
 ja:ai.mainModelTitle
 ja:ai.maxAgentStepsHint
@@ -381,6 +382,7 @@ zh-cn:ai.connectionTestMissingModel
 zh-cn:ai.connectionTestModelNotFound
 zh-cn:ai.connectionTestNetworkFailed
 zh-cn:ai.customModelID
+zh-cn:ai.designModelNeedsKey
 zh-cn:ai.getProviderAPIKey
 zh-cn:ai.mainModelTitle
 zh-cn:ai.maxAgentStepsHint

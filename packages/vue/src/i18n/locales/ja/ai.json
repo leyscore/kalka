@@ -182,6 +182,8 @@
   "completions": "入力補完",
   "responses": "応答",
   "connectProvider": "チャットを始めるには、AIプロバイダーを接続してください。",
+  "designModelNeedsKey": "チャットを始めるには、{model} に {provider} の API キーが必要です。",
+  "addModelKey": "キーを追加",
   "connectAPIDescription": "Anthropic、OpenAI、Google、OpenRouter のキー、またはご自身のサーバーのアドレスを貼り付けてください。",
   "connectStart": "開始",
   "connectFailed": "この接続を保存できませんでした。もう一度お試しください。",

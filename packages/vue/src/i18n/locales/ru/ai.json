@@ -176,6 +176,8 @@
   "completions": "Completions",
   "responses": "Responses",
   "connectProvider": "Подключите AI-провайдера, чтобы начать чат.",
+  "designModelNeedsKey": "Чтобы начать чат, {model} нужен API-ключ {provider}.",
+  "addModelKey": "Добавить ключ",
   "connectAPIDescription": "Вставьте ключ Anthropic, OpenAI, Google или OpenRouter либо адрес своего сервера.",
   "connectStart": "Начать",
   "connectFailed": "Не удалось сохранить это подключение. Попробуйте ещё раз.",

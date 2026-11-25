@@ -176,6 +176,8 @@
   "completions": "Completions",
   "responses": "Responses",
   "connectProvider": "Verbinde einen KI-Anbieter, um den Chat zu starten.",
+  "designModelNeedsKey": "{model} braucht einen API-Schlüssel von {provider}, um den Chat zu starten.",
+  "addModelKey": "Schlüssel hinzufügen",
   "connectAPIDescription": "Fügen Sie einen Schlüssel von Anthropic, OpenAI, Google oder OpenRouter ein oder die Adresse Ihres eigenen Servers.",
   "connectStart": "Starten",
   "connectFailed": "Diese Verbindung konnte nicht gespeichert werden. Versuchen Sie es erneut.",

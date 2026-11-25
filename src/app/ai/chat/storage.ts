@@ -13,7 +13,8 @@ import {
   designProviderDefinition,
   designProviderID,
   modelConnectionCredentialRef,
-  modelCredentialRevision
+  modelCredentialRevision,
+  needsServerAddress
 } from '@/app/ai/models'
 import { appCredentialServices, browserCredentialsRemembered } from '@/app/settings/credentials/app'
 import {
@@ -49,9 +50,7 @@ export const isConfigured = computed(() => {
     apiKeyStatus.value === 'configured' ||
     (apiKeyStatus.value === 'missing' && isAPIKeyOptional(providerID.value))
   if (!keyReady) return false
-  const needsBaseURL =
-    providerID.value === 'openai-compatible' || providerID.value === 'anthropic-compatible'
-  return !needsBaseURL || Boolean(customBaseURL.value)
+  return !needsServerAddress({ providerID: providerID.value, customBaseURL: customBaseURL.value })
 })
 
 async function refreshStatus(reference: CredentialRef): Promise<CredentialStatus> {
