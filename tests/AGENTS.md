@@ -9,7 +9,7 @@
 - Address a package's source by `#<pkg>/*` and its own helpers by `#<pkg>-tests/*` (`#core-tests/*`, `#fig-tests/*`); never drill with `../../`. Registering a new alias means `imports` in the package manifest and `PACKAGE_ALIASES`/`PACKAGE_ALIAS_OWNERS` in `tools/checks/architecture/src/steiger-rules/support.ts`.
 - Reach repository files, such as `tests/fixtures`, through `repoPath`/`testPath` in `tests/helpers/paths.ts`, or a package helper's `workspaceRoot()`, which finds the root by its lockfile; never climb from `import.meta` (`kalka/no-deep-parent-relative-paths`).
 - Owner-local helpers and fixtures stay local; only genuinely shared support goes under central `tests/helpers/<domain>/` and `tests/fixtures/`. MCP transport tests: `tests/engine/mcp/{server,stdio,transport}` with `tests/helpers/mcp`.
-- User sessions, which a person or an agent plays in the real interface with mouse and keyboard only, are Markdown under `tests/user/`; their reports go to ignored `scratch/user-sessions/`, and a fixed blocker or major finding gets a spec in `tests/e2e` (`tests/user/README.md`).
+- User stories, which a person or an agent plays in the real interface with mouse and keyboard only and compares with Figma, are Markdown under `tests/user/<domain>/`; their reports go to ignored `scratch/user-sessions/`, and a fixed blocker or major finding gets a spec in `tests/e2e` (`tests/user/README.md`).
 - Never commit temporary, diagnostic, or profile specs; keep them in ignored `scratch/`.
 
 ## Writing specs
