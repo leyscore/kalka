@@ -1,8 +1,15 @@
-import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
-import { copyFills } from '@kalka/scene-graph/copy'
+import { omit } from 'es-toolkit/object'
+
+import type { Fill, SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { copyFill, copyFills } from '@kalka/scene-graph/copy'
 import { parseSVGPath } from '@kalka/scene-graph/parse-path'
 
-import { makeBooleanSourcePath, makeStrokeOutlinePath, nodePathTransform } from './boolean'
+import {
+  makeBooleanSourcePath,
+  makeStrokeOutlinePath,
+  nodeHasVisibleStroke,
+  nodePathTransform
+} from './boolean'
 import type { SkiaRenderer } from './renderer'
 
 export type VectorFlattenProps = Pick<
@@ -65,12 +72,36 @@ export function flattenNodesToVectorProps(
   )
 }
 
+function firstVisibleStrokeNode(graph: SceneGraph, nodes: SceneNode[]): SceneNode | null {
+  for (const node of nodes) {
+    if (nodeHasVisibleStroke(node)) return node
+    const children = node.childIds.flatMap((id) => {
+      const child = graph.getNode(id)
+      return child?.visible ? [child] : []
+    })
+    const found = firstVisibleStrokeNode(graph, children)
+    if (found) return found
+  }
+  return null
+}
+
+/** The outline of a stroke is filled with the stroke's paints, as Figma's Outline stroke does. */
+function strokePaintsAsFills(graph: SceneGraph, nodes: SceneNode[]): Fill[] {
+  const source = firstVisibleStrokeNode(graph, nodes)
+  if (!source) return []
+  return source.strokes
+    .filter((stroke) => stroke.visible && stroke.weight > 0)
+    .map((stroke) => copyFill(omit(stroke, ['weight', 'align', 'cap', 'join', 'dashPattern'])))
+}
+
 export function outlineStrokeNodesToVectorProps(
   renderer: SkiaRenderer,
   graph: SceneGraph,
   nodes: SceneNode[]
 ): VectorFlattenProps | null {
-  return nodesToVectorProps(renderer, graph, nodes, (r, g, node) =>
+  const props = nodesToVectorProps(renderer, graph, nodes, (r, g, node) =>
     makeStrokeOutlinePath(r, node, g)
   )
+  if (!props) return null
+  return { ...props, fills: strokePaintsAsFills(graph, nodes) }
 }

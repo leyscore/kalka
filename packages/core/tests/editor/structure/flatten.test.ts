@@ -111,6 +111,28 @@ describe('flattenSelected', () => {
     expect(editor.graph.getNode(rect.id)).toBeUndefined()
   })
 
+  test('fills the outline with the stroke paint and drops the stroke', async () => {
+    const { editor } = await createEditorWithRenderer()
+    const pageId = editor.state.currentPageId
+    const red = { r: 1, g: 0, b: 0, a: 1 }
+    const path = editor.graph.createNode('RECTANGLE', pageId, {
+      width: 40,
+      height: 30,
+      fills: [],
+      strokes: [
+        { type: 'SOLID', color: red, weight: 4, opacity: 0.5, visible: true, align: 'CENTER' }
+      ]
+    })
+
+    editor.select([path.id])
+    editor.outlineStrokeSelected()
+
+    const [vectorId] = [...editor.state.selectedIds]
+    const vector = editor.graph.getNode(vectorId)
+    expect(vector?.strokes).toEqual([])
+    expect(vector?.fills).toEqual([{ type: 'SOLID', color: red, opacity: 0.5, visible: true }])
+  })
+
   test('outlines stroked descendants inside groups', async () => {
     const { editor } = await createEditorWithRenderer()
     const pageId = editor.state.currentPageId
