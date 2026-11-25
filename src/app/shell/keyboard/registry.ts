@@ -298,6 +298,22 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
       whileEditingText: true
     },
     ...commandShortcuts('selection.group', 'selection.frameSelection'),
+    // Figma's Option+A, H, D, W, V and S, which the Arrange menu shows. Matched by key position:
+    // Option turns the letter into another character on macOS.
+    ...(
+      [
+        ['align-left', 'Alt+KeyA', 'horizontal', 'min'],
+        ['align-center', 'Alt+KeyH', 'horizontal', 'center'],
+        ['align-right', 'Alt+KeyD', 'horizontal', 'max'],
+        ['align-top', 'Alt+KeyW', 'vertical', 'min'],
+        ['align-middle', 'Alt+KeyV', 'vertical', 'center'],
+        ['align-bottom', 'Alt+KeyS', 'vertical', 'max']
+      ] as const
+    ).map(([id, keys, axis, align]): ShortcutDefinition => ({
+      id,
+      keys,
+      run: ({ store }) => store.alignNodes([...store.state.selectedIds], axis, align)
+    })),
     {
       id: 'toggle-auto-layout',
       keys: 'Shift+KeyA',
@@ -318,19 +334,19 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
       keys: ['Shift+Enter', 'Backslash'],
       run: ({ actions }) => actions.selectParent()
     },
-    ...([
-      ['Tab', 1],
-      ['Shift+Tab', -1]
-    ] as const).map(
-      ([keys, step]): ShortcutDefinition => ({
-        id: `select-sibling-${step}`,
-        keys,
-        run: ({ actions, keyEvent }) => {
-          if (isCanvasKey(keyEvent) && actions.selectSibling(step)) keyEvent.preventDefault()
-        },
-        shouldPreventDefault: () => false
-      })
-    ),
+    ...(
+      [
+        ['Tab', 1],
+        ['Shift+Tab', -1]
+      ] as const
+    ).map(([keys, step]): ShortcutDefinition => ({
+      id: `select-sibling-${step}`,
+      keys,
+      run: ({ actions, keyEvent }) => {
+        if (isCanvasKey(keyEvent) && actions.selectSibling(step)) keyEvent.preventDefault()
+      },
+      shouldPreventDefault: () => false
+    })),
     {
       id: 'escape',
       keys: 'Escape',
