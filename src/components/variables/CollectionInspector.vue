@@ -12,7 +12,7 @@ import { computed, reactive, useId, watch } from 'vue'
 
 import { defaultModeAttributeName } from '@kalka/dom-css/export'
 import { isModeAttributeName, type VariableCollection } from '@kalka/scene-graph'
-import { useI18n } from '@kalka/vue'
+import { selectTarget, useI18n } from '@kalka/vue'
 
 import {
   changeConditionKind,
@@ -264,6 +264,7 @@ function attributeDone(event: KeyboardEvent) {
             size="sm"
             class="min-w-0 flex-1"
             :aria-label="variables.renameMode"
+            @dblclick="selectTarget($event)"
             @change="commitModeName(item.modeId)"
             @enter="done"
           />
