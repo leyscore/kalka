@@ -409,8 +409,13 @@ async function insertSelectedAsset() {
                   aria-hidden="true"
                 />
                 <span :class="assetView === 'grid' ? 'w-full min-w-0' : 'min-w-0 flex-1'">
-                  <span class="flex min-w-0 items-center gap-1">
-                    <span data-test-id="asset-name" class="truncate">{{ asset.name }}</span>
+                  <!-- A grid tile is narrow: the badge goes under the name, which keeps the width. -->
+                  <span
+                    class="flex min-w-0 items-center gap-1 group-data-[view=grid]/asset:flex-col group-data-[view=grid]/asset:gap-0.5"
+                  >
+                    <span data-test-id="asset-name" class="max-w-full truncate">{{
+                      asset.name
+                    }}</span>
                     <span
                       v-if="asset.sourceLibraryKey"
                       data-test-id="asset-library-badge"
