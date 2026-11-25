@@ -119,7 +119,8 @@ const draft = reactive({
   name: '',
   cssName: '',
   description: '',
-  values: {} as Record<string, string>,
+  /** A number field's `v-model` hands back numbers, as Vue does for `type="number"` inputs. */
+  values: {} as Record<string, string | number>,
   expressions: {} as Record<string, string>
 })
 
@@ -186,7 +187,7 @@ function commitDescription() {
 }
 
 function commitValue(modeId: string) {
-  const text = draft.values[modeId] ?? ''
+  const text = String(draft.values[modeId] ?? '')
   if (variable.value.type === 'FLOAT') {
     const number = Number(text)
     if (text.trim() && Number.isFinite(number))

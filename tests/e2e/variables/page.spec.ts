@@ -116,6 +116,18 @@ test('selecting a variable edits it in the inspector', async () => {
   editor.canvas.assertNoErrors()
 })
 
+test('a number typed in the inspector is saved', async () => {
+  const row = variableRows().filter({ hasText: 'New number' })
+  await row.click()
+  await expect(inspectorName()).toHaveValue('New number')
+  const value = editor.page.getByTestId('token-inspector').getByRole('spinbutton').first()
+  await value.fill('16')
+  await value.press('Tab')
+
+  await expect(row).toContainText('16')
+  editor.canvas.assertNoErrors()
+})
+
 test('deleting a variable removes its row', async () => {
   await variableRows().filter({ hasText: 'New boolean' }).click()
   const inspector = editor.page.getByTestId('token-inspector')
