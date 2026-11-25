@@ -132,6 +132,18 @@ test('clicking color area changes fill color', async () => {
   await editor.canvas.waitForRender()
 })
 
+test('one click on the hex value selects it for typing', async () => {
+  const hex = propertyItems(editor.page, 'fills').first().locator('[data-property="color-hex"]')
+  await hex.click()
+  await editor.page.keyboard.type('FF0000')
+  await editor.page.keyboard.press('Enter')
+  await expect(hex).toHaveValue('FF0000')
+
+  const id = await getSelectedId()
+  const node = await getNode(expectDefined(id, 'selected id'))
+  expect(expectDefined(node, 'node').fills[0].color).toMatchObject({ r: 1, g: 0, b: 0 })
+})
+
 test('adding a stroke creates stroke section item', async () => {
   const addBtn = strokeSection().getByRole('button', { name: 'Add stroke' })
   await addBtn.click()

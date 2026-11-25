@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 
 import type { Color } from '@kalka/scene-graph/primitives'
-import { inputValue, useColorModel } from '@kalka/vue'
+import { inputValue, selectTarget, useColorModel } from '@kalka/vue'
 
 import { BindingPill } from '@/components/ui/binding'
 
@@ -38,6 +38,7 @@ const tooltip = computed(() => (variableName ? `${variableName} · #${model.hex.
     class="min-w-0 flex-1 border-none bg-transparent font-mono text-[11px] text-surface outline-none"
     :value="model.hex.value"
     maxlength="6"
+    @focus="selectTarget($event)"
     @change="model.updateHex(inputValue($event))"
   />
 </template>

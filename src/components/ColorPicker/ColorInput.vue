@@ -2,7 +2,7 @@
 import { useAttrs } from 'vue'
 
 import type { Color } from '@kalka/scene-graph/primitives'
-import { ColorInputRoot, inputValue } from '@kalka/vue'
+import { ColorInputRoot, inputValue, selectTarget } from '@kalka/vue'
 import type { OkHCLControls } from '@kalka/vue'
 
 import ColorPicker from '@/components/ColorPicker/ColorPicker.vue'
@@ -44,6 +44,7 @@ const emit = defineEmits<{ update: [color: Color]; openChange: [open: boolean] }
           class="min-w-0 flex-1 border-none bg-transparent font-mono text-xs text-surface outline-none"
           :value="hex"
           maxlength="6"
+          @focus="selectTarget($event)"
           @change="actions.updateFromHex(inputValue($event))"
         />
         <span v-else class="min-w-0 flex-1 truncate font-mono text-xs text-muted">
