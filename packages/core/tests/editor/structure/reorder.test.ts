@@ -7,7 +7,12 @@ describe('reorderChildWithUndo', () => {
   test('keeps a layer in place on the canvas when it changes parent', () => {
     const editor = createEditor()
     const page = editor.state.currentPageId
-    const outer = editor.graph.createNode('FRAME', page, { x: 100, y: 100, width: 400, height: 400 })
+    const outer = editor.graph.createNode('FRAME', page, {
+      x: 100,
+      y: 100,
+      width: 400,
+      height: 400
+    })
     const inner = editor.graph.createNode('FRAME', outer.id, {
       x: 50,
       y: 60,

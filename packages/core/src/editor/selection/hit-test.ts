@@ -25,8 +25,7 @@ export function createSelectionHitTestActions(
   function selectAtPoint(cx: number, cy: number) {
     // A click passes through locked layers, but one picked in the layers panel keeps its menu.
     const lockedUnderPoint = [...ctx.state.selectedIds].some(
-      (id) =>
-        ctx.graph.closest(id, (node) => node.locked) && ctx.graph.isPointInNode(id, cx, cy)
+      (id) => ctx.graph.closest(id, (node) => node.locked) && ctx.graph.isPointInNode(id, cx, cy)
     )
     if (lockedUnderPoint) return
     const scopeId = ctx.state.enteredContainerId ?? ctx.state.currentPageId
