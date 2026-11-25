@@ -9,6 +9,7 @@ export const notificationMessageDefaults = {
   linkCopied: 'Link copied to clipboard.',
   clipboardMissingDesignData: 'Clipboard does not contain design data.',
   clipboardAccessBlocked: 'Clipboard access is blocked in this browser context.',
+  nothingToPaste: 'The clipboard holds nothing Kalka can paste.',
   copiedAs: params('Copied as {format}.'),
   copiedProperties: 'Copied properties.',
   tokensLeftOut: params('Left out of the stylesheet: {names}.'),

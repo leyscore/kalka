@@ -3,6 +3,7 @@
   "linkCopied": "Enlace copiado al portapapeles.",
   "clipboardMissingDesignData": "El portapapeles no contiene datos de diseño.",
   "clipboardAccessBlocked": "El acceso al portapapeles está bloqueado en este contexto del navegador.",
+  "nothingToPaste": "El portapapeles no contiene nada que Kalka pueda pegar.",
   "copiedAs": "Copiado como {format}.",
   "copiedProperties": "Propiedades copiadas.",
   "pngClipboardUnavailable": "La exportación PNG al portapapeles no está disponible en este navegador.",

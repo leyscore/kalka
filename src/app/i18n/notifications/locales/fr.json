@@ -3,6 +3,7 @@
   "linkCopied": "Lien copié dans le presse-papiers.",
   "clipboardMissingDesignData": "Le presse-papiers ne contient aucune donnée de design.",
   "clipboardAccessBlocked": "L’accès au presse-papiers est bloqué dans ce contexte de navigateur.",
+  "nothingToPaste": "Le presse-papiers ne contient rien que Kalka puisse coller.",
   "copiedAs": "Copié au format {format}.",
   "copiedProperties": "Propriétés copiées.",
   "pngClipboardUnavailable": "L’export PNG vers le presse-papiers n’est pas disponible dans ce navigateur.",

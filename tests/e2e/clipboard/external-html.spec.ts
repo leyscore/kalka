@@ -49,3 +49,14 @@ test('HTML source copied as text pastes as layers too', async () => {
   await paste('text/plain', '<div style="width:120px;height:40px;background:#121214"></div>')
   await expect.poll(async () => (await pageLayers()).length).toBe(before + 1)
 })
+
+test('a paste that finds nothing to paste says so', async () => {
+  const before = (await pageLayers()).length
+  await editor.page.evaluate(() => {
+    window.dispatchEvent(
+      new ClipboardEvent('paste', { clipboardData: new DataTransfer(), bubbles: true })
+    )
+  })
+  await expect(editor.page.locator('[data-slot="toast"]').first()).toBeVisible()
+  expect((await pageLayers()).length).toBe(before)
+})

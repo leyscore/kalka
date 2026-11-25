@@ -11,7 +11,9 @@ import { pasteClipboardHTML, pastePoint, pasteSVGText } from '@/app/editor/clipb
 import { browserSystemClipboard } from '@/app/editor/clipboard/system/browser'
 import { tauriSystemClipboard } from '@/app/editor/clipboard/system/tauri'
 import type { SystemClipboard } from '@/app/editor/clipboard/system/types'
+import { notificationMessages } from '@/app/i18n/notifications'
 import { hasDocumentTextSelection, isEditing } from '@/app/shell/keyboard/focus'
+import { toast } from '@/app/shell/ui'
 import { isTauri } from '@/app/tauri/env'
 
 function cursorPosition(store: EditorStore) {
@@ -111,6 +113,9 @@ export function bindEditorClipboard(store: EditorStore) {
     const memoryHTML = getInMemoryClipboardHTML()
     if (memoryHTML) {
       void pasteClipboardHTML(store, memoryHTML)
+      return
     }
+    // A paste that finds nothing says so rather than doing nothing.
+    toast.info(notificationMessages.get().nothingToPaste)
   })
 }

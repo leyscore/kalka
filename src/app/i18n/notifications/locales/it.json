@@ -3,6 +3,7 @@
   "linkCopied": "Link copiato negli appunti.",
   "clipboardMissingDesignData": "Gli appunti non contengono dati di design.",
   "clipboardAccessBlocked": "L’accesso agli appunti è bloccato in questo contesto del browser.",
+  "nothingToPaste": "Gli appunti non contengono nulla che Kalka possa incollare.",
   "copiedAs": "Copiato come {format}.",
   "copiedProperties": "Proprietà copiate.",
   "pngClipboardUnavailable": "L’esportazione PNG negli appunti non è disponibile in questo browser.",

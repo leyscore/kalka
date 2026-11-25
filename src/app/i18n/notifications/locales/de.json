@@ -3,6 +3,7 @@
   "linkCopied": "Link in die Zwischenablage kopiert.",
   "clipboardMissingDesignData": "Die Zwischenablage enthält keine Designdaten.",
   "clipboardAccessBlocked": "Der Zugriff auf die Zwischenablage ist in diesem Browserkontext blockiert.",
+  "nothingToPaste": "Die Zwischenablage enthält nichts, was Kalka einfügen kann.",
   "copiedAs": "Als {format} kopiert.",
   "copiedProperties": "Eigenschaften kopiert.",
   "pngClipboardUnavailable": "Der PNG-Export in die Zwischenablage ist in diesem Browser nicht verfügbar.",

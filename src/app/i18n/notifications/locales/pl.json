@@ -3,6 +3,7 @@
   "linkCopied": "Link skopiowano do schowka.",
   "clipboardMissingDesignData": "Schowek nie zawiera danych projektu.",
   "clipboardAccessBlocked": "Dostęp do schowka jest zablokowany w tym kontekście przeglądarki.",
+  "nothingToPaste": "Schowek nie zawiera niczego, co Kalka może wkleić.",
   "copiedAs": "Skopiowano jako {format}.",
   "copiedProperties": "Skopiowano właściwości.",
   "pngClipboardUnavailable": "Eksport PNG do schowka nie jest dostępny w tej przeglądarce.",

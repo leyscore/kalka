@@ -3,6 +3,7 @@
   "linkCopied": "リンクをクリップボードにコピーしました。",
   "clipboardMissingDesignData": "クリップボードにデザインデータがありません。",
   "clipboardAccessBlocked": "このブラウザー環境ではクリップボードへのアクセスがブロックされています。",
+  "nothingToPaste": "クリップボードに Kalka が貼り付けられるものがありません。",
   "copiedAs": "{format} としてコピーしました。",
   "copiedProperties": "プロパティをコピーしました。",
   "pngClipboardUnavailable": "このブラウザーでは PNG をクリップボードに書き出せません。",

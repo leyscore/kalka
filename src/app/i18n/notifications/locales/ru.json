@@ -3,6 +3,7 @@
   "linkCopied": "Ссылка скопирована в буфер обмена.",
   "clipboardMissingDesignData": "В буфере обмена нет данных дизайна.",
   "clipboardAccessBlocked": "Доступ к буферу обмена заблокирован в этом контексте браузера.",
+  "nothingToPaste": "В буфере обмена нет ничего, что Kalka может вставить.",
   "copiedAs": "Скопировано как {format}.",
   "copiedProperties": "Свойства скопированы.",
   "pngClipboardUnavailable": "Экспорт PNG в буфер обмена недоступен в этом браузере.",

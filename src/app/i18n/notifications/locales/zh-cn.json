@@ -3,6 +3,7 @@
   "linkCopied": "链接已复制到剪贴板。",
   "clipboardMissingDesignData": "剪贴板中没有设计数据。",
   "clipboardAccessBlocked": "当前浏览器环境阻止了剪贴板访问。",
+  "nothingToPaste": "剪贴板中没有 Kalka 可以粘贴的内容。",
   "copiedAs": "已复制为 {format}。",
   "copiedProperties": "已复制属性。",
   "pngClipboardUnavailable": "此浏览器不支持将 PNG 导出到剪贴板。",
