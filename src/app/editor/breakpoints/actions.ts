@@ -16,7 +16,7 @@ export const BREAKPOINT_PRESETS = [
 
 export type BreakpointPreset = (typeof BREAKPOINT_PRESETS)[number]
 
-/** Adds a breakpoint to a primary artboard as one undo step, and selects it. */
+/** Adds a breakpoint to a primary artboard as one undo step, selects it and brings it into view. */
 export async function addBreakpoint(
   store: EditorStore,
   primaryId: string,
@@ -30,7 +30,10 @@ export async function addBreakpoint(
     created = createBreakpoint(store.graph, primaryId, width, name)
     store.runLayoutForNode(pageId)
   })
-  if (created) store.select([created.id])
+  if (created) {
+    store.select([created.id])
+    store.revealNodes([created.id])
+  }
   store.requestRender()
 }
 
