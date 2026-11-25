@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useStore } from '@nanostores/vue'
 import { useFocus } from '@vueuse/core'
-import { computed, useTemplateRef } from 'vue'
+import { computed, shallowRef, useTemplateRef, watch } from 'vue'
 
 import { commonMessages, filesMessages } from '@kalka/vue'
 
@@ -28,11 +28,23 @@ const primaryButton = useTemplateRef('primaryButton')
 // Return on Save (or Save All) while Escape still cancels.
 useFocus(primaryButton, { initialValue: true, preventScroll: true })
 
+// The dialog keeps showing the question it asked while it fades out after an answer, so its
+// title does not lose the document's name and its buttons do not change under the pointer.
+const shown = shallowRef<ClosePrompt | null>(null)
+watch(
+  () => prompt,
+  (next) => {
+    if (next) shown.value = next
+  },
+  { immediate: true }
+)
+
 const heading = computed(() => {
-  if (prompt?.kind === 'documents') {
-    return files.value.saveAllBeforeClosing({ count: prompt.documentNames.length })
+  const asked = shown.value
+  if (asked?.kind === 'documents') {
+    return files.value.saveAllBeforeClosing({ count: asked.documentNames.length })
   }
-  return files.value.saveBeforeClosing({ name: prompt?.documentName ?? '' })
+  return files.value.saveBeforeClosing({ name: asked?.documentName ?? '' })
 })
 
 function updateOpen(open: boolean) {
@@ -43,14 +55,14 @@ function updateOpen(open: boolean) {
 <template>
   <AppAlertDialogRoot
     :open="prompt !== null"
-    :size="prompt?.kind === 'documents' ? 'md' : 'sm'"
+    :size="shown?.kind === 'documents' ? 'md' : 'sm'"
     data-test-id="unsaved-changes-dialog"
     @update:open="updateOpen"
   >
     <AppDialogHeader
       :heading="heading"
       :description="
-        prompt?.kind === 'documents'
+        shown?.kind === 'documents'
           ? files.saveAllBeforeClosingDescription
           : files.saveBeforeClosingDescription
       "
@@ -58,12 +70,12 @@ function updateOpen(open: boolean) {
       :ui="documentCloseUI"
     />
     <ul
-      v-if="prompt?.kind === 'documents'"
+      v-if="shown?.kind === 'documents'"
       :aria-label="files.unsavedDocuments"
       :class="documentCloseListStyles.list()"
     >
       <li
-        v-for="(name, index) in prompt.documentNames"
+        v-for="(name, index) in shown.documentNames"
         :key="index"
         :class="documentCloseListStyles.item()"
       >
@@ -71,7 +83,7 @@ function updateOpen(open: boolean) {
         <span class="truncate">{{ name }}</span>
       </li>
     </ul>
-    <AppDialogFooter v-if="prompt?.kind === 'documents'" :ui="documentCloseUI">
+    <AppDialogFooter v-if="shown?.kind === 'documents'" :ui="documentCloseUI">
       <AppButton
         color="error"
         variant="outline"
