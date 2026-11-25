@@ -1,3 +1,5 @@
+import { pick } from 'es-toolkit'
+
 import { assertNodeEditable } from '#core/editor/capabilities'
 import { prepareSlotEdits } from '#core/editor/components/slots'
 import type { EditorContext } from '#core/editor/types'
@@ -53,6 +55,10 @@ export function createStructureReorderActions(ctx: EditorContext) {
     })
   }
 
+  /**
+   * Moves a layer to `insertIndex` among a parent's children. Into another parent it keeps its
+   * place on the canvas, as in Figma, whose layers panel moves a layer out of a frame where it is.
+   */
   function reorderChildWithUndo(nodeId: string, newParentId: string, insertIndex: number) {
     assertNodeEditable(ctx.graph, nodeId)
     assertNodeEditable(ctx.graph, newParentId)
@@ -61,23 +67,22 @@ export function createStructureReorderActions(ctx: EditorContext) {
     const origParentId = node.parentId ?? ctx.state.currentPageId
     if (!prepareSlotEdits(ctx, [origParentId, newParentId])) return
     const origIndex = ctx.graph.getNode(origParentId)?.childIds.indexOf(nodeId) ?? 0
-    const origX = node.x
-    const origY = node.y
+    const origTransform = pick(node, ['x', 'y', 'rotation', 'flipX', 'flipY'])
 
-    ctx.graph.reorderChild(nodeId, newParentId, insertIndex)
-    ctx.runLayoutForNode(newParentId)
-    if (origParentId !== newParentId) ctx.runLayoutForNode(origParentId)
+    const apply = () => {
+      ctx.graph.reparentNode(nodeId, newParentId)
+      ctx.graph.reorderChild(nodeId, newParentId, insertIndex)
+      ctx.runLayoutForNode(newParentId)
+      if (origParentId !== newParentId) ctx.runLayoutForNode(origParentId)
+    }
+    apply()
 
     ctx.undo.push({
       label: 'Reorder',
-      forward: () => {
-        ctx.graph.reorderChild(nodeId, newParentId, insertIndex)
-        ctx.runLayoutForNode(newParentId)
-        if (origParentId !== newParentId) ctx.runLayoutForNode(origParentId)
-      },
+      forward: apply,
       inverse: () => {
         ctx.graph.reorderChild(nodeId, origParentId, origIndex)
-        ctx.graph.updateNode(nodeId, { x: origX, y: origY })
+        ctx.graph.updateNode(nodeId, origTransform)
         ctx.runLayoutForNode(origParentId)
         if (origParentId !== newParentId) ctx.runLayoutForNode(newParentId)
       }
