@@ -31,12 +31,13 @@ test('clicking with text tool creates a text node', async () => {
   await editor.canvas.click(200, 200)
   await editor.canvas.waitForRender()
 
-  // Wait a tick for text editing mode to activate
-  await editor.page.waitForTimeout(200)
+  // Typing goes into the new layer; one left empty would be removed when its edit ends.
+  await editor.canvas.waitForTextEditor()
+  await editor.page.keyboard.type('Hello')
 
-  const children = await getPageChildren()
-  const textNode = children.find((c) => c.type === 'TEXT')
-  expect(textNode).toBeTruthy()
+  await expect
+    .poll(async () => (await getPageChildren()).find((c) => c.type === 'TEXT')?.text)
+    .toBe('Hello')
 })
 
 test('point text is selected and auto-sizes after creation', async () => {
@@ -51,7 +52,7 @@ test('typography section appears for text node', async () => {
   await editor.canvas.waitForRender()
 
   // Re-select the text node
-  await editor.canvas.click(200, 200)
+  await editor.canvas.click(205, 205)
   await editor.canvas.waitForRender()
 
   const typoSection = editor.page.getByRole('region', { name: 'Typography' })
