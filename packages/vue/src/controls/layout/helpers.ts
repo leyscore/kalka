@@ -15,6 +15,11 @@ import {
   type SceneGraph,
   type SceneNode
 } from '@kalka/scene-graph'
+import {
+  collectResizeDescendants,
+  computeConstrainedResizeChanges,
+  type ResizeSnapshot
+} from '@kalka/scene-graph/resize'
 
 import { useNodePreview } from '#vue/controls/node-preview/use'
 import { useSelectedNodeState } from '#vue/editor/selection-state/nodes'
@@ -199,6 +204,17 @@ export function createLayoutActions({
   node: ComputedRef<SceneNode | null>
 }) {
   const preview = useNodePreview(editor)
+  // The typed-size edit in progress: the layer's size and its layers before the first keystroke.
+  let resizeOrigin: {
+    id: string
+    size: Pick<SceneNode, 'width' | 'height'>
+    descendants: ReadonlyMap<string, ResizeSnapshot>
+  } | null = null
+
+  function cancelPreview() {
+    resizeOrigin = null
+    preview.cancel()
+  }
 
   function updateProp(key: NumericNodeProperty, value: number) {
     if (node.value) preview.update([node.value.id], { [key]: value }, `Change ${key}`)
@@ -246,16 +262,48 @@ export function createLayoutActions({
     )
   }
 
+  // A typed size moves and stretches the layer's layers by their constraints, as resizing it on
+  // the canvas does and as Figma's W and H fields do.
   function updateAxisSize(axis: LayoutAxis, value: number) {
     const n = node.value
     if (!n) return
     const sizing = axisSizingForNode(editor.graph, n, axis)
     const sizingPatch =
       sizing !== 'FIXED' ? axisSizingPatchForNode(editor.graph, n, axis, 'FIXED') : {}
-    preview.update([n.id], { ...sizingPatch, [axis]: value }, `Change ${axis}`)
+    if (resizeOrigin?.id !== n.id) {
+      resizeOrigin = {
+        id: n.id,
+        size: { width: n.width, height: n.height },
+        descendants: collectResizeDescendants(editor.graph, n.id) ?? new Map()
+      }
+    }
+    const origin = resizeOrigin
+    let placed: Map<string, Partial<SceneNode>> | null = null
+    preview.update(
+      [n.id, ...origin.descendants.keys()],
+      (id) => {
+        if (id === origin.id) return { ...sizingPatch, [axis]: value }
+        if (!placed) {
+          const resized = editor.graph.getNode(origin.id)
+          placed =
+            resized && origin.size.width > 0 && origin.size.height > 0
+              ? computeConstrainedResizeChanges(
+                  editor.graph,
+                  origin.id,
+                  origin.size,
+                  resized,
+                  origin.descendants
+                )
+              : new Map()
+        }
+        return placed.get(id) ?? {}
+      },
+      `Change ${axis}`
+    )
   }
 
   function commitAxisSize(_axis: LayoutAxis, _value: number, _previous: number) {
+    resizeOrigin = null
     preview.commit()
   }
 
@@ -288,7 +336,7 @@ export function createLayoutActions({
   }
 
   return {
-    cancelPreview: preview.cancel,
+    cancelPreview,
     updateProp,
     updateSizeLimit,
     setSizeLimitToCurrent,
