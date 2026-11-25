@@ -82,7 +82,10 @@ export const sampleTile = {
   name: 'min-w-0 flex-1 truncate text-[13px] font-medium text-surface',
   metadata: 'shrink-0 font-mono text-[11px] text-muted',
   panel:
-    'relative flex aspect-[16/10] flex-col justify-end gap-px overflow-hidden rounded-[4px] bg-brand-blue p-2.5',
-  shapes: 'absolute top-4 right-4 grid size-[54px] grid-cols-2 grid-rows-2 gap-[3px]',
+    '@container/sample relative flex aspect-[16/10] flex-col justify-end gap-px overflow-hidden rounded-[4px] bg-brand-blue p-2.5',
+  // Only a tile tall enough to hold the three steps under them shows the shapes, so they never
+  // cover a step's label.
+  shapes:
+    'absolute top-4 right-4 hidden size-[54px] grid-cols-2 grid-rows-2 gap-[3px] @2xs/sample:grid',
   step: 'flex h-7 cursor-pointer items-center gap-2 rounded-[8px] px-2 text-left text-[13px] font-medium text-white transition-colors outline-none hover:bg-white/16 focus-visible:ring-2 focus-visible:ring-white/70'
 } as const
