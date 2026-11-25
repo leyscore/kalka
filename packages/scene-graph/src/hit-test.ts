@@ -87,10 +87,11 @@ function hitTestOpaqueContainer(
   childId: string,
   deep: boolean,
   transformCache: Map<string, boolean>,
-  pad: number
+  pad: number,
+  skipLocked: boolean
 ): SceneNode | null {
   if (!containsPoint(px, py, child, graph, transformCache)) return null
-  const childHit = hitTestChildren(graph, px, py, childId, deep, transformCache, pad)
+  const childHit = hitTestChildren(graph, px, py, childId, deep, transformCache, pad, skipLocked)
   if (childHit) return child
   if (hasVisibleFillOrStroke(child)) return child
   return null
@@ -103,17 +104,18 @@ function hitTestTransparentContainer(
   childId: string,
   deep: boolean,
   transformCache: Map<string, boolean>,
-  pad: number
+  pad: number,
+  skipLocked: boolean
 ): SceneNode | null {
   if (child.type === 'GROUP') {
     // A group fits its layers, so a padded click on one at its edge falls just outside it.
     if (!containsPoint(px, py, child, graph, transformCache, pad)) return null
-    const childHit = hitTestChildren(graph, px, py, childId, deep, transformCache, pad)
+    const childHit = hitTestChildren(graph, px, py, childId, deep, transformCache, pad, skipLocked)
     if (childHit) return deep ? childHit : child
     return containsPoint(px, py, child, graph, transformCache) ? child : null
   }
 
-  const childHit = hitTestChildren(graph, px, py, childId, deep, transformCache, pad)
+  const childHit = hitTestChildren(graph, px, py, childId, deep, transformCache, pad, skipLocked)
   if (childHit) {
     if (child.locked) return child
     return childHit
@@ -129,7 +131,9 @@ function hitTestTransparentContainer(
 
 /**
  * The topmost layer under the point among a container's children. `pad`, in canvas units, grows
- * each leaf layer's box, as Figma takes a click a few screen pixels outside a shape.
+ * each leaf layer's box, as Figma takes a click a few screen pixels outside a shape. With
+ * `skipLocked`, locked layers and everything inside them let the point through, as Figma's canvas
+ * does for clicks and hovers.
  */
 function hitTestChildren(
   graph: SceneGraph,
@@ -138,7 +142,8 @@ function hitTestChildren(
   parentId: string,
   deep = false,
   transformCache = new Map<string, boolean>(),
-  pad = 0
+  pad = 0,
+  skipLocked = false
 ): SceneNode | null {
   const parent = graph.nodes.get(parentId)
   if (!parent) return null
@@ -150,10 +155,20 @@ function hitTestChildren(
   for (let i = parent.childIds.length - 1; i >= 0; i--) {
     const childId = parent.childIds[i]
     const child = graph.nodes.get(childId)
-    if (!child || child.internalOnly || !child.visible) continue
+    if (!child || child.internalOnly || !child.visible || (skipLocked && child.locked)) continue
     if (CONTAINER_TYPES.has(child.type)) {
       if (OPAQUE_CONTAINER_TYPES.has(child.type) && !deep) {
-        const hit = hitTestOpaqueContainer(graph, px, py, child, childId, deep, transformCache, pad)
+        const hit = hitTestOpaqueContainer(
+          graph,
+          px,
+          py,
+          child,
+          childId,
+          deep,
+          transformCache,
+          pad,
+          skipLocked
+        )
         if (hit) return hit
         continue
       }
@@ -166,7 +181,8 @@ function hitTestChildren(
         childId,
         deep,
         transformCache,
-        pad
+        pad,
+        skipLocked
       )
       if (hit) return hit
       continue
@@ -188,15 +204,21 @@ export function hitTest(
   return hitTestChildren(graph, px, py, scope, false)
 }
 
+export interface DeepHitOptions {
+  /** Let the point through locked layers and their contents, as a click on Figma's canvas does. */
+  skipLocked?: boolean
+}
+
 export function hitTestDeep(
   graph: SceneGraph,
   px: number,
   py: number,
   scopeId?: string,
-  pad = 0
+  pad = 0,
+  options: DeepHitOptions = {}
 ): SceneNode | null {
   const scope = scopeId ?? graph.rootId
-  return hitTestChildren(graph, px, py, scope, true, new Map(), pad)
+  return hitTestChildren(graph, px, py, scope, true, new Map(), pad, options.skipLocked)
 }
 
 /**
@@ -224,7 +246,8 @@ function frameChildAt(
   const transformCache = new Map<string, boolean>()
   for (let i = container.childIds.length - 1; i >= 0; i--) {
     const child = graph.nodes.get(container.childIds[i])
-    if (!child || child.internalOnly || !child.visible || child.type !== 'FRAME') continue
+    if (!child || child.internalOnly || !child.visible || child.locked) continue
+    if (child.type !== 'FRAME') continue
     // A board, such as a top-level frame in a section, keeps its empty area as background.
     if (opensByItself(graph, child) && !ownsItsEmptyArea(graph, child)) continue
     if (containsPoint(px, py, child, graph, transformCache)) return child
@@ -267,7 +290,8 @@ function openedBySelection(
  * layers and component sets are open, and so is every ancestor of the selection, so clicks reach
  * the siblings of selected layers. Where every layer under the point is open, a container opened
  * by the selection is selected, so is a top-level frame with auto layout, and a plain top-level
- * frame or a section is not.
+ * frame or a section is not. Locked layers are not selectable on the canvas: the click passes
+ * through them and everything inside them to what lies below, as in Figma.
  */
 export function hitTestSelectable(
   graph: SceneGraph,
@@ -277,7 +301,7 @@ export function hitTestSelectable(
   selectedIds: ReadonlySet<string>,
   pad = 0
 ): SceneNode | null {
-  const deepest = hitTestChildren(graph, px, py, scopeId, true, new Map(), pad)
+  const deepest = hitTestChildren(graph, px, py, scopeId, true, new Map(), pad, true)
   if (!deepest) {
     const scope = graph.nodes.get(scopeId)
     return scope ? frameChildAt(graph, scope, px, py) : null
@@ -292,8 +316,6 @@ export function hitTestSelectable(
   const opened = openedBySelection(graph, selectedIds, scopeId)
 
   for (const node of chain) {
-    // A locked layer stands in for everything inside it.
-    if (node.locked) return node
     if (!opened.has(node.id) && !opensByItself(graph, node)) return node
   }
   const last = chain.at(-1)
@@ -320,7 +342,7 @@ export function hitTestOpenContainer(
   py: number,
   scopeId: string
 ): SceneNode | null {
-  const deepest = hitTestChildren(graph, px, py, scopeId, true)
+  const deepest = hitTestChildren(graph, px, py, scopeId, true, new Map(), 0, true)
   for (let node: SceneNode | undefined = deepest ?? undefined; node && node.id !== scopeId;) {
     if (!opensByItself(graph, node) || ownsItsEmptyArea(graph, node)) return null
     node = node.parentId ? graph.nodes.get(node.parentId) : undefined

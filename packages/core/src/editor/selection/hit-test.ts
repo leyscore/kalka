@@ -14,7 +14,7 @@ export function createSelectionHitTestActions(
     if (scopeId && !ctx.graph.getNode(scopeId)) ctx.state.enteredContainerId = null
     const scope = ctx.state.enteredContainerId ?? ctx.state.currentPageId
     return deep
-      ? ctx.graph.hitTestDeep(cx, cy, scope, pad)
+      ? ctx.graph.hitTestDeep(cx, cy, scope, pad, { skipLocked: true })
       : ctx.graph.hitTestSelectable(cx, cy, scope, ctx.state.selectedIds, pad)
   }
 
@@ -23,6 +23,12 @@ export function createSelectionHitTestActions(
    * frame or section whose empty area is under the point, which a click leaves for a marquee.
    */
   function selectAtPoint(cx: number, cy: number) {
+    // A click passes through locked layers, but one picked in the layers panel keeps its menu.
+    const lockedUnderPoint = [...ctx.state.selectedIds].some(
+      (id) =>
+        ctx.graph.closest(id, (node) => node.locked) && ctx.graph.isPointInNode(id, cx, cy)
+    )
+    if (lockedUnderPoint) return
     const scopeId = ctx.state.enteredContainerId ?? ctx.state.currentPageId
     const hit = hitTestAtPoint(cx, cy) ?? ctx.graph.hitTestOpenContainer(cx, cy, scopeId)
     if (hit) {

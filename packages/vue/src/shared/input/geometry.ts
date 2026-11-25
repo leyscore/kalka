@@ -53,7 +53,7 @@ export function hitTestInEditorScope(
   if (scopeId && !editor.graph.getNode(scopeId)) editor.state.enteredContainerId = null
   const scope = editor.state.enteredContainerId ?? editor.state.currentPageId
   return deep
-    ? editor.graph.hitTestDeep(cx, cy, scope, pad)
+    ? editor.graph.hitTestDeep(cx, cy, scope, pad, { skipLocked: true })
     : editor.graph.hitTestSelectable(cx, cy, scope, editor.state.selectedIds, pad)
 }
 

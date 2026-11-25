@@ -874,8 +874,14 @@ export class SceneGraph {
   }
 
   /** `pad`, in canvas units, grows each shape's box, as Figma takes clicks just outside one. */
-  hitTestDeep(px: number, py: number, scopeId?: string, pad = 0): SceneNode | null {
-    return HitTest.hitTestDeep(this, px, py, scopeId, pad)
+  hitTestDeep(
+    px: number,
+    py: number,
+    scopeId?: string,
+    pad = 0,
+    options: HitTest.DeepHitOptions = {}
+  ): SceneNode | null {
+    return HitTest.hitTestDeep(this, px, py, scopeId, pad, options)
   }
 
   hitTestSelectable(

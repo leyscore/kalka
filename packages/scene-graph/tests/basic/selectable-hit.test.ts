@@ -320,4 +320,19 @@ describe('a click just outside a shape', () => {
     graph.createNode('FRAME', page, { name: 'Empty', width: 100, height: 100, fills: FILL })
     expect(graph.hitTestSelectable(102, 50, page, new Set(), 3.5)).toBeNull()
   })
+
+  test('lets a click through a locked layer and its contents to what lies below', () => {
+    const { graph, page, nodes, click } = setup()
+    graph.updateNode(nodes.direct.id, { locked: true })
+    expect(click(430, 430)).toBeNull()
+    graph.updateNode(nodes.nested.id, { locked: true })
+    expect(click(130, 130)).toBeNull()
+    expect(click(230, 230, [nodes.nested.id])).toBeNull()
+    expect(graph.hitTestDeep(130, 130, page, 0, { skipLocked: true })?.name).toBe('Top')
+    expect(graph.hitTestDeep(130, 130, page)?.name).toBe('Nested')
+    // The empty area of the top-level frame under it starts a marquee among its layers.
+    expect(graph.hitTestOpenContainer(130, 130, page)?.name).toBe('Top')
+    graph.updateNode(nodes.empty.id, { locked: true })
+    expect(click(650, 50)).toBeNull()
+  })
 })
