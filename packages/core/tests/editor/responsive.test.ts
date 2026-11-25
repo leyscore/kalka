@@ -58,4 +58,19 @@ describe('breakpoint sync in the editor', () => {
     expect(editor.graph.getNode(badge.id)).toBeUndefined()
     expect(editor.graph.getChildren(tablet.id).map((node) => node.name)).toEqual(['Title'])
   })
+
+  test('deleting a breakpoint removes it alone, and undo brings it back', async () => {
+    const { editor, desktop, tablet, phone } = setup()
+    await settle()
+    editor.select([tablet.id])
+    editor.deleteSelected()
+    await settle()
+    expect(editor.graph.getNode(tablet.id)).toBeUndefined()
+    expect(editor.graph.getNode(desktop.id)).toBeDefined()
+    expect(editor.graph.getNode(phone.id)?.responsiveSource).toBe(desktop.id)
+
+    editor.undoAction()
+    await settle()
+    expect(editor.graph.getNode(tablet.id)?.responsiveSource).toBe(desktop.id)
+  })
 })

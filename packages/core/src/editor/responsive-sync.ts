@@ -89,13 +89,18 @@ export function createResponsiveSync(options: ResponsiveSyncOptions) {
     if (!quiet()) schedule(node)
   }
 
-  /** Deleting a copy deletes the layer everywhere: the structure is shared. */
+  /**
+   * Deleting a copy deletes the layer everywhere: the structure is shared. Deleting a breakpoint
+   * artboard removes that breakpoint alone; the primary and the other breakpoints stay.
+   */
   function onDeleted(id: string, parentId: string | null) {
     if (quiet()) return
     const current = graph()
     const source = sourceOf.get(id)
     sourceOf.delete(id)
-    if (source && !options.isReplaying() && current.getNode(source)) current.deleteNode(source)
+    const breakpoint = parentId !== null && current.getNode(parentId)?.type === 'CANVAS'
+    if (source && !breakpoint && !options.isReplaying() && current.getNode(source))
+      current.deleteNode(source)
     schedule(parentId ? current.getNode(parentId) : undefined)
   }
 

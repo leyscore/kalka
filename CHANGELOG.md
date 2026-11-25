@@ -10,6 +10,7 @@
 
 ### Fixed
 
+- Deleting a breakpoint artboard, such as Tablet or Phone, removes that breakpoint alone; the main artboard and the other breakpoints stay, and undo brings it back.
 - Picking a tool in the toolbar, or with its shortcut, leaves comment mode, as moving between the other tools does, instead of keeping the comment tool on until it is clicked again.
 - An exported HTML page carries the fonts its text uses, each script's file included, so it draws the same on a machine without them; before, only fonts added to the document shipped, and text in Inter fell back to the browser's default font.
 - An exported HTML page leaves out rectangles of no size, which some browsers drew as a black blot, names a class after what the layer is when its name has no Latin letter or digit instead of a run of dashes, and has a `<title>`.
