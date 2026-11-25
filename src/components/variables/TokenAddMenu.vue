@@ -6,7 +6,7 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger
 } from 'reka-ui'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 import type { VariableType } from '@kalka/scene-graph'
 import { useI18n, variablesAddTestId, vTestId } from '@kalka/vue'
@@ -18,7 +18,8 @@ import { VARIABLE_TYPE_ICONS, VARIABLE_TYPES } from '@/components/variables/type
 
 /** `labelled` spells out "Create variable" where the toolbar has room for it. */
 const { labelled = false } = defineProps<{ labelled?: boolean }>()
-const emit = defineEmits<{ add: [type: VariableType] }>()
+/** `added` follows `add` once the menu has closed, so the owner can take the keyboard then. */
+const emit = defineEmits<{ add: [type: VariableType]; added: [] }>()
 
 const { panels, variableTypes: text } = useI18n()
 const menu = useMenuUI({ content: 'w-48', item: 'justify-start gap-2' })
@@ -32,6 +33,21 @@ const items = computed(() => {
   }
   return VARIABLE_TYPES.map((type) => ({ type, icon: VARIABLE_TYPE_ICONS[type], ...labels[type] }))
 })
+
+const adding = ref(false)
+
+function add(type: VariableType) {
+  adding.value = true
+  emit('add', type)
+}
+
+/** After an add the keyboard goes to the new token, not back to this button. */
+function afterClose(event: Event) {
+  if (!adding.value) return
+  adding.value = false
+  event.preventDefault()
+  emit('added')
+}
 </script>
 
 <template>
@@ -52,13 +68,19 @@ const items = computed(() => {
       </IconButton>
     </DropdownMenuTrigger>
     <DropdownMenuPortal>
-      <DropdownMenuContent side="bottom" :side-offset="4" align="end" :class="menu.content">
+      <DropdownMenuContent
+        side="bottom"
+        :side-offset="4"
+        align="end"
+        :class="menu.content"
+        @close-auto-focus="afterClose"
+      >
         <DropdownMenuItem
           v-for="item in items"
           :key="item.type"
           :class="menu.item"
           v-test-id="variablesAddTestId(item.type)"
-          @select="emit('add', item.type)"
+          @select="add(item.type)"
         >
           <component :is="item.icon" :class="menu.icon" />
           <span class="flex min-w-0 flex-1 flex-col">

@@ -81,20 +81,28 @@ test('add variable menu creates non-color variable types', async () => {
   await expect(numberOption).toBeHidden()
   await expect(editor.page.getByTestId('variables-page')).toBeVisible()
 
+  // A new token's name opens for typing in the list, as Figma does.
+  const cellInput = editor.page.getByTestId('variables-cell-input')
   await editor.page.getByTestId('variables-add-variable').click()
   await editor.page.getByTestId(variablesAddTestId('FLOAT')).click()
+  await expect(cellInput).toHaveValue('New number')
+  await expect(cellInput).toBeFocused()
+  await cellInput.press('Enter')
   await expect(
     editor.page.getByTestId('variable-row').filter({ hasText: 'New number' })
   ).toHaveCount(1)
 
   await editor.page.getByTestId('variables-add-variable').click()
   await editor.page.getByTestId(variablesAddTestId('STRING')).click()
-  await expect(editor.page.getByTestId('variable-row').filter({ hasText: 'New text' })).toHaveCount(
-    1
-  )
+  await expect(cellInput).toBeFocused()
+  await editor.page.keyboard.type('Label')
+  await editor.page.keyboard.press('Enter')
+  await expect(editor.page.getByTestId('variable-row').filter({ hasText: 'Label' })).toHaveCount(1)
 
   await editor.page.getByTestId('variables-add-variable').click()
   await editor.page.getByTestId(variablesAddTestId('BOOLEAN')).click()
+  await expect(cellInput).toBeFocused()
+  await cellInput.press('Enter')
   await expect(
     editor.page.getByTestId('variable-row').filter({ hasText: 'New boolean' })
   ).toHaveCount(1)

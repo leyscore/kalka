@@ -77,7 +77,8 @@ function focus() {
   const listbox = element instanceof Element ? element.closest('[role="listbox"]') : null
   if (listbox instanceof HTMLElement) listbox.focus({ preventScroll: true })
 }
-defineExpose({ focus })
+// `rename` opens a token's name for editing, as a new token's is.
+defineExpose({ focus, rename: (id: string) => startRename(id) })
 
 const rows = computed(() => groups.flatMap((group) => group.rows))
 const visibleIds = computed(() => rows.value.map((row) => row.variable.id))

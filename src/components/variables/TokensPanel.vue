@@ -60,7 +60,7 @@ const { editor } = ctx
 const actions = useTokenActions(editor, (name) => messages.value.duplicateName({ name }))
 
 const selectedIds = ref<string[]>([])
-const table = useTemplateRef<{ focus: () => void }>('table')
+const table = useTemplateRef<{ focus: () => void; rename: (id: string) => void }>('table')
 /** Tokens being put in a new group: the group name field opens for them. */
 const groupingIds = ref<string[] | null>(null)
 const groupFilter = ref<string | null>(null)
@@ -228,6 +228,15 @@ function addToken(type: VariableType) {
   typeFilter.value = []
   const id = ctx.addVariable(type)
   if (id) selectedIds.value = [id]
+}
+
+/**
+ * Once the add menu has closed, a new token's name opens for typing in the list, as Figma does,
+ * so the keys go to it and not to a field the inspector is swapping out.
+ */
+function renameAddedToken() {
+  const id = selectedIds.value[0]
+  if (id && selectedIds.value.length === 1 && !compact.value) table.value?.rename(id)
 }
 
 function removeTokens(ids: readonly string[]) {
@@ -473,7 +482,7 @@ const groupOptions = computed(() => groupEntries.value.map((entry) => entry.path
         >
           <icon-hugeicons-folder-plus class="size-4" />
         </IconButton>
-        <TokenAddMenu :labelled="wide" @add="addToken" />
+        <TokenAddMenu :labelled="wide" @add="addToken" @added="renameAddedToken" />
         <slot name="actions" />
       </div>
       <div :class="ui.body()">
