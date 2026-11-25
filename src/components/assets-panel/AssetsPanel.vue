@@ -13,11 +13,11 @@ import { computed, onMounted, ref, shallowRef, watch } from 'vue'
 
 import { cycleSafeParent, type SceneNode } from '@kalka/scene-graph'
 import { createDefaultNode } from '@kalka/scene-graph/node-defaults'
-import { useI18n } from '@kalka/vue'
+import { LIBRARY_ASSET_MIME, useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { nodeIcon } from '@/app/editor/icons'
-import { useLibraryService } from '@/app/libraries'
+import { libraryAssetId, useLibraryService } from '@/app/libraries'
 import { openExternalLink } from '@/app/shell/ui'
 import AssetThumbnail from '@/components/assets-panel/AssetThumbnail.vue'
 import { findAssetPage } from '@/components/assets-panel/page'
@@ -156,7 +156,7 @@ const assets = computed<LocalAsset[]>(() => {
     })
     .sort((a, b) => a.name.localeCompare(b.name))
   const remote = remoteAssets.value.map(({ libraryId, libraryName, revisionId, asset }) => ({
-    id: `${libraryId}:${asset.key}`,
+    id: libraryAssetId(libraryId, asset.key),
     name: asset.name,
     node: createDefaultNode(() => asset.sourceNodeId, asset.type, {
       name: asset.name,
@@ -295,9 +295,13 @@ async function insertAsset(asset: LocalAsset) {
   editor.requestRender()
 }
 
+/** A library's asset joins the document only when it is dropped, so the drag carries its id. */
 function onDragStart(event: DragEvent, asset: LocalAsset) {
-  if (!event.dataTransfer || !asset.componentId) return
-  event.dataTransfer.setData('application/x-kalka-component', asset.componentId)
+  if (!event.dataTransfer) return
+  if (asset.componentId)
+    event.dataTransfer.setData('application/x-kalka-component', asset.componentId)
+  else if (asset.libraryId) event.dataTransfer.setData(LIBRARY_ASSET_MIME, asset.id)
+  else return
   event.dataTransfer.effectAllowed = 'copy'
 }
 
@@ -377,7 +381,8 @@ async function insertSelectedAsset() {
                 tabindex="0"
                 data-test-id="asset-item"
                 :data-asset-id="asset.id"
-                :draggable="!!asset.componentId"
+                :data-view="assetView"
+                :draggable="!!asset.componentId || !!asset.libraryId"
                 :aria-busy="insertingAssetId === asset.id"
                 :class="[
                   'group/asset rounded text-left text-xs text-surface outline-none hover:bg-hover focus-visible:ring-1 focus-visible:ring-panel-focus',

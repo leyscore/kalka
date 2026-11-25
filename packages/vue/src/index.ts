@@ -53,8 +53,10 @@ export { useTextEdit } from '#vue/canvas/text-edit/use'
 export {
   useCanvasDrop,
   extractImageFilesFromClipboard,
-  filterCanvasFiles
+  filterCanvasFiles,
+  LIBRARY_ASSET_MIME
 } from '#vue/canvas/drop/use'
+export type { CanvasDropOptions } from '#vue/canvas/drop/use'
 
 /** Low-level selection, graph, and derived-state helpers. */
 export { useNodeProps, MIXED } from '#vue/controls/node-props/use'

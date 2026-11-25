@@ -42,6 +42,11 @@ import type { LibraryAssetUpdateGroup } from '@/app/libraries/update-groups'
 
 export type EnabledLibraryAsset = ComponentCatalogLibraryAsset
 
+/** Names an enabled library's asset in the assets panel and in what a drag of it carries. */
+export function libraryAssetId(libraryId: string, assetKey: string): string {
+  return `${libraryId}:${assetKey}`
+}
+
 export class LibraryService implements ComponentCatalog {
   readonly #catalog: LibraryCatalog
   readonly #routedCatalog: RoutedLibraryCatalog | null
@@ -530,6 +535,19 @@ export class LibraryService implements ComponentCatalog {
     const binding = editor.graph.enabledLibraries.get(libraryId)
     if (binding) editor.graph.enabledLibraries.set(libraryId, { ...binding, enabled: false })
     await this.refresh(editor)
+  }
+
+  /**
+   * Brings an enabled library's asset, named by `libraryAssetId`, into the document and returns
+   * its component, or null when no enabled library has it.
+   */
+  async materializeEnabledAsset(editor: EditorStore, id: string): Promise<string | null> {
+    const entry = this.#enabledAssets.value.find(
+      (candidate) => libraryAssetId(candidate.libraryId, candidate.asset.key) === id
+    )
+    if (!entry) return null
+    const result = await this.materialize(editor, entry.libraryId, entry.revisionId, entry.asset.key)
+    return result.componentId
   }
 
   async materialize(editor: EditorStore, libraryId: string, revisionId: string, assetKey: string) {

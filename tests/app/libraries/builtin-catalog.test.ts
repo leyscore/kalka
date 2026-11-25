@@ -5,7 +5,7 @@ import { SceneGraph } from '@kalka/scene-graph'
 
 import { createEditorStore } from '@/app/editor/session'
 import { BuiltinLibraryCatalog } from '@/app/libraries/catalog/builtin'
-import { LibraryService } from '@/app/libraries/service'
+import { LibraryService, libraryAssetId } from '@/app/libraries/service'
 
 describe('built-in libraries', () => {
   test('come first in the catalog, resolve to the built revision and refuse publishing', async () => {
@@ -33,5 +33,20 @@ describe('built-in libraries', () => {
       assetKey: 'ticker-band'
     })
     expect(editor.graph.getNode(placed.id)?.type).toBe('INSTANCE')
+  })
+
+  test('bring an enabled asset dropped from the assets panel into the document', async () => {
+    const editor = createEditorStore(new SceneGraph())
+    const service = new LibraryService(new MemoryLibraryCatalog())
+    await service.enable(editor, FRESH_LIBRARY_ID)
+    await service.refresh(editor)
+    const componentId = await service.materializeEnabledAsset(
+      editor,
+      libraryAssetId(FRESH_LIBRARY_ID, 'ticker-band')
+    )
+    expect(editor.graph.getNode(componentId ?? '')?.type).toBe('COMPONENT')
+    expect(
+      await service.materializeEnabledAsset(editor, libraryAssetId(FRESH_LIBRARY_ID, 'missing'))
+    ).toBeNull()
   })
 })

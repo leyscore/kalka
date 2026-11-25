@@ -52,6 +52,7 @@ import { createCanvasContextSelection } from '@/app/editor/canvas/context-select
 import { useCanvasOverlayObstacles } from '@/app/editor/canvas/obstacles'
 import { workingMarks } from '@/app/presence/activity'
 import { attachCanvasScene, scenePreviews } from '@/app/presence/canvas-scene'
+import { useLibraryService } from '@/app/libraries'
 import { useFollowView } from '@/app/presence/follow-view'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import IssueMarkerTooltip from '@/components/design-check/IssueMarkerTooltip.vue'
@@ -245,7 +246,10 @@ const { detailMarker: hoveredIssueMarker, cursor: issueMarkerCursor } = useCanva
 
 // Over the DOM scene, text is edited in the page itself; the hidden textarea is the canvas's.
 if (!domScene) useTextEdit(canvasRef, store, { isEnabled: () => isActivePane.value })
-const { isDraggingOver } = useCanvasDrop(canvasRef, store, activatePane)
+const libraryService = useLibraryService()
+const { isDraggingOver } = useCanvasDrop(canvasRef, store, activatePane, {
+  resolveLibraryAsset: (asset) => libraryService.materializeEnabledAsset(store, asset)
+})
 
 const valueFieldIcons = {
   paddingTop: IconLucidePanelTop,
