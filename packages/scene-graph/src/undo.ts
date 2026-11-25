@@ -253,6 +253,19 @@ export class UndoManager {
     this.onChange?.()
   }
 
+  /**
+   * Takes back the top undo entry as if it had never been made, such as a text layer created
+   * and left empty: its inverse runs and Redo does not offer it. False when `entry` is not on top.
+   */
+  withdraw(entry: UndoEntry): boolean {
+    if (this.undoStack.at(-1) !== entry) return false
+    this.undoStack.pop()
+    this.voidFollowers()
+    this.replay(() => entry.inverse())
+    this.onChange?.()
+    return true
+  }
+
   /** The entry `depth` steps below the top of the redo stack, the next one Redo applies at 0. */
   peekRedo(depth = 0): UndoEntry | undefined {
     return this.redoStack.at(-1 - depth)

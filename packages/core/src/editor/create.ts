@@ -287,7 +287,7 @@ export function createEditor(options?: EditorOptions) {
   const clipboard = createClipboardActions(ctx)
   const colorSpace = createColorSpaceActions(ctx)
   const undoActions = createUndoActions(ctx)
-  const text = createTextActions(ctx)
+  const text = createTextActions(ctx, { deleteNodes: clipboard.deleteNodes })
   const nodes = createNodeActions(ctx)
   const clipboardProperties = createClipboardPropertiesActions(
     ctx,

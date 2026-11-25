@@ -102,7 +102,15 @@ function applyTextInstanceOverride(
   }
 }
 
-export function createTextActions(ctx: EditorContext) {
+type TextActionOptions = {
+  /** Deletes layers as one undo step; an edit that leaves its text layer empty removes it. */
+  deleteNodes?: (nodeIds: Iterable<string>) => void
+}
+
+/** Tools that leave a text edit open: the one it hands over to, and the hand held with Space. */
+const TOOLS_KEEPING_TEXT_EDIT = new Set(['SELECT', 'HAND'])
+
+export function createTextActions(ctx: EditorContext, options: TextActionOptions = {}) {
   let activeSession: TextEditSession | null = null
   /**
    * The undo step that created the layer being edited, when the edit starts on a layer that has
@@ -186,7 +194,37 @@ export function createTextActions(ctx: EditorContext) {
     ctx.requestRender()
   }
 
+  /**
+   * As in Figma, a text layer left empty when its edit ends is removed: one made by this edit
+   * goes as if never made, and one emptied by it goes in the same undo step as the edit.
+   */
+  function removeIfEmpty(nodeId: string, topBefore: UndoEntry | undefined) {
+    const created = creationStep
+    creationStep = undefined
+    const node = ctx.graph.getNode(nodeId)
+    if (node?.type !== 'TEXT' || node.text !== '' || node.textPathData) return
+    if (created && ctx.undo.withdraw(created)) return
+    if (!options.deleteNodes) return
+    const edited = ctx.undo.peekUndo() !== topBefore
+    const beforeDelete = ctx.undo.peekUndo()
+    options.deleteNodes([nodeId])
+    if (edited && ctx.undo.peekUndo() !== beforeDelete) ctx.undo.mergeWithPrevious('Delete')
+  }
+
   function commitTextEdit() {
+    const nodeId = ctx.state.editingTextId
+    const topBefore = ctx.undo.peekUndo()
+    commitEdit()
+    if (nodeId) removeIfEmpty(nodeId, topBefore)
+    ctx.requestRender()
+  }
+
+  // Another tool ends the edit, as in Figma.
+  ctx.onEditorEvent('tool:changed', (tool) => {
+    if (ctx.state.editingTextId && !TOOLS_KEEPING_TEXT_EDIT.has(tool)) commitTextEdit()
+  })
+
+  function commitEdit() {
     const external = ctx.getExternalTextEditor()
     if (external && ctx.state.editingTextId) {
       commitExternalTextEdit(external)
