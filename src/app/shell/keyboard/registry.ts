@@ -6,7 +6,12 @@ import { editorCommandMetadata } from '@kalka/vue'
 import type { EditorCommandId } from '@kalka/vue'
 
 import { askAboutSelection } from '@/app/ai/chat/ask-selection'
-import { leaveComments, toggleCommentPins, toggleCommentPlacing } from '@/app/comments/service'
+import {
+  leaveComments,
+  stopCommentPlacing,
+  toggleCommentPins,
+  toggleCommentPlacing
+} from '@/app/comments/service'
 import {
   copySelectionProperties,
   pasteClipboardProperties
@@ -119,6 +124,7 @@ function bindToolShortcuts(bindings: KeyBindingMap, options: KeyboardShortcutRun
     bindings[code] = (event: KeyboardEvent) => {
       event.preventDefault()
       options.spaceTool.resetToolBeforeSpace()
+      stopCommentPlacing(options.store)
       options.store.setTool(tool)
     }
   }

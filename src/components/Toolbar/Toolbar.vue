@@ -10,7 +10,7 @@ import {
 } from '@kalka/vue'
 import type { Tool } from '@kalka/vue'
 
-import { commentPlacing } from '@/app/comments/service'
+import { commentPlacing, stopCommentPlacing } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
 import { toolIcons } from '@/app/editor/icons'
 import { useActionToast } from '@/app/shell/toast/action'
@@ -63,6 +63,12 @@ const { editActions, arrangeActions } = useToolbarActions({ store, getCommand, m
 
 const { mobileCategory, slideDirection, hasPrev, hasNext, goPrev, goNext } = useToolbarState()
 
+/** Picking a tool leaves comment mode, even the tool already picked under it. */
+function pickTool(setTool: (tool: Tool) => void, tool: Tool) {
+  stopCommentPlacing(store)
+  setTool(tool)
+}
+
 function onActionTap(item: ToolbarActionItem) {
   item.action()
   showActionToast(item.label)
@@ -81,7 +87,7 @@ function onActionTap(item: ToolbarActionItem) {
       :tool-shortcuts="toolShortcuts"
       :ui="toolbarUI"
       :tools-idle="commentsPlacing"
-      @set-tool="actions.setTool"
+      @set-tool="pickTool(actions.setTool, $event)"
     >
       <template #end>
         <InsertIconButton :ui="toolbarUI" />
@@ -104,7 +110,7 @@ function onActionTap(item: ToolbarActionItem) {
       :has-next="hasNext"
       :edit-actions="editActions"
       :arrange-actions="arrangeActions"
-      @set-tool="actions.setTool"
+      @set-tool="pickTool(actions.setTool, $event)"
       @prev="goPrev"
       @next="goNext"
       @action="onActionTap"

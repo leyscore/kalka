@@ -2,8 +2,15 @@
 
 ## Unreleased
 
+## 0.2.0-rc.1 — 2026-11-25
+
+### Changed
+
+- The desktop app's editor has a single top bar, as on the web: the Dashboard button and the document tabs sit in the editor's bar, next to the window controls, instead of in a separate bar above it.
+
 ### Fixed
 
+- Picking a tool in the toolbar, or with its shortcut, leaves comment mode, as moving between the other tools does, instead of keeping the comment tool on until it is clicked again.
 - An exported HTML page carries the fonts its text uses, each script's file included, so it draws the same on a machine without them; before, only fonts added to the document shipped, and text in Inter fell back to the browser's default font.
 - An exported HTML page leaves out rectangles of no size, which some browsers drew as a black blot, names a class after what the layer is when its name has no Latin letter or digit instead of a run of dashes, and has a `<title>`.
 - The canvas no longer shows a shimmering "next section" placeholder under a page while the agent only changes layers that already exist, such as the buttons of a dashboard it built.
