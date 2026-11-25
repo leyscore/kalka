@@ -3,6 +3,7 @@ import type { Editor } from '@kalka/core/editor'
 import type { NodeType, SceneNode } from '@kalka/scene-graph'
 import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
 import Matrix from '@kalka/scene-graph/matrix'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import { autoLayoutInsertIndex } from '#vue/shared/input/auto-layout'
 import { findDrawParent } from '#vue/shared/input/drop-target'
@@ -119,7 +120,7 @@ function settleDrawnSize(preview: ReturnType<Editor['beginNodePreview']>, node: 
  * A layer drawn into an auto layout frame takes its place in the flow where the drawing started,
  * as in Figma, rather than at the end.
  */
-function placeInFlow(editor: Editor, node: SceneNode, at: { x: number; y: number }) {
+function placeInFlow(editor: Editor, node: SceneNode, at: Vector) {
   const parent = editor.graph.getNode(node.parentId ?? '')
   if (!parent || parent.layoutMode === 'NONE') return
   const flows = parent.layoutMode === 'HORIZONTAL' || parent.layoutMode === 'VERTICAL'
@@ -141,7 +142,7 @@ function createDraw(
   toLocal: DragDraw['toLocal'],
   line: boolean,
   snap: DragDraw['snap'],
-  canvasStart: { x: number; y: number }
+  canvasStart: Vector
 ): DragDraw {
   const graph = editor.graph
   const preview = editor.beginNodePreview('Draw dimensions')

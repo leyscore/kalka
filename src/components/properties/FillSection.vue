@@ -129,7 +129,10 @@ function updateSolidColor(
 
       <p v-if="isMixed" class="text-[11px] text-muted">{{ panels.mixedFillsHelp }}</p>
 
-      <div v-for="{ item: fill, index } in topFirst(items)" :key="`${index}:${fill.visible ? 'visible' : 'hidden'}`">
+      <div
+        v-for="{ item: fill, index } in topFirst(items)"
+        :key="`${index}:${fill.visible ? 'visible' : 'hidden'}`"
+      >
         <PropertyItemRow
           class="items-start"
           prop-key="fills"

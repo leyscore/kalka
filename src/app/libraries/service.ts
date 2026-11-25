@@ -546,7 +546,12 @@ export class LibraryService implements ComponentCatalog {
       (candidate) => libraryAssetId(candidate.libraryId, candidate.asset.key) === id
     )
     if (!entry) return null
-    const result = await this.materialize(editor, entry.libraryId, entry.revisionId, entry.asset.key)
+    const result = await this.materialize(
+      editor,
+      entry.libraryId,
+      entry.revisionId,
+      entry.asset.key
+    )
     return result.componentId
   }
 

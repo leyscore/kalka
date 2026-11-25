@@ -1,6 +1,6 @@
 import { readIcon, type SceneNode } from '@kalka/scene-graph'
 import { BLACK } from '@kalka/scene-graph/constants'
-import type { Color } from '@kalka/scene-graph/primitives'
+import type { Color, Vector } from '@kalka/scene-graph/primitives'
 
 import { resolvePasteTarget } from '#core/editor/clipboard/paste/target'
 import { acceptingParent } from '#core/editor/components/slots'
@@ -50,7 +50,7 @@ export function createIconActions(ctx: EditorContext) {
    * the selected layer, else the frame under the middle of the view, else the page. An icon is
    * a frame of paths, but a selected icon takes no other icon.
    */
-  function insertionParent(center: { x: number; y: number }): string {
+  function insertionParent(center: Vector): string {
     const pageId = ctx.state.currentPageId
     if (ctx.state.enteredContainerId || ctx.state.selectedIds.size > 0) {
       const target = ctx.graph.getNode(resolvePasteTarget(ctx))

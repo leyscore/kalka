@@ -21,42 +21,52 @@ function browserClipboard(): ClipboardReader | undefined {
   return typeof clipboard?.read === 'function' ? clipboard : undefined
 }
 
+/** Our last copy here, when it is design data; `text` limits it to a copy whose text still matches. */
+function memoryCopy(text?: string): string | null {
+  const memory = getInMemoryClipboardHTML(text)
+  return memory && isDesignClipboardHTML(memory) ? memory : null
+}
+
+async function readTauriClipboard(): Promise<string | null> {
+  try {
+    const text = (await readTauriClipboardText()) ?? ''
+    return isDesignClipboardHTML(text) ? text : memoryCopy(text)
+  } catch (error) {
+    console.warn('Tauri clipboard read failed', error)
+    return memoryCopy()
+  }
+}
+
+/** Design HTML from the browser clipboard; `undefined` when the clipboard could not be read. */
+async function readBrowserClipboard(
+  clipboard: ClipboardReader
+): Promise<string | null | undefined> {
+  try {
+    const items = await clipboard.read(UNSANITIZED_HTML)
+    let plainText = ''
+    for (const item of items) {
+      if (item.types.includes('text/plain') && !plainText)
+        plainText = await (await item.getType('text/plain')).text()
+      if (!item.types.includes('text/html')) continue
+      const text = await (await item.getType('text/html')).text()
+      if (text && isDesignClipboardHTML(text)) return text
+    }
+    // Our last copy, when the browser kept only its text; any other content is newer than it.
+    return memoryCopy(plainText)
+  } catch (error) {
+    console.warn('System clipboard read failed', error)
+    return undefined
+  }
+}
+
 /** The design layers on the system clipboard, or the last copy made here when it cannot be read. */
 export async function readClipboardHTML(
   clipboard: ClipboardReader | undefined = browserClipboard()
 ): Promise<string | null> {
-  if (isTauri()) {
-    try {
-      const text = await readTauriClipboardText()
-      if (isDesignClipboardHTML(text ?? '')) return text
-      const memory = getInMemoryClipboardHTML(text ?? '')
-      return memory && isDesignClipboardHTML(memory) ? memory : null
-    } catch (error) {
-      console.warn('Tauri clipboard read failed', error)
-      const memory = getInMemoryClipboardHTML()
-      return memory && isDesignClipboardHTML(memory) ? memory : null
-    }
-  }
-
+  if (isTauri()) return readTauriClipboard()
   if (clipboard) {
-    try {
-      const items = await clipboard.read(UNSANITIZED_HTML)
-      let plainText = ''
-      for (const item of items) {
-        if (item.types.includes('text/plain') && !plainText)
-          plainText = await (await item.getType('text/plain')).text()
-        if (!item.types.includes('text/html')) continue
-        const text = await (await item.getType('text/html')).text()
-        if (text && isDesignClipboardHTML(text)) return text
-      }
-      // Our last copy, when the browser kept only its text; any other content is newer than it.
-      const memory = getInMemoryClipboardHTML(plainText)
-      return memory && isDesignClipboardHTML(memory) ? memory : null
-    } catch (error) {
-      console.warn('System clipboard read failed', error)
-    }
+    const html = await readBrowserClipboard(clipboard)
+    if (html !== undefined) return html
   }
-
-  const memory = getInMemoryClipboardHTML()
-  return memory && isDesignClipboardHTML(memory) ? memory : null
+  return memoryCopy()
 }

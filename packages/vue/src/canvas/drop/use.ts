@@ -2,6 +2,7 @@ import { useEventListener } from '@vueuse/core'
 import { ref, type Ref } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import { cycleSafeTarget, findMoveDropTarget } from '#vue/shared/input/drop-target'
 
@@ -24,7 +25,7 @@ export interface CanvasDropOptions {
   resolveLibraryAsset?: (asset: string) => Promise<string | null>
 }
 
-type CanvasPoint = { x: number; y: number }
+type CanvasPoint = Vector
 
 function dropPoint(e: DragEvent, canvas: HTMLCanvasElement, editor: Editor) {
   const rect = canvas.getBoundingClientRect()
