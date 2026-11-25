@@ -64,15 +64,13 @@ import {
 import { tabsInTopBar } from '@/app/tabs/placement'
 import { isTauri } from '@/app/tauri/env'
 import { teamPageFromPath } from '@/app/team/route'
-import ColorSpaceBanner from '@/components/canvas/ColorSpaceBanner.vue'
 import CommandPalette from '@/components/commands/CommandPalette.vue'
-import FileApiBanner from '@/components/FileApiBanner.vue'
-import FontStatusBanner from '@/components/font-status/FontStatusBanner.vue'
 import HomeWorkspace from '@/components/home/HomeWorkspace.vue'
 import RenameSelectionDialog from '@/components/selection/RenameSelectionDialog.vue'
+import AppBanners from '@/components/shell/AppBanners.vue'
 import TabBar from '@/components/TabBar.vue'
 import { AppConfirmationDialog } from '@/components/ui/dialog'
-import { IS_BROWSER } from '@/constants'
+import { IS_BROWSER, IS_TAURI } from '@/constants'
 
 // The editor's code loads apart from the home screen's, so the home screen shows sooner; it is
 // fetched once the app is idle, before a document is likely to open.
@@ -426,9 +424,8 @@ onUnmounted(() => {
 
 <template>
   <div data-test-id="editor-root" class="flex h-screen w-screen flex-col">
-    <FileApiBanner />
-    <ColorSpaceBanner />
-    <FontStatusBanner />
+    <!-- In the desktop editor the top bar is the window's title bar; the banners come under it there. -->
+    <AppBanners v-if="!(IS_TAURI && tabsInTopBar)" />
     <RenameSelectionDialog />
     <CommandPalette />
     <!-- A canvas shown bare, as an embed or a capture, has no bar at all. -->

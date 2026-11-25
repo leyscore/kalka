@@ -2,10 +2,12 @@ import type { BrowserWindow, BrowserWindowConstructorOptions } from 'electron'
 import * as v from 'valibot'
 
 /**
- * The editor window has no title bar of its own: the app's tab bar runs to the top edge and is
- * the window's title bar, as in Chrome. Its height is the tab bar's (`src/theme/tab-bar.ts`).
+ * The editor window has no title bar of its own: the app's top bar runs to the top edge and is
+ * the window's title bar, as in Chrome. That is the editor's top bar, which holds the tabs
+ * (`src/theme/editor-top-bar.ts`), and the tab bar on screens without one (`src/theme/tab-bar.ts`);
+ * both are this tall.
  */
-export const TITLE_BAR_HEIGHT = 40
+export const TITLE_BAR_HEIGHT = 44
 
 /**
  * The caption buttons Windows and Linux draw over the tab bar: on a transparent background, so
@@ -19,8 +21,8 @@ const OVERLAY_COLORS = {
 export const TitleBarTheme = v.nullable(v.picklist(['dark', 'light']))
 export type TitleBarTheme = v.InferOutput<typeof TitleBarTheme>
 
-/** The traffic lights, centred in the tab bar's height and inset from its start like a tab. */
-const TRAFFIC_LIGHTS = { x: 14, y: 13 }
+/** The traffic lights, centred in the top bar's height and inset from its start like a tab. */
+const TRAFFIC_LIGHTS = { x: 14, y: 15 }
 
 /** What repainting the caption buttons needs of a window. */
 type OverlaidWindow = Pick<BrowserWindow, 'isDestroyed' | 'setTitleBarOverlay'>

@@ -25,11 +25,10 @@ import ZoomDropdown from './ZoomDropdown.vue'
 const store = useEditorStore()
 const { editor, menu, panels } = useI18n()
 const { activeTab, isConfigured } = useAIChat()
-// In the browser the tabs live here, so the editor has a single bar. The desktop app keeps them in
-// the window's title bar, which it needs anyway.
-const hostsTabs = !IS_TAURI
-if (hostsTabs) useTabsHost()
-const styles = editorTopBar({ tabs: hostsTabs })
+// The tabs live here, so the editor has a single bar. In the desktop app that bar is also the
+// window's title bar: it moves the window and keeps clear of the window controls.
+useTabsHost()
+const styles = editorTopBar({ titleBar: IS_TAURI })
 
 const { rename, editingName, startRename, commitRename } = useDocumentNameRename(store)
 const nameInput = useTemplateRef<HTMLInputElement>('nameInput')
@@ -42,10 +41,13 @@ const { toggleAgent } = useLeftPanel()
 </script>
 
 <template>
-  <header data-test-id="editor-top-bar" :class="styles.root()">
+  <header
+    data-test-id="editor-top-bar"
+    :data-title-bar="IS_TAURI || undefined"
+    :class="styles.root()"
+  >
     <div :class="styles.start()">
-      <AppMenu v-if="!hostsTabs" />
-      <AppMenu v-else>
+      <AppMenu>
         <TabBar embedded :renaming="editingName" @rename="startRename">
           <template #rename>
             <input

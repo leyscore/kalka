@@ -1,11 +1,12 @@
 const tabBarTheme = {
   slots: {
     // The tabs are pills straight on the backdrop, clear of the floating panels below.
-    // On the desktop the bar is the window's title bar: it comes first, above any banner, moves
-    // the window and keeps clear of the window controls (`title-bar` in `src/app.css`).
+    // On the desktop the bar on its own, as on the Dashboard, is the window's title bar: it comes
+    // first, above any banner, moves the window and keeps clear of the window controls
+    // (`title-bar` in `src/app.css`). Inside the editor's top bar, that bar is the title bar.
     // It stays above the sky a shell page paints across the whole window, and reads on that sky
     // in either theme: the sky is dark at the top by day too.
-    root: 'relative z-10 in-data-[place=shell]:[--color-muted:rgb(255_255_255/0.72)] in-data-[place=shell]:[--color-surface:#fff] in-data-[place=shell]:[--color-tab-active:rgb(255_255_255/0.14)] flex h-[40px] shrink-0 items-center px-2 data-title-bar:order-first data-title-bar:title-bar',
+    root: 'relative z-10 in-data-[place=shell]:[--color-muted:rgb(255_255_255/0.72)] in-data-[place=shell]:[--color-surface:#fff] in-data-[place=shell]:[--color-tab-active:rgb(255_255_255/0.14)] flex h-[40px] shrink-0 items-center px-2 data-title-bar:order-first data-title-bar:h-11 data-title-bar:title-bar',
     // Sized by its tabs until the bar runs out of room; then it scrolls and fades the clipped side.
     scroller:
       'scrollbar-none h-full min-w-0 scroll-px-8 overflow-x-auto data-overflow-end:mask-r-from-[calc(100%-2rem)] data-overflow-start:mask-l-from-[calc(100%-2rem)]',
@@ -30,7 +31,7 @@ const tabBarTheme = {
     scrollIcon: 'size-3.5'
   },
   variants: {
-    // In the browser the editor's top bar carries the tabs: one bar, and the canvas keeps the room.
+    // The editor's top bar carries the tabs: one bar, and the canvas keeps the room.
     embedded: {
       true: { root: 'z-auto h-[30px] min-w-0 shrink px-0' }
     },

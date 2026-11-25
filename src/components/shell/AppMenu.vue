@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { templateRef } from '@vueuse/core'
 import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
@@ -13,7 +12,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from 'reka-ui'
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import IconChevronRight from '~icons/hugeicons/chevron-right'
 
 import { shortcutPlatform, useEditorCommands, useI18n, vTestId } from '@kalka/vue'
@@ -21,9 +20,7 @@ import { shortcutPlatform, useEditorCommands, useI18n, vTestId } from '@kalka/vu
 import { serverAccount } from '@/app/collab/server/account'
 import { isServerRoom } from '@/app/collab/server/documents'
 import { useCollabInjected } from '@/app/collab/use'
-import { useEditorStore } from '@/app/editor/active-store'
 import { useAppMenu } from '@/app/shell/menu/app-menu'
-import { useDocumentNameRename } from '@/app/shell/menu/document-name'
 import {
   hasMenuSubItems,
   isMenuCheckbox,
@@ -45,24 +42,18 @@ import { useMenuUI } from '@/components/ui/menu/menu'
 import { IS_TAURI } from '@/constants'
 
 /**
+ * The start of the editor's top bar: the menu, the tabs it is given, then undo and redo. In the
+ * desktop app the bar moves the window, so each control here opts out of the drag (`no-drag`).
  * The macOS desktop app keeps its menu in the system menu bar; everywhere else the logo opens it,
- * each menu a submenu, so the bar keeps its room for the document.
+ * each menu a submenu, so the bar keeps its room for the tabs.
  */
 const showMenubar = !IS_TAURI || shortcutPlatform() !== 'mac'
 
-const store = useEditorStore()
-
-const { rename, editingName, startRename, commitRename } = useDocumentNameRename(store)
-const nameInput = templateRef<HTMLInputElement>('nameInput')
 const collab = useCollabInjected()
 /** The server that keeps the active document, when it is a server document. */
 const documentServer = computed(() => {
   const roomId = collab?.state.value.roomId
   return roomId && isServerRoom(roomId) ? (serverAccount.value?.serverName ?? null) : null
-})
-
-watch(nameInput, (input) => {
-  if (input) void rename.focusInput(input)
 })
 
 const { topMenus } = useAppMenu()
@@ -94,7 +85,7 @@ const { menu: menuMessages } = useI18n()
         <DropdownMenuTrigger
           data-test-id="app-menu-trigger"
           :aria-label="menuMessages.mainMenu"
-          class="me-1 flex shrink-0 cursor-pointer items-center gap-0.5 rounded-lg p-0.5 pe-1 text-muted outline-none transition-colors hover:bg-(--pill-hover-bg) hover:text-surface focus-visible:ring-1 focus-visible:ring-panel-focus data-[state=open]:bg-(--pill-hover-bg) data-[state=open]:text-surface"
+          class="no-drag me-1 flex shrink-0 cursor-pointer items-center gap-0.5 rounded-lg p-0.5 pe-1 text-muted outline-none transition-colors hover:bg-(--pill-hover-bg) hover:text-surface focus-visible:ring-1 focus-visible:ring-panel-focus data-[state=open]:bg-(--pill-hover-bg) data-[state=open]:text-surface"
         >
           <BrandMark
             data-test-id="app-logo"
@@ -202,33 +193,18 @@ const { menu: menuMessages } = useI18n()
         :appearance="resolvedAppTheme"
         class="me-1 size-6 rounded-md"
       />
-      <!-- With the tabs in the bar, the active tab is the document's name. -->
-      <slot v-if="$slots.default" />
-      <input
-        v-else-if="editingName"
-        ref="nameInput"
-        data-test-id="app-document-name-input"
-        class="w-40 min-w-0 rounded-md border border-accent bg-input px-1 py-0.5 text-[13px] font-semibold text-surface outline-none"
-        :value="store.state.documentName"
-        @blur="commitRename($event)"
-        @keydown="rename.onKeydown"
-      />
-      <span
-        v-else
-        data-test-id="app-document-name"
-        class="max-w-40 min-w-0 cursor-default truncate rounded-md px-1 py-0.5 text-[13px] font-semibold text-surface transition-colors hover:bg-(--pill-hover-bg)"
-        @dblclick="startRename"
-        >{{ store.state.documentName }}</span
-      >
+      <!-- The tabs: the active one is the document's name. -->
+      <slot />
       <ServerFileChip
         v-if="documentServer"
+        class="no-drag"
         :server-name="documentServer"
         :view-only="serverAccount?.user.role === 'viewer'"
       />
       <IconButton
         :label="tip(undo.label)"
         data-test-id="app-undo"
-        class="size-7 rounded-[7px]"
+        class="no-drag size-7 rounded-[7px]"
         :disabled="!undo.enabled.value"
         @click="undo.run()"
       >
@@ -237,7 +213,7 @@ const { menu: menuMessages } = useI18n()
       <IconButton
         :label="tip(redo.label)"
         data-test-id="app-redo"
-        class="size-7 rounded-[7px]"
+        class="no-drag size-7 rounded-[7px]"
         :disabled="!redo.enabled.value"
         @click="redo.run()"
       >

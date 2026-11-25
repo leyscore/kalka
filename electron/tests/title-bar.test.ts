@@ -19,10 +19,10 @@ function fakeWindow() {
 }
 
 describe('title bar', () => {
-  test('macOS hides the title bar and centres the traffic lights in the tab bar', () => {
+  test('macOS hides the title bar and centres the traffic lights in the top bar', () => {
     const options = titleBarOptions('darwin')
     expect(options.titleBarStyle).toBe('hidden')
-    expect(options.trafficLightPosition).toEqual({ x: 14, y: 13 })
+    expect(options.trafficLightPosition).toEqual({ x: 14, y: 15 })
     expect(options.titleBarOverlay).toEqual({ height: TITLE_BAR_HEIGHT })
   })
 

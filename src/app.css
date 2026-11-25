@@ -473,14 +473,18 @@
  * the window, and it pads itself clear of the window controls Electron reports through the
  * Window Controls Overlay variables, the traffic lights on the left on macOS and the caption
  * buttons on the right on Windows and Linux. Where there are none (macOS full screen) the
- * variables fall back to the bar's own padding.
+ * variables fall back to the bar's own padding. A bar that stands in from the window's edges, as
+ * the editor's top bar does, says by how much in `--title-bar-inset`.
  */
 @utility title-bar {
   -webkit-app-region: drag;
-  padding-left: max(0.5rem, env(titlebar-area-x, 0px));
+  padding-left: max(0.5rem, calc(env(titlebar-area-x, 0px) - var(--title-bar-inset, 0px)));
   padding-right: max(
     0.5rem,
-    calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw))
+    calc(
+      100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) -
+        var(--title-bar-inset, 0px)
+    )
   );
 }
 

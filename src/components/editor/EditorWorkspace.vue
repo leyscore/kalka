@@ -27,7 +27,9 @@ import LayersPanel from '@/components/LayersPanel.vue'
 import MobileDrawer from '@/components/MobileDrawer.vue'
 import MobileHud from '@/components/MobileHud/MobileHud.vue'
 import PropertiesPanel from '@/components/PropertiesPanel.vue'
+import AppBanners from '@/components/shell/AppBanners.vue'
 import Toolbar from '@/components/Toolbar/Toolbar.vue'
+import { IS_TAURI } from '@/constants'
 import splitterTheme from '@/theme/splitter'
 
 import EditorTopBar from './EditorTopBar.vue'
@@ -82,6 +84,11 @@ const desktopLayout = computed(
     class="flex flex-1 flex-col gap-2 overflow-hidden px-2 pb-2 [--color-glass-border:var(--color-border)] [--color-glass:var(--color-panel)]"
   >
     <EditorTopBar />
+    <!-- In the desktop app the top bar is the window's title bar, so the banners come under it.
+         They bring their own margins: the wrapper gives back the workspace's padding and gap. -->
+    <div v-if="IS_TAURI" class="-mx-2 -mt-2 flex flex-col">
+      <AppBanners />
+    </div>
     <div class="flex min-h-0 flex-1 gap-2">
       <PanelRail class="panel-float" />
       <div class="relative flex min-w-0 flex-1">
