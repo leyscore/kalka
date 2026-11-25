@@ -56,6 +56,23 @@ export function worldBoundsNode(node: SceneNode, editor: Editor): SceneNode {
   return { ...node, ...bounds, rotation: 0, flipX: false, flipY: false }
 }
 
+/**
+ * What a layer in `parentId` snaps to, as in Figma: its visible siblings, and the frame it is
+ * in, whose edges and center catch a layer dragged or resized up to them.
+ */
+export function snapTargetsIn(
+  parentId: string,
+  editor: Editor,
+  exclude: (node: SceneNode) => boolean = () => false
+): SceneNode[] {
+  const siblings = editor.graph
+    .getChildren(parentId)
+    .filter((node) => node.visible && !exclude(node))
+  const parent = editor.graph.getNode(parentId)
+  const frame = parent && parent.type !== 'CANVAS' ? [parent] : []
+  return [...frame, ...siblings].map((node) => worldBoundsNode(node, editor))
+}
+
 function winningCorrection(
   geometry: { delta: number } | null,
   explicit: { delta: number } | null,

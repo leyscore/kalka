@@ -6,7 +6,7 @@ import { getAxisAlignedWorldBounds } from '@kalka/scene-graph/coordinate'
 import { explicitSnapTargets } from '#vue/shared/input/explicit-snap-targets'
 import {
   resolveObjectPixelSnap,
-  worldBoundsNode,
+  snapTargetsIn,
   worldDeltaToParentLocal
 } from '#vue/shared/input/snap'
 import type { DragMove } from '#vue/shared/input/types'
@@ -40,13 +40,6 @@ function moveParentId(drag: DragMove, editor: Editor): string {
   return firstNode?.parentId ?? editor.state.currentPageId
 }
 
-function parentTargets(parentId: string, editor: Editor): SceneNode[] {
-  return editor.graph
-    .getChildren(parentId)
-    .filter((node) => node.visible)
-    .map((node) => worldBoundsNode(node, editor))
-}
-
 export function applyMoveSnap(
   drag: DragMove,
   dx: number,
@@ -65,7 +58,7 @@ export function applyMoveSnap(
   const snap = resolveObjectPixelSnap(
     editor.state.selectedIds,
     selectionBounds,
-    parentTargets(parentId, editor),
+    snapTargetsIn(parentId, editor),
     editor,
     explicitSnapTargets(parentId, editor)
   )

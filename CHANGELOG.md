@@ -10,6 +10,7 @@
 
 ### Fixed
 
+- A layer moved or resized near the edges or the center of the frame it is in snaps to them, as in Figma; it snapped only to the layers beside it.
 - Deleting a breakpoint artboard, such as Tablet or Phone, removes that breakpoint alone; the main artboard and the other breakpoints stay, and undo brings it back.
 - Picking a tool in the toolbar, or with its shortcut, leaves comment mode, as moving between the other tools does, instead of keeping the comment tool on until it is clicked again.
 - An exported HTML page carries the fonts its text uses, each script's file included, so it draws the same on a machine without them; before, only fonts added to the document shipped, and text in Inter fell back to the browser's default font.

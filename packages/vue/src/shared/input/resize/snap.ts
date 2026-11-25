@@ -7,7 +7,7 @@ import { explicitSnapTargets } from '#vue/shared/input/explicit-snap-targets'
 import {
   optionalEditorState,
   resolveObjectPixelSnap,
-  worldBoundsNode,
+  snapTargetsIn,
   worldDeltaToParentLocal
 } from '#vue/shared/input/snap'
 import type { DragResize, HandlePosition } from '#vue/shared/input/types'
@@ -31,10 +31,7 @@ function movesBottom(handle: HandlePosition): boolean {
 function resizeTargets(drag: DragResize, editor: Editor): SceneNode[] {
   const node = editor.graph.getNode(drag.nodeId)
   const parentId = node?.parentId ?? editor.state.currentPageId
-  return editor.graph
-    .getChildren(parentId)
-    .filter((candidate) => candidate.id !== drag.nodeId && candidate.visible)
-    .map((candidate) => worldBoundsNode(candidate, editor))
+  return snapTargetsIn(parentId, editor, (candidate) => candidate.id === drag.nodeId)
 }
 
 function activeEdgeBounds(handle: HandlePosition, rect: Rect): Rect {
