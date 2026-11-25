@@ -10,6 +10,7 @@
 
 ### Fixed
 
+- In the dialog that asks to save before closing, "Don't save" and "Discard all" are outlined red buttons instead of plain text that was easy to miss.
 - A layer moved or resized near the edges or the center of the frame it is in snaps to them, as in Figma; it snapped only to the layers beside it.
 - Deleting a breakpoint artboard, such as Tablet or Phone, removes that breakpoint alone; the main artboard and the other breakpoints stay, and undo brings it back.
 - Picking a tool in the toolbar, or with its shortcut, leaves comment mode, as moving between the other tools does, instead of keeping the comment tool on until it is clicked again.

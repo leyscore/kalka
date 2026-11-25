@@ -74,8 +74,9 @@ function updateOpen(open: boolean) {
     <AppDialogFooter v-if="prompt?.kind === 'documents'" :ui="documentCloseUI">
       <AppButton
         color="error"
-        variant="ghost"
+        variant="outline"
         class="mr-auto"
+        :ui="documentCloseButtonUI"
         @click="emit('answer', 'discard-all')"
       >
         {{ files.discardAll }}
@@ -107,7 +108,13 @@ function updateOpen(open: boolean) {
       </AppButton>
     </AppDialogFooter>
     <AppDialogFooter v-else :ui="documentCloseUI">
-      <AppButton color="neutral" variant="ghost" class="mr-auto" @click="emit('answer', 'discard')">
+      <AppButton
+        color="error"
+        variant="outline"
+        class="mr-auto"
+        :ui="documentCloseButtonUI"
+        @click="emit('answer', 'discard')"
+      >
         {{ files.discard }}
       </AppButton>
       <AppButton
