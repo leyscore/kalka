@@ -7,6 +7,8 @@ import type { EditorStore } from '@/app/editor/active-store'
 export type KeyboardShortcutActions = {
   smartDelete: (altKey: boolean) => void
   confirmOrEditSelection: () => void
+  selectParent: () => void
+  selectSibling: (step: 1 | -1) => boolean
   escapeOrDeselect: () => void
   toggleAutoLayout: () => void
   toggleUI: () => void

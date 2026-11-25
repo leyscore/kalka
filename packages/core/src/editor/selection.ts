@@ -1,5 +1,6 @@
 import { createSelectionContainerActions } from './selection/container'
 import { createSelectionHitTestActions } from './selection/hit-test'
+import { createSelectionNavigationActions } from './selection/navigation'
 import { createSelectionOverlayActions } from './selection/overlays'
 import { createSelectionReadActions } from './selection/read'
 import type { EditorContext } from './types'
@@ -61,6 +62,7 @@ export function createSelectionActions(ctx: EditorContext) {
   const hitTestActions = createSelectionHitTestActions(ctx, select, clearSelection)
   const overlayActions = createSelectionOverlayActions(ctx)
   const readActions = createSelectionReadActions(ctx)
+  const navigationActions = createSelectionNavigationActions(ctx, select)
 
   return {
     select,
@@ -70,6 +72,7 @@ export function createSelectionActions(ctx: EditorContext) {
     ...overlayActions,
     ...containerActions,
     ...readActions,
+    ...navigationActions,
     ...hitTestActions
   }
 }

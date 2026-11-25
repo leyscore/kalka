@@ -20,7 +20,7 @@ import { requestRenameSelection } from '@/app/editor/selection/rename-dialog'
 import { TOOL_SHORTCUTS } from '@/app/editor/session'
 import { openSettings } from '@/app/settings/open'
 import { setSnappingPreference } from '@/app/settings/preferences/apply'
-import { isButtonActivation, isEditing } from '@/app/shell/keyboard/focus'
+import { isButtonActivation, isCanvasKey, isEditing } from '@/app/shell/keyboard/focus'
 import { bindSpaceHandTool } from '@/app/shell/keyboard/space-tool'
 import type {
   KeyboardShortcutOptions,
@@ -297,7 +297,7 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
       run: ({ openFileDialog }) => openFileDialog(),
       whileEditingText: true
     },
-    ...commandShortcuts('selection.group'),
+    ...commandShortcuts('selection.group', 'selection.frameSelection'),
     {
       id: 'toggle-auto-layout',
       keys: 'Shift+KeyA',
@@ -313,6 +313,24 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
     { id: 'delete', keys: 'Delete', run: ({ actions }) => actions.smartDelete(false) },
     { id: 'delete-alt', keys: 'Alt+Delete', run: ({ actions }) => actions.smartDelete(true) },
     { id: 'enter', keys: 'Enter', run: ({ actions }) => actions.confirmOrEditSelection() },
+    {
+      id: 'select-parent',
+      keys: ['Shift+Enter', 'Backslash'],
+      run: ({ actions }) => actions.selectParent()
+    },
+    ...([
+      ['Tab', 1],
+      ['Shift+Tab', -1]
+    ] as const).map(
+      ([keys, step]): ShortcutDefinition => ({
+        id: `select-sibling-${step}`,
+        keys,
+        run: ({ actions, keyEvent }) => {
+          if (isCanvasKey(keyEvent) && actions.selectSibling(step)) keyEvent.preventDefault()
+        },
+        shouldPreventDefault: () => false
+      })
+    ),
     {
       id: 'escape',
       keys: 'Escape',

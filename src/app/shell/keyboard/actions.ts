@@ -60,7 +60,21 @@ export function createKeyboardActions({
         store.textCaret?.selectAll()
         store.requestRender()
       })
+      return
     }
+    store.selectChildren()
+  }
+
+  /** Shift+Enter or \ selects the parent, as in Figma. */
+  function selectParent() {
+    if (store.state.nodeEditState || store.state.penState) return
+    store.selectParent()
+  }
+
+  /** Tab and Shift+Tab select the next or previous sibling; whether the selection moved. */
+  function selectSibling(step: 1 | -1): boolean {
+    if (store.state.nodeEditState || store.state.penState) return false
+    return store.selectSibling(step)
   }
 
   function escapeOrDeselect() {
@@ -152,6 +166,8 @@ export function createKeyboardActions({
   return {
     smartDelete,
     confirmOrEditSelection,
+    selectParent,
+    selectSibling,
     escapeOrDeselect,
     toggleAutoLayout,
     toggleUI,

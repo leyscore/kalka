@@ -48,7 +48,8 @@ export const EDITOR_COMMAND_METADATA = {
   },
   'selection.bringToFront': {
     shortcut: ']',
-    keybinding: 'BracketRight',
+    // Figma's ⌥⌘], next to the single key.
+    keybinding: ['BracketRight', '$mod+Alt+BracketRight'],
     contextTestId: 'context-bring-to-front'
   },
   'selection.sendBackward': {
@@ -58,7 +59,7 @@ export const EDITOR_COMMAND_METADATA = {
   },
   'selection.sendToBack': {
     shortcut: '[',
-    keybinding: 'BracketLeft',
+    keybinding: ['BracketLeft', '$mod+Alt+BracketLeft'],
     contextTestId: 'context-send-to-back'
   },
   'selection.toggleVisibility': {

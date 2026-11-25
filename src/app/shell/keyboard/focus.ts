@@ -28,3 +28,17 @@ export function isInputElement(element: EventTarget | null | undefined): boolean
     (element instanceof HTMLElement && element.isContentEditable)
   )
 }
+
+/**
+ * Whether a key goes to the canvas rather than to a focused control: Tab moves through layers
+ * only there, and keeps moving focus through the panels everywhere else.
+ */
+export function isCanvasKey(event: KeyboardEvent): boolean {
+  const target = event.target
+  return (
+    !(target instanceof HTMLElement) ||
+    target === document.body ||
+    target === document.documentElement ||
+    target instanceof HTMLCanvasElement
+  )
+}
