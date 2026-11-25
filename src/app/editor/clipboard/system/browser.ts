@@ -11,6 +11,7 @@ import {
   setInMemoryClipboardPayload
 } from '@/app/editor/clipboard/memory'
 import { pasteClipboardHTML, pasteSVGText } from '@/app/editor/clipboard/paste'
+import { UNSANITIZED_HTML, type ClipboardReader } from '@/app/editor/clipboard/read'
 import type {
   BrowserClipboardIO,
   BrowserClipboardReadResult,
@@ -59,7 +60,8 @@ async function readBrowserClipboard(): Promise<BrowserClipboardReadResult> {
     return { available: false }
   }
   try {
-    const item = (await navigator.clipboard.read()).at(0)
+    const reader: ClipboardReader = navigator.clipboard
+    const item = (await reader.read(UNSANITIZED_HTML)).at(0)
     if (!item) return { available: true, html: null, text: null }
     return {
       available: true,
