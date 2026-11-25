@@ -46,11 +46,8 @@ export const variablesMessageDefaults = {
   conditionContainerNarrower: 'Container is narrower than',
   conditionContainerWider: 'Container is wider than',
   conditionCustom: 'Custom CSS',
-  conditionManualHint: params(
-    'Pick it per layer on the canvas. In code, add {attribute} to an element.'
-  ),
-  conditionAutomaticHint:
-    'Turns on by itself in the browser. Preview it on the canvas by setting a layer to this mode; layers set to it export with literal values.',
+  conditionManualHint: params('In code, add {attribute} to an element to apply this mode to it.'),
+  conditionAutomaticHint: 'Turns on by itself in the browser when its condition is met.',
   conditionWidth: 'Width',
   collectionActions: 'Collection actions',
   value: 'Value',
