@@ -1,6 +1,7 @@
 import type { CanvasKit } from 'canvaskit-wasm'
 
 import type {
+  CharacterStyleOverride,
   DocumentColorSpace,
   SceneGraph,
   SceneGraphEvents,
@@ -192,6 +193,11 @@ export interface ExternalTextEditor extends TextCaretControl {
   start(nodeId: string): void
   /** Ends the edit; the graph already holds what was typed. */
   stop(): void
+  /**
+   * Gives the selected characters this style, as Figma does with a range selected; false when
+   * no characters are selected, so the change belongs to the whole layer.
+   */
+  styleSelection?(style: CharacterStyleOverride): boolean
 }
 
 export interface EditorContext {

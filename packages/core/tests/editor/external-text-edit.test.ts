@@ -112,4 +112,29 @@ describe('external text editing', () => {
     editor.setTool('RECTANGLE')
     expect(editor.state.editingTextId).toBeNull()
   })
+
+  test('a style for the selected characters goes to the editor of the text being edited', () => {
+    const editor = createEditor()
+    const text = editor.graph.createNode('TEXT', editor.state.currentPageId, { text: 'Bonjour' })
+    const other = editor.graph.createNode('TEXT', editor.state.currentPageId, { text: 'Salut' })
+    const styled: unknown[] = []
+    let selected = true
+    editor.setExternalTextEditor({
+      ...recorder(),
+      styleSelection: (style) => {
+        if (!selected) return false
+        styled.push(style)
+        return true
+      }
+    })
+    const fills = [{ ...text.fills[0], visible: true }]
+
+    expect(editor.styleTextSelection(text.id, { fills })).toBe(false)
+    editor.startTextEditing(text.id)
+    expect(editor.styleTextSelection(other.id, { fills })).toBe(false)
+    expect(editor.styleTextSelection(text.id, { fills })).toBe(true)
+    expect(styled).toEqual([{ fills }])
+    selected = false
+    expect(editor.styleTextSelection(text.id, { fills })).toBe(false)
+  })
 })

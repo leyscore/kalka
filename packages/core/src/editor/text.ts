@@ -1,6 +1,7 @@
 import {
   cloneInstanceOverrideState,
   setInstanceOverride,
+  type CharacterStyleOverride,
   type InstanceOverrideState,
   type SceneNode,
   type UndoEntry
@@ -310,5 +311,14 @@ export function createTextActions(ctx: EditorContext, options: TextActionOptions
     joinCreationStep()
   }
 
-  return { startTextEditing, updateTextEditNode, commitTextEdit }
+  /**
+   * Styles the characters selected in the text being edited, rather than the layer; false when
+   * `nodeId` is not being edited or no characters are selected.
+   */
+  function styleTextSelection(nodeId: string, style: CharacterStyleOverride): boolean {
+    if (ctx.state.editingTextId !== nodeId) return false
+    return ctx.getExternalTextEditor()?.styleSelection?.(style) ?? false
+  }
+
+  return { startTextEditing, updateTextEditNode, commitTextEdit, styleTextSelection }
 }

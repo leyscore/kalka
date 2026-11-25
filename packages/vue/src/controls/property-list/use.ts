@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 
-import { listBindingsAfterEdit, type SceneNode } from '@kalka/scene-graph'
+import { listBindingsAfterEdit, type Fill, type SceneNode } from '@kalka/scene-graph'
 
 import { useNodeProps } from '#vue/controls/node-props/use'
 import { useUndoBatch } from '#vue/controls/undo-batch/use'
@@ -53,6 +53,13 @@ export function useEditorPropertyList<K extends PropertyListKey>(propKey: K) {
     label: string,
     sources?: readonly (number | null)[]
   ) {
+    // Characters selected in the text being edited take a fill change, not the whole layer.
+    if (
+      propKey === 'fills' &&
+      !sources &&
+      editor.styleTextSelection(node.id, { fills: structuredClone(value) as Fill[] })
+    )
+      return
     const changes: Partial<SceneNode> = { [propKey]: value }
     if (sources)
       changes.boundVariables = listBindingsAfterEdit(node.boundVariables, propKey, sources)

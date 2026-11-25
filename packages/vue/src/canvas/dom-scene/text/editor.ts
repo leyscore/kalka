@@ -198,6 +198,15 @@ export class DomTextEditor implements ExternalTextEditor {
     if (id) this.projector.unlock(id)
   }
 
+  styleSelection(style: CharacterStyleOverride): boolean {
+    const view = this.view
+    if (!view || view.state.selection.empty) return false
+    for (const [key, value] of Object.entries(style)) {
+      setStyle(key as StyleKey, value)(view.state, (tr) => this.dispatch(tr))
+    }
+    return true
+  }
+
   selectAll(): void {
     const view = this.view
     if (!view) return
