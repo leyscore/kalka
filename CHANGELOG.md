@@ -2,15 +2,143 @@
 
 ## Unreleased
 
-## 0.2.0-rc.1 — 2026-11-25
+## 0.2.0-rc.1 — 2026-11-27
+
+### Added
+
+- Text styles: create a style from a text in Typography, then apply, edit, detach, rename, reorder and delete it, with every text using the style updating when it changes.
+- Colour, effect and grid styles join text styles: create one from a layer, apply it from the Fill, Stroke, Effects and Layout guides sections, edit it in place with every layer following, and manage it in Local styles or from its right-click menu; styles take a description and can be duplicated, and a colour or effect style bound to a variable keeps that binding on the layers using it.
+- Line height and letter spacing take a percentage of the font size, typed as `150%`, and keep it when the size changes, as in Figma; text also has paragraph spacing and a first-line indent, and `.fig` files keep them.
+- Text paragraphs become bulleted or numbered lists from the Typography panel or by typing `- ` or `1. `, with Tab to nest, exported as real `<ul>` and `<ol>` lists; List spacing, set next to the List buttons, spaces the items of a list apart from Paragraph spacing, on the canvas, in exports and in `.fig` files.
+- Find and replace (Cmd+F, or Edit > Find and Replace…) searches text and layer names on the current page or all pages, goes to each result, and replaces text one match at a time or all at once in one undo step.
+- Hovering a selected rectangle or frame shows corner radius handles: dragging one rounds every corner, and Option rounds one.
+- The shape menu has an Arrow tool (Shift+L), and the stroke settings set the start and end points of lines to none, a line arrow or a triangle arrow.
+- Polygons and stars show Count, and stars Ratio, in the Appearance section.
+- Double-clicking a point in vector edit mode makes it smooth with mirrored curve handles, or sharp again.
+- An open gradient picker shows the gradient on the layer, with end, width and stop handles to drag.
+- The Absolute position button beside X and Y takes a layer out of its auto layout flow, keeps it in place and pins it with constraints.
+- Shift+A wraps a selection in an auto layout frame that keeps its current spacing, direction, order and alignment.
+- The gap and paddings of a selected auto layout frame can be dragged on the canvas.
+- A layer's variable mode is set from its Appearance section, so a whole screen switches to Dark with the layers inside it.
+- A Keyboard shortcuts panel opens with Ctrl+Shift+? or Cmd+/, from the Help button, from View or from the command palette.
+- The Share panel says who can edit, before and after sharing.
+- Unsaved documents appear in Home's Recents as drafts, and opening one returns to its tab or restores it after a reload; a draft can be deleted from its menu, with Undo.
+- A shadow's colour, blur, spread and offsets and a blur's radius can be bound to variables, which follow their mode and round-trip through `.fig` files.
+- Instances can reset all their changes or one kind of change, push their changes to the main component and every other instance, and make a deleted main component again with Restore main component, from the Object menu, the canvas menu or the instance's reset menu.
+- Create multiple components turns each selected layer into its own component, a component playground tries variant, boolean and text properties without changing the file, and Hide when publishing keeps a component out of a published library, as does a name starting with `.` or `_`.
+- The Edit menu selects all layers with the same fill, stroke, effect, text properties, font, instance or properties, and Select matching layers (Cmd+Option+A) selects the layers of the same type and name.
+- Figma's text shortcuts set alignment, size, weight, line height, letter spacing, strikethrough and lists.
+- Cmd+K while editing text adds a link to the selected characters; links survive `.fig` import and export and become `<a>` elements in HTML and JSX export.
+- The Object menu adds Remove frame, Resize to fit, Swap fill and stroke, Remove fill and stroke, rotate 180° and 90°, Hide other layers, Collapse layers and Rasterize selection, which turns the selected layers into one image.
+- N and Shift+N move between frames, Page Up and Page Down between pages, and pages can be duplicated.
+- Paste over selection, Copy link to selection, Copy as CSS, Place image/video and Set default properties are available, and default properties carry over to new files and later launches.
+- The eyedropper (I) picks a colour from the screen in Chromium and the desktop app.
+- Settings choose the nudge amount, whether a tool stays selected after drawing, and whether duplicated layers are numbered.
+- The File menu adds Duplicate, Revert to saved, Export frames to PDF, Color profile, Save to Version History (Cmd+Option+S) and Set as thumbnail, which picks the frame shown as the file's preview and is kept in `.fig` files and Kalka folders; Home duplicates a draft or local file from its card.
+- The View menu adds Outlines, which shows every layer or only the selection as outlines, with options for hidden layers and object bounds; Mask outlines and Frame outlines; Pixel preview at 1x or 2x; Layout grids; and Reset panel widths. About Kalka opens in the browser too.
+- The desktop app opens more editor windows with File › New Window (Cmd+Shift+N): a Window menu lists each window's documents and brings the one you pick forward, a design tab moves to a new or another open window from its context menu, native menu check marks follow the window in front, AI agents work in the window in front, and Quit and update restarts ask each window with unsaved documents in turn.
+- A Vector menu has Join, Smooth join, Delete and heal, Simplify, Reverse path direction and Offset path, as in Figma; Simplify and Offset path preview their result live as their settings change.
+- The pencil (Shift+P) draws smooth freehand vector strokes.
+- The Scale tool (K) scales layers with their strokes, radii, effects and text in proportion, by dragging or by a percentage about a chosen anchor in the Design panel.
+- The Shape builder (Shift+M) merges or removes the regions overlapping shapes make, treats strokes as regions of their own so lines and open paths cut shapes, and previews the result while dragging.
+- Strokes take a width profile from presets or the Variable width tool (Shift+W), where Delete removes the picked width point, or Kalka's own stretch and scatter brushes, drawn the same on the canvas and in SVG, PNG and `.fig` export.
+- The Text tool writes along a path or line when pressed on it, shows a text-on-a-path cursor over one, and names the new text after what it says.
+- Arrange › Tidy up (Ctrl+Option+T on macOS) lines selected layers up in a grid with even spacing; three or more evenly spaced layers show Figma's smart selection handles, to drag a gap to respace them all or a layer's centre to reorder it, and an uneven selection shows a Tidy up button on the canvas; scattered layers are tidied into a balanced grid.
+- The auto layout settings choose whether strokes take space, which child stacks on top, and alignment to the text baseline; grid children can be placed left, center or right within their cell, and grid layouts export to `.fig` files.
+- Image fills take Figma's adjustments (exposure, contrast, saturation, temperature, tint, highlights and shadows) with sliders, imported from and exported to `.fig` files.
+- Noise, texture and glass effects are drawn on the canvas, with glass dispersion splitting colours at the glass's edges, and import from and export to `.fig` files, keeping the glass's bevel size and reflection distance.
+- Layer and background blurs can be progressive, growing from a start blur to an end blur across the layer, with start and end points dragged on the canvas.
+- Raster exports draw progressive blurs, glass refraction and highlights, and textures clipped to their shape.
+- A file on a Kalka server can be shared to edit or to view: whoever made it, or an administrator, chooses in the Share panel or the server console, and the server enforces it. People who may only view open it read-only, with drawing tools, canvas edits and editing shortcuts stopped up front, can still export, and can comment, reply and react; their comments reach the file through an editor, even one who opens it later. Live rooms say they have no access control.
+- Comments take emoji reactions and @mentions of people, and show unread threads and a For you list with notices for new mentions and replies; Home shows the Kalka server's notifications for mentions and replies in any file, and opening one opens its file at the thread.
+- Version history: files not kept in Git keep automatic and named versions on the device, live-room files on each device, and files on a Kalka server on the server, with a version every 30 minutes kept as long as the administrator chooses; each version opens as a preview in its own tab and can be restored after a confirmation.
+- Compare changes shows the layers, components, styles and variables a version differs by from the file now, with what changed on each, side by side or overlaid, for versions kept on the device, on a server or in Git.
+- Branches: Kalka folders create, open, review and merge Git branches from the History panel, and server files can be branched and merged back, with Home listing a server file's branches under it. Merging reviews the changes layer by layer, flags layers both sides changed, and takes only the layers and properties you tick, keeping what changed in the main file since; Update from main brings the main file's changes into a branch the same way.
+- Annotate layers for developers with Shift+T: a note, a category from Figma's or the file's own (made in Manage categories with a label and a colour) and pinned properties, shown live on the canvas and in the Code tab, imported from and exported to `.fig`.
+- Measurements between layers stay on the canvas, kept from the Code tab's Handoff section or by Option-clicking a distance shown while measuring.
+- Frames and sections can be marked ready for dev or completed, and filtered in the comments panel's Ready for dev list.
+- Layers take dev resource links in the Code tab, edited in place; instances show their main component's links.
+- Annotations, measurements and dev statuses undo and redo like any other edit, and follow their layers when they are copied, pasted, duplicated or pasted from the system clipboard.
+- The properties panel has a Prototype tab to add interactions (trigger, one or more actions in order, destination, animation, easing and duration), scroll behaviour, overlay settings, flow starting points and a prototype device; custom bezier and spring easings are edited with a curve editor.
+- Prototype connections are drawn on the canvas while the Prototype tab is open; dragging a layer's handle onto a frame connects them, panning towards frames out of view at the canvas edge.
+- Preview presents pages with interactions as a prototype: navigation, back, overlays, swap, scroll to, change to variant and links, with dissolve, move, push and slide transitions, easing curves and springs; Smart animate moves and resizes layers matched by name and hierarchy between screens and variants, and a layer whose On drag interaction smart-animates follows the pointer.
+- Presented frames scroll horizontally or vertically, keeping fixed and sticky layers in place; clicking where nothing happens shows the hotspots, the presenter switches between flows, and interactive components run the After delay interactions of the variant they change to.
+- Presenting on a phone, tablet or laptop draws the device around the screen, and the Prototype settings set the presenter's background and rotate the device.
+- Comment on a presented prototype: pins show on the presented screen, and C or the comment button pins a new thread on the layer clicked.
+- Prototype interactions can set variables to values or expressions such as `count + 1`, switch a variable mode, branch with If / Else if / Else, and read or pick a variable in a given mode, as in `accent[Dark]`.
+- An Open overlay interaction sets a manual overlay's position from the layer that opens it, or by dragging the overlay's preview on the canvas, which snaps to the screen's layers with guides.
+- Videos: add them to layers from the fill picker's Video tab, Place image/video, or by dropping or pasting a video file; trim them, take a scrubbed frame as their poster, and choose Autoplay, Loop, Muted and showing the player's controls. Presented prototypes play them, the Video action plays, pauses, mutes and skips them, and Video hits and Video ends run interactions at a time or at the end.
+- Prototype interactions, flows, variable and video actions, scroll and overlay settings and video trim and controls import from and export to `.fig` files, and legacy Figma prototype start frames open as a flow.
+- The Plugin API manages local paint, text, effect and grid styles and their folders, links layers to them, reads and sets `reactions`, `flowStartingPoints`, `annotations`, `devStatus`, `variableWidthStrokeProperties` and `complexStrokeProperties`, and manages dev resources; a custom spring keeps its initial velocity from the Plugin API and `.fig` files.
+- MCP tools add noise, texture, glass and progressive blurs with `set_effects`, set width profiles and brushes with `set_stroke_draw`, and read and write prototypes with `get_interactions`, `set_interactions` and `set_prototype_flows`.
+- Design JSX writes layer stacking order, strokes included in layout, grid cell alignment, width profiles and brushes (`strokeWidthProfile`, `strokeBrush`), and prototype interactions with the `interactions` prop, naming layers, variables and modes by name.
+- Shift+Cmd+T reopens the last closed document tab.
+- Home has an Import from Figma action that opens a `.fig` file.
+- Cmd+Shift+C copies the selection as a PNG image.
+- The Typography section edits several selected texts at once.
+- Replace font covers a missing style of a family, letting you choose the style that replaces it.
+- A file whose libraries changed says so when it opens, with a button to review the updates.
+- The comments list shows how many replies each thread has.
 
 ### Changed
 
 - The layers panel lists layers front to back, as Figma does: the layer drawn on top of the others is first in its list, and dropping a row above another puts it in front.
 - The desktop app's editor has a single top bar, as on the web: the Dashboard button and the document tabs sit in the editor's bar, next to the window controls, instead of in a separate bar above it.
+- Keyboard selection works as in Figma: Enter selects a layer's children, Shift+Enter or \ its parent, Tab and Shift+Tab its next or previous sibling, and undo or redo selects the layers each step changed.
+- Shift+0 zooms to 100% and Shift+2 fills the view with the selection, as in Figma; the zoom menu shows these shortcuts and offers Zoom to selection.
+- Duplicating again after moving a copy repeats that offset, as in Figma.
+- The fills and strokes lists show the paint in front at the top, as in Figma.
+- Adding auto layout to a frame keeps its size: an empty frame stays fixed, and a frame with layers hugs them with the padding and spacing they already have.
+- Distribute horizontal and vertical spacing sit in a menu beside the align buttons, with Figma's shortcuts Option+Shift+H and V.
+- In the browser, Figma's shortcuts that the menus already showed now work: Option+A, H, D, W, V and S to align, Option+Shift+U, S, I, E and F for booleans and Flatten, Cmd+Option+G to frame the selection, Cmd+Option+] and [ to bring to front and send to back, and Cmd+Option+O for Outline stroke.
+- Escape closes the color picker and keeps the new paint.
+- Enter sends a comment and Shift+Enter starts a new line.
+- A second press on a panel's icon in the left rail closes it and shows the layers again.
+- Cmd+E flattens the selection, as in Figma.
+- Missing-font notices float over the canvas instead of pushing the editor down.
+- The comment tool stays on after posting a comment, as in Figma.
+- Duplicating several frames places the copies to the right of the whole selection.
+- Masking several layers puts them in a Mask group.
+- Double-clicking into an icon stops at the icon instead of its paths.
+- A line or stroke added on a dark page is white instead of black.
+- Tailwind JSX export leaves out layer names unless you ask for them.
+- Imported text layers are named after their text.
+- The File menu names the shared storage in Open and Save.
+- The welcome's AI step offers Later beside Back.
+- The auto layout gap menu names its Auto option Space between.
 
 ### Fixed
 
+- A rotated line in an auto layout frame takes the space of its rotated bounds, so the frame hugs it and its neighbours stay clear, and turned layers keep the position the layout gives them.
+- Text whose font family is bound to a variable changes family when the mode or the variable changes.
+- Figma files keep their grid layouts and their "strokes included in layout" setting on import.
+- The recovery dialog no longer offers documents that are open in another window or tab.
+- Renaming a page by double-click takes the typed name.
+- Keys typed right after a click with the Text tool go into the new text instead of being lost, and Escape pressed at once removes the empty text.
+- Text created outside any frame grows with what you type and shows in full, instead of staying one pixel wide.
+- A font size or other text style changed while typing shows on the canvas at once instead of when the edit ends.
+- A text layer left empty when you finish editing it is removed, as in Figma, and choosing another tool ends text editing.
+- Changing the fill while editing text with characters selected colors only those characters.
+- The font picker no longer changes the text when it opens or while you search; it previews only the family you hover or reach with the arrow keys.
+- Switching a text to a weight its family has, such as Bold, no longer shows a "font unavailable or substituted" warning.
+- A text or shape drawn inside an auto layout frame takes its place in the flow where you started drawing, instead of at the end.
+- Locked layers can no longer be selected or hovered on the canvas; clicks pass through them to the layers below.
+- Dragging a layer into or out of a frame in the layers panel keeps it in place on the canvas.
+- Typing a frame's width or height moves and stretches its layers by their constraints, as resizing it on the canvas does.
+- Outline stroke turns a stroke into a shape filled with the stroke's color instead of an invisible shape.
+- Paste properties applies the copied look in Chromium browsers instead of reporting that the clipboard has no design data, even after another app replaced the clipboard.
+- Insert icon places the icon in the selected frame, or the frame under the middle of the view, instead of outside it.
+- A number typed in a variable's side panel is saved, opening Apply variable no longer applies one before you choose, and a new variable's name opens for typing.
+- One click on a hex value selects it for typing.
+- Library components can be dragged from the assets panel onto the canvas, and their names show in full in the grid.
+- Clicking a collection shows its modes even while a variable is selected, and double-clicking a mode's name selects the whole name.
+- The comment field stays in view near the edges of the canvas instead of hiding its send button under the panel.
+- A breakpoint added from the Design panel is brought into view.
+- Pasting with nothing usable in the clipboard shows a message.
+- The unsaved-changes dialog keeps the document's name while it closes.
+- The sample tile on Home no longer covers its step labels with its decorative shapes, and the opacity field shows its full value.
+- The AI setup messages agree: Settings and the agent panel name the step that is missing, such as the key for the design model's provider, and the Modes help no longer mentions a per-layer mode control that does not exist.
+- A hidden layout guide's row fades in the properties panel.
 - In the dialog that asks to save before closing, "Don't save" and "Discard all" are outlined red buttons instead of plain text that was easy to miss.
 - A layer moved or resized near the edges or the center of the frame it is in snaps to them, as in Figma; it snapped only to the layers beside it.
 - Deleting a breakpoint artboard, such as Tablet or Phone, removes that breakpoint alone; the main artboard and the other breakpoints stay, and undo brings it back.
@@ -20,6 +148,32 @@
 - The canvas no longer shows a shimmering "next section" placeholder under a page while the agent only changes layers that already exist, such as the buttons of a dashboard it built.
 - In Settings, a model opens on the same frosted surface as the list instead of a flat grey panel.
 - Review, Fast tasks and Vision follow the design model again when you switch back from an agent such as Claude Code to a regular model, instead of staying on "None", which blocked sending images.
+- The HTML/CSS code panel shows the page's code read-only and asks for a selection when none is made, instead of replacing the document with what you type.
+- The Tailwind JSX panel draws vector layers as SVG.
+- Comment pins stay on their layer when it moves, and picking another tool closes the open thread.
+- Effect types, the image fill picker and the export button follow the chosen language.
+- The stroke weight stays readable in a narrow properties panel.
+- Leave room stays inside the Share panel.
+- Polygons and stars have their own icons in the layers panel.
+- Shortcuts keep working while the editor tour is open.
+- Publishing a library without an ID says what is missing.
+- A variant value no variant uses any more leaves the property's list.
+- Shift-clicking in the layers panel extends the range from a layer selected on the canvas.
+- Variables outside any group are listed first, and the panel labels its variable and collection counts.
+- A grid track's size field stays beside its sizing menu.
+- Cmd-dragging inside a nested frame draws a selection marquee.
+- Setting a child to Fill in a hugging parent makes the parent fixed instead of leaving a broken layout.
+- A frame whose flow becomes a grid keeps its hugging and gaps.
+- A selected layer can be dragged from where another layer covers it, and a right-click inside the selection keeps it.
+- A new instance of a variant is placed beside its component set.
+- Discarding a document from the recovery dialog offers Undo.
+- A pasted page's background gives way to a new fill, and a pasted table widens a column when a cell grows.
+- Pasted HTML fills the artboard's width when the system shows classic scrollbars.
+- Open from URL accepts http links and explains why a link cannot be read.
+- A desktop design started from Home is 1440 × 1024, as the Frame tool's Desktop preset.
+- The Home prompt says AI needs connecting before you type, and the agent banner no longer shows Ready without an AI provider.
+- Typing a negative value in a number field replaces it instead of subtracting it.
+- An image fill without an image shows a checkerboard.
 
 ## 0.2.0-beta.10 — 2026-11-24
 
