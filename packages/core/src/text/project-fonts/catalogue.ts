@@ -2,6 +2,7 @@ import * as v from 'valibot'
 
 import type { ProjectFont, ProjectFontFace } from '@kalka/scene-graph'
 
+import { unicodeRangeCovers } from '#core/text/unicode-range'
 import type { WebFontFetch } from '#core/text/web-fonts'
 
 import type { FontFile } from './files'
@@ -198,16 +199,6 @@ const BASE_SUBSETS = new Set([
   'greek-ext'
 ])
 
-function rangeCovers(unicodeRange: string, codePoint: number): boolean {
-  return unicodeRange.split(',').some((part) => {
-    const [start, end = start] = part.trim().replace(/^U\+/i, '').split('-')
-    return (
-      codePoint >= Number.parseInt(start.replaceAll('?', '0'), 16) &&
-      codePoint <= Number.parseInt(end.replaceAll('?', 'F'), 16)
-    )
-  })
-}
-
 /** The catalogue's `unicodeRange` key for a subset: numbered chunks are written `[n]`. */
 function rangeOf(details: Details, subset: string): string | undefined {
   return details.unicodeRange[subset] ?? details.unicodeRange[`[${subset}]`]
@@ -222,7 +213,7 @@ function chosenSubsets(details: Details, available: readonly string[], character
   return available.filter((subset) => {
     if (subset === details.defSubset || BASE_SUBSETS.has(subset)) return true
     const range = rangeOf(details, subset)
-    return !!range && codePoints.some((codePoint) => rangeCovers(range, codePoint))
+    return !!range && codePoints.some((codePoint) => unicodeRangeCovers(range, codePoint))
   })
 }
 

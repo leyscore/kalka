@@ -34,10 +34,14 @@ const SELECTOR = /^[a-z][\w-]*(?:\.[a-z][\w-]*)+$/
 /** A class list a layer imported from HTML was named after, such as `ft-row ft-file`. */
 const CLASS_LIST = /^[a-z][a-z0-9_]*-[\w-]+(?:\s+[a-z][a-z0-9_]*-[\w-]+)+$/
 
-/** The first words of a name or a text, accents dropped, for a class to take. */
+/**
+ * The first words of a name or a text, accents dropped, for a class to take: nothing when none
+ * of their letters is one a class keeps, as in a name written in Cyrillic.
+ */
 function words(text: string): string {
   const plain = text.normalize('NFKD').replaceAll(MARKS, '')
-  return splitWhitespace(plain).slice(0, CLASS_WORDS).join(' ')
+  const first = splitWhitespace(plain).slice(0, CLASS_WORDS).join(' ')
+  return /[a-z0-9]/i.test(first) ? first : ''
 }
 
 /**
@@ -73,8 +77,8 @@ function role(element: DesignElement): string {
 }
 
 function nameClass(element: DesignElement): string | undefined {
-  const name = meaningfulName(element)
-  return name ? cssName(words(name), 'layer') : undefined
+  const name = words(meaningfulName(element) ?? '')
+  return name ? cssName(name, 'layer') : undefined
 }
 
 /** The first words of a text layer, which name its own class as a developer would. */

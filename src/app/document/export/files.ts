@@ -94,11 +94,12 @@ export function getExportBaseName(graph: SceneGraph, target: ExportRequest['targ
 
 export function getExportOptions(format: IOFormatAdapter, options?: ExportOptions): unknown {
   // A page to open from disk, which links its images as files unless one self-contained file
-  // is asked for.
+  // is asked for. It carries the fonts its text uses, so it draws the same on another machine.
   if (format.id === 'html') {
     return {
       html: 'standalone',
-      assets: options?.htmlImages === 'embedded' ? 'inline' : 'external'
+      assets: options?.htmlImages === 'embedded' ? 'inline' : 'external',
+      fonts: 'used'
     }
   }
   if (format.exportOptions?.scale) {

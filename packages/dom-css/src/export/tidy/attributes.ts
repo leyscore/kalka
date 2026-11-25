@@ -2,7 +2,7 @@
 const EDITOR_PREFIX = 'data-kalka-'
 
 /** The layer id an export marks each element with when its caller asks for them. */
-const SOURCE_ID_ATTR = 'data-kalka-node-id'
+export const SOURCE_ID_ATTR = 'data-kalka-node-id'
 
 /** Where the projection keeps a shader layer's settings, which the Kalka folder reads. */
 export const EDITOR_SHADER_ATTR = 'data-kalka-shader'

@@ -1,3 +1,4 @@
+import { uniqBy } from 'es-toolkit'
 import type { RemoteFontSource, ResolveFontResult } from 'unifont'
 
 import type { WebFontFaceAsset, WebFontFaceRequest } from '@kalka/dom-css/export'
@@ -10,6 +11,7 @@ import {
 
 import { fontManager } from '#core/text/fonts'
 import { inter3FontURL } from '#core/text/inter'
+import { unicodeRangeCovers } from '#core/text/unicode-range'
 import {
   createProviderUnifont,
   isRemoteFontSource,
@@ -17,6 +19,7 @@ import {
 } from '#core/text/web-font/providers'
 import {
   WEB_FONT_PROVIDER_IDS,
+  webFontSubsetsForText,
   type WebFontFetch,
   type WebFontProviderId
 } from '#core/text/web-fonts'
@@ -31,6 +34,11 @@ export interface ExportWebFontFaceAssetsOptions {
    * Kalka's own files of it as `Inter`, since the providers serve a later Inter.
    */
   interVersion?: InterVersion
+  /**
+   * The characters the faces draw. A provider splits a family by script, so each file holding
+   * one of them ships, with its `unicode-range`; without it, the Latin file alone ships.
+   */
+  text?: string
 }
 
 export interface ExportWebFontFaceAssetsResult {
@@ -71,26 +79,56 @@ export function slugFontFamily(family: string): string {
   return slug.endsWith('-') ? slug.slice(0, -1) : slug
 }
 
-async function resolveRemoteFontSource(
+interface RemoteFace {
+  source: RemoteFontSource
+  face: ResolveFontResult['fonts'][number]
+}
+
+/**
+ * The files of a face that draw `text`: each one whose `unicode-range` holds a character of it,
+ * or the first when none says what it holds.
+ */
+export function remoteFacesForText<T extends { face: { unicodeRange?: string[] } }>(
+  faces: readonly T[],
+  text: string
+): T[] {
+  const codePoints = Array.from(text, (character) => character.codePointAt(0) ?? 0)
+  const drawn = faces.filter(({ face }) => {
+    const range = face.unicodeRange?.join(',')
+    return range && codePoints.some((codePoint) => unicodeRangeCovers(range, codePoint))
+  })
+  return drawn.length > 0 ? drawn : faces.slice(0, 1)
+}
+
+async function resolveRemoteFontSources(
   family: string,
   request: WebFontFaceRequest,
-  provider: WebFontProviderId
-): Promise<{ source: RemoteFontSource; face: ResolveFontResult['fonts'][number] } | undefined> {
+  provider: WebFontProviderId,
+  text: string | undefined
+): Promise<RemoteFace[]> {
   const unifont = await createProviderUnifont(provider)
   const options = {
     weights: [String(request.weight)],
     styles: [request.style ?? 'normal'],
     formats: ['woff2', 'woff', 'ttf'],
-    subsets: ['latin']
+    subsets: text === undefined ? ['latin'] : webFontSubsetsForText(text)
   } satisfies WebFontResolveOptions
   const result = await unifont.resolveFont(family, options)
-  for (const face of result.fonts.toSorted(
-    (a, b) => (a.meta?.priority ?? 0) - (b.meta?.priority ?? 0)
-  )) {
-    const source = face.src.find(isRemoteFontSource)
-    if (source) return { source, face }
-  }
-  return undefined
+  const faces = result.fonts
+    .toSorted((a, b) => (a.meta?.priority ?? 0) - (b.meta?.priority ?? 0))
+    .flatMap((face): RemoteFace[] => {
+      const source = face.src.find(isRemoteFontSource)
+      return source ? [{ source, face }] : []
+    })
+  if (text === undefined) return faces.slice(0, 1)
+  const preferred = faces.at(0)?.face.meta?.priority ?? 0
+  return uniqBy(
+    remoteFacesForText(
+      faces.filter(({ face }) => (face.meta?.priority ?? 0) === preferred),
+      text
+    ),
+    ({ source }) => source.url
+  )
 }
 
 /** Kalka's own Inter 3.19 file for a face, or null when the face is another. */
@@ -119,7 +157,8 @@ export async function exportWebFontFaceAssets({
   providers = WEB_FONT_PROVIDER_IDS.slice(),
   assetBasePath = 'assets/fonts',
   fetcher = fetch,
-  interVersion
+  interVersion,
+  text
 }: ExportWebFontFaceAssetsOptions): Promise<ExportWebFontFaceAssetsResult> {
   const assets: WebFontFaceAsset[] = []
   const seen = new Set<string>()
@@ -139,23 +178,27 @@ export async function exportWebFontFaceAssets({
 
     for (const provider of providers) {
       try {
-        const resolved = await resolveRemoteFontSource(family, request, provider)
-        if (!resolved) continue
-        const response = await fetcher(resolved.source.url, resolved.face.meta?.init)
-        if (!response.ok) continue
-        const extension = fontAssetExtension(resolved.source)
-        const path = `${assetBasePath}/${slugFontFamily(family)}-${request.weight}-${requestStyle}.${extension}`
-        assets.push({
-          family,
-          weight: resolved.face.weight ?? request.weight,
-          style: resolved.face.style ?? requestStyle,
-          display: resolved.face.display,
-          stretch: resolved.face.stretch,
-          unicodeRange: resolved.face.unicodeRange,
-          format: fontAssetFormat(resolved.source),
-          path,
-          content: new Uint8Array(await response.arrayBuffer())
-        })
+        const resolved = await resolveRemoteFontSources(family, request, provider, text)
+        const fetched: WebFontFaceAsset[] = []
+        for (const { source, face } of resolved) {
+          const response = await fetcher(source.url, face.meta?.init)
+          if (!response.ok) continue
+          // A family split by script ships a file for each one the text draws.
+          const part = fetched.length > 0 ? `-${fetched.length + 1}` : ''
+          fetched.push({
+            family,
+            weight: face.weight ?? request.weight,
+            style: face.style ?? requestStyle,
+            display: face.display,
+            stretch: face.stretch,
+            unicodeRange: face.unicodeRange,
+            format: fontAssetFormat(source),
+            path: `${assetBasePath}/${slugFontFamily(family)}-${request.weight}-${requestStyle}${part}.${fontAssetExtension(source)}`,
+            content: new Uint8Array(await response.arrayBuffer())
+          })
+        }
+        if (fetched.length === 0) continue
+        assets.push(...fetched)
         break
       } catch (error) {
         console.warn(`Failed to export ${family} from ${provider} fonts`, error)

@@ -2,6 +2,7 @@ import type { DesignDocument, DesignElement, DesignNode } from '#dom-css/types'
 
 import { exportAttributes } from './attributes'
 import { tidyDeclarations } from './declarations'
+import { drawnChildren } from './empty'
 import { asFlexLayout } from './flow'
 import { tidyLengths } from './lengths'
 
@@ -20,7 +21,10 @@ function tidyNode(
   options: Required<TidyOptions>
 ): DesignNode {
   if (node.type === 'text') return node
-  const element = asFlexLayout(node, parent?.inlineStyle)
+  const element = asFlexLayout(
+    { ...node, children: drawnChildren(node.children) },
+    parent?.inlineStyle
+  )
   const inlineStyle =
     element.inlineStyle &&
     tidyDeclarations(tidyLengths(element.inlineStyle), {
@@ -47,8 +51,8 @@ function tidyNode(
 /**
  * A projected document as exports write it: the markup a developer would keep, drawing exactly
  * as the projection does. The editor's own attributes stay behind, lengths keep the decimals
- * layout resolves, declarations that restate the browser's defaults go, and children placed in
- * a row or a column are laid out as one.
+ * layout resolves, declarations that restate the browser's defaults go, layers that draw nothing
+ * are left out, and children placed in a row or a column are laid out as one.
  */
 export function tidyDesignDocument(
   document: DesignDocument,

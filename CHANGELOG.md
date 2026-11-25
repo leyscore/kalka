@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- An exported HTML page carries the fonts its text uses, each script's file included, so it draws the same on a machine without them; before, only fonts added to the document shipped, and text in Inter fell back to the browser's default font.
+- An exported HTML page leaves out rectangles of no size, which some browsers drew as a black blot, names a class after what the layer is when its name has no Latin letter or digit instead of a run of dashes, and has a `<title>`.
 - The canvas no longer shows a shimmering "next section" placeholder under a page while the agent only changes layers that already exist, such as the buttons of a dashboard it built.
 - In Settings, a model opens on the same frosted surface as the list instead of a flat grey panel.
 - Review, Fast tasks and Vision follow the design model again when you switch back from an agent such as Claude Code to a regular model, instead of staying on "None", which blocked sending images.

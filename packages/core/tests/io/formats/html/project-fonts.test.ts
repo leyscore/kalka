@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { SceneGraph } from '@kalka/scene-graph'
 
 import { renderNodesToHTML } from '#core/io/formats/html'
+import { fontManager } from '#core/text/fonts'
 import { sampleProjectFont } from '#core-tests/helpers/project-fonts'
 
 function page(fonts = true) {
@@ -43,5 +44,26 @@ describe('HTML export of the fonts a document carries', () => {
     const { graph, frame } = page(false)
     const { html } = await renderNodesToHTML(graph, [frame.id], { html: 'standalone' })
     expect(html).not.toContain('@font-face')
+  })
+})
+
+describe('HTML export of the fonts Kalka draws with', () => {
+  test('a page someone keeps embeds the file of each face its text uses, once', async () => {
+    const family = 'HTML Export Used Face'
+    const file = new Uint8Array([0x77, 0x4f, 0x46, 0x32, 1, 2, 3, 4]).buffer
+    fontManager.markLoaded(family, 'Regular', file)
+    fontManager.markLoaded(family, 'Bold', file)
+    const graph = new SceneGraph()
+    const frame = graph.createNode('FRAME', graph.getPages()[0].id, { width: 200, height: 100 })
+    graph.createNode('TEXT', frame.id, { text: 'Hello', fontFamily: family })
+    graph.createNode('TEXT', frame.id, { text: 'World', fontFamily: family, fontWeight: 700 })
+
+    const { html } = await renderNodesToHTML(graph, [frame.id], {
+      html: 'standalone',
+      fonts: 'used'
+    })
+    expect(html.match(/@font-face/g)).toHaveLength(1)
+    expect(html).toContain('data:font/woff2;base64,')
+    expect(html).toMatch(/font-weight:\s*400 700/)
   })
 })

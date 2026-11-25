@@ -134,9 +134,11 @@ export interface HTMLExportOptions {
   /**
    * `assets` ships web fonts with external assets. `loaded` ships the files Kalka draws the
    * canvas with instead, and lists the fallback families after each text's fonts, as the canvas
-   * does: for pages drawn as images, not for pages someone keeps.
+   * does: for pages drawn as images, not for pages someone keeps. `used` ships those files for
+   * the faces the text names and nothing else, so a page someone keeps draws as the canvas does
+   * on a machine without its fonts, offline.
    */
-  fonts?: 'assets' | 'loaded' | 'none'
+  fonts?: 'assets' | 'loaded' | 'used' | 'none'
   /** The base styles in the page, in a `reset.css` file of their own, or left out. */
   reset?: 'inline' | 'file' | 'none'
   /** Indented HTML and one CSS declaration per line; exported files default to it. */

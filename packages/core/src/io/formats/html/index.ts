@@ -7,7 +7,7 @@ import {
   type DesignDocument,
   type WebFontFaceResolver
 } from '@kalka/dom-css/export'
-import type { InterVersion, SceneGraph } from '@kalka/scene-graph'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import type { ExportAsset, HTMLExportOptions } from '#core/io/types'
 import { fontManager } from '#core/text/fonts'
@@ -65,11 +65,32 @@ function designDocument(
   }
 }
 
+/** Every character the layers draw, for the font files that hold them. */
+function drawnText(graph: SceneGraph, nodeIds: readonly string[]): string {
+  const characters = new Set<string>()
+  const visit = (id: string) => {
+    const node = graph.getNode(id)
+    if (!node) return
+    // A text set in capitals draws letters its own does not hold.
+    for (const character of `${node.text}${node.text.toUpperCase()}`) characters.add(character)
+    node.childIds.forEach(visit)
+  }
+  nodeIds.forEach(visit)
+  return [...characters].join('')
+}
+
 function fontResolver(
   fonts: HTMLExportOptions['fonts'],
-  interVersion: InterVersion
+  graph: SceneGraph,
+  nodeIds: readonly string[]
 ): WebFontFaceResolver | 'none' {
+  const interVersion = graph.interVersion
   if (fonts === 'loaded') return loadedFontFaceAssets(interVersion)
+  if (fonts === 'used')
+    return loadedFontFaceAssets(interVersion, {
+      fallbacks: false,
+      text: drawnText(graph, nodeIds)
+    })
   if (fonts !== 'assets') return 'none'
   return async (requests, basePath) =>
     (await exportWebFontFaceAssets({ fonts: requests, assetBasePath: basePath, interVersion }))
@@ -78,11 +99,19 @@ function fontResolver(
 
 /** `card.html` keeps its external files in `card.assets/` next to it, whatever the path style. */
 function assetBasePath(fileName: string | undefined): string {
-  const name = fileName
+  return `${baseName(fileName) || 'export'}.assets`
+}
+
+function baseName(fileName: string | undefined): string | undefined {
+  return fileName
     ?.split(/[\\/]/)
     .pop()
     ?.replace(/\.[^.]*$/, '')
-  return `${name || 'export'}.assets`
+}
+
+/** What a browser tab calls the page: the file's name, or the layer it was exported from. */
+function pageTitle(graph: SceneGraph, nodeIds: string[], fileName: string | undefined): string {
+  return baseName(fileName) || graph.getNode(nodeIds[0] ?? '')?.name.trim() || ''
 }
 
 export async function renderNodesToHTML(
@@ -114,8 +143,9 @@ export async function renderNodesToHTML(
     html: options.html,
     style: options.style,
     assets: options.assets,
-    fonts: withProjectFonts(graph.fonts, fontResolver(options.fonts, graph.interVersion)),
+    fonts: withProjectFonts(graph.fonts, fontResolver(options.fonts, graph, nodeIds)),
     assetBasePath: assetBasePath(fileName),
+    title: pageTitle(graph, nodeIds, fileName),
     reset: options.reset,
     pretty: options.pretty,
     // Tools that map elements back to layers read every declaration on its element.

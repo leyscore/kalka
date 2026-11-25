@@ -32,15 +32,25 @@ function fileFormat(data: Uint8Array): { format: WebFontFaceAsset['format']; ext
  * for each face the text names, which covers every character the document uses, and the
  * downloaded fallback families the projection lists after them. An installed fallback the page
  * finds by its name; a face Kalka has not loaded comes from the web font providers. In a
- * document keeping Figma's Inter (`interVersion`), `Inter` is Kalka's Inter 3.19.
+ * document keeping Figma's Inter (`interVersion`), `Inter` is Kalka's Inter 3.19. A page someone
+ * keeps names no fallback family, so it ships only its text's own faces (`fallbacks: false`).
+ * A file that serves several weights ships once, for the range of them. With the `text` the page
+ * draws, a face from the providers ships a file for each script that text is written in.
  */
-export function loadedFontFaceAssets(interVersion: InterVersion) {
+export function loadedFontFaceAssets(
+  interVersion: InterVersion,
+  { fallbacks: withFallbacks = true, text }: { fallbacks?: boolean; text?: string } = {}
+) {
   return async (fonts: WebFontFaceRequest[], assetBasePath: string) => {
-    const fallbacks = fontManager
-      .fallbackFamilies()
-      .filter((family) => fontManager.loadedFontSource(family, 'Regular') !== 'fallback')
-      .map((family): WebFontFaceRequest => ({ family, weight: 400, style: 'normal' }))
+    const fallbacks = withFallbacks
+      ? fontManager
+          .fallbackFamilies()
+          .filter((family) => fontManager.loadedFontSource(family, 'Regular') !== 'fallback')
+          .map((family): WebFontFaceRequest => ({ family, weight: 400, style: 'normal' }))
+      : []
     const assets: WebFontFaceAsset[] = []
+    const shipped = new Map<string, { asset: WebFontFaceAsset; weights: number[] }>()
+    const files = new Map<ArrayBuffer, number>()
     const missing: WebFontFaceRequest[] = []
     for (const request of [...fonts, ...fallbacks]) {
       const style = request.style ?? 'normal'
@@ -52,19 +62,35 @@ export function loadedFontFaceAssets(interVersion: InterVersion) {
         if (!fallbacks.includes(request)) missing.push(request)
         continue
       }
+      const file = files.get(data) ?? files.size
+      files.set(data, file)
+      const key = `${request.family}|${style}|${file}`
+      const served = shipped.get(key)
+      if (served) {
+        served.weights.push(request.weight)
+        served.asset.weight = [Math.min(...served.weights), Math.max(...served.weights)]
+        continue
+      }
       const content = new Uint8Array(data)
       const { format, extension } = fileFormat(content)
-      assets.push({
+      const asset: WebFontFaceAsset = {
         family: request.family,
         weight: request.weight,
         style,
         format,
         path: `${assetBasePath}/${slugFontFamily(request.family)}-${request.weight}-${style}.${extension}`,
         content
-      })
+      }
+      shipped.set(key, { asset, weights: [request.weight] })
+      assets.push(asset)
     }
     if (missing.length === 0) return assets
-    const fetched = await exportWebFontFaceAssets({ fonts: missing, assetBasePath, interVersion })
+    const fetched = await exportWebFontFaceAssets({
+      fonts: missing,
+      assetBasePath,
+      interVersion,
+      text
+    })
     return [...assets, ...fetched.assets]
   }
 }

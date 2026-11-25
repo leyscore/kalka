@@ -7,7 +7,8 @@ const NOT_NAME_PART = /[^a-z0-9-]/g
 
 /** A CSS identifier made from a layer or set name, `fallback` when nothing of it is usable. */
 export function cssName(text: string, fallback: string): string {
-  const name = kebabCase(text).replace(NOT_NAME_PART, '')
+  // Letters no identifier keeps, such as Cyrillic, leave only their dashes behind.
+  const name = kebabCase(text).replace(NOT_NAME_PART, '').replace(/-+/g, '-').replace(/^-|-$/g, '')
   return /^[a-z]/.test(name) ? name : `${fallback}${name ? `-${name}` : ''}`
 }
 

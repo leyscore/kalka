@@ -66,3 +66,32 @@ test('external assets name fonts from the stylesheet that sits beside them', asy
   expect(css).toContain('url("fonts/inter.woff2")')
   expect(files.map((file) => file.path)).toContain('page.assets/fonts/inter.woff2')
 })
+
+test('a standalone page takes the title it is given, escaped', async () => {
+  const graph = new SceneGraph()
+  const card = graph.createNode('FRAME', graph.getPages()[0].id, { width: 40, height: 40 })
+  const document = sceneNodeToDesignDocument(graph, card.id, { includeSourceIds: false })
+  const titled = await exportHTMLBundle(document, { html: 'standalone', title: 'Chips & <crisps>' })
+  expect(String(titled.files[0]?.content)).toContain('<title>Chips &amp; &lt;crisps&gt;</title>')
+  const untitled = await exportHTMLBundle(document, { html: 'standalone' })
+  expect(String(untitled.files[0]?.content)).not.toContain('<title>')
+})
+
+test('a layer named in letters no class keeps is named after what it is', async () => {
+  const graph = new SceneGraph()
+  const card = graph.createNode('FRAME', graph.getPages()[0].id, {
+    name: 'Компьютер',
+    width: 400,
+    height: 300
+  })
+  graph.createNode('TEXT', card.id, { name: 'Сайт для покупки', text: 'Сайт для покупки' })
+  const document = {
+    ...sceneNodeToDesignDocument(graph, card.id, { includeSourceIds: false }),
+    sourceGraph: graph
+  }
+  const { files } = await exportHTMLBundle(document, { html: 'standalone' })
+  const html = String(files[0]?.content)
+  expect(html).toContain('<div class="box">')
+  expect(html).toContain('<span class="text">')
+  expect(html).not.toMatch(/class="[^"]*--/)
+})

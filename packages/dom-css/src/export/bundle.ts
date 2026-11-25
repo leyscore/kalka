@@ -7,7 +7,7 @@ import { documentCSSClasses, normalizeFontFamily } from '@kalka/scene-graph'
 import { tokenStylesheet, type TokenStylesheetFormat } from '../tokens/stylesheet'
 import type { DesignDocument, DesignElement, DesignNode } from '../types'
 import { cssClassStylesheet, withClassRules } from './classes'
-import { mergeClassNames, serializeHTML, splitWhitespace } from './html'
+import { escapeText, mergeClassNames, serializeHTML, splitWhitespace } from './html'
 import { imageFileCollector, relativeURL, replaceDataImages, replaceHTMLDataImages } from './images'
 import { childIndent, prettyCSS } from './pretty'
 import { mediaCSS, shareStyles } from './sharing'
@@ -55,6 +55,8 @@ export interface ExportHTMLBundleOptions {
    */
   fonts?: 'none' | WebFontFaceResolver
   assetBasePath?: string
+  /** The `<title>` of a standalone page; none when empty. */
+  title?: string
   /**
    * The base styles that make tags and boxes draw as designed: in the page (the default), in a
    * `reset.css` file of their own, or left out for a project that brings its own reset.
@@ -103,10 +105,15 @@ function cssText(css: string, pretty: boolean): string {
 }
 
 /** A page around its body, the stylesheets its head names, each on its line when pretty. */
-function pageHTML(head: readonly string[], body: string, pretty: boolean): string {
+function pageHTML(
+  head: readonly string[],
+  body: string,
+  { pretty, title }: { pretty: boolean; title: string }
+): string {
   const meta = [
     '<meta charset="utf-8">',
-    '<meta name="viewport" content="width=device-width, initial-scale=1">'
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    ...(title ? [`<title>${escapeText(title)}</title>`] : [])
   ]
   if (!pretty)
     return `<!doctype html><html><head>${[...meta, ...head].join('')}</head><body>${body}</body></html>`
@@ -408,7 +415,7 @@ async function exportStandaloneHTML(
     // The stylesheet sits in the asset folder, so its images are linked from there.
     const pageCSS = replaceDataImages(css, images.linkFrom(options.assetBasePath))
     const cssPath = `${options.assetBasePath}/kalka.css`
-    const html = pageHTML([...resetLink, stylesheetLink(cssPath)], pageBody, options.pretty)
+    const html = pageHTML([...resetLink, stylesheetLink(cssPath)], pageBody, options)
     return {
       entrypoint: 'index.html',
       files: [
@@ -424,7 +431,7 @@ async function exportStandaloneHTML(
   const fonts = await fontFaceAssets(document, options)
   css = `${fonts.css}${css}`
   const style = css ? [styleTag(cssText(css, options.pretty))] : []
-  const html = pageHTML([...resetLink, ...style], body, options.pretty)
+  const html = pageHTML([...resetLink, ...style], body, options)
   return { entrypoint: 'index.html', files: [{ path: 'index.html', content: html }, ...resetFiles] }
 }
 
@@ -438,6 +445,7 @@ export async function exportHTMLBundle(
     assets: options.assets ?? 'inline',
     fonts: options.fonts ?? 'none',
     assetBasePath: options.assetBasePath ?? 'assets',
+    title: options.title ?? '',
     reset: options.reset ?? 'inline',
     pretty: options.pretty ?? false,
     shareStyles: options.shareStyles ?? true
