@@ -43,9 +43,9 @@ const { open: popupOpen, portalActive } = useRetainedPopup(undefined, () => {
 const cls = usePopoverUI({ content: 'w-60 p-2' })
 const { panels } = useI18n()
 
-function cancelFromEscape(event: KeyboardEvent) {
+/** Escape closes the picker and keeps the paint, as in Figma; the selection stays. */
+function closeFromEscape(event: KeyboardEvent) {
   event.stopPropagation()
-  emit('cancel')
 }
 </script>
 
@@ -74,7 +74,7 @@ function cancelFromEscape(event: KeyboardEvent) {
           :side-offset="4"
           side="left"
           data-picker-content
-          @escape-key-down="cancelFromEscape"
+          @escape-key-down="closeFromEscape"
         >
           <div class="mb-2 flex items-center gap-0.5">
             <Tip :label="panels.solid">
