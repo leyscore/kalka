@@ -4,6 +4,7 @@ import type { NodeType, SceneNode } from '@kalka/scene-graph'
 import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
 import Matrix from '@kalka/scene-graph/matrix'
 
+import { autoLayoutInsertIndex } from '#vue/shared/input/auto-layout'
 import { findDrawParent } from '#vue/shared/input/drop-target'
 import { TOOL_TO_NODE } from '#vue/shared/input/types'
 import type { DragDraw, DragState } from '#vue/shared/input/types'
@@ -37,7 +38,9 @@ function startDraw(
   const nodeId = editor.createShape(type, start.x, start.y, 0, 0, parentId)
   if (type === 'TEXT') editor.graph.updateNode(nodeId, { text: '' })
   editor.select([nodeId])
-  setDrag(createDraw(editor, nodeId, start.x, start.y, toLocal, type === 'LINE', snap))
+  setDrag(
+    createDraw(editor, nodeId, start.x, start.y, toLocal, type === 'LINE', snap, { x: cx, y: cy })
+  )
 }
 
 export function startTextDraw(
@@ -112,6 +115,24 @@ function settleDrawnSize(preview: ReturnType<Editor['beginNodePreview']>, node: 
   return clicked
 }
 
+/**
+ * A layer drawn into an auto layout frame takes its place in the flow where the drawing started,
+ * as in Figma, rather than at the end.
+ */
+function placeInFlow(editor: Editor, node: SceneNode, at: { x: number; y: number }) {
+  const parent = editor.graph.getNode(node.parentId ?? '')
+  if (!parent || parent.layoutMode === 'NONE') return
+  const flows = parent.layoutMode === 'HORIZONTAL' || parent.layoutMode === 'VERTICAL'
+  if (flows && node.layoutPositioning !== 'ABSOLUTE') {
+    const index = autoLayoutInsertIndex(parent, at.x, at.y, editor, new Set([node.id]))
+    if (parent.childIds.indexOf(node.id) !== index) {
+      editor.reorderChildWithUndo(node.id, parent.id, index)
+      return
+    }
+  }
+  editor.runLayoutForNode(parent.id)
+}
+
 function createDraw(
   editor: Editor,
   nodeId: string,
@@ -119,7 +140,8 @@ function createDraw(
   startY: number,
   toLocal: DragDraw['toLocal'],
   line: boolean,
-  snap: DragDraw['snap']
+  snap: DragDraw['snap'],
+  canvasStart: { x: number; y: number }
 ): DragDraw {
   const graph = editor.graph
   const preview = editor.beginNodePreview('Draw dimensions')
@@ -144,9 +166,7 @@ function createDraw(
     try {
       const clicked = node ? settleDrawnSize(preview, node) : false
       preview.commit()
-      // Drawn into auto layout, the layer joins the flow at the end.
-      const parent = graph.getNode(node?.parentId ?? '')
-      if (parent && parent.layoutMode !== 'NONE') editor.runLayoutForNode(parent.id)
+      if (node) placeInFlow(editor, node, canvasStart)
       // A frame made by a click, not drawn over anything, takes nothing in.
       if (node?.type === 'SECTION' || (node?.type === 'FRAME' && !clicked)) {
         editor.adoptCoveredLayers(node.id)

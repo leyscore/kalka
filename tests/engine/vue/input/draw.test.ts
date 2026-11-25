@@ -188,4 +188,36 @@ describe('draw creation previews', () => {
       editor.dispose()
     }
   })
+
+  // Figma: text drawn between two items of a row takes its place between them.
+  test('a layer drawn into auto layout joins the flow where the drawing started', () => {
+    const editor = createEditor()
+    try {
+      const page = editor.state.currentPageId
+      const row = editor.graph.createNode('FRAME', page, {
+        x: 0,
+        y: 0,
+        width: 400,
+        height: 50,
+        layoutMode: 'HORIZONTAL'
+      })
+      const first = editor.graph.createNode('RECTANGLE', row.id, { x: 0, y: 0, width: 50 })
+      const second = editor.graph.createNode('RECTANGLE', row.id, { x: 100, y: 0, width: 50 })
+      editor.setTool('TEXT')
+      const state: { drag: DragState | null } = { drag: null }
+      startTextDraw(70, 20, editor, (drag) => {
+        state.drag = drag
+      })
+      const drag = state.drag
+      if (drag?.type !== 'draw') throw new Error('Expected drawing interaction')
+      handleDrawMove(drag, 90, 40, false)
+      drag.commit()
+      expect(row.childIds).toEqual([first.id, drag.nodeId, second.id])
+      editor.undoAction()
+      expect(row.childIds).toEqual([first.id, second.id])
+      expect(editor.undo.canUndo).toBe(false)
+    } finally {
+      editor.dispose()
+    }
+  })
 })
