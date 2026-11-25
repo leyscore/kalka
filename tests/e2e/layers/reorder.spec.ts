@@ -36,7 +36,8 @@ test('dragging layers reorders scene nodes', async ({ page }) => {
 
   const order = await layerOrder(page)
 
-  expect(order).toEqual([ids.third, ids.first, ids.second])
+  // The list runs front to back, as in Figma: dropped above Layer A, Layer C goes in front of it.
+  expect(order).toEqual([ids.first, ids.third, ids.second])
   canvas.assertNoErrors()
 })
 

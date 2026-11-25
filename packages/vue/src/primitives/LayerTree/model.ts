@@ -21,6 +21,11 @@ export interface LayerTreeModel {
   byId: Map<string, LayerNode>
 }
 
+/**
+ * The layers of a page as the panel lists them, as Figma does: front to back, so the layer drawn
+ * over the others is at the top. A parent's children are kept back to front, in paint and HTML
+ * order, so the list reads them in reverse.
+ */
 export function buildLayerTreeModel(graph: SceneGraph, parentId: string): LayerTreeModel {
   const byId = new Map<string, LayerNode>()
 
@@ -28,7 +33,7 @@ export function buildLayerTreeModel(graph: SceneGraph, parentId: string): LayerT
     const parent = graph.getNode(id)
     if (!parent) return []
     const children: LayerNode[] = []
-    for (const childId of parent.childIds) {
+    for (const childId of parent.childIds.toReversed()) {
       const sceneNode = graph.getNode(childId)
       if (!sceneNode || sceneNode.internalOnly) continue
       const node = nodeToLayerNode(sceneNode)

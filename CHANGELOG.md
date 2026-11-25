@@ -6,6 +6,7 @@
 
 ### Changed
 
+- The layers panel lists layers front to back, as Figma does: the layer drawn on top of the others is first in its list, and dropping a row above another puts it in front.
 - The desktop app's editor has a single top bar, as on the web: the Dashboard button and the document tabs sit in the editor's bar, next to the window controls, instead of in a separate bar above it.
 
 ### Fixed

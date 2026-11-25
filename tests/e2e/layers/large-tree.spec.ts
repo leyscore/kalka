@@ -46,7 +46,8 @@ test('large layer trees stay virtualized and scrollable', async ({ page }) => {
   const scroller = page.getByTestId('layers-scroll')
   const rows = page.getByTestId('layers-item')
 
-  await expect(rows.first()).toContainText('Layer 0001')
+  // The list runs front to back, as in Figma: the layer added last is at the top.
+  await expect(rows.first()).toContainText('Layer 5000')
   await expect.poll(() => rows.count()).toBeLessThan(250)
   await expect
     .poll(() => page.evaluate((startedAt) => performance.now() - startedAt, replaceStartedAt))
@@ -56,13 +57,13 @@ test('large layer trees stay virtualized and scrollable', async ({ page }) => {
     const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageNode = store.graph.getNode(store.state.currentPageId)
-    const lastId = pageNode?.childIds.at(-1)
-    if (!lastId) throw new Error('Last layer not found')
-    store.select([lastId])
+    const firstId = pageNode?.childIds[0]
+    if (!firstId) throw new Error('First layer not found')
+    store.select([firstId])
   })
 
-  const lastRow = rows.filter({ hasText: 'Layer 5000' }).first()
-  await expect(lastRow).toBeVisible()
+  const bottomRow = rows.filter({ hasText: 'Layer 0001' }).first()
+  await expect(bottomRow).toBeVisible()
   const scrollBefore = await scroller.evaluate((el) => el.scrollTop)
 
   await page.evaluate(() => {
@@ -70,12 +71,12 @@ test('large layer trees stay virtualized and scrollable', async ({ page }) => {
     if (!store) throw new Error('Kalka store not initialized')
 
     const pageNode = store.graph.getNode(store.state.currentPageId)
-    const firstId = pageNode?.childIds[0]
-    if (!firstId) throw new Error('First layer not found')
-    store.updateNodeWithUndo(firstId, { x: 32 }, 'Move first layer')
+    const lastId = pageNode?.childIds.at(-1)
+    if (!lastId) throw new Error('Last layer not found')
+    store.updateNodeWithUndo(lastId, { x: 32 }, 'Move last layer')
   })
 
-  await expect(lastRow).toBeVisible()
+  await expect(bottomRow).toBeVisible()
   await page.evaluate(
     () =>
       new Promise<void>((resolve) => {
@@ -89,12 +90,12 @@ test('large layer trees stay virtualized and scrollable', async ({ page }) => {
     if (!store) throw new Error('Kalka store not initialized')
 
     const pageNode = store.graph.getNode(store.state.currentPageId)
-    const lastId = pageNode?.childIds.at(-1)
-    if (!lastId) throw new Error('Last layer not found')
-    store.renameNode(lastId, 'Last layer renamed')
+    const firstId = pageNode?.childIds[0]
+    if (!firstId) throw new Error('First layer not found')
+    store.renameNode(firstId, 'First layer renamed')
   })
 
-  const renamedRow = rows.filter({ hasText: 'Last layer renamed' }).first()
+  const renamedRow = rows.filter({ hasText: 'First layer renamed' }).first()
   await expect(renamedRow).toBeVisible()
   await renamedRow.dblclick()
   const renameInput = page.getByTestId('layers-item-input')
@@ -103,9 +104,9 @@ test('large layer trees stay virtualized and scrollable', async ({ page }) => {
   await page.evaluate(() => {
     const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
-    const firstId = store.graph.getNode(store.state.currentPageId)?.childIds[0]
-    if (!firstId) throw new Error('First layer not found')
-    store.updateNodeWithUndo(firstId, { y: 48 }, 'Move first layer again')
+    const lastId = store.graph.getNode(store.state.currentPageId)?.childIds.at(-1)
+    if (!lastId) throw new Error('Last layer not found')
+    store.updateNodeWithUndo(lastId, { y: 48 }, 'Move last layer again')
   })
 
   await expect(renameInput).toBeFocused()

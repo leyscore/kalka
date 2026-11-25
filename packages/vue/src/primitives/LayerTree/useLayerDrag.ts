@@ -126,10 +126,11 @@ export function useLayerDrag(
       if (!targetParent) return
       const targetIndex = targetParent.childIds.indexOf(targetId)
 
+      // The list runs front to back: above a row is in front of it, after it among the children.
       if (inst.type === 'reorder-above') {
-        editor.reorderChildWithUndo(sourceId, targetParentId, targetIndex)
-      } else if (inst.type === 'reorder-below') {
         editor.reorderChildWithUndo(sourceId, targetParentId, targetIndex + 1)
+      } else if (inst.type === 'reorder-below') {
+        editor.reorderChildWithUndo(sourceId, targetParentId, targetIndex)
       } else {
         const container = editor.graph.getNode(targetId)
         if (!container || !editor.graph.isContainer(targetId)) return

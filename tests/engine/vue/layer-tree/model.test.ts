@@ -10,7 +10,7 @@ import {
 import { createRect, firstPageId, makeSceneGraph } from '#tests/helpers/scene'
 
 describe('layer tree model', () => {
-  test('builds indexed nested items in scene order', () => {
+  test('builds indexed nested items front to back, the last child first', () => {
     const graph = makeSceneGraph()
     const pageId = firstPageId(graph)
     const frame = graph.createNode('FRAME', pageId, { name: 'Frame' })
@@ -23,8 +23,8 @@ describe('layer tree model', () => {
 
     const model = buildLayerTreeModel(graph, pageId)
 
-    expect(model.items.map((node) => node.id)).toEqual([frame.id, sibling.id])
-    expect(model.items[0]?.children?.map((node) => node.id)).toEqual([child.id])
+    expect(model.items.map((node) => node.id)).toEqual([sibling.id, frame.id])
+    expect(model.items[1]?.children?.map((node) => node.id)).toEqual([child.id])
     expect(model.byId.get(child.id)?.name).toBe('Child')
     expect(model.byId.has(internal.id)).toBe(false)
   })
