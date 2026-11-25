@@ -124,6 +124,14 @@ test('selecting a variable edits it in the inspector', async () => {
   editor.canvas.assertNoErrors()
 })
 
+test('clicking the collection shows its modes while a variable is selected', async () => {
+  await expect(editor.page.getByTestId('token-inspector')).toBeVisible()
+  await editor.page.getByTestId('variables-collection-tab').first().click()
+  await expect(editor.page.getByTestId('collection-inspector')).toBeVisible()
+  await expect(editor.page.getByTestId('variables-add-mode')).toBeVisible()
+  editor.canvas.assertNoErrors()
+})
+
 test('a number typed in the inspector is saved', async () => {
   const row = variableRows().filter({ hasText: 'New number' })
   await row.click()

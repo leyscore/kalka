@@ -20,10 +20,16 @@ const { collections, groups, total } = defineProps<{
 const activeCollectionId = defineModel<string>('collectionId', { required: true })
 /** The group the list is narrowed to, or null for every token in the collection. */
 const activeGroup = defineModel<string | null>('group', { default: null })
-const emit = defineEmits<{ addCollection: [] }>()
+/** `openCollection` follows a click on a collection, the active one too, to show its settings. */
+const emit = defineEmits<{ addCollection: []; openCollection: [] }>()
 
 const { variables } = useI18n()
 const ui = tv(tokensPanelTheme)()
+
+function openCollection(id: string) {
+  activeCollectionId.value = id
+  emit('openCollection')
+}
 </script>
 
 <template>
@@ -47,7 +53,7 @@ const ui = tv(tokensPanelTheme)()
         :data-active="item.id === activeCollectionId || undefined"
         :aria-current="item.id === activeCollectionId ? 'true' : undefined"
         data-test-id="variables-collection-tab"
-        @click="activeCollectionId = item.id"
+        @click="openCollection(item.id)"
       >
         <span class="truncate">{{ item.name }}</span>
         <span :class="ui.sidebarCount()">{{ item.count }}</span>

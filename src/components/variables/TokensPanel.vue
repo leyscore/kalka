@@ -239,6 +239,11 @@ function renameAddedToken() {
   if (id && selectedIds.value.length === 1 && !compact.value) table.value?.rename(id)
 }
 
+/** A click on a collection, the active one too, shows its settings and modes, as Figma keeps them at hand. */
+function showCollection() {
+  selectedIds.value = []
+}
+
 function removeTokens(ids: readonly string[]) {
   actions.remove(ids)
   closeDetail()
@@ -458,6 +463,7 @@ const groupOptions = computed(() => groupEntries.value.map((entry) => entry.path
               :key="candidate.id"
               :value="candidate.id"
               data-test-id="variables-collection-tab"
+              @click="showCollection"
             >
               {{ candidate.name }}
             </AppTabsTrigger>
@@ -494,6 +500,7 @@ const groupOptions = computed(() => groupEntries.value.map((entry) => entry.path
           :groups="groupEntries"
           :total="collectionVariables.length"
           @add-collection="ctx.addCollection"
+          @open-collection="showCollection"
         />
         <TokenTable
           ref="table"
