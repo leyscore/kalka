@@ -13,6 +13,7 @@ Place a test with the source that owns its contract. Choose the runtime separate
 | Application workflows and visuals       | `tests/e2e/<workflow>/**/*.spec.ts`                            |
 | Native WebView and shell delivery       | `tests/e2e/native/**/*.spec.ts`                                |
 | Figma compatibility acceptance          | `tests/figma/**/*.spec.ts`                                     |
+| Sessions people play in the interface   | `tests/user/*.md`                                              |
 | Private tool contracts                  | `tools/<owner>/tests/`                                         |
 
 For example, `packages/core/src/canvas/text/prepared.ts` maps to `packages/core/tests/canvas/text/prepared.test.ts`; `src/app/demo/viewport.ts` maps to `tests/app/demo/viewport.test.ts`. A substantial module may have a matching test directory rather than one large test file. Application E2E, external-system acceptance and large contract suites are intentional exceptions to file-for-file mirroring.
