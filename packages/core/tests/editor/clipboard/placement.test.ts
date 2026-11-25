@@ -267,3 +267,59 @@ describe('paste with nothing selected', () => {
     expect((await pasteWithNothingSelected(snapshot)).parentId).toBe(page)
   })
 })
+
+describe('duplicate after moving a copy', () => {
+  test('repeats the offset the copy was moved by', () => {
+    const page = setup()
+    const original = node('RECTANGLE', page, { x: 100, y: 100 })
+    editor.select([original.id])
+    editor.duplicateSelected()
+    const copy = selected()
+    editor.graph.updateNode(copy.id, { x: 160, y: 120 })
+    editor.duplicateSelected()
+    expect(selected()).toMatchObject({ x: 220, y: 140 })
+    // And again, from the copy just made.
+    editor.duplicateSelected()
+    expect(selected()).toMatchObject({ x: 280, y: 160 })
+  })
+
+  test('repeats it inside a frame and for several layers', () => {
+    const page = setup()
+    const frame = node('FRAME', page, { width: 400, height: 400 })
+    const a = node('RECTANGLE', frame.id, { x: 10, y: 10 })
+    const b = node('RECTANGLE', frame.id, { x: 60, y: 10 })
+    editor.select([a.id, b.id])
+    editor.duplicateSelected()
+    for (const id of editor.state.selectedIds) {
+      const copy = editor.graph.getNode(id)
+      if (copy) editor.graph.updateNode(id, { y: copy.y + 50 })
+    }
+    editor.duplicateSelected()
+    const copies = [...editor.state.selectedIds].map((id) => editor.graph.getNode(id))
+    expect(copies.map((n) => [n?.parentId, n?.x, n?.y])).toEqual([
+      [frame.id, 10, 110],
+      [frame.id, 60, 110]
+    ])
+  })
+
+  test('a copy left where it was put duplicates as usual', () => {
+    const page = setup()
+    const original = node('RECTANGLE', page, { x: 100, y: 100 })
+    editor.select([original.id])
+    editor.duplicateSelected()
+    editor.duplicateSelected()
+    expect(selected()).toMatchObject({ x: 100, y: 100 })
+  })
+
+  test('another layer than the last copies duplicates as usual', () => {
+    const page = setup()
+    const original = node('RECTANGLE', page, { x: 100, y: 100 })
+    const other = node('RECTANGLE', page, { x: 300, y: 300 })
+    editor.select([original.id])
+    editor.duplicateSelected()
+    editor.graph.updateNode(selected().id, { x: 160 })
+    editor.select([other.id])
+    editor.duplicateSelected()
+    expect(selected()).toMatchObject({ x: 300, y: 300 })
+  })
+})

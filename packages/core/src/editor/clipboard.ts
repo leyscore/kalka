@@ -47,7 +47,42 @@ export function duplicateNode(
   return ctx.graph.cloneTree(node.id, parentId, { name: node.name, ...position })
 }
 
+/** The copies the last duplicate made, each with its original and where the copy was put. */
+type DuplicateRecord = { sourceId: string; copyId: string; parentId: string; at: Vector }[]
+
+interface LastDuplicate {
+  copies: DuplicateRecord
+  /** The duplicate repeated an offset, which the next one goes on repeating. */
+  repeated: boolean
+}
+
 export function createClipboardActions(ctx: EditorContext) {
+  let lastDuplicate: LastDuplicate = { copies: [], repeated: false }
+
+  /**
+   * How far the selection was moved from what it was duplicated from, when it is exactly the
+   * copies the last duplicate made and someone moved them since, or that duplicate repeated an
+   * offset already: Figma's next duplicate repeats it, so Cmd+D, a move and Cmd+D again and again
+   * make an evenly spaced row.
+   */
+  function repeatedDuplicateOffset(topLevel: readonly SceneNode[]): Vector | null {
+    const records = lastDuplicate.copies
+    if (records.length === 0 || records.length !== topLevel.length) return null
+    const copies = new Map(topLevel.map((node) => [node.id, node]))
+    let offset: Vector | null = null
+    let moved = lastDuplicate.repeated
+    for (const record of records) {
+      const copy = copies.get(record.copyId)
+      const source = ctx.graph.getNode(record.sourceId)
+      if (copy?.parentId !== record.parentId || source?.parentId !== record.parentId) return null
+      const apart = { x: copy.x - source.x, y: copy.y - source.y }
+      if (offset && (offset.x !== apart.x || offset.y !== apart.y)) return null
+      offset = apart
+      moved ||= copy.x !== record.at.x || copy.y !== record.at.y
+    }
+    return moved ? offset : null
+  }
+
   function duplicateSelected(selectedNodes: SceneNode[]) {
     const prevSelection = new Set(ctx.state.selectedIds)
     const selectedSet = new Set(selectedNodes.map((n) => n.id))
@@ -57,21 +92,24 @@ export function createClipboardActions(ctx: EditorContext) {
 
     const newRootIds: string[] = []
     const allSnapshots = new Map<string, SceneNode>()
+    const record: DuplicateRecord = []
+    const repeated = repeatedDuplicateOffset(topLevel)
 
     const placed: Rect[] = []
     for (const node of topLevel) {
       const parentId = node.parentId ?? ctx.state.currentPageId
-      const position =
-        topLevel.length === 1
-          ? placementActions.duplicatePosition(node, placed)
-          : { x: node.x, y: node.y }
+      let position: Vector = { x: node.x, y: node.y }
+      if (repeated) position = { x: node.x + repeated.x, y: node.y + repeated.y }
+      else if (topLevel.length === 1) position = placementActions.duplicatePosition(node, placed)
       const clone = duplicateNode(ctx, node, parentId, position)
       if (!clone) continue
       placed.push(getAxisAlignedBoundsInParent([clone], parentId, ctx.graph))
       newRootIds.push(clone.id)
+      record.push({ sourceId: node.id, copyId: clone.id, parentId, at: { x: clone.x, y: clone.y } })
       const subtree = snapshotSubtree(ctx.graph, clone.id)
       for (const [id, snap] of subtree) allSnapshots.set(id, snap)
     }
+    lastDuplicate = { copies: record, repeated: repeated !== null }
 
     if (newRootIds.length > 0) {
       ctx.setSelectedIds(new Set(newRootIds))
