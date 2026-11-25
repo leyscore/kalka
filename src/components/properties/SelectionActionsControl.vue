@@ -13,7 +13,10 @@ const maskCommand = getCommand('selection.toggleMask')
 </script>
 
 <template>
+  <!-- The mask button keeps its place when booleans appear for several layers, so a click aimed at
+  the boolean menu never lands on it. -->
   <div class="ml-auto flex items-center gap-1">
+    <BooleanOperationsControl v-if="showBooleanOperations" />
     <IconButton
       :label="maskCommand.label"
       :disabled="!maskCommand.enabled.value"
@@ -22,6 +25,5 @@ const maskCommand = getCommand('selection.toggleMask')
     >
       <icon-hugeicons-shapes class="size-3.5" />
     </IconButton>
-    <BooleanOperationsControl v-if="showBooleanOperations" />
   </div>
 </template>
