@@ -34,7 +34,8 @@ export function createViewCommands({
         return t.value.zoomToSelection
       },
       enabled: capabilities.canZoomToSelection,
-      run: () => editor.zoomToSelection()
+      // Shift+2 fills the view with the selection, as in Figma, zooming past 100% when it is small.
+      run: () => editor.zoomToSelection(Number.POSITIVE_INFINITY)
     }
   }
 }

@@ -40,3 +40,27 @@ describe('centerOn', () => {
     expect({ ...center(editor), zoom: editor.state.zoom }).toEqual(before)
   })
 })
+
+describe('zoomToSelection', () => {
+  function editorWithSmallFrame() {
+    const editor = createEditor({ getViewportSize: () => VIEWPORT })
+    const id = editor.createShape('FRAME', 100, 100, 180, 200)
+    editor.select([id])
+    return editor
+  }
+
+  test('keeps a small selection at 100% by default', () => {
+    const editor = editorWithSmallFrame()
+    editor.zoomToSelection()
+    expect(editor.state.zoom).toBe(1)
+    expect(center(editor)).toEqual({ x: 190, y: 200 })
+  })
+
+  test('fills the view with a small selection when allowed past 100%', () => {
+    const editor = editorWithSmallFrame()
+    editor.zoomToSelection(Number.POSITIVE_INFINITY)
+    expect(editor.state.zoom).toBeGreaterThan(1)
+    expect(center(editor).x).toBeCloseTo(190)
+    expect(center(editor).y).toBeCloseTo(200)
+  })
+})

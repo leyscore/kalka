@@ -172,7 +172,7 @@
       {
         "id": "view.zoom100",
         "label": "Zoom to 100%",
-        "accelerator": "CmdOrCtrl+0"
+        "accelerator": "Shift+0"
       },
       {
         "id": "view.zoomFit",

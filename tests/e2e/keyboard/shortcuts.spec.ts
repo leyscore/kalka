@@ -461,6 +461,20 @@ test.describe('zoom shortcuts', () => {
     expect(zoomAfter).toBe(1)
   })
 
+  test('⇧0 zooms to 100%, as in Figma', async () => {
+    await editor.page.evaluate(() => {
+      const store = window.kalka?.getStore?.()
+      if (!store) throw new Error('Kalka store not initialized')
+      store.state.zoom = 2
+    })
+    await editor.canvas.waitForRender()
+
+    await editor.page.keyboard.press('Shift+Digit0')
+    await editor.canvas.waitForRender()
+
+    expect(await getZoom()).toBe(1)
+  })
+
   test('⌘1 zooms to fit', async () => {
     await editor.page.keyboard.press('Meta+1')
     await editor.canvas.waitForRender()
@@ -476,9 +490,8 @@ test.describe('zoom shortcuts', () => {
     await editor.page.keyboard.press('Meta+2')
     await editor.canvas.waitForRender()
 
-    const zoom = await getZoom()
-    expect(zoom).toBeGreaterThan(0)
-    expect(zoom).toBeLessThanOrEqual(1)
+    // The small rectangle fills the view, as in Figma, past 100%.
+    expect(await getZoom()).toBeGreaterThan(1)
   })
 
   test('⇧1 zooms to fit (same as ⌘1)', async () => {
@@ -496,9 +509,8 @@ test.describe('zoom shortcuts', () => {
     await editor.page.keyboard.press('Shift+2')
     await editor.canvas.waitForRender()
 
-    const zoom = await getZoom()
-    expect(zoom).toBeGreaterThan(0)
-    expect(zoom).toBeLessThanOrEqual(1)
+    // The small rectangle fills the view, as in Figma, past 100%.
+    expect(await getZoom()).toBeGreaterThan(1)
   })
 })
 

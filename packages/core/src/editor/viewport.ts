@@ -62,14 +62,15 @@ export function createViewportActions(ctx: EditorContext) {
     emitViewportChanged(previous)
   }
 
-  function zoomToBounds(minX: number, minY: number, maxX: number, maxY: number) {
+  /** Fits the bounds in view, zooming in no further than `maxZoom` (100% by default). */
+  function zoomToBounds(minX: number, minY: number, maxX: number, maxY: number, maxZoom = 1) {
     const previous = currentViewport()
     const padding = 80
     const w = maxX - minX + padding * 2
     const h = maxY - minY + padding * 2
 
     const { width: viewW, height: viewH } = ctx.getViewportSize()
-    const zoom = Math.min(viewW / w, viewH / h, 1)
+    const zoom = Math.min(viewW / w, viewH / h, maxZoom, 256)
 
     ctx.state.zoom = zoom
     ctx.state.panX = (viewW - w * zoom) / 2 - minX * zoom + padding * zoom
@@ -120,7 +121,11 @@ export function createViewportActions(ctx: EditorContext) {
     zoomToLevel(1)
   }
 
-  function zoomToSelection() {
+  /**
+   * Fits the selection in view. Figma's Shift+2 fills the view with it, so that command passes a
+   * `maxZoom` above 100%; other callers keep the selection at its size or smaller.
+   */
+  function zoomToSelection(maxZoom = 1) {
     if (ctx.state.selectedIds.size === 0) return
 
     const nodes = [...ctx.state.selectedIds]
@@ -129,7 +134,7 @@ export function createViewportActions(ctx: EditorContext) {
     if (nodes.length === 0) return
 
     const b = computeAbsoluteBounds(nodes, (id) => ctx.graph.getAbsolutePosition(id))
-    zoomToBounds(b.x, b.y, b.x + b.width, b.y + b.height)
+    zoomToBounds(b.x, b.y, b.x + b.width, b.y + b.height, maxZoom)
   }
 
   /**

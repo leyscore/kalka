@@ -118,7 +118,7 @@ export const EDITOR_COMMAND_METADATA = {
   },
   'selection.moveToPage': {},
   'selection.setOpacity': { shortcut: '1-9, 0' },
-  'view.zoom100': { shortcut: 'MOD+0', keybinding: '$mod+Digit0' },
+  'view.zoom100': { shortcut: 'SHIFT+0', keybinding: ['$mod+Digit0', 'Shift+Digit0'] },
   'view.zoomFit': { shortcut: 'SHIFT+1', keybinding: ['$mod+Digit1', 'Shift+Digit1'] },
   'view.zoomSelection': { shortcut: 'SHIFT+2', keybinding: ['$mod+Digit2', 'Shift+Digit2'] }
 } satisfies Record<EditorCommandId, EditorCommandMetadata>

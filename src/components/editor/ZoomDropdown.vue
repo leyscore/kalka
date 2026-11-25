@@ -20,6 +20,7 @@ import { menuItem, useMenuUI } from '@/components/ui/menu/menu'
 
 const store = useEditorStore()
 const { getCommand } = useEditorCommands()
+const zoomSelection = getCommand('view.zoomSelection')
 const { menu: menuText, commands, panels } = useI18n()
 
 const open = ref(false)
@@ -149,6 +150,14 @@ watch(open, (v) => {
         <DropdownMenuItem :class="itemCls" @select="getCommand('view.zoomFit').run()">
           <span class="flex-1">{{ commands.zoomToFit }}</span>
           <AppShortcutText>{{ appMenuShortcutLabel('view.zoomFit') }}</AppShortcutText>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          :class="itemCls"
+          :disabled="!zoomSelection.enabled.value"
+          @select="zoomSelection.run()"
+        >
+          <span class="flex-1">{{ commands.zoomToSelection }}</span>
+          <AppShortcutText>{{ appMenuShortcutLabel('view.zoomSelection') }}</AppShortcutText>
         </DropdownMenuItem>
         <DropdownMenuItem
           v-for="preset in ZOOM_PRESETS"
