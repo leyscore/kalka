@@ -62,3 +62,16 @@ test('Cmd+Backslash shows panels again', async () => {
   await expect(editor.page.getByTestId('layers-panel')).toBeVisible()
   editor.canvas.assertNoErrors()
 })
+
+test('a second press on a rail panel closes it and shows the layers again', async () => {
+  const versions = editor.page.getByTestId('left-panel-history-tab')
+  const layers = editor.page.getByTestId('left-panel-layers-tab')
+  await versions.click()
+  await expect(versions).toHaveAttribute('data-active', 'true')
+  await versions.click()
+  await expect(versions).not.toHaveAttribute('data-active')
+  await expect(layers).toHaveAttribute('data-active', 'true')
+  // Layers is a tab: pressing it again keeps it.
+  await layers.click()
+  await expect(layers).toHaveAttribute('data-active', 'true')
+})

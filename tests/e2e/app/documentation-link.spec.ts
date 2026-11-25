@@ -37,3 +37,19 @@ test('Home opens the documentation on kalka.design', async ({ page, context }) =
   await tab.waitForLoadState('domcontentloaded')
   expect(tab.url()).toBe('https://kalka.design/docs')
 })
+
+test('the editor rail opens the documentation in a new tab and keeps the document', async ({
+  page,
+  context
+}) => {
+  await context.route('https://kalka.design/**', (route) =>
+    route.fulfill({ status: 200, contentType: 'text/html', body: '<title>Docs</title>' })
+  )
+  await page.goto('/?test')
+  const opened = context.waitForEvent('page')
+  await page.getByTestId('panel-rail-documentation').click()
+  const tab = await opened
+  await tab.waitForLoadState('domcontentloaded')
+  expect(new URL(tab.url()).host).toBe('kalka.design')
+  await expect(page.getByTestId('panel-rail')).toBeVisible()
+})

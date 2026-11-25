@@ -28,10 +28,17 @@ function isActive(panel: RailPanel) {
   return !variablesOpen.value && activePanel.value === panel
 }
 
-/** Choosing a panel closes the variables page first, and shows that panel. */
+/** Layers and assets are the document's own tabs, as in Figma; the other panels close again. */
+const TABS: ReadonlySet<RailPanel> = new Set(['file', 'assets'])
+
+/**
+ * Choosing a panel closes the variables page first, and shows that panel; one more press on a
+ * panel shown closes it and gives the panel back to the layers, as the agent's button does.
+ */
 function choose(panel: RailPanel) {
+  const closing = !TABS.has(panel) && isActive(panel)
   store.state.variablesOpen = false
-  show(panel)
+  show(closing ? 'file' : panel)
 }
 
 function chooseAgent() {
