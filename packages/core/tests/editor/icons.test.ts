@@ -83,6 +83,44 @@ describe('icon commands', () => {
     expect(frame).toMatchObject({ x: 88, y: 63 })
   })
 
+  test('insert goes into the selected frame, at its middle when the view is elsewhere', async () => {
+    const editor = setup()
+    const containerId = editor.createShape('FRAME', 1000, 1000, 200, 100)
+    editor.select([containerId])
+    const frame = getNodeOrThrow(editor.graph, await insert(editor, 'test:square'))
+
+    expect(frame.parentId).toBe(containerId)
+    expect(frame).toMatchObject({ x: 88, y: 38 })
+  })
+
+  test('insert goes into the frame holding the selected layer', async () => {
+    const editor = setup()
+    const containerId = editor.createShape('FRAME', 100, 100, 400, 400)
+    const label = editor.createShape('RECTANGLE', 10, 10, 50, 20, containerId)
+    editor.select([label])
+    const frame = getNodeOrThrow(editor.graph, await insert(editor, 'test:square'))
+
+    expect(frame.parentId).toBe(containerId)
+  })
+
+  test('insert with nothing selected goes into the frame under the middle of the view', async () => {
+    const editor = setup()
+    const containerId = editor.createShape('FRAME', 100, 100, 400, 400)
+    editor.clearSelection()
+    const frame = getNodeOrThrow(editor.graph, await insert(editor, 'test:square'))
+
+    expect(frame.parentId).toBe(containerId)
+    expect(frame).toMatchObject({ x: 88, y: 63 })
+  })
+
+  test('a selected icon takes no icon: the next one goes beside it', async () => {
+    const editor = setup()
+    const first = await insert(editor, 'test:square')
+    const second = getNodeOrThrow(editor.graph, await insert(editor, 'test:square'))
+
+    expect(second.parentId).toBe(getNodeOrThrow(editor.graph, first).parentId)
+  })
+
   test('insert rejects a name the provider lacks', async () => {
     const editor = setup()
     await expect(editor.insertIcon('test:missing')).rejects.toThrow('not found')

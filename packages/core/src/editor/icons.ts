@@ -2,6 +2,8 @@ import { readIcon, type SceneNode } from '@kalka/scene-graph'
 import { BLACK } from '@kalka/scene-graph/constants'
 import type { Color } from '@kalka/scene-graph/primitives'
 
+import { resolvePasteTarget } from '#core/editor/clipboard/paste/target'
+import { acceptingParent } from '#core/editor/components/slots'
 import { restoreSubtree, snapshotSubtree } from '#core/editor/history/subtree'
 import type { EditorContext } from '#core/editor/types'
 import { pushCreatedSubtreesUndo } from '#core/editor/undo'
@@ -44,8 +46,25 @@ export function createIconActions(ctx: EditorContext) {
   }
 
   /**
-   * Places the icon `name` at the middle of the view, in the container being edited or the
-   * page, and selects it; null when the document was replaced while the icon loaded.
+   * The frame a new icon goes into, as Figma inserts: the selected frame, or the frame holding
+   * the selected layer, else the frame under the middle of the view, else the page. An icon is
+   * a frame of paths, but a selected icon takes no other icon.
+   */
+  function insertionParent(center: { x: number; y: number }): string {
+    const pageId = ctx.state.currentPageId
+    if (ctx.state.enteredContainerId || ctx.state.selectedIds.size > 0) {
+      const target = ctx.graph.getNode(resolvePasteTarget(ctx))
+      if (!target) return pageId
+      return readIcon(target) ? acceptingParent(ctx, target.parentId ?? pageId) : target.id
+    }
+    const under = ctx.graph.hitTestDropTarget(center.x, center.y, new Set(), pageId)
+    return under ? acceptingParent(ctx, under.id) : pageId
+  }
+
+  /**
+   * Places the icon `name` in the frame it goes into (see `insertionParent`), at the middle of the
+   * view when that lies inside the frame and at the frame's middle otherwise, and selects it;
+   * null when the document was replaced while the icon loaded.
    */
   async function insertIcon(name: string, color: Color = BLACK): Promise<string | null> {
     const graph = ctx.graph
@@ -53,13 +72,24 @@ export function createIconActions(ctx: EditorContext) {
     // Opening another document while the icon loaded leaves nothing to insert it into.
     if (ctx.graph !== graph) return null
     const { width, height } = ctx.getViewportSize()
-    const parentId = ctx.state.enteredContainerId ?? ctx.state.currentPageId
-    const origin =
-      parentId === ctx.state.currentPageId
-        ? { x: 0, y: 0 }
-        : ctx.graph.getAbsolutePosition(parentId)
-    const x = (width / 2 - ctx.state.panX) / ctx.state.zoom - origin.x - ICON_SIZE / 2
-    const y = (height / 2 - ctx.state.panY) / ctx.state.zoom - origin.y - ICON_SIZE / 2
+    const center = {
+      x: (width / 2 - ctx.state.panX) / ctx.state.zoom,
+      y: (height / 2 - ctx.state.panY) / ctx.state.zoom
+    }
+    const parentId = insertionParent(center)
+    const parent = ctx.graph.getNode(parentId)
+    let x = center.x - ICON_SIZE / 2
+    let y = center.y - ICON_SIZE / 2
+    if (parent && parent.type !== 'CANVAS') {
+      const origin = ctx.graph.getAbsolutePosition(parentId)
+      const inside =
+        center.x >= origin.x &&
+        center.x <= origin.x + parent.width &&
+        center.y >= origin.y &&
+        center.y <= origin.y + parent.height
+      x = inside ? center.x - origin.x - ICON_SIZE / 2 : (parent.width - ICON_SIZE) / 2
+      y = inside ? center.y - origin.y - ICON_SIZE / 2 : (parent.height - ICON_SIZE) / 2
+    }
     const previousSelection = new Set(ctx.state.selectedIds)
     const frame = placeIcon(ctx.graph, parentId, icon, {
       size: ICON_SIZE,
