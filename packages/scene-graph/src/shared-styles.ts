@@ -1,3 +1,5 @@
+import { isEqual } from 'es-toolkit/predicate'
+
 import { BLACK } from './constants'
 import { copyEffects, copyFill, copyFills, copyLayoutGrids } from './copy'
 import { SHARED_TEXT_STYLE_FIELDS } from './fields/text'
@@ -223,7 +225,13 @@ export function styleDetachmentChanges(
   if ('fills' in changes && !('fillStyleId' in changes) && node.fillStyleId) {
     next.fillStyleId = null
   }
-  if ('strokes' in changes && !('strokeStyleId' in changes) && node.strokeStyleId) {
+  // A colour style gives strokes their paint only, so changing their weight keeps it.
+  if (
+    changes.strokes &&
+    !('strokeStyleId' in changes) &&
+    node.strokeStyleId &&
+    !isEqual(changes.strokes.map(strokePaint), node.strokes.map(strokePaint))
+  ) {
     next.strokeStyleId = null
   }
   if ('effects' in changes && !('effectStyleId' in changes) && node.effectStyleId) {

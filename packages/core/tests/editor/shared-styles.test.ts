@@ -255,4 +255,15 @@ describe('shared colour, effect and grid styles', () => {
     expect(graph.getNode(card.id)).toMatchObject({ fillStyleId: null, fills: [{ color: red }] })
     expect(graph.getNode(badge.id)?.strokeStyleId).toBeNull()
   })
+
+  test('a stroke keeps its colour style when its weight changes, not when its paint does', () => {
+    const { graph, editor, card } = setupLayers()
+    const style = editor.createSharedStyle('stroke', 'Line', [card.id])
+    if (!style) throw new Error('No style')
+    const strokes = graph.getNode(card.id)?.strokes ?? []
+    editor.updateNodeWithUndo(card.id, { strokes: strokes.map((s) => ({ ...s, weight: 8 })) })
+    expect(graph.getNode(card.id)?.strokeStyleId).toBe(style.id)
+    editor.updateNodeWithUndo(card.id, { strokes: strokes.map((s) => ({ ...s, opacity: 0.2 })) })
+    expect(graph.getNode(card.id)?.strokeStyleId).toBeNull()
+  })
 })

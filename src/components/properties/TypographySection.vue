@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import { PopoverTrigger } from 'reka-ui'
 import { computed } from 'vue'
 
-import { MIXED, TypographyControlsRoot, useI18n, useSharedStyleBinding } from '@kalka/vue'
+import { TypographyControlsRoot, useI18n, useSharedStyleBinding } from '@kalka/vue'
 
 import { loadFont } from '@/app/editor/fonts'
 import { appMenuShortcutLabel } from '@/app/shell/menu/shortcut'
 import FontPicker from '@/components/font-picker/FontPicker.vue'
 import FontSettingsPopover from '@/components/font-settings/FontSettingsPopover.vue'
 import NumberField from '@/components/inputs/NumberField.vue'
-import TextStyleEditPopover from '@/components/properties/text-styles/TextStyleEditPopover.vue'
-import TextStylePicker from '@/components/properties/text-styles/TextStylePicker.vue'
+import AppliedStyle from '@/components/properties/styles/AppliedStyle.vue'
+import StylePicker from '@/components/properties/styles/StylePicker.vue'
 import LetterSpacingField from '@/components/properties/typography/LetterSpacingField.vue'
 import LineHeightField from '@/components/properties/typography/LineHeightField.vue'
 import ParagraphFields from '@/components/properties/typography/ParagraphFields.vue'
@@ -34,17 +33,6 @@ const textStyle = useSharedStyleBinding('text')
 const appliedStyleId = computed(() => {
   const id = textStyle.styleId.value
   return typeof id === 'string' ? id : null
-})
-const appliedStyle = computed(() =>
-  textStyle.styles.value.find((style) => style.id === appliedStyleId.value)
-)
-const appliedDefinition = computed(() =>
-  appliedStyle.value ? textStyle.definition(appliedStyle.value.nodeId) : null
-)
-const appliedStyleName = computed(() => {
-  if (textStyle.styleId.value === MIXED) return panels.value.mixed
-  if (appliedStyle.value) return appliedStyle.value.name
-  return appliedStyleId.value ? panels.value.missingStyle({ id: appliedStyleId.value }) : ''
 })
 const alignmentOptions = computed(() => [
   { value: 'LEFT', label: panels.value.alignLeft },
@@ -82,38 +70,19 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
   <TypographyControlsRoot v-slot="ctx" :font-loader="fontLoader">
     <PanelSection v-if="ctx.node.value" :label="panels.typography">
       <template #actions>
-        <TextStylePicker
+        <StylePicker
+          kind="text"
           :current-style-id="appliedStyleId"
           @apply="textStyle.bind"
-          @create="textStyle.createTextStyle"
+          @create="textStyle.createStyle"
         />
         <PropertyBindButton field="TEXT" />
       </template>
       <PropertyBoundField field="TEXT" :label="panels.content" />
 
-      <TextStyleEditPopover v-if="textStyle.styleId.value !== null" :definition="appliedDefinition">
-        <div
-          class="mb-3 flex h-7 min-w-0 items-center gap-1.5 rounded bg-panel-field pr-0.5 pl-1.5"
-          data-test-id="applied-text-style"
-        >
-          <icon-hugeicons-text-font class="size-3.5 shrink-0 text-muted" aria-hidden="true" />
-          <span class="min-w-0 flex-1 truncate text-xs text-surface">{{ appliedStyleName }}</span>
-          <PopoverTrigger v-if="appliedDefinition" as-child>
-            <IconButton :label="panels.editStyle" data-test-id="text-style-edit">
-              <icon-hugeicons-edit-02 class="size-3.5" />
-            </IconButton>
-          </PopoverTrigger>
-          <IconButton
-            :label="panels.detachStyle"
-            data-test-id="text-style-detach"
-            @click="textStyle.unbind()"
-          >
-            <icon-hugeicons-unlink-01 class="size-3.5" />
-          </IconButton>
-        </div>
-      </TextStyleEditPopover>
+      <AppliedStyle :binding="textStyle" />
 
-      <template v-else>
+      <template v-if="textStyle.styleId.value === null">
         <div class="mb-1.5 flex min-w-0 items-center gap-1.5">
           <FontPicker
             class="min-w-0 flex-1"

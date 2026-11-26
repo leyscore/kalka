@@ -10,18 +10,20 @@ import {
 } from 'reka-ui'
 import { ref } from 'vue'
 
-import type { SceneNode } from '@kalka/scene-graph'
+import type { SceneNode, SharedStyleType } from '@kalka/scene-graph'
 import { useI18n } from '@kalka/vue'
 
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 import { menuItem, useMenuUI } from '@/components/ui/menu/menu'
 
-import { textStylePreviewStyle, textStyleSummary } from './preview'
-import TextStyleEditPopover from './TextStyleEditPopover.vue'
+import { styleKindForType } from './kinds'
+import StyleEditPopover from './StyleEditPopover.vue'
+import StyleLabel from './StyleLabel.vue'
 
-/** One text style in Local styles: a click edits it, its menu renames, moves or deletes it. */
-const { name, label, definition, first, last } = defineProps<{
+/** One style in Local styles: a click edits it, its menu renames, moves or deletes it. */
+const { type, name, label, definition, first, last } = defineProps<{
+  type: SharedStyleType
   name: string
   label: string
   definition: SceneNode | null
@@ -34,6 +36,7 @@ const emit = defineEmits<{
   remove: []
 }>()
 const { panels } = useI18n()
+const kind = styleKindForType(type)
 const menuCls = useMenuUI({ content: 'min-w-44' })
 const itemCls = menuItem({ justify: 'start' })
 const renaming = ref(false)
@@ -53,7 +56,7 @@ function commitName() {
 </script>
 
 <template>
-  <TextStyleEditPopover :definition="definition">
+  <StyleEditPopover :definition="definition">
     <div class="group/style flex h-8 min-w-0 items-center gap-1 rounded hover:bg-hover">
       <AppInput
         v-if="renaming"
@@ -63,7 +66,7 @@ function commitName() {
         tone="panel"
         class="min-w-0 flex-1"
         :aria-label="panels.renameStyle"
-        data-test-id="text-style-rename-input"
+        :data-test-id="`${kind}-style-rename-input`"
         @enter="commitName"
         @change="commitName"
         @keydown.escape.stop="renaming = false"
@@ -73,17 +76,10 @@ function commitName() {
           type="button"
           class="flex h-full min-w-0 flex-1 items-center gap-2 px-2 text-left"
           :aria-label="`${panels.editStyle}: ${name}`"
-          :data-local-text-style="name"
+          v-bind="{ [`data-local-${kind}-style`]: name }"
           @dblclick="startRenaming"
         >
-          <span
-            class="min-w-0 flex-1 truncate text-surface"
-            :style="textStylePreviewStyle(definition)"
-            >{{ label }}</span
-          >
-          <span class="shrink-0 text-[11px] text-muted tabular-nums">
-            {{ textStyleSummary(definition, panels.auto) }}
-          </span>
+          <StyleLabel :type="type" :label="label" :definition="definition" />
         </button>
       </PopoverTrigger>
       <DropdownMenuRoot :modal="false">
@@ -91,7 +87,7 @@ function commitName() {
           <IconButton
             :label="panels.styleActions"
             class="opacity-0 group-hover/style:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
-            data-test-id="text-style-actions"
+            :data-test-id="`${kind}-style-actions`"
           >
             <icon-hugeicons-more-horizontal class="size-3.5" />
           </IconButton>
@@ -115,5 +111,5 @@ function commitName() {
         </DropdownMenuPortal>
       </DropdownMenuRoot>
     </div>
-  </TextStyleEditPopover>
+  </StyleEditPopover>
 </template>

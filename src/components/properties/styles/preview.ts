@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'vue'
 
-import { spacingPercent, type SceneNode } from '@kalka/scene-graph'
+import { spacingPercent, type Fill, type SceneNode } from '@kalka/scene-graph'
 
 /** The largest a style's name is drawn in a list, so a display style keeps its row. */
 const PREVIEW_MAX_SIZE = 16
@@ -27,4 +27,10 @@ export function textStyleSummary(definition: SceneNode | null, autoLabel: string
       ? `${spacingPercent(definition.lineHeight, definition.fontSize)}%`
       : String(Math.round(definition.lineHeight * 100) / 100)
   return `${size}/${lineHeight}`
+}
+
+/** The paint a colour style's swatch shows: its top visible paint. */
+export function styleSwatchFill(definition: SceneNode | null): Fill | null {
+  if (!definition) return null
+  return definition.fills.findLast((fill) => fill.visible) ?? definition.fills.at(-1) ?? null
 }

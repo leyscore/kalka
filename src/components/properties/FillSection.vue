@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
 import type { Fill } from '@kalka/scene-graph'
 import { colorToHexRaw } from '@kalka/scene-graph/color'
 import type { Color } from '@kalka/scene-graph/primitives'
@@ -8,7 +10,8 @@ import {
   useFillControls,
   useHoverPreview,
   useI18n,
-  useOkHCL
+  useOkHCL,
+  useSharedStyleBinding
 } from '@kalka/vue'
 import type { BindableValueActions } from '@kalka/vue'
 
@@ -32,7 +35,8 @@ import { createFillOkhclAdapter } from '@/components/properties/paint/okhcl'
 import PaintField from '@/components/properties/paint/PaintField.vue'
 import PaintValue from '@/components/properties/paint/PaintValue.vue'
 import PropertyListRoot from '@/components/properties/PropertyListRoot.vue'
-import { useSharedStylePicker } from '@/components/properties/shared-style/useSharedStylePicker'
+import AppliedStyle from '@/components/properties/styles/AppliedStyle.vue'
+import StylePicker from '@/components/properties/styles/StylePicker.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'
@@ -58,13 +62,9 @@ function previewFillBlend(index: number, blendMode: string | null) {
     )
   }))
 }
-const {
-  visible: stylesVisible,
-  hasStyle,
-  value: styleValue,
-  options: styleOptions,
-  update: updateStyle
-} = useSharedStylePicker('fill')
+const fillStyle = useSharedStyleBinding('fill')
+/** An applied colour style stands in for the fills, as in Figma. */
+const hasStyle = computed(() => typeof fillStyle.styleId.value === 'string')
 
 function displayFill(fill: Fill, resolvedColor: Color | undefined): Fill {
   return fill.type === 'SOLID' && resolvedColor ? { ...fill, color: resolvedColor } : fill
@@ -100,37 +100,24 @@ function updateSolidColor(
   >
     <PanelSection :label="panels.fill" :empty="!isMixed && items.length === 0">
       <template #actions>
-        <AppSelect
-          v-if="stylesVisible && !hasStyle"
-          :model-value="styleValue"
-          :options="styleOptions"
-          @update:model-value="updateStyle"
-        >
-          <template #trigger>
-            <IconButton :label="panels.fillStyle" data-property="fill-style"
-              ><icon-hugeicons-layout-grid class="size-3.5"
-            /></IconButton>
-          </template>
-        </AppSelect>
+        <StylePicker
+          v-if="fillStyle.active.value && !hasStyle"
+          kind="fill"
+          :current-style-id="null"
+          @apply="fillStyle.bind"
+          @create="fillStyle.createStyle"
+        />
         <IconButton :label="panels.addFill" @click="actions.add({ ...fillCtx.defaultFill })">
           <icon-hugeicons-plus class="size-3.5" />
         </IconButton>
       </template>
 
-      <AppSelect
-        v-if="stylesVisible && hasStyle"
-        :model-value="styleValue"
-        :options="styleOptions"
-        :label="panels.fillStyle"
-        data-property="fill-style"
-        class="mb-1.5"
-        @update:model-value="updateStyle"
-      />
+      <AppliedStyle :binding="fillStyle" />
 
-      <p v-if="isMixed" class="text-[11px] text-muted">{{ panels.mixedFillsHelp }}</p>
+      <p v-if="isMixed && !hasStyle" class="text-[11px] text-muted">{{ panels.mixedFillsHelp }}</p>
 
       <div
-        v-for="{ item: fill, index } in topFirst(items)"
+        v-for="{ item: fill, index } in hasStyle ? [] : topFirst(items)"
         :key="`${index}:${fill.visible ? 'visible' : 'hidden'}`"
       >
         <PropertyItemRow

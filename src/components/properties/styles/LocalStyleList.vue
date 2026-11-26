@@ -1,18 +1,22 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import { useI18n, useSharedStyles } from '@kalka/vue'
+import type { SharedStyleType } from '@kalka/scene-graph'
+import type { useSharedStyles } from '@kalka/vue'
 
-import PanelSection from '@/components/ui/panel/PanelSection.vue'
-
-import TextStyleRow from './TextStyleRow.vue'
+import StyleRow from './StyleRow.vue'
 
 /**
- * Figma's Local styles, shown when nothing is selected: the document's text styles by folder.
- * A style is edited from its row, renamed, moved by dragging or from its menu, and deleted.
+ * One type's styles in Local styles, by folder. A style is edited from its row, renamed, moved by
+ * dragging or from its menu, and deleted.
  */
-const { panels } = useI18n()
-const { styles, groups, definition, rename, remove, move } = useSharedStyles('text')
+const { type, label, styles } = defineProps<{
+  type: SharedStyleType
+  label: string
+  styles: ReturnType<typeof useSharedStyles>
+}>()
+const groups = computed(() => styles.groups.value)
+const { definition, rename, remove, move } = styles
 const dragged = ref<string | null>(null)
 const drop = ref<{ nodeId: string; placement: 'before' | 'after' } | null>(null)
 const order = computed(() => groups.value.flatMap((group) => group.styles))
@@ -59,11 +63,8 @@ function dropPlacement(nodeId: string) {
 </script>
 
 <template>
-  <PanelSection :label="panels.localStyles" data-test-id="local-styles">
-    <div class="mt-1 mb-1 text-[11px] font-medium text-surface">{{ panels.textStyles }}</div>
-    <p v-if="styles.length === 0" class="text-[11px] text-muted">
-      {{ panels.noTextStylesHint }}
-    </p>
+  <div :data-local-styles="type">
+    <div class="mt-1 mb-1 text-[11px] font-medium text-surface">{{ label }}</div>
     <div v-for="group in groups" :key="group.folder" role="group" :aria-label="group.folder">
       <div v-if="group.folder" class="pt-1.5 pb-0.5 text-[11px] text-muted">
         {{ group.folder }}
@@ -79,7 +80,8 @@ function dropPlacement(nodeId: string) {
         @drop="onDrop"
         @dragend="onDragEnd"
       >
-        <TextStyleRow
+        <StyleRow
+          :type="type"
           :name="style.name"
           :label="style.label"
           :definition="definition(style.nodeId)"
@@ -91,5 +93,5 @@ function dropPlacement(nodeId: string) {
         />
       </div>
     </div>
-  </PanelSection>
+  </div>
 </template>

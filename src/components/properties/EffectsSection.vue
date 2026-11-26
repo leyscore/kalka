@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
 import type { Effect, Fill } from '@kalka/scene-graph'
-import { useEffectsControls, useI18n } from '@kalka/vue'
+import { useEffectsControls, useI18n, useSharedStyleBinding } from '@kalka/vue'
 
 import ColorInput from '@/components/ColorPicker/ColorInput.vue'
 import NumberField from '@/components/inputs/NumberField.vue'
@@ -10,7 +12,8 @@ import {
 } from '@/components/properties/blend-mode/use'
 import PropertyItemRow from '@/components/properties/item-list/PropertyItemRow.vue'
 import PropertyListRoot from '@/components/properties/PropertyListRoot.vue'
-import { useSharedStylePicker } from '@/components/properties/shared-style/useSharedStylePicker'
+import AppliedStyle from '@/components/properties/styles/AppliedStyle.vue'
+import StylePicker from '@/components/properties/styles/StylePicker.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'
 import FillSwatch from '@/components/ui/paint/FillSwatch.vue'
@@ -21,13 +24,9 @@ import AppSelect from '@/components/ui/select/AppSelect.vue'
 const effectsCtx = useEffectsControls()
 const { panels } = useI18n()
 const blendModeOptions = useBlendModeOptions()
-const {
-  visible: stylesVisible,
-  hasStyle,
-  value: styleValue,
-  options: styleOptions,
-  update: updateStyle
-} = useSharedStylePicker('effect')
+const effectStyle = useSharedStyleBinding('effect')
+/** An applied effect style stands in for the effects, as in Figma. */
+const hasStyle = computed(() => typeof effectStyle.styleId.value === 'string')
 
 function effectPreview(effect: Effect): Fill {
   return {
@@ -47,17 +46,13 @@ function effectPreview(effect: Effect): Fill {
   >
     <PanelSection :label="panels.effects" :empty="!isMixed && items.length === 0">
       <template #actions>
-        <AppSelect
-          v-if="stylesVisible && !hasStyle"
-          :model-value="styleValue"
-          :options="styleOptions"
-          @update:model-value="updateStyle"
-        >
-          <template #trigger
-            ><IconButton :label="panels.effectStyle" data-property="effect-style"
-              ><icon-hugeicons-layout-grid class="size-3.5" /></IconButton
-          ></template>
-        </AppSelect>
+        <StylePicker
+          v-if="effectStyle.active.value && !hasStyle"
+          kind="effect"
+          :current-style-id="null"
+          @apply="effectStyle.bind"
+          @create="effectStyle.createStyle"
+        />
         <IconButton
           :label="panels.addEffect"
           @click="actions.add(effectsCtx.createDefaultEffect())"
@@ -66,20 +61,14 @@ function effectPreview(effect: Effect): Fill {
         </IconButton>
       </template>
 
-      <AppSelect
-        v-if="stylesVisible && hasStyle"
-        :model-value="styleValue"
-        :options="styleOptions"
-        :label="panels.effectStyle"
-        data-property="effect-style"
-        class="mb-1.5"
-        @update:model-value="updateStyle"
-      />
+      <AppliedStyle :binding="effectStyle" />
 
-      <p v-if="isMixed" class="text-[11px] text-muted">{{ panels.mixedEffectsHelp }}</p>
+      <p v-if="isMixed && !hasStyle" class="text-[11px] text-muted">
+        {{ panels.mixedEffectsHelp }}
+      </p>
 
       <div
-        v-for="(effect, index) in items"
+        v-for="(effect, index) in hasStyle ? [] : items"
         :key="`${index}:${effect.visible ? 'visible' : 'hidden'}`"
         :data-effect-index="index"
         data-effect-group

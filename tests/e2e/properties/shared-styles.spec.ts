@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
 import { CanvasHelper } from '#tests/helpers/canvas'
-import { propertyItems, propertySection } from '#tests/helpers/properties'
+import { propertySection } from '#tests/helpers/properties'
 
 let page: Page
 let canvas: CanvasHelper
@@ -83,9 +83,13 @@ test.afterAll(async () => {
   await page.close()
 })
 
-async function chooseStyle(section: string, label: string, option: string) {
-  await propertySection(page, section).getByRole('combobox', { name: label }).click()
-  await page.getByRole('option', { name: option, exact: true }).click()
+/** Applies a style from a section's Style button, as Figma's style picker. */
+async function chooseStyle(kind: string, option: string) {
+  await page.getByTestId(`${kind}-style-picker`).click()
+  await page
+    .getByTestId(`${kind}-style-picker-content`)
+    .locator(`[data-${kind}-style=${JSON.stringify(option)}]`)
+    .click()
   await canvas.waitForRender()
 }
 
@@ -110,25 +114,26 @@ async function targetStyles(id = targetId) {
   }, id)
 }
 
-test('unbound paint styles use one header action without redundant field labels', async () => {
-  for (const [section, label] of [
-    ['Fill', 'Fill style'],
-    ['Stroke', 'Stroke style'],
-    ['Effects', 'Effect style']
+test('unbound paint styles use one Style button in the section header', async () => {
+  for (const [section, kind] of [
+    ['Fill', 'fill'],
+    ['Stroke', 'stroke'],
+    ['Effects', 'effect']
   ]) {
     const panel = propertySection(page, section)
-    await expect(panel.getByRole('combobox', { name: label })).toHaveCount(1)
-    await expect(panel.getByText(label, { exact: true })).toHaveCount(0)
-    await expect(panel.getByText('None', { exact: true })).toHaveCount(0)
+    await expect(panel.getByTestId(`${kind}-style-picker`)).toHaveCount(1)
+    await expect(panel.getByTestId(`applied-${kind}-style`)).toHaveCount(0)
     await expect(panel).toHaveScreenshot(`${section.toLowerCase()}-unbound-style.png`)
   }
 })
 
 test('applies fill, stroke, effect, and grid styles from local definitions', async () => {
-  await chooseStyle('Fill', 'Fill style', 'Brand/Primary')
-  await chooseStyle('Stroke', 'Stroke style', 'Brand/Primary')
-  await chooseStyle('Effects', 'Effect style', 'Effects/Card')
-  await chooseStyle('Layout guide', 'Grid style', 'Grid/12 columns')
+  await chooseStyle('fill', 'Brand/Primary')
+  await chooseStyle('stroke', 'Brand/Primary')
+  await chooseStyle('effect', 'Effects/Card')
+  await chooseStyle('grid', 'Grid/12 columns')
+  await expect(page.getByTestId('applied-fill-style')).toContainText('Primary')
+  await expect(page.getByTestId('applied-grid-style')).toContainText('Grid/12 columns')
   await expect(propertySection(page, 'Fill')).toHaveScreenshot('fill-applied-style.png')
   await expect(propertySection(page, 'Effects')).toHaveScreenshot('effects-applied-style.png')
 
@@ -143,15 +148,26 @@ test('applies fill, stroke, effect, and grid styles from local definitions', asy
   })
 })
 
-test('manual paint edits detach the style and undo restores the reference', async () => {
-  await propertyItems(page, 'fills').first().hover()
-  await propertySection(page, 'Fill').getByRole('button', { name: 'Remove fill' }).click()
+test('detaching keeps the values and undo restores the reference', async () => {
+  await page.getByTestId('fill-style-detach').click()
   await canvas.waitForRender()
-  expect((await targetStyles())?.fillStyleId).toBeNull()
+  expect(await targetStyles()).toMatchObject({ fillStyleId: null, fillColor: { r: 0.9 } })
 
   await canvas.pressKey('Meta+z')
   await canvas.waitForRender()
   expect(await targetStyles()).toMatchObject({ fillStyleId: '1:100', fillColor: { r: 0.9 } })
+})
+
+test('changing a stroke weight keeps its colour style', async () => {
+  await page.evaluate((nodeId) => {
+    const store = window.kalka?.getStore?.()
+    const node = store?.graph.getNode(nodeId)
+    if (!store || !node) throw new Error('No target')
+    store.updateNodeWithUndo(nodeId, {
+      strokes: node.strokes.map((stroke) => ({ ...stroke, weight: 6 }))
+    })
+  }, targetId)
+  expect((await targetStyles())?.strokeStyleId).toBe('1:100')
 })
 
 test('applies text styles and batches mixed selection binding', async () => {
@@ -194,7 +210,7 @@ test('applies text styles and batches mixed selection binding', async () => {
     return second.id
   }, targetId)
   await canvas.waitForRender()
-  await chooseStyle('Fill', 'Fill style', 'Brand/Primary')
+  await chooseStyle('fill', 'Brand/Primary')
   expect((await targetStyles(targetId))?.fillStyleId).toBe('1:100')
   expect((await targetStyles(secondId))?.fillStyleId).toBe('1:100')
 
@@ -202,4 +218,72 @@ test('applies text styles and batches mixed selection binding', async () => {
   await canvas.waitForRender()
   expect((await targetStyles(targetId))?.fillStyleId).toBe('1:100')
   expect((await targetStyles(secondId))?.fillStyleId).toBeNull()
+})
+
+test('creates a colour style from a fill and edits every layer using it', async () => {
+  const [sourceId, otherId] = await page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const make = (y: number, r: number) =>
+      store.graph.createNode('RECTANGLE', store.state.currentPageId, {
+        x: 640,
+        y,
+        width: 120,
+        height: 80,
+        fills: [{ type: 'SOLID', color: { r, g: 0.4, b: 0.4, a: 1 }, opacity: 1, visible: true }]
+      }).id
+    const ids = [make(100, 0.2), make(240, 0.8)]
+    store.select([ids[0] ?? ''])
+    return ids
+  })
+  await canvas.waitForRender()
+  await page.getByTestId('fill-style-picker').click()
+  await page.getByTestId('fill-style-create').click()
+  await page.getByTestId('fill-style-name').fill('Brand/Accent')
+  await page.getByTestId('fill-style-create-submit').click()
+  await expect(page.getByTestId('applied-fill-style')).toContainText('Accent')
+
+  await page.evaluate((id) => window.kalka?.getStore?.().select([id]), otherId)
+  await chooseStyle('fill', 'Brand/Accent')
+  const fills = (ids: string[]) =>
+    page.evaluate(
+      (nodeIds) =>
+        nodeIds.map((id) => {
+          const node = window.kalka?.getStore?.().graph.getNode(id)
+          return { color: node?.fills[0]?.color, styled: !!node?.fillStyleId }
+        }),
+      ids
+    )
+  expect(await fills([sourceId ?? '', otherId ?? ''])).toEqual([
+    { color: { r: 0.2, g: 0.4, b: 0.4, a: 1 }, styled: true },
+    { color: { r: 0.2, g: 0.4, b: 0.4, a: 1 }, styled: true }
+  ])
+
+  await page.getByTestId('fill-style-edit').click()
+  const hex = page.getByTestId('fill-style-editor').locator('[data-property="color-hex"]')
+  await hex.fill('0000FF')
+  await hex.press('Enter')
+  await expect
+    .poll(async () => (await fills([sourceId ?? '', otherId ?? ''])).map((fill) => fill.color))
+    .toEqual([
+      { r: 0, g: 0, b: 1, a: 1 },
+      { r: 0, g: 0, b: 1, a: 1 }
+    ])
+
+  await page.keyboard.press('Escape')
+  await page.evaluate(() => window.kalka?.getStore?.().undo.undo())
+  expect((await fills([sourceId ?? '', otherId ?? ''])).map((fill) => fill.color?.b)).toEqual([
+    0.4, 0.4
+  ])
+})
+
+test('lists colour, effect and grid styles in Local styles when nothing is selected', async () => {
+  await page.evaluate(() => window.kalka?.getStore?.().clearSelection())
+  const local = page.getByTestId('local-styles')
+  await expect(local.locator('[data-local-styles="FILL"]')).toContainText('Primary')
+  await expect(local.locator('[data-local-fill-style="Brand/Accent"]')).toBeVisible()
+  await expect(local.locator('[data-local-effect-style="Effects/Card"]')).toBeVisible()
+  await expect(local.locator('[data-local-grid-style="Grid/12 columns"]')).toBeVisible()
+  await local.locator('[data-local-effect-style="Effects/Card"]').click()
+  await expect(page.getByTestId('effect-style-editor')).toBeVisible()
 })

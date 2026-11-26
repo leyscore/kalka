@@ -2,6 +2,7 @@
 import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from 'reka-ui'
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 
+import { sharedStyleTypeForKind, type SharedStyleKind } from '@kalka/scene-graph'
 import { useI18n, useRetainedPopup, useSharedStyles } from '@kalka/vue'
 
 import AppButton from '@/components/ui/button/AppButton.vue'
@@ -9,16 +10,24 @@ import IconButton from '@/components/ui/button/IconButton.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 import { usePopoverUI } from '@/components/ui/overlay/popover'
 
-import { textStylePreviewStyle, textStyleSummary } from './preview'
+import { useStyleTypeLabels } from './kinds'
+import StyleLabel from './StyleLabel.vue'
 
 /**
- * Figma's Style button in Typography: the document's text styles by folder, each drawn in its own
- * face, a click to apply one, and `+` to make one from the selected text.
+ * Figma's Style button in a section's header: the document's styles of a kind by folder, a text
+ * style drawn in its own face and a colour style with its swatch, a click to apply one, and `+`
+ * to make one from the selection. Strokes list colour styles.
  */
-const { currentStyleId } = defineProps<{ currentStyleId: string | null }>()
+const { kind, currentStyleId } = defineProps<{
+  kind: SharedStyleKind
+  currentStyleId: string | null
+}>()
 const emit = defineEmits<{ apply: [styleId: string]; create: [name: string] }>()
 const { panels } = useI18n()
-const { groups, definition } = useSharedStyles('text')
+const { groups, definition } = useSharedStyles(kind)
+const type = computed(() => sharedStyleTypeForKind(kind))
+const typeLabels = useStyleTypeLabels()
+const labels = computed(() => typeLabels.value(kind))
 const { open, portalActive } = useRetainedPopup()
 const cls = usePopoverUI({
   content: 'flex max-h-[min(28rem,70vh)] w-64 max-w-[calc(100vw-1rem)] flex-col overflow-hidden',
@@ -71,7 +80,11 @@ function apply(styleId: string) {
 <template>
   <PopoverRoot v-model:open="open">
     <PopoverTrigger as-child>
-      <IconButton :label="panels.styleLibrary" data-test-id="text-style-picker" :active="open">
+      <IconButton
+        :label="panels.styleLibrary"
+        :data-test-id="`${kind}-style-picker`"
+        :active="open"
+      >
         <icon-hugeicons-dashboard-square-01 class="size-3.5" />
       </IconButton>
     </PopoverTrigger>
@@ -80,19 +93,19 @@ function apply(styleId: string) {
         side="bottom"
         align="end"
         :side-offset="4"
-        :aria-label="panels.textStyles"
+        :aria-label="labels.list"
         :class="cls.content"
-        data-test-id="text-style-picker-content"
+        :data-test-id="`${kind}-style-picker-content`"
       >
         <div :class="cls.header">
           <h3 class="truncate text-xs font-semibold text-surface">
-            {{ creating ? panels.createStyle : panels.textStyles }}
+            {{ creating ? panels.createStyle : labels.list }}
           </h3>
           <IconButton
             v-if="!creating"
             class="ml-auto"
             :label="panels.createStyle"
-            data-test-id="text-style-create"
+            :data-test-id="`${kind}-style-create`"
             @click="startCreating"
           >
             <icon-hugeicons-plus-sign class="size-3.5" />
@@ -107,7 +120,7 @@ function apply(styleId: string) {
             tone="panel"
             :aria-label="panels.styleName"
             :placeholder="panels.styleName"
-            data-test-id="text-style-name"
+            :data-test-id="`${kind}-style-name`"
           />
           <AppButton
             type="submit"
@@ -115,7 +128,7 @@ function apply(styleId: string) {
             variant="solid"
             size="xs"
             :disabled="!draftName.trim()"
-            data-test-id="text-style-create-submit"
+            :data-test-id="`${kind}-style-create-submit`"
           >
             {{ panels.createStyleAction }}
           </AppButton>
@@ -134,7 +147,7 @@ function apply(styleId: string) {
           </div>
           <div :class="cls.body">
             <p v-if="groups.length === 0" class="px-2 py-3 text-[11px] text-muted">
-              {{ panels.noTextStyles }}
+              {{ labels.empty }}
             </p>
             <p v-else-if="shownGroups.length === 0" class="px-2 py-3 text-[11px] text-muted">
               {{ panels.noStylesFound }}
@@ -149,17 +162,14 @@ function apply(styleId: string) {
                 type="button"
                 class="flex h-8 w-full min-w-0 items-center gap-2 rounded px-2 text-left hover:bg-hover data-[current=true]:bg-hover"
                 :data-current="style.id === currentStyleId"
-                :data-text-style="style.name"
+                v-bind="{ [`data-${kind}-style`]: style.name }"
                 @click="apply(style.id)"
               >
-                <span
-                  class="min-w-0 flex-1 truncate text-surface"
-                  :style="textStylePreviewStyle(definition(style.nodeId))"
-                  >{{ style.label }}</span
-                >
-                <span class="shrink-0 text-[11px] text-muted tabular-nums">
-                  {{ textStyleSummary(definition(style.nodeId), panels.auto) }}
-                </span>
+                <StyleLabel
+                  :type="type"
+                  :label="style.label"
+                  :definition="definition(style.nodeId)"
+                />
                 <icon-hugeicons-tick-02
                   v-if="style.id === currentStyleId"
                   class="size-3.5 shrink-0 text-surface"

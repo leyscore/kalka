@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 
 import { FONT_WEIGHT_NAMES, weightToStyle } from '@kalka/core/text'
 import type { SceneNode } from '@kalka/scene-graph'
@@ -10,10 +10,11 @@ import FontPicker from '@/components/font-picker/FontPicker.vue'
 import NumberField from '@/components/inputs/NumberField.vue'
 import LetterSpacingField from '@/components/properties/typography/LetterSpacingField.vue'
 import LineHeightField from '@/components/properties/typography/LineHeightField.vue'
-import AppInput from '@/components/ui/input/AppInput.vue'
 import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'
 import PanelGrid from '@/components/ui/panel/PanelGrid.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
+
+import StyleNameField from './StyleNameField.vue'
 
 /**
  * A text style's properties, as Figma's Edit text style panel shows them. A change is made to the
@@ -33,20 +34,6 @@ const textCaseOptions = computed(() => [
   { value: 'LOWER', label: panels.value.textCaseLower },
   { value: 'TITLE', label: panels.value.textCaseTitle }
 ])
-
-const draftName = ref(definition.name)
-watch(
-  () => definition.name,
-  (name) => {
-    draftName.value = name
-  }
-)
-
-function rename() {
-  const next = draftName.value.trim()
-  if (next && next !== definition.name) editor.renameSharedStyle(definition.id, next)
-  else draftName.value = definition.name
-}
 
 function change(changes: Partial<SceneNode>) {
   editor.updateTextStyle(definition.id, changes)
@@ -81,17 +68,7 @@ function setTextCase(value: string) {
 
 <template>
   <div class="flex flex-col gap-3" data-test-id="text-style-editor">
-    <PanelFieldGroup :label="panels.styleName">
-      <AppInput
-        v-model="draftName"
-        size="sm"
-        tone="panel"
-        :aria-label="panels.styleName"
-        data-property="text-style-name"
-        @change="rename"
-        @enter="rename"
-      />
-    </PanelFieldGroup>
+    <StyleNameField :definition="definition" />
 
     <FontPicker
       :model-value="definition.fontFamily"

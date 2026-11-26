@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import type { Color, Fill, SceneNode, Stroke } from '@kalka/scene-graph'
 import { colorToHexRaw } from '@kalka/scene-graph/color'
@@ -10,6 +10,7 @@ import {
   useColorBindingProvider,
   useI18n,
   useOkHCL,
+  useSharedStyleBinding,
   useStrokeControls
 } from '@kalka/vue'
 import type { BindableValueActions } from '@kalka/vue'
@@ -29,20 +30,18 @@ import { createStrokeOkhclAdapter } from '@/components/properties/paint/okhcl'
 import PaintField from '@/components/properties/paint/PaintField.vue'
 import PaintValue from '@/components/properties/paint/PaintValue.vue'
 import PropertyListRoot from '@/components/properties/PropertyListRoot.vue'
-import { useSharedStylePicker } from '@/components/properties/shared-style/useSharedStylePicker'
+import AppliedStyle from '@/components/properties/styles/AppliedStyle.vue'
+import StylePicker from '@/components/properties/styles/StylePicker.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
-const {
-  visible: stylesVisible,
-  hasStyle,
-  value: styleValue,
-  options: styleOptions,
-  update: updateStyle
-} = useSharedStylePicker('stroke')
 
 import StrokeSettingsPopover from './StrokeSettingsPopover.vue'
+
+const strokeStyle = useSharedStyleBinding('stroke')
+/** An applied colour style stands in for the stroke paints; weight and placement stay. */
+const hasStyle = computed(() => typeof strokeStyle.styleId.value === 'string')
 
 const strokeCtx = useStrokeControls()
 const { advancedActive } = strokeCtx
@@ -104,37 +103,26 @@ function onToggleSides(activeNode: SceneNode | null) {
   >
     <PanelSection :label="panels.stroke" :empty="!isMixed && items.length === 0">
       <template #actions>
-        <AppSelect
-          v-if="stylesVisible && !hasStyle"
-          :model-value="styleValue"
-          :options="styleOptions"
-          @update:model-value="updateStyle"
-        >
-          <template #trigger>
-            <IconButton :label="panels.strokeStyle" data-property="stroke-style"
-              ><icon-hugeicons-layout-grid class="size-3.5"
-            /></IconButton>
-          </template>
-        </AppSelect>
+        <StylePicker
+          v-if="strokeStyle.active.value && !hasStyle"
+          kind="stroke"
+          :current-style-id="null"
+          @apply="strokeStyle.bind"
+          @create="strokeStyle.createStyle"
+        />
         <IconButton :label="panels.addStroke" @click="actions.add(strokeCtx.defaultStroke)">
           <icon-hugeicons-plus class="size-3.5" />
         </IconButton>
       </template>
 
-      <AppSelect
-        v-if="stylesVisible && hasStyle"
-        :model-value="styleValue"
-        :options="styleOptions"
-        :label="panels.strokeStyle"
-        data-property="stroke-style"
-        class="mb-1.5"
-        @update:model-value="updateStyle"
-      />
+      <AppliedStyle :binding="strokeStyle" />
 
-      <p v-if="isMixed" class="text-[11px] text-muted">{{ panels.mixedStrokesHelp }}</p>
+      <p v-if="isMixed && !hasStyle" class="text-[11px] text-muted">
+        {{ panels.mixedStrokesHelp }}
+      </p>
 
       <PropertyItemRow
-        v-for="{ item: stroke, index } in topFirst(items)"
+        v-for="{ item: stroke, index } in hasStyle ? [] : topFirst(items)"
         :key="`${index}:${stroke.visible ? 'visible' : 'hidden'}`"
         prop-key="strokes"
         :index="index"
