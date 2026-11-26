@@ -1,5 +1,7 @@
 import type { SnappingPreferences } from '@kalka/core/editor'
 
+import type { EditorStore } from '@/app/editor/active-store'
+import { defaultPropertiesToCSS } from '@/app/editor/selection/default-properties'
 import { getTabsSnapshot } from '@/app/tabs'
 
 import { syncNativeDesignIssuesMenu, syncNativeSnappingMenu } from './native-menu'
@@ -37,6 +39,20 @@ export function setEditingPreference(
 ): void {
   updateEditingPreferences({ [preference]: enabled })
   for (const tab of getTabsSnapshot()) tab.store.state[preference] = enabled
+}
+
+/**
+ * Figma's Set default properties: new shapes, or new texts, take the selected layer's look, in
+ * every open file and the next time the app opens, as Figma keeps them.
+ */
+export function setDefaultProperties(store: EditorStore): boolean {
+  if (!store.setDefaultPropertiesFromSelection()) return false
+  const defaults = store.state.defaultLayerProperties
+  if (!defaults) return false
+  updateEditingPreferences({ defaultProperties: defaultPropertiesToCSS(defaults) })
+  for (const tab of getTabsSnapshot())
+    if (tab.store !== store) tab.store.state.defaultLayerProperties = structuredClone(defaults)
+  return true
 }
 
 export function setDesignIssuesOnCanvas(showOnCanvas: boolean): void {

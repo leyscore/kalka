@@ -134,6 +134,8 @@ export interface AppPreferences {
     keepToolSelected: boolean
     /** Figma's Rename duplicated layers: a duplicate takes the next number. */
     renameDuplicates: boolean
+    /** Figma's Set default properties, kept as the CSS of the look new shapes and texts take. */
+    defaultProperties: DefaultPropertiesCSS
   }
   rendering: {
     canvasMode: CanvasRenderingMode
@@ -167,7 +169,8 @@ export const DEFAULT_APP_PREFERENCES: Readonly<AppPreferences> = {
     snapping: { ...DEFAULT_SNAPPING_PREFERENCES },
     nudge: { small: 1, large: 10 },
     keepToolSelected: false,
-    renameDuplicates: false
+    renameDuplicates: false,
+    defaultProperties: { shape: null, text: null }
   },
   rendering: { canvasMode: 'retained', canvasBackground: 'kalka' },
   // Markers on the canvas are the person's choice, from the View menu: off until they ask.
@@ -194,6 +197,7 @@ function section<TEntries extends v.ObjectEntries>(entries: TEntries) {
 const defaults = DEFAULT_APP_PREFERENCES
 const snapping = defaults.editing.snapping
 const nudgeAmountSchema = v.pipe(v.number(), v.finite(), v.minValue(0.01), v.maxValue(1000))
+const cssDeclarationsSchema = v.record(v.string(), v.string())
 
 /** Stored preferences, read field by field so one bad value keeps the rest. */
 const appPreferencesSchema = section({
@@ -229,7 +233,11 @@ const appPreferencesSchema = section({
       large: v.fallback(nudgeAmountSchema, defaults.editing.nudge.large)
     }),
     keepToolSelected: v.fallback(v.boolean(), defaults.editing.keepToolSelected),
-    renameDuplicates: v.fallback(v.boolean(), defaults.editing.renameDuplicates)
+    renameDuplicates: v.fallback(v.boolean(), defaults.editing.renameDuplicates),
+    defaultProperties: section({
+      shape: v.fallback(v.nullable(cssDeclarationsSchema), null),
+      text: v.fallback(v.nullable(cssDeclarationsSchema), null)
+    })
   }),
   rendering: section({
     canvasMode: v.fallback(v.picklist(CANVAS_RENDERING_MODES), defaults.rendering.canvasMode),
@@ -382,13 +390,20 @@ export function updateSnappingPreferences(changes: Partial<SnappingPreferences>)
   })
 }
 
+/** The CSS of the look Set default properties gives new shapes and texts; null when unset. */
+export interface DefaultPropertiesCSS {
+  shape: Record<string, string> | null
+  text: Record<string, string> | null
+}
+
 export function updateEditingPreferences(
   changes: Partial<Omit<AppPreferences['editing'], 'snapping'>>
 ): void {
   editPreferences((draft) => {
-    const { nudge, ...rest } = changes
+    const { nudge, defaultProperties, ...rest } = changes
     Object.assign(draft.editing, rest)
     if (nudge) draft.editing.nudge = { ...nudge }
+    if (defaultProperties) draft.editing.defaultProperties = structuredClone(defaultProperties)
   })
 }
 

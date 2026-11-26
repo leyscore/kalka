@@ -3,6 +3,7 @@ import type { DocumentColorSpace } from '@kalka/scene-graph'
 import type { PresentationColorSpace } from '@kalka/vue'
 
 import type { EditorPreparation } from '@/app/editor/preparation/types'
+import { storedDefaultProperties } from '@/app/editor/selection/default-properties'
 import type { NodeEditState } from '@/app/editor/vector/types'
 import { appPreferences } from '@/app/settings/preferences/store'
 import { resolvedAppTheme } from '@/app/shell/theme'
@@ -15,6 +16,7 @@ export function createInitialAppEditorState(pageId: string): AppEditorState {
     snappingPreferences: { ...appPreferences.value.editing.snapping },
     keepToolSelected: appPreferences.value.editing.keepToolSelected,
     renameDuplicates: appPreferences.value.editing.renameDuplicates,
+    defaultLayerProperties: storedDefaultProperties(),
     showUI: true,
     showRulers: true,
     showRemoteCursors: true,
