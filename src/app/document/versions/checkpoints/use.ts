@@ -1,5 +1,5 @@
-import { useDebounceFn } from '@vueuse/core'
-import { computed, onScopeDispose, ref, shallowReactive, watch } from 'vue'
+import { useTimeoutFn } from '@vueuse/core'
+import { computed, onScopeDispose, ref, watch } from 'vue'
 
 import { randomHex } from '@kalka/scene-graph/random'
 
@@ -40,8 +40,17 @@ export interface VersionPreview {
   restore: (before: string) => Promise<void>
 }
 
-/** Documents previewing a version, by the store of the tab that shows it. */
-const previews = shallowReactive(new Map<EditorStore, VersionPreview>())
+/**
+ * Documents previewing a version, by the store of the tab that shows it. A plain WeakMap with a
+ * counter to react to: a reactive map would keep every store ever looked up in it alive.
+ */
+const previews = new WeakMap<EditorStore, VersionPreview>()
+const previewsChanged = ref(0)
+
+function previewEntry(store: EditorStore): VersionPreview | undefined {
+  void previewsChanged.value
+  return previews.get(store)
+}
 
 /** Bumped whenever a version is kept, so open version lists read their document's again. */
 const written = ref(0)
@@ -58,7 +67,7 @@ export function checkpointTime(checkpoint: Pick<CheckpointMeta, 'createdAt'>): s
  */
 export function keepsCheckpoints(store: EditorStore): boolean {
   const roomId = roomForStore(store)?.roomId
-  return (!roomId || !isServerRoom(roomId)) && !previews.has(store) && !store.state.viewOnly
+  return (!roomId || !isServerRoom(roomId)) && !previewEntry(store) && !store.state.viewOnly
 }
 
 /** Keeps the document as it is now. */
@@ -123,6 +132,7 @@ export function openVersionPreview(
   preview.state.documentName = name
   preview.setViewOnly(true)
   previews.set(preview, entry)
+  previewsChanged.value++
   createTab(preview)
 }
 
@@ -141,7 +151,7 @@ export async function previewCheckpoint(
 
 /** The version a tab previews, and the document it comes from; null for any other tab. */
 export function previewOf(store: EditorStore) {
-  return previews.get(store) ?? null
+  return previewEntry(store) ?? null
 }
 
 /** Closes a preview's tab and goes back to its document. */
@@ -151,6 +161,7 @@ export async function closePreview(preview: EditorStore): Promise<void> {
   if (sourceTab) switchTab(sourceTab.id)
   const tab = getTabForStore(preview)
   previews.delete(preview)
+  previewsChanged.value++
   if (tab) await closeTab(tab.id, 'discard')
 }
 
@@ -208,7 +219,9 @@ export function useCheckpoints(store: EditorStore) {
 export function useAutoCheckpoints(store: EditorStore): void {
   let lastAt = 0
   let edited = false
-  const keep = useDebounceFn(async () => {
+  // A timer, not a debounced function: it stops with the scope, so a closed document is let go.
+  const idle = useTimeoutFn(() => void keep(), CHECKPOINT_IDLE_MS, { immediate: false })
+  async function keep() {
     if (!edited || !keepsCheckpoints(store)) return
     if (Date.now() - lastAt < CHECKPOINT_INTERVAL_MS) return
     edited = false
@@ -218,7 +231,7 @@ export function useAutoCheckpoints(store: EditorStore): void {
     } catch (error) {
       console.warn('[Versions] Could not keep a version', error)
     }
-  }, CHECKPOINT_IDLE_MS)
+  }
   // Opening a document replaces the graph; its first version comes with its first edits.
   const stopGraph = store.onEditorEvent('graph:replaced', () => {
     edited = false
@@ -230,10 +243,11 @@ export function useAutoCheckpoints(store: EditorStore): void {
       // Opening, switching pages and saving move the scene too; only an edit leaves it unsaved.
       if (!store.hasUnsavedChanges()) return
       edited = true
-      void keep()
+      idle.start()
     }
   )
   onScopeDispose(() => {
+    idle.stop()
     stopGraph()
     stopEdits()
   })
