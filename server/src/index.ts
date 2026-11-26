@@ -92,6 +92,7 @@ const DocumentPatchRequest = v.object({
   name: v.optional(v.pipe(v.string(), v.maxLength(200))),
   linkRole: v.optional(v.picklist(LINK_ROLES))
 })
+const MergeRequest = v.object({ force: v.optional(v.boolean()) })
 const AppPasswordRequest = v.object({ name: v.pipe(v.string(), v.maxLength(80)) })
 
 function bearer(request: Request): string | null {
@@ -298,6 +299,47 @@ async function documentRoute(
     if (data.byteLength > MAX_FILE_BYTES) throw new HttpError(413, 'This file is too large.')
     await roomOf(env, documentId).putFile(data, documentId, directoryName(tenantOf(env)))
     return json({ saved: true })
+  }
+  // Branches: a copy of the file to change apart, merged back into it later.
+  if (rest === '/branches' && method === 'GET') {
+    await requireUser(env, request)
+    return json(await directory.listBranches(documentId))
+  }
+  if (rest === '/branches' && method === 'POST') {
+    const { user, document: main } = await requireDocumentEditor()
+    if (main.branchOf) throw new HttpError(400, 'A branch cannot have branches of its own.')
+    const { name } = await body(request, DocumentRequest)
+    const data = main.hasFile ? await roomOf(env, documentId).getFile() : null
+    if (!data) throw new HttpError(409, 'Open this file in Kalka once, so the server has it to branch from.')
+    const branch = await directory.createBranch(documentId, name, user.id)
+    if (!branch) throw new HttpError(404, 'No such document.')
+    // The branch starts as the file is now: Kalka applies it when the branch first opens.
+    await roomOf(env, branch.id).putFile(data, branch.id, directoryName(tenantOf(env)), true)
+    await directory.setPending(branch.id, user.name)
+    await log(user, 'document.branched', { name: main.name, branch: branch.name, branchId: branch.id })
+    return json(await directory.getDocument(branch.id), 201)
+  }
+  // Merging puts the branch's latest saved file into the file it branches from, as a version
+  // its editors apply, then moves the branch to the trash. Once that file changed since the
+  // branch began, the merge would replace those changes too: it is refused unless forced.
+  if (rest === '/merge' && method === 'POST') {
+    const { user, document: branch } = await requireDocumentEditor()
+    if (!branch.branchOf) throw new HttpError(400, 'Only a branch can be merged.')
+    const main = await directory.getDocument(branch.branchOf)
+    if (!main) throw new HttpError(404, 'The file this branch comes from is gone.')
+    if (documentRole(user, main) === 'viewer') throw new HttpError(403, 'You can only view the file this branch comes from.')
+    const { force } = await body(request, MergeRequest)
+    if (!force && (main.fileSavedAt ?? 0) > (branch.branchBase ?? 0)) {
+      throw new HttpError(409, 'The main file changed since this branch began; merging replaces those changes.')
+    }
+    const data = branch.hasFile ? await roomOf(env, branch.id).getFile() : null
+    if (!data) throw new HttpError(409, 'Open this branch in Kalka once, so the server has it to merge.')
+    await roomOf(env, main.id).putFile(data, main.id, directoryName(tenantOf(env)), true)
+    await directory.setPending(main.id, user.name)
+    await directory.deleteDocument(branch.id, user.id)
+    await roomOf(env, branch.id).closeAll()
+    await emit(env, request, user, 'document.merged', main.id, { name: main.name, branch: branch.name, branchId: branch.id })
+    return json(await directory.getDocument(main.id))
   }
   // A version uploaded outside Kalka (WebDAV, a restore): Kalka reads it, applies it to the
   // live document, then dismisses it.

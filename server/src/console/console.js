@@ -236,6 +236,7 @@
       el('span', { class: 'thumb', style: { '--c': colorOf(doc.id) } }),
       el('span', { class: 'meta' },
         el('span', { class: 'grow' }, el('span', {}, doc.name), el('span', {}, 'Edited ' + when(doc.updatedAt).toLowerCase())),
+        doc.branchOf ? el('span', { class: 'pill blue', title: 'A branch: Kalka merges it back into the file it comes from.' }, 'BRANCH') : null,
         doc.linkRole === 'view' ? el('span', { class: 'pill', title: 'Members open it read-only, except whoever made it and administrators.' }, 'VIEW ONLY') : null,
         doc.pending ? el('span', { class: 'pill warn', title: 'A version uploaded by ' + doc.pending.by + ' ' + when(doc.pending.at).toLowerCase() + ' waits for Kalka to apply it.' }, 'NEW VERSION') : null,
         doc.live ? el('span', { class: 'pill ok', title: doc.live + ' open now' }, el('span', { class: 'live' }), String(doc.live)) : null))
@@ -716,6 +717,8 @@
     'document.deleted': ['deleted a file for good', 'delete-02'],
     'document.exported': ['exported a file', 'download-01'],
     'document.link_role_changed': ['changed how a file is shared', 'link-01'],
+    'document.branched': ['made a branch of a file', 'copy-01'],
+    'document.merged': ['merged a branch into a file', 'arrow-right-01'],
     'document.uploaded': ['uploaded a new version', 'share-01'],
     'settings.changed': ['changed settings', 'settings-02'],
     'app_password.created': ['created an app password', 'key-01'],

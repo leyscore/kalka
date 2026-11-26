@@ -60,6 +60,8 @@ type DocumentRow = {
   pending_at: number | null
   pending_by: string | null
   link_role: string | null
+  branch_of: string | null
+  branch_base: number | null
 }
 
 function toUser(row: UserRow): User {
@@ -88,7 +90,9 @@ function toDocument(row: DocumentRow): DocumentInfo {
     fileSize: row.file_size ?? null,
     fileSavedAt: row.file_at ?? null,
     pending: row.pending_at ? { at: row.pending_at, by: row.pending_by ?? '' } : null,
-    linkRole: row.link_role === 'view' ? 'view' : 'edit'
+    linkRole: row.link_role === 'view' ? 'view' : 'edit',
+    branchOf: row.branch_of ?? null,
+    branchBase: row.branch_base ?? null
   }
 }
 
@@ -184,7 +188,9 @@ export class Directory extends DurableObject<Env> {
       'ALTER TABLE documents ADD COLUMN pending_by TEXT',
       'ALTER TABLE users ADD COLUMN provisioned INTEGER NOT NULL DEFAULT 0',
       'ALTER TABLE documents ADD COLUMN deleted_by TEXT',
-      "ALTER TABLE documents ADD COLUMN link_role TEXT NOT NULL DEFAULT 'edit'"
+      "ALTER TABLE documents ADD COLUMN link_role TEXT NOT NULL DEFAULT 'edit'",
+      'ALTER TABLE documents ADD COLUMN branch_of TEXT',
+      'ALTER TABLE documents ADD COLUMN branch_base INTEGER'
     ]) {
       try {
         this.sql.exec(column)
@@ -562,6 +568,32 @@ export class Directory extends DurableObject<Env> {
     const document = this.getDocument(id)
     if (!document) throw new Error('Document was not saved')
     return document
+  }
+
+  /**
+   * Starts a branch of a document: a document of its own, which remembers the one it comes from
+   * and when that one was last saved, so a merge can tell whether it changed since.
+   */
+  createBranch(mainId: string, name: string, createdBy: string): DocumentInfo | null {
+    const main = this.getDocument(mainId)
+    if (!main) return null
+    const branch = this.createDocument(name, createdBy)
+    this.sql.exec(
+      'UPDATE documents SET branch_of = ?, branch_base = ?, link_role = ? WHERE id = ?',
+      mainId,
+      main.fileSavedAt ?? 0,
+      main.linkRole,
+      branch.id
+    )
+    return this.getDocument(branch.id)
+  }
+
+  /** The branches of a document, newest first. */
+  listBranches(mainId: string): DocumentInfo[] {
+    return this.all<DocumentRow>(
+      'SELECT * FROM documents WHERE branch_of = ? AND deleted_at IS NULL ORDER BY created_at DESC',
+      mainId
+    ).map(toDocument)
   }
 
   renameDocument(id: string, name: string): DocumentInfo | null {

@@ -67,6 +67,10 @@ export interface DocumentInfo {
   pending: { at: number; by: string } | null
   /** Whether members open it to edit, or only to look; its maker and administrators always edit. */
   linkRole: LinkRole
+  /** For a branch: the file it branches from, which merging it replaces. */
+  branchOf: string | null
+  /** For a branch: when the file it branches from was last saved as it branched. */
+  branchBase: number | null
 }
 
 /**
