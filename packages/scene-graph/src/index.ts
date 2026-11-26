@@ -1046,8 +1046,10 @@ export class SceneGraph {
     return result
   }
 }
+export * from './annotations'
 export * from './class-styles'
 export * from './comments'
+export * from './dev-resources'
 export * from './frame-reviews'
 export * from './prototype'
 export * from './fonts'

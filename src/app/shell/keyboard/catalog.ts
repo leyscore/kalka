@@ -40,6 +40,7 @@ export type ShortcutLabel =
   | 'toggleAI'
   | 'comment'
   | 'commentPins'
+  | 'annotate'
 
 export type ShortcutTitle = { menu: string } | { tool: Tool } | { label: ShortcutLabel }
 
@@ -125,6 +126,7 @@ const REGISTRY_OWN_ENTRY: Partial<Record<string, [ShortcutCategory, ShortcutLabe
   'toggle-ai': ['ai', 'toggleAI'],
   'toggle-comment-mode': ['tools', 'comment'],
   'toggle-comment-pins': ['view', 'commentPins'],
+  'annotate-selection': ['tools', 'annotate'],
   enter: ['selection', 'editSelection'],
   'select-parent': ['selection', 'selectParent'],
   'select-sibling-1': ['selection', 'selectNext'],

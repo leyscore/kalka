@@ -12,18 +12,20 @@ import { useEditorStore } from '@/app/editor/active-store'
 import { agentTasks, type AgentTask } from '@/app/presence/tasks'
 import AppButton from '@/components/ui/button/AppButton.vue'
 
+import HandoffLists from './HandoffLists.vue'
+
 /**
  * Comments and agents' work: the document's threads, open or resolved, and what its agents said
  * they worked on. Choosing a thread or a task goes to where it is and, for a thread, opens it.
  */
-type Tab = 'open' | 'forYou' | 'resolved' | 'tasks' | 'changes'
+type Tab = 'open' | 'forYou' | 'resolved' | 'tasks' | 'changes' | 'annotations' | 'dev'
 
 const store = useEditorStore()
 const comments = useComments(store)
 const inbox = useCommentInbox(store, comments)
 const messages = useCommentsMessages()
 const tab = ref<Tab>('open')
-const tabs: Tab[] = ['open', 'resolved', 'tasks', 'changes', 'forYou']
+const tabs: Tab[] = ['open', 'resolved', 'tasks', 'changes', 'forYou', 'annotations', 'dev']
 
 /** For you: the threads with a mention of this person or a reply to them, newest first. */
 const forYou = computed(() => {
@@ -45,6 +47,8 @@ function tabLabel(name: Tab): string {
   if (name === 'forYou') return messages.value.forYou
   if (name === 'tasks') return messages.value.tasks
   if (name === 'changes') return messages.value.changes
+  if (name === 'annotations') return messages.value.annotations
+  if (name === 'dev') return messages.value.statusReady
   return name === 'open' ? messages.value.open : messages.value.resolved
 }
 
@@ -152,6 +156,7 @@ async function revealTask(task: AgentTask) {
         </li>
       </ul>
     </template>
+    <HandoffLists v-else-if="tab === 'annotations' || tab === 'dev'" :list="tab" />
     <template v-else-if="tab === 'tasks'">
       <div
         v-if="tasks.length === 0"

@@ -1,5 +1,11 @@
 import * as v from 'valibot'
 
+import {
+  annotationSchema,
+  measurementSchema,
+  type CommentAnnotation,
+  type CommentMeasurement
+} from './annotations/model'
 import type { SceneGraph } from './index'
 import type { Vector } from './primitives'
 import { randomHex } from './random'
@@ -67,6 +73,10 @@ export interface CommentThread {
   resolvedBy?: string
   /** The agent the thread asks, and where it stands, when it asks one. */
   agent?: { name: string; state: CommentAgentState }
+  /** An annotation for developers on its layer: never resolved, its first message is the note. */
+  annotation?: CommentAnnotation
+  /** A distance kept on the canvas from its layer, never resolved. */
+  measurement?: CommentMeasurement
 }
 
 /** How long a message may be; a comment is a note, not a document. */
@@ -108,7 +118,9 @@ const threadSchema = v.object({
   resolvedBy: v.optional(v.string()),
   agent: v.optional(
     v.object({ name: v.pipe(v.string(), v.maxLength(80)), state: v.picklist(COMMENT_AGENT_STATES) })
-  )
+  ),
+  annotation: v.optional(annotationSchema),
+  measurement: v.optional(measurementSchema)
 })
 
 /** Stored threads, from a file: a malformed thread is dropped, and a repeated id kept once. */
@@ -300,6 +312,9 @@ export function setCommentResolved(
   resolved: boolean,
   by?: string
 ): CommentThread | undefined {
+  // Annotations and measurements describe the design; they stay until deleted.
+  const found = findCommentThread(graph, id)
+  if (found && (found.annotation || found.measurement)) return found
   return updateThread(graph, id, (thread) => ({
     ...thread,
     resolved,

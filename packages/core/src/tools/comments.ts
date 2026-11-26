@@ -1,14 +1,16 @@
 import * as v from 'valibot'
 
 import {
+  annotationPropertyValue,
+  canHaveDevStatus,
   documentComments,
   documentFrameReviews,
   findCommentThread,
   replyToComment as addReply,
-  reviewedFrameOf,
+  measurementSpan,
   setCommentAgentState,
   setCommentResolved,
-  setFrameReady,
+  setFrameDevStatus,
   type CommentAgentState,
   type CommentThread,
   type SceneGraph
@@ -34,6 +36,10 @@ interface ThreadView {
   resolved: boolean
   asks_agent?: CommentAgentState
   messages: { from: string; by: string; text: string }[]
+  /** An annotation for developers: its category and the layer properties it pins, with values. */
+  annotation?: { category?: string; properties: Record<string, string> }
+  /** A distance kept on the canvas, in pixels, to another layer or the same one. */
+  measurement?: { to_layer_id: string; side: string; to_same_side: boolean; distance?: number }
 }
 
 function describeThread(graph: SceneGraph, thread: CommentThread): ThreadView {
@@ -53,6 +59,27 @@ function describeThread(graph: SceneGraph, thread: CommentThread): ThreadView {
   }
   if (thread.anchor.nodeId && !layer) view.layer_deleted = true
   if (thread.agent) view.asks_agent = thread.agent.state
+  if (thread.annotation)
+    view.annotation = {
+      ...(thread.annotation.category ? { category: thread.annotation.category } : {}),
+      properties: Object.fromEntries(
+        layer
+          ? thread.annotation.properties.map((name) => [
+              name,
+              annotationPropertyValue(graph, layer, name)
+            ])
+          : []
+      )
+    }
+  if (thread.measurement) {
+    const span = measurementSpan(graph, thread)
+    view.measurement = {
+      to_layer_id: thread.measurement.toNodeId,
+      side: thread.measurement.side,
+      to_same_side: thread.measurement.toSameSide,
+      ...(span ? { distance: Math.round(span.distance * 100) / 100 } : {})
+    }
+  }
   return view
 }
 
@@ -70,7 +97,7 @@ export function claimWaitingComments(graph: SceneGraph): ThreadView[] {
 export const getComments = defineTool({
   name: 'get_comments',
   description:
-    'Read the comment threads people pinned on layers and points of the design: who said what, on which layer, and whether a thread asks you (asks_agent). Threads waiting for an agent are yours once you read them: act on each, then answer with reply_to_comment, or ask your question there if you need a decision. Resolved threads are left out unless include_resolved.',
+    'Read the comment threads people pinned on layers and points of the design: who said what, on which layer, and whether a thread asks you (asks_agent). Annotations (notes for developers, with the layer properties they pin) and measurements kept on the canvas are threads too; read them before you build a layer in code. Threads waiting for an agent are yours once you read them: act on each, then answer with reply_to_comment, or ask your question there if you need a decision. Resolved threads are left out unless include_resolved.',
   execution: { kind: 'sync', mutation: 'none' },
   exposure: { webmcp: false },
   input: v.strictObject({
@@ -133,7 +160,7 @@ export const resolveComment = defineTool({
 export const getFrameReviews = defineTool({
   name: 'get_frame_reviews',
   description:
-    'Which top-level frames people marked ready for development (status ready), and which changed since and need review again (status review). Frames not listed are drafts. Read it before you build a design in code: build what is ready.',
+    'Which top-level frames and sections people marked ready for development (status ready), which changed since and need review again (status review), and which are built (status completed). Frames not listed are drafts. Read it before you build a design in code: build what is ready.',
   execution: { kind: 'sync', mutation: 'none' },
   exposure: { webmcp: false },
   input: v.strictObject({}),
@@ -142,7 +169,8 @@ export const getFrameReviews = defineTool({
       id: review.nodeId,
       name: figma.graph.getNode(review.nodeId)?.name ?? '',
       status: review.status,
-      by: review.by
+      by: review.by,
+      ...(review.description ? { description: review.description } : {})
     }))
   })
 })
@@ -150,18 +178,26 @@ export const getFrameReviews = defineTool({
 export const setFrameReview = defineTool({
   name: 'set_frame_review',
   description:
-    'Mark a top-level frame ready for development, or a draft again with ready false. Only when the person asks you to: approving a design is theirs to decide.',
+    'Mark a top-level frame or a section ready for development, completed once built (status completed), or a draft again with ready false. Only when the person asks you to: approving a design is theirs to decide.',
   execution: { kind: 'sync', mutation: 'none' },
   exposure: { webmcp: false },
   input: v.strictObject({
-    id: v.pipe(v.string(), v.minLength(1), v.description('The top-level frame')),
-    ready: v.optional(v.boolean(), true)
+    id: v.pipe(
+      v.string(),
+      v.minLength(1),
+      v.description('A section, or a frame at the top of a page or of a section')
+    ),
+    ready: v.optional(v.boolean(), true),
+    status: v.optional(
+      v.pipe(v.picklist(['ready', 'completed']), v.description('Defaults to ready'))
+    )
   }),
-  execute: (figma, { id, ready }) => {
-    const frame = reviewedFrameOf(figma.graph, id) === id ? id : null
-    if (!frame) return { error: `"${id}" is not a top-level frame of a page.` }
+  execute: (figma, { id, ready, status }) => {
+    if (!canHaveDevStatus(figma.graph, id))
+      return { error: `"${id}" is not a section or a frame at the top of a page or section.` }
     const name = figma.commentAuthorName ?? DEFAULT_COMMENT_AGENT_NAME
-    setFrameReady(figma.graph, frame, ready ? `${name} (asked)` : null)
-    return { id: frame, status: ready ? 'ready' : 'draft' }
+    const next = ready ? (status ?? 'ready') : null
+    setFrameDevStatus(figma.graph, id, next, `${name} (asked)`)
+    return { id, status: next ?? 'draft' }
   }
 })

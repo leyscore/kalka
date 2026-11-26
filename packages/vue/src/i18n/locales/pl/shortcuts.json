@@ -29,5 +29,6 @@
   "askAI": "Zapytaj AI o zaznaczenie",
   "toggleAI": "Pokaż lub ukryj AI",
   "comment": "Komentarz",
-  "commentPins": "Pokaż lub ukryj komentarze"
+  "commentPins": "Pokaż lub ukryj komentarze",
+  "annotate": "Dodaj adnotację do zaznaczenia"
 }

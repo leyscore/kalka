@@ -29,5 +29,6 @@
   "askAI": "選択について AI に質問",
   "toggleAI": "AI の表示を切り替え",
   "comment": "コメント",
-  "commentPins": "コメントの表示を切り替え"
+  "commentPins": "コメントの表示を切り替え",
+  "annotate": "選択範囲に注釈を付ける"
 }

@@ -166,6 +166,8 @@ ja:collaboration.teamFeatures
 ja:collaboration.unreachableDescription
 ja:commands.paletteDescription
 ja:comments.empty
+ja:comments.invalidURL
+ja:comments.noAnnotations
 ja:credentials.apiKey
 ja:credentials.getAPIKey
 ja:credentials.rememberDevice
@@ -492,6 +494,8 @@ zh-cn:collaboration.teamFeatures
 zh-cn:collaboration.unreachableDescription
 zh-cn:commands.paletteDescription
 zh-cn:comments.empty
+zh-cn:comments.invalidURL
+zh-cn:comments.noAnnotations
 zh-cn:credentials.apiKey
 zh-cn:credentials.getAPIKey
 zh-cn:credentials.rememberDevice

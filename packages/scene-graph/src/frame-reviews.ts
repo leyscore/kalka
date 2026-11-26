@@ -3,11 +3,12 @@ import * as v from 'valibot'
 import type { SceneGraph } from './index'
 
 /**
- * Where a top-level frame stands in review: marked ready for development by a person, or back
- * to needing review because it changed since. A frame with neither is a draft. Kept on the
- * document's root, saved with it, and readable by agents, so a coding agent knows what to build.
+ * Where a top-level frame or section stands in review, as Figma's dev status: marked ready for
+ * development by a person, back to needing review because it changed since (Figma's "Changed"),
+ * or completed once built. A frame with none is a draft. Kept on the document's root, saved with
+ * it, and readable by agents, so a coding agent knows what to build.
  */
-export const FRAME_REVIEW_STATUSES = ['ready', 'review'] as const
+export const FRAME_REVIEW_STATUSES = ['ready', 'review', 'completed'] as const
 export type FrameReviewStatus = (typeof FRAME_REVIEW_STATUSES)[number]
 
 export interface FrameReview {
@@ -17,13 +18,16 @@ export interface FrameReview {
   by: string
   /** Milliseconds since the epoch when it was marked ready. */
   at: number
+  /** A note for developers given with the status. */
+  description?: string
 }
 
 const reviewSchema = v.object({
   nodeId: v.string(),
   status: v.picklist(FRAME_REVIEW_STATUSES),
   by: v.pipe(v.string(), v.maxLength(80)),
-  at: v.pipe(v.number(), v.finite())
+  at: v.pipe(v.number(), v.finite()),
+  description: v.optional(v.pipe(v.string(), v.maxLength(4000)))
 })
 
 /** Stored reviews, from a file: a malformed one is dropped, and a frame kept once. */
@@ -61,6 +65,28 @@ export function setFrameReady(
   })
 }
 
+/**
+ * Sets a frame's or a section's dev status: ready for development, completed, or a draft again
+ * with null; `description` is the note it comes with.
+ */
+export function setFrameDevStatus(
+  graph: SceneGraph,
+  nodeId: string,
+  status: 'ready' | 'completed' | null,
+  by: string,
+  options: { description?: string; now?: number } = {}
+): void {
+  const others = documentFrameReviews(graph).filter((review) => review.nodeId !== nodeId)
+  if (!status) {
+    graph.updateNode(graph.rootId, { frameReviews: others })
+    return
+  }
+  const review: FrameReview = { nodeId, status, by, at: options.now ?? Date.now() }
+  const description = options.description?.trim()
+  if (description) review.description = description
+  graph.updateNode(graph.rootId, { frameReviews: [...others, review] })
+}
+
 /** The top-level frame of a page that holds `id`: what a review is about. */
 export function reviewedFrameOf(graph: SceneGraph, id: string): string | null {
   let node = graph.getNode(id)
@@ -71,6 +97,29 @@ export function reviewedFrameOf(graph: SceneGraph, id: string): string | null {
     node = parent
   }
   return null
+}
+
+const STATUS_TYPES = new Set(['FRAME', 'SECTION', 'COMPONENT', 'COMPONENT_SET'])
+
+/**
+ * Whether a layer can take a dev status, as in Figma: a section, or a frame at the top of a page
+ * or directly in a section.
+ */
+export function canHaveDevStatus(graph: SceneGraph, id: string): boolean {
+  const node = graph.getNode(id)
+  const parent = node?.parentId ? graph.getNode(node.parentId) : undefined
+  if (!node || !parent || !STATUS_TYPES.has(node.type)) return false
+  return node.type === 'SECTION' || parent.type === 'CANVAS' || parent.type === 'SECTION'
+}
+
+/** The frames and sections holding `id`, itself included, that can take a dev status. */
+export function devStatusTargetsOf(graph: SceneGraph, id: string): string[] {
+  const targets: string[] = []
+  graph.closest(id, (node) => {
+    if (canHaveDevStatus(graph, node.id)) targets.push(node.id)
+    return false
+  })
+  return targets
 }
 
 /**
@@ -85,8 +134,8 @@ export function markChangedFramesForReview(
   if (reviews.length === 0) return false
   const changed = new Set<string>()
   for (const id of changedIds) {
-    const frame = reviewedFrameOf(graph, id) ?? (graph.getNode(id) ? null : id)
-    if (frame) changed.add(frame)
+    if (!graph.getNode(id)) changed.add(id)
+    for (const target of devStatusTargetsOf(graph, id)) changed.add(target)
   }
   const next: FrameReview[] = []
   for (const review of reviews) {

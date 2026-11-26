@@ -31,7 +31,8 @@ export const shortcutsMessageDefaults = {
   askAI: 'Ask AI about the selection',
   toggleAI: 'Show or hide AI',
   comment: 'Comment',
-  commentPins: 'Show or hide comments'
+  commentPins: 'Show or hide comments',
+  annotate: 'Annotate the selection'
 }
 
 export const shortcutsMessages = i18n('shortcuts', shortcutsMessageDefaults)

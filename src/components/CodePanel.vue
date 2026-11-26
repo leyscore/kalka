@@ -36,6 +36,7 @@ import {
 import { starterSourceFor, type CodeSource } from '@/app/code/templates'
 import { useEditorStore } from '@/app/editor/active-store'
 import { appPreferences, updateDefaultCodeSource } from '@/app/settings/preferences/store'
+import HandoffSection from '@/components/handoff/HandoffSection.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppPlaceholder from '@/components/ui/feedback/AppPlaceholder.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'
@@ -396,6 +397,9 @@ watch(
         </AppButton>
       </Tip>
     </header>
+
+    <!-- Annotations, dev status, measurements and dev resources of the selected layer. -->
+    <HandoffSection v-if="store.state.selectedIds.size > 0" />
 
     <AppPlaceholder
       v-if="showEmptyState"

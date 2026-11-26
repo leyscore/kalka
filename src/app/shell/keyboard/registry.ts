@@ -6,6 +6,7 @@ import { editorCommandMetadata, shortcutPlatform } from '@kalka/vue'
 import type { EditorCommandId } from '@kalka/vue'
 
 import { askAboutSelection } from '@/app/ai/chat/ask-selection'
+import { annotateSelection } from '@/app/comments/annotations'
 import {
   leaveComments,
   stopCommentPlacing,
@@ -236,6 +237,12 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
       viewing: true,
       keys: 'Shift+KeyC',
       run: ({ store }) => toggleCommentPins(store)
+    },
+    {
+      // Figma's Annotation tool: annotates the selected layer and opens its note.
+      id: 'annotate-selection',
+      keys: 'Shift+KeyT',
+      run: ({ store }) => void annotateSelection(store)
     },
     {
       id: 'toggle-rulers',

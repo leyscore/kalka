@@ -29,5 +29,6 @@
   "askAI": "KI zur Auswahl fragen",
   "toggleAI": "KI ein- oder ausblenden",
   "comment": "Kommentar",
-  "commentPins": "Kommentare ein- oder ausblenden"
+  "commentPins": "Kommentare ein- oder ausblenden",
+  "annotate": "Auswahl mit Anmerkung versehen"
 }

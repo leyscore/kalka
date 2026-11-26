@@ -27,6 +27,7 @@ import {
 } from '../instance-overrides/source-children'
 import { nodeChangeToProps } from '../node-change'
 import { applyGridAnchors } from '../node-change/grid'
+import { annotationCategoriesOf, importHandoffRecords } from '../node-change/handoff'
 import { embeddedImages } from '../node-change/images'
 import { readNodeChangePluginData } from '../node-change/plugin-data'
 import { figArchiveRecordInfo, type FigArchiveRecordInfo } from '../record-patch'
@@ -87,6 +88,11 @@ export interface AssemblyState {
   savedSizeNodes: Set<string>
   /** Component property types by definition id, carried across page loads. */
   definitionTypes?: Map<string, string>
+  /**
+   * The annotation categories of a file Figma wrote, whose annotations, measurements and dev
+   * statuses its layers' records bring in; null for a file Kalka wrote, which keeps its own.
+   */
+  handoffCategories?: ReturnType<typeof annotationCategoriesOf> | null
 }
 
 export interface FigSessionCheckpoint {
@@ -281,7 +287,11 @@ function createAssemblyState(
     sources: new Map(),
     components: new Map(),
     componentIds: new Map(),
-    savedSizeNodes: new Set()
+    savedSizeNodes: new Set(),
+    handoffCategories:
+      document && !readNodeChangePluginData(document, KALKA_PLUGIN_DATA.documentId)
+        ? annotationCategoriesOf(document)
+        : null
   }
   // Figma lays text out with Inter 3.19, so a document or a paste from it keeps that Inter.
   graph.interVersion = FIGMA_INTER_VERSION
@@ -577,5 +587,6 @@ function materializeReaderInto(
     applyDocumentValueBindings(graph, materialized)
     applyGridAnchors(graph, materialized)
   })
+  if (state.handoffCategories) importHandoffRecords(graph, pages, sources, state.handoffCategories)
   return state
 }

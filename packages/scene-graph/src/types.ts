@@ -2,6 +2,7 @@
 
 import type { CSSClass } from './class-styles'
 import type { CommentThread } from './comments'
+import type { DevResource } from './dev-resources'
 import type { ExportFormatId } from './export-format'
 import type { FrameReview } from './frame-reviews'
 import type { CanvasGuide } from './guides'
@@ -573,6 +574,8 @@ export interface SceneNode {
   comments: CommentThread[]
   /** Where the document's top-level frames stand in review; only the document's root holds any. */
   frameReviews: FrameReview[]
+  /** Links for developers on the layer, as Figma's dev resources. */
+  devResources: DevResource[]
   /**
    * The layer's CSS declarations, literal values in the order export writes them. The graph keeps
    * the fields it maps (`@kalka/scene-graph/css-model`) and this in step; declarations the

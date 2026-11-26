@@ -8,6 +8,9 @@ import { markChangedFramesForReview, type SceneGraph } from '@kalka/scene-graph'
  */
 const watched = new WeakSet<SceneGraph>()
 
+/** Notes for developers on a layer, not its design: changing them leaves a review standing. */
+const HANDOFF_FIELDS = new Set(['devResources'])
+
 export function watchFrameReviews(reached: SceneGraph): void {
   const graph = toRaw(reached)
   if (watched.has(graph)) return
@@ -28,7 +31,10 @@ export function watchFrameReviews(reached: SceneGraph): void {
   }
   graph.onNodeEvents({
     created: (node) => changed(node.id),
-    updated: (id) => changed(id),
+    updated: (id, changes) => {
+      if (Object.keys(changes).every((key) => HANDOFF_FIELDS.has(key))) return
+      changed(id)
+    },
     // A deleted layer is gone; the frame it was in changed.
     deleted: (id, parentId) => changed(parentId ?? id),
     reparented: (id) => changed(id),

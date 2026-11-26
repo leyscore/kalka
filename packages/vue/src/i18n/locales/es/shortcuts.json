@@ -29,5 +29,6 @@
   "askAI": "Preguntar a la IA sobre la selección",
   "toggleAI": "Mostrar u ocultar la IA",
   "comment": "Comentario",
-  "commentPins": "Mostrar u ocultar los comentarios"
+  "commentPins": "Mostrar u ocultar los comentarios",
+  "annotate": "Anotar la selección"
 }

@@ -29,5 +29,6 @@
   "askAI": "就所选内容询问 AI",
   "toggleAI": "显示或隐藏 AI",
   "comment": "评论",
-  "commentPins": "显示或隐藏评论"
+  "commentPins": "显示或隐藏评论",
+  "annotate": "为所选内容添加注释"
 }

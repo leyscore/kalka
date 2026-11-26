@@ -25,6 +25,7 @@ import type { GUID, Matrix, Vector } from '@kalka/scene-graph/primitives'
 /* eslint-disable max-lines */
 import { bytesToHex } from '../bytes'
 import { exportCanvasGuides } from '../canvas-guides'
+import { exportHandoffFields } from '../handoff'
 import { snapshotInstanceGeometry } from '../instance/geometry'
 import { kiwiEffectKindFields, kiwiEffectType } from '../paint'
 import {
@@ -1126,6 +1127,9 @@ export function sceneNodeToKiwiWithContext(
   context.serializeVariableBindings(node, nc, context.graph, context.varIdToGuid)
   mergeParameterBindings(nc)
   applyRawFigmaNodeFields(context, node, nc)
+  exportHandoffFields(context.graph, node, nc, (id) =>
+    getOrCreateNodeGuid(context, id, localIdCounter)
+  )
   const variableModeBySetMap = serializeVariableModes(
     node,
     context.varIdToGuid,

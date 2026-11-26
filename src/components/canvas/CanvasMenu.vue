@@ -11,7 +11,7 @@ import {
 import { computed } from 'vue'
 import IconChevronRight from '~icons/hugeicons/chevron-right'
 
-import { frameReview, reviewedFrameOf, setFrameReady } from '@kalka/scene-graph'
+import { devStatusTargetsOf, frameReview, setFrameReady } from '@kalka/scene-graph'
 import {
   vTestId,
   useEditorCommands,
@@ -25,6 +25,7 @@ import {
 import type { EditorCommandId } from '@kalka/vue'
 
 import { askAboutSelection } from '@/app/ai/chat/ask-selection'
+import { annotateSelection } from '@/app/comments/annotations'
 import { currentPersonName, startCommentOn } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
 import { createCanvasMenuActions } from '@/app/editor/canvas/menu/actions'
@@ -49,12 +50,18 @@ const contextMenu = useCanvasContextMenu(canvasMenu, hasSelection, editor, canva
 const selectedGuide = computed(() => store.state.guides.selected)
 const commentMessages = useCommentsMessages()
 
-/** The top-level frame holding the selection, which can be marked ready for development. */
+/**
+ * The frame or section holding the selection, the nearest one that can take a dev status, which
+ * can be marked ready for development.
+ */
 const reviewTarget = computed(() => {
   void store.state.sceneVersion
   const [first] = selectedIds.value
-  const frame = first ? reviewedFrameOf(store.graph, first) : null
-  if (!frame || [...selectedIds.value].some((id) => reviewedFrameOf(store.graph, id) !== frame))
+  const frame = first ? devStatusTargetsOf(store.graph, first)[0] : undefined
+  if (
+    !frame ||
+    [...selectedIds.value].some((id) => devStatusTargetsOf(store.graph, id)[0] !== frame)
+  )
     return null
   return { id: frame, ready: frameReview(store.graph, frame)?.status === 'ready' }
 })
@@ -171,6 +178,15 @@ function contextCommandTestId(id: EditorCommandId | undefined): string | undefin
       >
         <span>{{ commentMessages.commentOnLayer }}</span
         ><AppShortcutText>C</AppShortcutText>
+      </ContextMenuItem>
+      <ContextMenuItem
+        data-test-id="context-annotate"
+        :class="cls.item"
+        :disabled="!hasSelection"
+        @select="annotateSelection(store)"
+      >
+        <span>{{ commentMessages.annotate }}</span
+        ><AppShortcutText>{{ formatShortcut('SHIFT+T') }}</AppShortcutText>
       </ContextMenuItem>
       <ContextMenuItem
         v-if="reviewTarget"

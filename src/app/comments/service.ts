@@ -6,6 +6,7 @@ import {
   deleteCommentThread,
   documentComments,
   findCommentThread,
+  isHandoffThread,
   mentionedAgent,
   moveCommentThread,
   replyToComment,
@@ -221,11 +222,14 @@ export function useComments(store: EditorStore) {
   })
   const identity = useCollabIdentity()
   const { show } = useLeftPanel()
-  const threads = computed(() => {
+  const allThreads = computed(() => {
     void store.state.sceneVersion
     void revisionOf(store.graph).value
     return documentComments(store.graph)
   })
+  /** Conversations; annotations and measurements are listed and drawn apart from them. */
+  const threads = computed(() => allThreads.value.filter((thread) => !isHandoffThread(thread)))
+  const handoffThreads = computed(() => allThreads.value.filter(isHandoffThread))
   const pageThreads = computed(() =>
     threads.value.filter((thread) => thread.anchor.pageId === store.state.currentPageId)
   )
@@ -277,6 +281,7 @@ export function useComments(store: EditorStore) {
   return {
     state,
     threads,
+    handoffThreads,
     pageThreads,
     openCount,
     openThread,

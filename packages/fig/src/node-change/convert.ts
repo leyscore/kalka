@@ -18,6 +18,7 @@ import { convertFigmaDerivedTextGlyphs } from './derived-text/glyphs'
 import { convertFontFeatures } from './font/features'
 import { convertFontVariations } from './font/variations'
 import { convertGridContainer, mapGridChildAlign } from './grid'
+import { importDevResources } from './handoff'
 import { convertEffects, convertFills, convertStrokeAlign, convertStrokes } from './paint'
 import { expandPathTextLayoutBox } from './path/text-layout'
 import {
@@ -783,7 +784,8 @@ export function nodeChangeToProps(
     componentPropertyAssignments: extractComponentPropertyAssignments(nc),
     componentPropertyValues: extractComponentPropertyValues(nc),
     ...extractComponentMetadata(nc),
-    ...importPrototypeFields(nc)
+    ...importPrototypeFields(nc),
+    ...importDevResources(nc)
   }
 
   // See path/text-layout.ts — expand the layout box before node creation so

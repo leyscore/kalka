@@ -23,6 +23,8 @@ de:collaboration.planTeam
 de:collaboration.serverRoleAdmin
 de:collaboration.serverTab
 de:collaboration.teamGroup
+de:comments.resourceName
+de:comments.resourceURL
 de:common.ok
 de:diagnostics.categoryMCP
 de:diagnostics.categoryRenderer
@@ -202,6 +204,8 @@ fr:code.sourceHTMLCSS
 fr:code.sourceTailwindJSX
 fr:collaboration.planPro
 fr:collaboration.planTeam
+fr:comments.annotations
+fr:comments.categoryInteraction
 fr:common.ok
 fr:designCheck.scopeDocument
 fr:designCheck.scopePage
@@ -337,6 +341,7 @@ it:collaboration.serverPassword
 it:collaboration.serverRoleEditor
 it:collaboration.serverTab
 it:collaboration.teamGroup
+it:comments.resourceURL
 it:common.ok
 it:diagnostics.categoryMCP
 it:diagnostics.categoryRenderer
@@ -446,6 +451,7 @@ pl:code.sourceTailwindJSX
 pl:collaboration.planPro
 pl:collaboration.planTeam
 pl:collaboration.serverRoleAdmin
+pl:comments.resourceURL
 pl:common.ok
 pl:diagnostics.categoryAI
 pl:diagnostics.categoryMCP

@@ -9,6 +9,12 @@
 import { decompress as zstdDecompress } from 'fzstd'
 
 import { compileSchema, encodeBinarySchema } from '../schema-runtime'
+import type {
+  KiwiAnnotation,
+  KiwiAnnotationMeasurement,
+  KiwiDeveloperLink,
+  KiwiSectionStatusInfo
+} from './handoff'
 import { isZstdCompressed, getKiwiMessageType } from './protocol'
 import figmaSchema from './schema'
 import type { Color, GUID, Matrix, Vector } from './types'
@@ -456,6 +462,13 @@ export interface NodeChange {
   prototypeStartingPoint?: { name?: string; description?: string; position?: string }
   prototypeDevice?: unknown
   prototypeBackgroundColor?: Color
+  // Handoff
+  annotations?: KiwiAnnotation[]
+  measurements?: KiwiAnnotationMeasurement[]
+  sectionStatusInfo?: KiwiSectionStatusInfo
+  developerRelatedLinks?: KiwiDeveloperLink[]
+  /** On the document: its annotation categories, Figma's presets and its own. */
+  annotationCategories?: unknown
   // Variables
   variableData?: VariableDataEntry
   variableConsumptionMap?: { entries?: VariableConsumptionEntry[] }
