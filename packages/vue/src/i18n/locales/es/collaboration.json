@@ -168,6 +168,8 @@
   "serverViewOnlyEdit": "Solo puedes ver este archivo, así que tu cambio se ha deshecho. Pide a un administrador el rol de editor.",
   "serverViewOnlyBadge": "Solo lectura",
   "shareThisFileDescription": "Un enlace en vivo que funciona mientras mantengas este archivo abierto.",
+  "sharePermissionRoom": "Cualquiera con el enlace puede editar.",
+  "sharePermissionServer": "Los miembros de {server} lo abren con el rol de su cuenta: un Lector solo puede mirar.",
   "serverSavedLinkCopied": "Guardado en {server}. Enlace copiado.",
   "serverStatusLive": "{count} personas aquí, guardado en {server}",
   "serverCopyFileLink": "Copiar enlace a este archivo",

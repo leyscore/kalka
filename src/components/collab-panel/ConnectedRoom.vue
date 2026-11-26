@@ -11,6 +11,8 @@ import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 import { roomStatus } from '@/theme/collaboration/room-status'
 
+import SharePermission from './SharePermission.vue'
+
 const collab = useCollabPanelContext()
 const room = useRoomActions()
 const ui = roomStatus()
@@ -57,6 +59,11 @@ const statusText = computed(() =>
   <div v-if="!collab.inServerRoom" class="mb-1.5 text-xs font-medium text-surface">
     {{ collab.messages.roomLink }}
   </div>
+  <SharePermission
+    v-if="!collab.inServerRoom || collab.serverName"
+    class="mb-1.5"
+    :server="collab.inServerRoom ? (collab.serverName ?? undefined) : undefined"
+  />
   <div v-if="!collab.inServerRoom" class="mb-3 flex items-center gap-1.5">
     <AppInput
       :model-value="collab.shareURL"

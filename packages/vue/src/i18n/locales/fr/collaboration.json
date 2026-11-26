@@ -168,6 +168,8 @@
   "serverViewOnlyEdit": "Vous pouvez voir ce fichier mais pas le modifier : votre modification a été annulée. Demandez le rôle Éditeur à un administrateur.",
   "serverViewOnlyBadge": "Lecture seule",
   "shareThisFileDescription": "Un lien en direct, qui fonctionne tant que vous gardez ce fichier ouvert.",
+  "sharePermissionRoom": "Toute personne disposant du lien peut modifier.",
+  "sharePermissionServer": "Les membres de {server} l’ouvrent avec le rôle de leur compte : un Lecteur peut seulement regarder.",
   "serverSavedLinkCopied": "Enregistré sur {server}. Lien copié.",
   "serverStatusLive": "{count} personnes ici, enregistré sur {server}",
   "serverCopyFileLink": "Copier le lien de ce fichier",

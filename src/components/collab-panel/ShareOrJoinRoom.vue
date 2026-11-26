@@ -3,6 +3,8 @@ import { useCollabPanelContext } from '@/components/collab-panel/context'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 
+import SharePermission from './SharePermission.vue'
+
 const collab = useCollabPanelContext()
 const JOIN_ERROR_ID = 'collab-join-error'
 </script>
@@ -33,7 +35,8 @@ const JOIN_ERROR_ID = 'collab-join-error'
       <template #leading><icon-hugeicons-server-stack-01 class="size-3.5" /></template>
       {{ collab.messages.serverShareOn({ server: collab.serverName }) }}
     </AppButton>
-    <p class="mt-1 mb-3 text-[11px] text-muted">{{ collab.messages.serverShareOnDescription }}</p>
+    <p class="mt-1 text-[11px] text-muted">{{ collab.messages.serverShareOnDescription }}</p>
+    <SharePermission class="mt-1 mb-3" :server="collab.serverName" />
   </template>
 
   <AppButton
@@ -47,7 +50,8 @@ const JOIN_ERROR_ID = 'collab-join-error'
     <template #leading><icon-hugeicons-share-01 class="size-3.5" /></template>
     {{ collab.messages.shareThisFile }}
   </AppButton>
-  <p class="mt-1 mb-3 text-[11px] text-muted">{{ collab.messages.shareThisFileDescription }}</p>
+  <p class="mt-1 text-[11px] text-muted">{{ collab.messages.shareThisFileDescription }}</p>
+  <SharePermission class="mt-1 mb-3" />
 
   <div class="mb-2 flex items-center gap-2">
     <div class="h-px flex-1 bg-border" />

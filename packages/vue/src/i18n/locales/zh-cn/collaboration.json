@@ -168,6 +168,8 @@
   "serverViewOnlyEdit": "你只能查看此文件，因此你的修改已被撤销。请向管理员申请编辑者角色。",
   "serverViewOnlyBadge": "仅查看",
   "shareThisFileDescription": "实时链接，在你保持此文件打开时有效。",
+  "sharePermissionRoom": "任何拥有链接的人都可以编辑。",
+  "sharePermissionServer": "{server} 的成员以其账户角色打开：查看者只能查看。",
   "serverSavedLinkCopied": "已保存到 {server}。链接已复制。",
   "serverStatusLive": "{count} 人在此，已保存到 {server}",
   "serverCopyFileLink": "复制此文件的链接",

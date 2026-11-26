@@ -168,6 +168,8 @@
   "serverViewOnlyEdit": "Sie können diese Datei nur ansehen, daher wurde Ihre Änderung rückgängig gemacht. Bitten Sie eine Administratorin oder einen Administrator um die Rolle Bearbeiter.",
   "serverViewOnlyBadge": "Nur ansehen",
   "shareThisFileDescription": "Ein Live-Link, der funktioniert, solange Sie diese Datei geöffnet lassen.",
+  "sharePermissionRoom": "Alle mit dem Link können bearbeiten.",
+  "sharePermissionServer": "Mitglieder von {server} öffnen sie mit der Rolle ihres Kontos: Betrachter können nur ansehen.",
   "serverSavedLinkCopied": "Auf {server} gespeichert. Link kopiert.",
   "serverStatusLive": "{count} Personen hier, gespeichert auf {server}",
   "serverCopyFileLink": "Link zu dieser Datei kopieren",

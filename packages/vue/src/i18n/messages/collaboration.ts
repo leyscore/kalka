@@ -183,6 +183,10 @@ export const collaborationMessageDefaults = {
     'You can view this file but not change it, so your change was undone. Ask an administrator for the Editor role.',
   serverViewOnlyBadge: 'View only',
   shareThisFileDescription: 'A live link that works while you keep this file open.',
+  sharePermissionRoom: 'Anyone with the link can edit.',
+  sharePermissionServer: params(
+    'Members of {server} open it with their account’s role: a Viewer can only look.'
+  ),
   serverSavedLinkCopied: params('Saved on {server}. Link copied.'),
   serverStatusLive: params('{count} people here, saved on {server}'),
   serverCopyFileLink: 'Copy link to this file',

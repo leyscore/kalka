@@ -168,6 +168,8 @@
   "serverViewOnlyEdit": "Możesz tylko oglądać ten plik, więc zmiana została cofnięta. Poproś administratora o rolę edytora.",
   "serverViewOnlyBadge": "Tylko do odczytu",
   "shareThisFileDescription": "Link na żywo, który działa, dopóki ten plik jest otwarty.",
+  "sharePermissionRoom": "Każdy, kto ma link, może edytować.",
+  "sharePermissionServer": "Członkowie {server} otwierają go z rolą swojego konta: Czytelnik może tylko oglądać.",
   "serverSavedLinkCopied": "Zapisano na {server}. Skopiowano link.",
   "serverStatusLive": "Osoby tutaj: {count}, zapisano na {server}",
   "serverCopyFileLink": "Kopiuj link do tego pliku",

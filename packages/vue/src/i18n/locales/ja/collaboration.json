@@ -168,6 +168,8 @@
   "serverViewOnlyEdit": "このファイルは閲覧のみのため、変更は取り消されました。管理者に編集者の役割を依頼してください。",
   "serverViewOnlyBadge": "閲覧のみ",
   "shareThisFileDescription": "このファイルを開いている間だけ使えるライブリンクです。",
+  "sharePermissionRoom": "リンクを知っている全員が編集できます。",
+  "sharePermissionServer": "{server} のメンバーはアカウントの役割で開きます。閲覧者は見ることしかできません。",
   "serverSavedLinkCopied": "{server} に保存しました。リンクをコピーしました。",
   "serverStatusLive": "{count} 人が参加中、{server} に保存済み",
   "serverCopyFileLink": "このファイルへのリンクをコピー",
