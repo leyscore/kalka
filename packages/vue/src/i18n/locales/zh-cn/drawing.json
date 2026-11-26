@@ -24,5 +24,7 @@
   "brushSizeJitter": "大小抖动",
   "brushAngularJitter": "角度抖动",
   "brushRotation": "旋转",
-  "brushReverse": "反转方向"
+  "brushReverse": "反转方向",
+  "simplifyHeading": "简化矢量",
+  "simplifyTolerance": "容差"
 }

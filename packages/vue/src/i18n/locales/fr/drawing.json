@@ -24,5 +24,7 @@
   "brushSizeJitter": "Variation de taille",
   "brushAngularJitter": "Variation d’angle",
   "brushRotation": "Rotation",
-  "brushReverse": "Inverser le sens"
+  "brushReverse": "Inverser le sens",
+  "simplifyHeading": "Simplifier le vecteur",
+  "simplifyTolerance": "Tolérance"
 }

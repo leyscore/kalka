@@ -24,5 +24,7 @@
   "brushSizeJitter": "サイズのばらつき",
   "brushAngularJitter": "角度のばらつき",
   "brushRotation": "回転",
-  "brushReverse": "方向を反転"
+  "brushReverse": "方向を反転",
+  "simplifyHeading": "ベクターを単純化",
+  "simplifyTolerance": "許容値"
 }

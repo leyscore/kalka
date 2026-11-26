@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { watchDebounced } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 
 import type { OffsetPathJoin } from '@kalka/core/canvas'
 import { useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
-import { applyOffsetPath, offsetPathOpen } from '@/app/editor/vector/offset-dialog'
+import { offsetPathOpen, offsetPathPreview } from '@/app/editor/vector/offset-dialog'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import {
   AppDialogBody,
@@ -30,15 +31,32 @@ const joinOptions = computed(() => [
 const distance = computed(() => Number(offset.value))
 const canApply = computed(() => Number.isFinite(distance.value) && distance.value !== 0)
 
+const chosenJoin = computed(() => JOINS.find((value) => value === join.value) ?? 'MITER')
+/** Set by Apply, so closing the dialog keeps what it drew. */
+let applying = false
+
 watch(offsetPathOpen, (open) => {
-  if (open) offset.value = 10
+  if (open) {
+    applying = false
+    offset.value = 10
+    void offsetPathPreview.preview(store, { offset: distance.value, join: chosenJoin.value })
+  } else if (!applying) void offsetPathPreview.cancel(store)
 })
+
+// The canvas shows the offset paths while the distance or the corners change, as in Figma.
+watchDebounced(
+  [distance, chosenJoin],
+  ([value, corners]) => {
+    if (offsetPathOpen.value) void offsetPathPreview.preview(store, { offset: value, join: corners })
+  },
+  { debounce: 120 }
+)
 
 async function submit() {
   if (!canApply.value) return
-  const chosen = JOINS.find((value) => value === join.value) ?? 'MITER'
+  applying = true
   offsetPathOpen.value = false
-  await applyOffsetPath(store, distance.value, chosen)
+  await offsetPathPreview.apply(store, { offset: distance.value, join: chosenJoin.value })
 }
 </script>
 

@@ -24,5 +24,7 @@
   "brushSizeJitter": "Größenstreuung",
   "brushAngularJitter": "Winkelstreuung",
   "brushRotation": "Drehung",
-  "brushReverse": "Richtung umkehren"
+  "brushReverse": "Richtung umkehren",
+  "simplifyHeading": "Vektor vereinfachen",
+  "simplifyTolerance": "Toleranz"
 }

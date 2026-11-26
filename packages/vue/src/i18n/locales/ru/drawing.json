@@ -24,5 +24,7 @@
   "brushSizeJitter": "Разброс размера",
   "brushAngularJitter": "Разброс угла",
   "brushRotation": "Поворот",
-  "brushReverse": "Обратное направление"
+  "brushReverse": "Обратное направление",
+  "simplifyHeading": "Упростить вектор",
+  "simplifyTolerance": "Допуск"
 }

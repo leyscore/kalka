@@ -74,6 +74,7 @@ import TabBar from '@/components/TabBar.vue'
 import TextLinkDialog from '@/components/text/TextLinkDialog.vue'
 import { AppConfirmationDialog } from '@/components/ui/dialog'
 import OffsetPathDialog from '@/components/vector/OffsetPathDialog.vue'
+import SimplifyVectorDialog from '@/components/vector/SimplifyVectorDialog.vue'
 import { IS_BROWSER, IS_TAURI } from '@/constants'
 
 // The editor's code loads apart from the home screen's, so the home screen shows sooner; it is
@@ -432,6 +433,7 @@ onUnmounted(() => {
     <AppBanners v-if="!(IS_TAURI && tabsInTopBar)" />
     <RenameSelectionDialog />
     <OffsetPathDialog />
+    <SimplifyVectorDialog />
     <TextLinkDialog />
     <CommandPalette />
     <KeyboardShortcutsDialog />

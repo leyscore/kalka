@@ -27,7 +27,9 @@ export const drawingMessageDefaults = {
   brushSizeJitter: 'Size jitter',
   brushAngularJitter: 'Angle jitter',
   brushRotation: 'Rotation',
-  brushReverse: 'Reverse direction'
+  brushReverse: 'Reverse direction',
+  simplifyHeading: 'Simplify vector',
+  simplifyTolerance: 'Tolerance'
 } as const
 
 export const drawingMessages = i18n('drawing', drawingMessageDefaults)
