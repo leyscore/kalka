@@ -23,8 +23,9 @@ import {
  * Version history for a document Git does not keep, as Figma keeps one for every file: while it
  * is edited, a version every few minutes, kept on this device; versions named by hand; a preview
  * of any of them, open to view only in a tab of its own; and restoring one, which keeps what was
- * there first, so a restore is itself undone by restoring the version before it. A live room's
- * document is left out: its edits belong to everyone in it.
+ * there first, so a restore is itself undone by restoring the version before it. In a live room
+ * shared between devices, each device keeps the versions it saw, and a restore reaches everyone
+ * in the room as one change; a server file's versions are the server's.
  */
 
 /** How long edits rest before a version is kept, and how often one is kept at most. */
@@ -51,9 +52,13 @@ export function checkpointTime(checkpoint: Pick<CheckpointMeta, 'createdAt'>): s
   return timeFormat.format(checkpoint.createdAt)
 }
 
-/** Whether a document keeps versions here: not in a live room, and not a preview of a version. */
+/**
+ * Whether a document keeps versions on this device: not a server file, whose versions the server
+ * keeps, not a preview of a version, and not one this person may only view.
+ */
 export function keepsCheckpoints(store: EditorStore): boolean {
-  return !roomForStore(store) && !previews.has(store) && !store.state.viewOnly
+  const roomId = roomForStore(store)?.roomId
+  return (!roomId || !isServerRoom(roomId)) && !previews.has(store) && !store.state.viewOnly
 }
 
 /** Keeps the document as it is now. */
