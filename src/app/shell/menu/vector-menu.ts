@@ -23,7 +23,7 @@ export const VECTOR_MENU = {
       accelerator: ''
     },
     { type: 'separator' },
-    { id: 'vector.simplify', label: 'Simplify Vector' },
+    { id: 'vector.simplify', label: 'Simplify Vector…' },
     { id: 'vector.reverse', label: 'Reverse Path Direction' },
     { id: 'vector.offset', label: 'Offset Path…' }
   ]

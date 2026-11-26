@@ -162,7 +162,7 @@ export const menuMessageDefaults = {
   joinSelection: 'Join selection',
   smoothJoinSelection: 'Smooth join selection',
   deleteAndHealSelection: 'Delete and heal selection',
-  simplifyVector: 'Simplify vector',
+  simplifyVector: 'Simplify vector…',
   reversePathDirection: 'Reverse path direction',
   offsetPath: 'Offset path…',
   offsetPathHeading: 'Offset path',

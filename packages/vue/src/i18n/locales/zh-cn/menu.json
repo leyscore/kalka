@@ -154,7 +154,7 @@
   "joinSelection": "连接所选",
   "smoothJoinSelection": "平滑连接所选",
   "deleteAndHealSelection": "删除并修复所选",
-  "simplifyVector": "简化矢量",
+  "simplifyVector": "简化矢量…",
   "reversePathDirection": "反转路径方向",
   "offsetPath": "偏移路径…",
   "offsetPathHeading": "偏移路径",

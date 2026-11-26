@@ -154,7 +154,7 @@
   "joinSelection": "Соединить выделенное",
   "smoothJoinSelection": "Плавно соединить выделенное",
   "deleteAndHealSelection": "Удалить и восстановить выделенное",
-  "simplifyVector": "Упростить вектор",
+  "simplifyVector": "Упростить вектор…",
   "reversePathDirection": "Изменить направление контура",
   "offsetPath": "Сместить контур…",
   "offsetPathHeading": "Сместить контур",

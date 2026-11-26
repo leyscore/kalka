@@ -154,7 +154,7 @@
   "joinSelection": "選択範囲を結合",
   "smoothJoinSelection": "選択範囲をスムーズに結合",
   "deleteAndHealSelection": "選択範囲を削除して修復",
-  "simplifyVector": "ベクターを簡略化",
+  "simplifyVector": "ベクターを簡略化…",
   "reversePathDirection": "パスの方向を反転",
   "offsetPath": "パスのオフセット…",
   "offsetPathHeading": "パスのオフセット",
