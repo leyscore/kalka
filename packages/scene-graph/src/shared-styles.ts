@@ -136,6 +136,28 @@ function strokePaintsFromStyle(target: SceneNode, style: SceneNode): Stroke[] {
   })
 }
 
+/**
+ * The layer's variable bindings with those of its `list` replaced by the ones the style's `from`
+ * list holds, so a paint or effect bound to a variable in a style is bound in every layer using
+ * it and follows the variable's modes there.
+ */
+function bindingsFromStyle(
+  target: SceneNode,
+  style: SceneNode,
+  from: 'fills' | 'effects',
+  list: 'fills' | 'strokes' | 'effects'
+): Record<string, string> {
+  const bindings: Record<string, string> = {}
+  for (const [field, variableId] of Object.entries(target.boundVariables)) {
+    if (!field.startsWith(`${list}/`)) bindings[field] = variableId
+  }
+  for (const [field, variableId] of Object.entries(style.boundVariables)) {
+    if (field.startsWith(`${from}/`))
+      bindings[`${list}/${field.slice(from.length + 1)}`] = variableId
+  }
+  return bindings
+}
+
 /** The values a style gives a layer that uses it as `kind`, copied from its definition. */
 export function sharedStyleValues(
   kind: SharedStyleKind,
@@ -144,11 +166,20 @@ export function sharedStyleValues(
 ): Partial<SceneNode> {
   switch (kind) {
     case 'fill':
-      return { fills: copyFills(style.fills) }
+      return {
+        fills: copyFills(style.fills),
+        boundVariables: bindingsFromStyle(target, style, 'fills', 'fills')
+      }
     case 'stroke':
-      return { strokes: strokePaintsFromStyle(target, style) }
+      return {
+        strokes: strokePaintsFromStyle(target, style),
+        boundVariables: bindingsFromStyle(target, style, 'fills', 'strokes')
+      }
     case 'effect':
-      return { effects: copyEffects(style.effects) }
+      return {
+        effects: copyEffects(style.effects),
+        boundVariables: bindingsFromStyle(target, style, 'effects', 'effects')
+      }
     case 'grid':
       return { layoutGrids: copyLayoutGrids(style.layoutGrids) }
     case 'text':
@@ -168,6 +199,19 @@ function strokePaint({
   return copyFill(paint)
 }
 
+/** The bindings of a layer's `from` list, keyed as the style's `to` list keeps them. */
+function listBindings(
+  source: SceneNode,
+  from: 'fills' | 'strokes' | 'effects',
+  to: 'fills' | 'effects'
+): Record<string, string> {
+  const bindings: Record<string, string> = {}
+  for (const [field, variableId] of Object.entries(source.boundVariables)) {
+    if (field.startsWith(`${from}/`)) bindings[`${to}/${field.slice(from.length + 1)}`] = variableId
+  }
+  return bindings
+}
+
 /**
  * What a new style made from a layer holds: its paints for a colour style (its strokes' paints
  * when made from the stroke), its effects, its layout guides or its type settings.
@@ -178,11 +222,20 @@ export function sharedStyleValuesFromLayer(
 ): Partial<SceneNode> {
   switch (kind) {
     case 'fill':
-      return { fills: copyFills(source.fills) }
+      return {
+        fills: copyFills(source.fills),
+        boundVariables: listBindings(source, 'fills', 'fills')
+      }
     case 'stroke':
-      return { fills: source.strokes.map(strokePaint) }
+      return {
+        fills: source.strokes.map(strokePaint),
+        boundVariables: listBindings(source, 'strokes', 'fills')
+      }
     case 'effect':
-      return { effects: copyEffects(source.effects) }
+      return {
+        effects: copyEffects(source.effects),
+        boundVariables: listBindings(source, 'effects', 'effects')
+      }
     case 'grid':
       return { layoutGrids: copyLayoutGrids(source.layoutGrids) }
     case 'text':

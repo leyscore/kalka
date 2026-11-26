@@ -199,6 +199,26 @@ describe('shared colour, effect and grid styles', () => {
     })
   })
 
+  test('a colour style bound to a variable binds the fills and strokes using it', () => {
+    const { graph, editor, card, badge } = setupLayers()
+    const collection = graph.createCollection('Theme')
+    const brand = graph.createVariable('Brand', 'COLOR', collection.id, red)
+    graph.updateNode(card.id, { boundVariables: { 'fills/0/color': brand.id, opacity: 'kept' } })
+    const style = editor.createSharedStyle('fill', 'Brand/Primary', [card.id])
+    if (!style) throw new Error('No style')
+    expect(graph.getNode(style.nodeId)?.boundVariables).toEqual({ 'fills/0/color': brand.id })
+
+    editor.updateNodeWithUndo(badge.id, { strokeStyleId: style.id })
+    editor.updateSharedStyle(style.nodeId, {
+      fills: [{ type: 'SOLID', color: blue, opacity: 1, visible: true }]
+    })
+    expect(graph.getNode(card.id)?.boundVariables).toEqual({
+      opacity: 'kept',
+      'fills/0/color': brand.id
+    })
+    expect(graph.getNode(badge.id)?.boundVariables).toEqual({ 'strokes/0/color': brand.id })
+  })
+
   test('editing a colour style changes the fills and strokes using it, as one undo step', () => {
     const { graph, editor, card, badge } = setupLayers()
     const style = editor.createSharedStyle('fill', 'Brand/Primary', [card.id])
