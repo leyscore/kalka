@@ -137,6 +137,7 @@
   "muted": "ミュート",
   "videoHits": "動画の指定時間",
   "videoEnds": "動画の終了",
+  "insertModeLookup": "モード指定の変数",
   "thisLayer": "このレイヤー",
   "seconds": "秒",
   "expressionSyntax": "この式は不完全か、正しくありません。",

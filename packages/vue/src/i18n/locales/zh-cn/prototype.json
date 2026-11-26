@@ -137,6 +137,7 @@
   "muted": "静音",
   "videoHits": "视频到达",
   "videoEnds": "视频结束",
+  "insertModeLookup": "指定模式的变量",
   "thisLayer": "此图层",
   "seconds": "秒",
   "expressionSyntax": "此表达式不完整或无效。",

@@ -10,6 +10,7 @@ import { usePrototypeMessages, useSceneComputed } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import AppInput from '@/components/ui/input/AppInput.vue'
+import AppSelect from '@/components/ui/select/AppSelect.vue'
 
 /**
  * A value or a condition typed as Figma's expression field takes it: `count + 1`,
@@ -37,15 +38,37 @@ function modesOf(variableId: string) {
   )
 }
 
-const text = computed(() =>
-  expression
-    ? formatPrototypeExpression(
-        expression,
-        (id) => variables.value.find((variable) => variable.id === id)?.name ?? id,
-        (id, modeId) => modesOf(id).find((mode) => mode.modeId === modeId)?.name ?? modeId
-      )
-    : ''
+function format(value: PrototypeExpression): string {
+  return formatPrototypeExpression(
+    value,
+    (id) => variables.value.find((variable) => variable.id === id)?.name ?? id,
+    (id, modeId) => modesOf(id).find((mode) => mode.modeId === modeId)?.name ?? modeId
+  )
+}
+
+const text = computed(() => (expression ? format(expression) : ''))
+
+/**
+ * Variables of collections with more than one mode, each in each mode, as Figma's expression
+ * field offers them: choosing one adds `name[Mode]` to the expression, which reads the variable
+ * in that mode whatever mode the prototype shows.
+ */
+const modeLookups = computed(() =>
+  variables.value.flatMap((variable) => {
+    const modes = modesOf(variable.id)
+    if (modes.length < 2) return []
+    return modes.map((mode) => {
+      const label = format({ type: 'VARIABLE', variableId: variable.id, modeId: mode.modeId })
+      return { value: label, label }
+    })
+  })
 )
+
+function insertModeLookup(token: string) {
+  const current = (draft.value ?? text.value).trim()
+  draft.value = current ? `${current} ${token}` : token
+  commit()
+}
 
 const draft = ref<string | null>(null)
 const error = ref<string | null>(null)
@@ -87,6 +110,15 @@ function commit() {
       data-property="prototype-expression"
       @update:model-value="draft = String($event)"
       @change="commit"
+    />
+    <AppSelect
+      v-if="modeLookups.length > 0"
+      model-value=""
+      :options="modeLookups"
+      :label="m.insertModeLookup"
+      :placeholder="m.insertModeLookup"
+      data-property="prototype-mode-lookup"
+      @update:model-value="insertModeLookup"
     />
     <p v-if="error" role="alert" class="text-[11px] text-error">{{ error }}</p>
   </div>

@@ -183,7 +183,7 @@ test('set variable and conditional actions change what the presented prototype s
   await page.keyboard.press('Escape')
 })
 
-test('a value typed as greeting[Dark] reads the variable in that mode while presenting', async () => {
+test('a value set to greeting[Dark] reads the variable in that mode while presenting', async () => {
   const { page } = editor
   const ids = await createCounter(page)
   const lookup = await page.evaluate((messageId) => {
@@ -208,8 +208,11 @@ test('a value typed as greeting[Dark] reads the variable in that mode while pres
   await value.fill('greeting[Dim]')
   await value.blur()
   await expect(panel.getByRole('alert')).toContainText('greeting[Dim]')
-  await value.fill('greeting[Dark]')
+  await value.fill('')
   await value.blur()
+  // The mode picker writes the lookup, as typing greeting[Dark] would.
+  await panel.locator('[data-property="prototype-mode-lookup"]').click()
+  await page.getByRole('option', { name: 'greeting[Dark]', exact: true }).click()
   await expect(panel.getByRole('alert')).toHaveCount(0)
   await expect(value).toHaveValue('greeting[Dark]')
   await expect

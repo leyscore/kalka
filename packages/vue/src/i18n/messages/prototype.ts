@@ -143,6 +143,7 @@ export const prototypeMessageDefaults = {
   muted: 'Muted',
   videoHits: 'Video hits',
   videoEnds: 'Video ends',
+  insertModeLookup: 'Variable in a mode',
   thisLayer: 'This layer',
   seconds: 'Seconds',
   expressionSyntax: 'This expression is incomplete or not valid.',
