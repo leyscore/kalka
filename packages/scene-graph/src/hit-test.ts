@@ -1,6 +1,7 @@
 import type { SceneGraph, SceneNode, NodeType } from './'
 import { getWorldMatrix } from './coordinate'
 import Matrix from './matrix'
+import { childIdsTopFirst } from './stacking'
 
 const CONTAINER_TYPES = new Set<NodeType>([
   'CANVAS',
@@ -152,8 +153,7 @@ function hitTestChildren(
     if (!containsPoint(px, py, parent, graph, transformCache)) return null
   }
 
-  for (let i = parent.childIds.length - 1; i >= 0; i--) {
-    const childId = parent.childIds[i]
+  for (const childId of childIdsTopFirst(parent)) {
     const child = graph.nodes.get(childId)
     if (!child || child.internalOnly || !child.visible || (skipLocked && child.locked)) continue
     if (CONTAINER_TYPES.has(child.type)) {
@@ -244,8 +244,8 @@ function frameChildAt(
   py: number
 ): SceneNode | null {
   const transformCache = new Map<string, boolean>()
-  for (let i = container.childIds.length - 1; i >= 0; i--) {
-    const child = graph.nodes.get(container.childIds[i])
+  for (const childId of childIdsTopFirst(container)) {
+    const child = graph.nodes.get(childId)
     if (!child || child.internalOnly || !child.visible || child.locked) continue
     if (child.type !== 'FRAME') continue
     // A board, such as a top-level frame in a section, keeps its empty area as background.
@@ -399,8 +399,7 @@ function dropTargetIn(
   )
     return null
 
-  for (let i = parent.childIds.length - 1; i >= 0; i--) {
-    const childId = parent.childIds[i]
+  for (const childId of childIdsTopFirst(parent)) {
     if (excludeIds.has(childId)) continue
     const child = graph.nodes.get(childId)
     if (!child || child.internalOnly || !child.visible || child.locked) continue

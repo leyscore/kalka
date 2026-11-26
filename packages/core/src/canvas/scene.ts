@@ -1,7 +1,7 @@
 /* eslint-disable max-lines -- scene dispatch stays together while shape domains live in sibling modules */
 import type { Canvas, Path } from 'canvaskit-wasm'
 
-import { type SceneNode, type SceneGraph, type Fill } from '@kalka/scene-graph'
+import { stacksFirstOnTop, type SceneNode, type SceneGraph, type Fill } from '@kalka/scene-graph'
 import type { ArrowEndpoint } from '@kalka/scene-graph/arrow-caps'
 import {
   arrowCapOverflow,
@@ -193,6 +193,7 @@ function renderChildren(
   hasTransformedAncestor: boolean
 ): void {
   if (node.type === 'BOOLEAN_OPERATION') return
+  const childIds = drawOrder(graph, node)
   const isClippableContainer =
     node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE'
   if (isClippableContainer && node.clipsContent && node.childIds.length > 0) {
@@ -206,12 +207,23 @@ function renderChildren(
     } else {
       canvas.clipRect(r.ck.LTRBRect(0, 0, node.width, node.height), r.ck.ClipOp.Intersect, true)
     }
-    renderChildIds(r, canvas, graph, node.childIds, overlays, absX, absY, hasTransformedAncestor)
+    renderChildIds(r, canvas, graph, childIds, overlays, absX, absY, hasTransformedAncestor)
     canvas.restore()
   } else {
-    renderChildIds(r, canvas, graph, node.childIds, overlays, absX, absY, hasTransformedAncestor)
+    renderChildIds(r, canvas, graph, childIds, overlays, absX, absY, hasTransformedAncestor)
   }
 }
+
+/**
+ * Children bottom first. An auto layout frame set to Figma's "First on top" draws them the other
+ * way round, as its CSS does with `z-index`; a mask among them keeps the order it masks in.
+ */
+function drawOrder(graph: SceneGraph, node: SceneNode): string[] {
+  if (!stacksFirstOnTop(node)) return node.childIds
+  if (node.childIds.some((id) => graph.getNode(id)?.isMask)) return node.childIds
+  return node.childIds.toReversed()
+}
+
 export function renderNodeSelf(
   r: SkiaRenderer,
   canvas: Canvas,

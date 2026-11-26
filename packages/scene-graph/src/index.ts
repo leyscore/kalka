@@ -13,6 +13,7 @@ import { TRANSFORM_FIELDS, SIZE_FIELDS } from './fields/geometry'
 export { TRANSFORM_FIELDS, SIZE_FIELDS } from './fields/geometry'
 import { AUTO_LAYOUT_FIELDS, SIZE_CONSTRAINT_FIELDS } from './fields/layout'
 export { AUTO_LAYOUT_FIELDS, SIZE_CONSTRAINT_FIELDS } from './fields/layout'
+export { childIdsTopFirst, stacksFirstOnTop } from './stacking'
 export { CORNER_FIELDS, PAINT_FIELDS, STROKE_FIELDS } from './fields/appearance'
 export {
   TEXT_METRIC_FIELDS,

@@ -300,3 +300,25 @@ describe('one-ended arrow import', () => {
     expect(props.vectorNetwork?.vertices[0].strokeCap).toBeUndefined()
   })
 })
+
+describe('@kalka/fig auto layout settings', () => {
+  test("reads Figma's strokes in layout and canvas stacking", () => {
+    const props = nodeChangeToProps(
+      {
+        type: 'FRAME',
+        stackMode: 'HORIZONTAL',
+        bordersTakeSpace: true,
+        stackReverseZIndex: true
+      } as NodeChange,
+      []
+    )
+    expect(props.strokesIncludedInLayout).toBe(true)
+    expect(props.itemReverseZIndex).toBe(true)
+  })
+
+  test('leaves strokes out of the layout when the file does not include them', () => {
+    const props = nodeChangeToProps({ type: 'FRAME', stackMode: 'VERTICAL' } as NodeChange, [])
+    expect(props.strokesIncludedInLayout).toBe(false)
+    expect(props.itemReverseZIndex).toBe(false)
+  })
+})

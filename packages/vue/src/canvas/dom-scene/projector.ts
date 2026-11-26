@@ -10,7 +10,7 @@ import {
   type MeasuredGeometry,
   type VectorElementRenderer
 } from '@kalka/dom-css/export'
-import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { stacksFirstOnTop, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
 import { blendModeToCSS } from '@kalka/scene-graph/css-model'
 
 import { buildNode, isElementNode, patchAttributes } from './build'
@@ -42,7 +42,8 @@ const CHILD_STYLE_KEYS = new Set<keyof SceneNode>([
   'paddingTop',
   'paddingRight',
   'paddingBottom',
-  'paddingLeft'
+  'paddingLeft',
+  'itemReverseZIndex'
 ])
 
 /** Changes to a layer that restyle its parent: whether it fills decides what the parent hugs. */
@@ -420,6 +421,9 @@ export class DomSceneProjector {
       if (!id) continue
       if (id === pageId) this.pageDirty = true
       else this.dirty.add(id)
+      // A frame that stacks its first child on top numbers its children's z-index by order.
+      const parent = this.graph.getNode(id)
+      if (parent && stacksFirstOnTop(parent)) this.restyleChildren(id)
       // Masks added, removed, or reordered change which layers they mask.
       if (this.maskParents.has(id)) this.restyleChildren(id)
       for (const masked of maskedParentsAround(this.graph, id, pageId)) this.restyleChildren(masked)

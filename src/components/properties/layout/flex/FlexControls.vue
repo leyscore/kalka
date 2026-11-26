@@ -10,6 +10,7 @@ import LayoutAlignmentControl from '../alignment/LayoutAlignmentControl.vue'
 import ClipContentControl from '../ClipContentControl.vue'
 import PaddingControls from '../padding/PaddingControls.vue'
 import FlexGapField from './FlexGapField.vue'
+import FlexSettingsPopover from './FlexSettingsPopover.vue'
 
 const ctx = useLayoutControlsContext()
 const { panels } = useI18n()
@@ -24,19 +25,24 @@ const alignmentCells = computed(() => {
     panels.value.alignCenterVertically,
     panels.value.alignBottom
   ]
+  // Text baseline alignment sits in the top row, as Figma shows it.
+  const counter = ctx.node.counterAxisAlign === 'BASELINE' ? 'MIN' : ctx.node.counterAxisAlign
   return ctx.alignGrid.map((cell, index) => ({
     ...cell,
     label: `${vertical[Math.floor(index / 3)]}, ${horizontal[index % 3]}`,
     active:
       ctx.node.primaryAxisAlign === (ctx.gapAuto ? 'SPACE_BETWEEN' : cell.primary) &&
-      ctx.node.counterAxisAlign === cell.counter
+      counter === cell.counter
   }))
 })
 </script>
 
 <template>
   <div class="mt-2">
-    <label class="mb-1 block text-[11px] text-muted">{{ panels.direction }}</label>
+    <div class="mb-1 flex items-center justify-between">
+      <label class="text-[11px] text-muted">{{ panels.direction }}</label>
+      <FlexSettingsPopover />
+    </div>
     <AppSelect
       :label="panels.direction"
       :model-value="ctx.layoutDirection"

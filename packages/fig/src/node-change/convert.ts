@@ -552,7 +552,7 @@ function convertLayoutProps(
     counterAxisAlignContent:
       (nc.stackCounterAlignContent as string) === 'SPACE_BETWEEN' ? 'SPACE_BETWEEN' : 'AUTO',
     itemReverseZIndex: (nc.stackReverseZIndex ?? false) as boolean,
-    strokesIncludedInLayout: (nc.strokesIncludedInLayout ?? false) as boolean,
+    strokesIncludedInLayout: (nc.bordersTakeSpace ?? false) as boolean,
     layoutDirection: readNodeChangePluginData(nc, KALKA_PLUGIN_DATA.layoutDirection) ?? 'AUTO',
     ...(derivedLayout ? { derivedLayout } : {})
   }

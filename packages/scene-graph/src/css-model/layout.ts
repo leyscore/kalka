@@ -1,6 +1,7 @@
 import { getNodeRotationOrigin } from '../coordinate'
 import { parseCSSNumber } from '../css'
 import { layoutSizingInParent } from '../layout-sizing'
+import { stacksFirstOnTop } from '../stacking'
 import { resolveNodeTextDirection } from '../text-direction'
 import type { SceneNode } from '../types'
 import { pickStyle } from './from-css'
@@ -143,6 +144,12 @@ export const layoutChild: PropertyFamily = {
         style['flex-basis'] = '0px'
         style[minimum] ??= '0px'
       }
+    }
+    // Figma's "First on top": the first child of the auto layout frame draws over the next. The
+    // family does not own `z-index`, so one a layer was imported with stays in its own CSS.
+    if (parent && stacksFirstOnTop(parent)) {
+      const index = parent.childIds.indexOf(node.id)
+      if (index !== -1) style['z-index'] = String(parent.childIds.length - index)
     }
     const transform = layerTransformToCSS(node)
     if (transform) {
