@@ -63,10 +63,12 @@ test('line height and letter spacing take a percentage, and keep it with the fon
   await page.keyboard.press('ControlOrMeta+A')
   await page.keyboard.type('150%')
   await page.keyboard.press('Enter')
-  await expect.poll(() => textState(textId)).toMatchObject({
-    lineHeight: 30,
-    lineHeightUnit: 'PERCENT'
-  })
+  await expect
+    .poll(() => textState(textId))
+    .toMatchObject({
+      lineHeight: 30,
+      lineHeightUnit: 'PERCENT'
+    })
 
   const letterSpacing = typography.getByRole('spinbutton', { name: 'Letter spacing' })
   await letterSpacing.click()
@@ -79,13 +81,15 @@ test('line height and letter spacing take a percentage, and keep it with the fon
   await page.keyboard.press('ControlOrMeta+A')
   await page.keyboard.type('40')
   await page.keyboard.press('Enter')
-  await expect.poll(() => textState(textId)).toMatchObject({
-    fontSize: 40,
-    lineHeight: 60,
-    lineHeightUnit: 'PERCENT',
-    letterSpacing: 2,
-    letterSpacingUnit: 'PERCENT'
-  })
+  await expect
+    .poll(() => textState(textId))
+    .toMatchObject({
+      fontSize: 40,
+      lineHeight: 60,
+      lineHeightUnit: 'PERCENT',
+      letterSpacing: 2,
+      letterSpacingUnit: 'PERCENT'
+    })
   canvas.assertNoErrors()
 })
 
@@ -101,10 +105,12 @@ test('paragraph spacing and the list buttons set the text apart as HTML paragrap
     .getByRole('group', { name: 'List' })
     .getByRole('button', { name: 'Numbered list' })
     .click()
-  await expect.poll(() => textState(textId)).toMatchObject({
-    paragraphSpacing: 12,
-    lists: ['ORDERED', 'ORDERED', 'ORDERED']
-  })
+  await expect
+    .poll(() => textState(textId))
+    .toMatchObject({
+      paragraphSpacing: 12,
+      lists: ['ORDERED', 'ORDERED', 'ORDERED']
+    })
   await canvas.waitForRender()
   const artboard = page.locator('iframe[data-kalka-artboard]').contentFrame()
   await expect(artboard.locator('ol > li')).toHaveCount(3)
@@ -126,10 +132,12 @@ test('typing "- " starts a bulleted item, and Enter on an empty item leaves the 
   await page.keyboard.press('Enter')
   await page.keyboard.press('Enter')
   await page.keyboard.type('After')
-  await expect.poll(() => textState(textId)).toMatchObject({
-    text: 'Intro\nItem\nNext\nAfter',
-    lists: ['NONE', 'UNORDERED', 'UNORDERED', 'NONE']
-  })
+  await expect
+    .poll(() => textState(textId))
+    .toMatchObject({
+      text: 'Intro\nItem\nNext\nAfter',
+      lists: ['NONE', 'UNORDERED', 'UNORDERED', 'NONE']
+    })
   await page.keyboard.press('Escape')
   await canvas.waitForRender()
   const artboard = page.locator('iframe[data-kalka-artboard]').contentFrame()

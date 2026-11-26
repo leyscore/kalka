@@ -5,7 +5,6 @@ export { updateHoverCursor } from '#vue/shared/input/select/hover'
 import type { Editor } from '@kalka/core/editor'
 import type { SceneNode } from '@kalka/scene-graph'
 
-import { tryStartAutoLayoutValueDrag } from '#vue/shared/input/spacing-drag'
 import { tryStartCornerRadius } from '#vue/shared/input/corner-radius'
 import { tryStartGradientHandle } from '#vue/shared/input/gradient'
 import { tryStartResize } from '#vue/shared/input/resize'
@@ -15,6 +14,7 @@ import {
   pressesSelection,
   selectionIsLocked
 } from '#vue/shared/input/select/move'
+import { tryStartAutoLayoutValueDrag } from '#vue/shared/input/spacing-drag'
 import type { DragState } from '#vue/shared/input/types'
 
 export interface HitTestFns {

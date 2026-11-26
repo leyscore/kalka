@@ -19,12 +19,6 @@ import {
   toggleNodeEditVertexAt,
   updateNodeEditHover
 } from '#vue/canvas/vector-input/input'
-import {
-  autoLayoutValueCursor,
-  cancelAutoLayoutValueDrag,
-  commitAutoLayoutValueDrag,
-  handleAutoLayoutValueMove
-} from '#vue/shared/input/spacing-drag'
 import { resolveAutoLayoutHover } from '#vue/shared/input/auto-layout-hover'
 import { createClickCounter } from '#vue/shared/input/click-count'
 import {
@@ -43,6 +37,12 @@ import { setupPanZoom } from '#vue/shared/input/pan-zoom'
 import { applyResize, commitResizePreview } from '#vue/shared/input/resize'
 import { updateHoverCursor } from '#vue/shared/input/select'
 import { useSpaceHeld } from '#vue/shared/input/space-key'
+import {
+  autoLayoutValueCursor,
+  cancelAutoLayoutValueDrag,
+  commitAutoLayoutValueDrag,
+  handleAutoLayoutValueMove
+} from '#vue/shared/input/spacing-drag'
 import type { DragState } from '#vue/shared/input/types'
 import { handleNodeEditMove } from '#vue/shared/input/vector'
 
