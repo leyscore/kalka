@@ -12,6 +12,7 @@ import { GhostLayer, type DomScenePreview } from './ghosts'
 import { DomLayoutEngine } from './layout'
 import { LiveEdits } from './live'
 import { outlineCSS, outlineKey, outlineView } from './outlines'
+import { PixelPreview } from './pixel-preview'
 import { DomSceneProjector } from './projector'
 import type { RevealStep } from './reveal/plan'
 import { RevealPlayer } from './reveal/play'
@@ -55,6 +56,7 @@ export function useDomScene(
   let ghosts: GhostLayer | null = null
   let reveals: RevealPlayer | null = null
   let tiers: ArtboardTierWork | null = null
+  let pixels: PixelPreview | null = null
   const reflowed = new Set<string>()
   let presentedScene = -1
   /** What the artboards' outline stylesheets were last written for. */
@@ -95,6 +97,7 @@ export function useDomScene(
     const tiersLeft = tiers?.apply() ?? false
     const state = view()
     syncOutlines(state)
+    pixels?.sync(state, pixelRatio())
     drawAgentWork(state.currentPageId)
     shaders?.sync(state.sceneVersion)
     if (state.sceneVersion !== presentedScene) void tokens?.sync()
@@ -108,14 +111,13 @@ export function useDomScene(
     return projector.needsFlush || reflowed.size > 0 || (reveals?.busy ?? false) || tiersLeft
   }
 
+  const pixelRatio = () => host.value?.ownerDocument.defaultView?.devicePixelRatio ?? 1
+
   /** Outline mode restyles the artboards when it, the selection it shows, or the scene changes. */
   function syncOutlines(state: EditorState) {
     const p = projector
     if (!p) return
-    const outlines = outlineView(
-      state,
-      host.value?.ownerDocument.defaultView?.devicePixelRatio ?? 1
-    )
+    const outlines = outlineView(state, pixelRatio())
     const key = outlineKey(outlines, state.sceneVersion)
     if (key === outlinedFor) return
     outlinedFor = key
@@ -141,6 +143,7 @@ export function useDomScene(
         state.rotationPreview,
         state.outlineMode,
         state.outlineObjectBounds,
+        state.pixelPreview,
         state.outlineMode === 'selection' ? [...state.selectedIds].join(',') : '',
         options.previews?.()
       ]
@@ -197,6 +200,17 @@ export function useDomScene(
       fontFallbacks: () => fontManager.fallbackFamilies()
     })
     reveals = new RevealPlayer(p)
+    pixels = new PixelPreview(
+      p,
+      (id) => ({
+        graph: editor.graph,
+        nodeId: id,
+        fonts: fontManager.browserFacesFor(editor.graph.interVersion),
+        vectorElement: options.vectorElement,
+        fontFallbacks: fontManager.fallbackFamilies()
+      }),
+      redraw
+    )
     const ghostLayer = ghosts
     // Text is edited in place, in the page, instead of by the canvas text engine.
     editor.setExternalTextEditor(new DomTextEditor(editor, p))
@@ -215,6 +229,8 @@ export function useDomScene(
     shaders = null
     reveals?.destroy()
     reveals = null
+    pixels?.destroy()
+    pixels = null
     ghosts?.destroy()
     ghosts = null
     tiers?.destroy()

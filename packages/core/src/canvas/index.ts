@@ -32,6 +32,7 @@ export {
   SkiaRenderer,
   type OutlineMode,
   type OverlayLayerId,
+  type PixelPreview,
   type PresenceCursor,
   type RenderOverlays,
   type RulerTheme

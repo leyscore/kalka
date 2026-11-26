@@ -63,3 +63,17 @@ describe("Figma's View › Outlines, Mask outlines and Frame outlines", () => {
     expect(checks['view-frame-outlines']).toBe(false)
   })
 })
+
+describe("Figma's View › Pixel preview", () => {
+  test('is off, 1x or 2x, one at a time', () => {
+    const store = viewStore()
+    const actions = createViewMenuActions(store)
+    actions['view-pixel-preview-2x']?.()
+    expect(store.state.pixelPreview).toBe('2x')
+    // Choosing the checked scale again keeps it: the way out is Disabled.
+    actions['view-pixel-preview-2x']?.()
+    expect(store.state.pixelPreview).toBe('2x')
+    actions['view-pixel-preview-off']?.()
+    expect(store.state.pixelPreview).toBeNull()
+  })
+})

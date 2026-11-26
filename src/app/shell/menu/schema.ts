@@ -226,6 +226,15 @@ export const APP_MENU_SCHEMA = [
       { id: 'view-mask-outlines', label: 'Mask Outlines', checkbox: true },
       { id: 'view-frame-outlines', label: 'Frame Outlines', checkbox: true },
       {
+        id: 'view-pixel-preview',
+        label: 'Pixel Preview',
+        sub: [
+          { id: 'view-pixel-preview-off', label: 'Disabled', checkbox: true },
+          { id: 'view-pixel-preview-1x', label: '1x', checkbox: true },
+          { id: 'view-pixel-preview-2x', label: '2x', checkbox: true }
+        ]
+      },
+      {
         id: 'view-multiplayer-cursors',
         label: 'Multiplayer Cursors',
         checkbox: true,

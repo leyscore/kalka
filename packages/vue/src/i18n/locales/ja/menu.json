@@ -71,6 +71,8 @@
   "includeObjectBounds": "オブジェクトの境界を含める",
   "maskOutlines": "マスクのアウトライン",
   "frameOutlines": "フレームのアウトライン",
+  "pixelPreview": "ピクセルプレビュー",
+  "pixelPreviewDisabled": "オフ",
   "preferences": "環境設定",
   "snapToGeometry": "ジオメトリにスナップ",
   "snapToObjects": "オブジェクトにスナップ",

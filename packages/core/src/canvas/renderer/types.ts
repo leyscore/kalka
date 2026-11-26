@@ -19,6 +19,9 @@ export type MeasurementMode = 'off' | 'shallow' | 'deep'
 /** Figma's View › Outlines: every layer drawn as outlines, or only the selection. */
 export type OutlineMode = 'all' | 'selection'
 
+/** Figma's View › Pixel preview: the canvas drawn at one or two device pixels per pixel. */
+export type PixelPreview = '1x' | '2x'
+
 /** Where a collaborator or an agent is working, in world coordinates. */
 export interface PresenceCursor {
   /** Who it is, kept between updates; editors use it to glide a cursor rather than jump it. */

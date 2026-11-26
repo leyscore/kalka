@@ -23,6 +23,7 @@ import type {
   GradientEditState,
   MeasurementMode,
   OutlineMode,
+  PixelPreview,
   PresenceCursor,
   RenderOverlays
 } from '#core/canvas/renderer/types'
@@ -69,6 +70,8 @@ export interface EditorSharedState {
   showMaskOutlines?: boolean
   /** Figma's View › Frame outlines. */
   showFrameOutlines?: boolean
+  /** Figma's View › Pixel preview, off unless set. */
+  pixelPreview?: PixelPreview | null
   presenceCursors: PresenceCursor[]
   documentName: string
   /** Design check markers and highlight, shared by every canvas pane. */

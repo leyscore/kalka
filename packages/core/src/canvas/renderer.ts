@@ -44,6 +44,7 @@ export type {
   MeasurementMode,
   OutlineMode,
   OverlayLayerId,
+  PixelPreview,
   PresenceCursor,
   RenderOverlays,
   RulerTheme

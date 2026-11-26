@@ -71,6 +71,8 @@
   "includeObjectBounds": "包含对象边界",
   "maskOutlines": "蒙版轮廓",
   "frameOutlines": "框架轮廓",
+  "pixelPreview": "像素预览",
+  "pixelPreviewDisabled": "关闭",
   "preferences": "偏好设置",
   "snapToGeometry": "吸附到几何图形",
   "snapToObjects": "吸附到对象",

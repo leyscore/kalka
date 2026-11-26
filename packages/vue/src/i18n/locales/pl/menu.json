@@ -71,6 +71,8 @@
   "includeObjectBounds": "Uwzględnij obwiednie obiektów",
   "maskOutlines": "Kontury masek",
   "frameOutlines": "Kontury ramek",
+  "pixelPreview": "Podgląd pikseli",
+  "pixelPreviewDisabled": "Wyłączony",
   "preferences": "Preferencje",
   "snapToGeometry": "Przyciągaj do geometrii",
   "snapToObjects": "Przyciągaj do obiektów",

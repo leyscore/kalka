@@ -71,6 +71,8 @@
   "includeObjectBounds": "Includi i limiti degli oggetti",
   "maskOutlines": "Contorni delle maschere",
   "frameOutlines": "Contorni dei frame",
+  "pixelPreview": "Anteprima pixel",
+  "pixelPreviewDisabled": "Disattivata",
   "preferences": "Preferenze",
   "snapToGeometry": "Aggancia alla geometria",
   "snapToObjects": "Aggancia agli oggetti",

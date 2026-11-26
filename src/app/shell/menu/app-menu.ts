@@ -162,6 +162,8 @@ export function useAppMenu() {
     'view-outlines-bounds': 'includeObjectBounds',
     'view-mask-outlines': 'maskOutlines',
     'view-frame-outlines': 'frameOutlines',
+    'view-pixel-preview': 'pixelPreview',
+    'view-pixel-preview-off': 'pixelPreviewDisabled',
     'snap-geometry': 'snapToGeometry',
     'snap-objects': 'snapToObjects',
     'snap-pixel-grid': 'snapToPixelGrid',

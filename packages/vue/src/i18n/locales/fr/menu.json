@@ -71,6 +71,8 @@
   "includeObjectBounds": "Inclure les limites des objets",
   "maskOutlines": "Contours des masques",
   "frameOutlines": "Contours des cadres",
+  "pixelPreview": "Aperçu en pixels",
+  "pixelPreviewDisabled": "Désactivé",
   "preferences": "Préférences",
   "snapToGeometry": "Aligner sur la géométrie",
   "snapToObjects": "Aligner sur les objets",

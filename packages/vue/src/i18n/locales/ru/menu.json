@@ -71,6 +71,8 @@
   "includeObjectBounds": "Включать границы объектов",
   "maskOutlines": "Контуры масок",
   "frameOutlines": "Контуры фреймов",
+  "pixelPreview": "Попиксельный просмотр",
+  "pixelPreviewDisabled": "Выключен",
   "preferences": "Настройки",
   "snapToGeometry": "Привязка к геометрии",
   "snapToObjects": "Привязка к объектам",

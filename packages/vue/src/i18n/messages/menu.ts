@@ -50,6 +50,8 @@ export const menuMessageDefaults = {
   includeObjectBounds: 'Include object bounds',
   maskOutlines: 'Mask outlines',
   frameOutlines: 'Frame outlines',
+  pixelPreview: 'Pixel preview',
+  pixelPreviewDisabled: 'Disabled',
   preferences: 'Preferences',
   snapToGeometry: 'Snap to geometry',
   snapToObjects: 'Snap to objects',
