@@ -1,5 +1,7 @@
 // Branches of a server file: made from its saved file, listed under it, merged back into it as a
-// version its editors apply, refused when the file changed since unless forced.
+// version its editors apply, refused when the file changed since unless forced; Kalka reads
+// where a branch began and its main file to compare layers, updates a branch from main, and
+// merges a file it made from chosen changes.
 //   KALKA_URL=http://localhost:8787 node test/branches.mjs
 import assert from 'node:assert/strict'
 
@@ -12,6 +14,21 @@ async function putFile(token, id, text) {
     body: new TextEncoder().encode(text)
   })
   assert.equal(response.status, 200, `saving ${id}`)
+}
+
+async function bytes(token, path) {
+  const response = await fetch(`${BASE}${path}`, { headers: { Authorization: `Bearer ${token}` } })
+  const text = response.status === 200 ? new TextDecoder().decode(await response.arrayBuffer()) : null
+  return { status: response.status, text, savedAt: Number(response.headers.get('X-Kalka-Saved-At')) }
+}
+
+async function mergeFile(token, id, text, mainSavedAt) {
+  const response = await fetch(`${BASE}/api/documents/${id}/merge?mainSavedAt=${mainSavedAt}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/vnd.kalka+zip' },
+    body: new TextEncoder().encode(text)
+  })
+  return response.status
 }
 
 async function pending(token, id) {
@@ -52,6 +69,33 @@ await putFile(editor.token, main.id, 'main moved on')
 await assert.rejects(call('POST', `/api/documents/${second.id}/merge`, {}, editor.token), /409/)
 await call('POST', `/api/documents/${second.id}/merge`, { force: true }, editor.token)
 assert.equal(await pending(editor.token, main.id), 'footer work')
+
+// Where a branch began stays while both sides move on; updating from main moves it.
+const third = await call('POST', `/api/documents/${main.id}/branches`, { name: 'Pricing' }, editor.token)
+await putFile(editor.token, third.id, 'pricing work')
+await new Promise((resolve) => setTimeout(resolve, 5))
+await putFile(editor.token, main.id, 'main v3')
+assert.equal((await bytes(viewer.token, `/api/documents/${third.id}/base`)).text, 'footer work')
+const mainNow = await bytes(editor.token, `/api/documents/${third.id}/main`)
+assert.equal(mainNow.text, 'main v3')
+assert.ok(mainNow.savedAt > 0, 'the main file says when it was saved')
+assert.equal((await bytes(editor.token, `/api/documents/${main.id}/main`)).status, 400)
+await assert.rejects(call('POST', `/api/documents/${third.id}/update`, { savedAt: mainNow.savedAt }, viewer.token), /403/)
+await assert.rejects(call('POST', `/api/documents/${third.id}/update`, { savedAt: 1 }, editor.token), /409/)
+await call('POST', `/api/documents/${third.id}/update`, { savedAt: mainNow.savedAt }, editor.token)
+assert.equal((await bytes(editor.token, `/api/documents/${third.id}/base`)).text, 'main v3')
+// Updated from main, the branch merges without forcing.
+await call('POST', `/api/documents/${third.id}/merge`, {}, editor.token)
+assert.equal(await pending(editor.token, main.id), 'pricing work')
+
+// A merged file made from chosen changes replaces the main file only as it was when chosen.
+const fourth = await call('POST', `/api/documents/${main.id}/branches`, { name: 'Blog' }, editor.token)
+const chosenFrom = await bytes(editor.token, `/api/documents/${fourth.id}/main`)
+assert.equal(await mergeFile(editor.token, fourth.id, 'chosen', chosenFrom.savedAt - 1), 409)
+assert.equal(await mergeFile(viewer.token, fourth.id, 'chosen', chosenFrom.savedAt), 403)
+assert.equal(await mergeFile(editor.token, fourth.id, 'chosen', chosenFrom.savedAt), 200)
+assert.equal(await pending(editor.token, main.id), 'chosen')
+await assert.rejects(call('GET', `/api/documents/${fourth.id}`, null, editor.token), /404/)
 
 await call('DELETE', `/api/documents/${main.id}`, null, editor.token)
 for (const person of [editor, viewer]) await call('DELETE', `/api/users/${person.user.id}`, null, root.token)

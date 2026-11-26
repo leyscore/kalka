@@ -598,6 +598,11 @@ export class Directory extends DurableObject<Env> {
     return this.getDocument(branch.id)
   }
 
+  /** Records that a branch now holds its main file as that file was saved at `at`. */
+  setBranchBase(branchId: string, at: number): void {
+    this.sql.exec('UPDATE documents SET branch_base = ? WHERE id = ?', at, branchId)
+  }
+
   /** The branches of a document, newest first. */
   listBranches(mainId: string): DocumentInfo[] {
     return this.all<DocumentRow>(

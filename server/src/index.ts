@@ -95,6 +95,7 @@ const DocumentPatchRequest = v.object({
   linkRole: v.optional(v.picklist(LINK_ROLES))
 })
 const MergeRequest = v.object({ force: v.optional(v.boolean()) })
+const BranchUpdateRequest = v.object({ savedAt: v.number() })
 const VersionRequest = v.object({ label: v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(200)) })
 const RestoreRequest = v.object({ before: v.optional(v.pipe(v.string(), v.maxLength(200))) })
 const AppPasswordRequest = v.object({ name: v.pipe(v.string(), v.maxLength(80)) })
@@ -338,9 +339,52 @@ async function documentRoute(
     if (!branch) throw new HttpError(404, 'No such document.')
     // The branch starts as the file is now: Kalka applies it when the branch first opens.
     await roomOf(env, branch.id).putFile(data, branch.id, directoryName(tenantOf(env)), true)
+    await roomOf(env, branch.id).putBase(data)
     await directory.setPending(branch.id, user.name)
     await log(user, 'document.branched', { name: main.name, branch: branch.name, branchId: branch.id })
     return json(await directory.getDocument(branch.id), 201)
+  }
+  // A branch's two other sides, for Kalka to compare layer by layer: the main file as it was
+  // when the branch began or was last updated from it, and the main file as it is now, with
+  // when it was saved, which an update or a merge then names.
+  if (rest === '/base' && method === 'GET') {
+    await requireUser(env, request)
+    const data = await roomOf(env, documentId).getBase()
+    if (!data) throw new HttpError(404, 'This branch keeps no copy of where it began.')
+    return new Response(data, { headers: { 'Content-Type': 'application/vnd.kalka+zip', ...CORS_HEADERS } })
+  }
+  if (rest === '/main' && method === 'GET') {
+    const user = await requireUser(env, request)
+    const branch = await directory.getDocument(documentId)
+    if (!branch?.branchOf) throw new HttpError(400, 'Only a branch has a main file.')
+    const main = await directory.getDocument(branch.branchOf)
+    if (!main) throw new HttpError(404, 'The file this branch comes from is gone.')
+    const data = main.hasFile ? await roomOf(env, main.id).getFile() : null
+    if (!data) throw new HttpError(404, 'No Kalka file has been saved for the main file yet.')
+    return new Response(data, {
+      headers: {
+        'Content-Type': 'application/vnd.kalka+zip',
+        'X-Kalka-Saved-At': String(main.fileSavedAt ?? 0),
+        'Access-Control-Expose-Headers': 'X-Kalka-Saved-At',
+        ...CORS_HEADERS
+      }
+    })
+  }
+  // Updating a branch from main: Kalka brought the main file's changes into the branch, saved
+  // as of `savedAt`; the branch now starts from there.
+  if (rest === '/update' && method === 'POST') {
+    const { user, document: branch } = await requireDocumentEditor()
+    if (!branch.branchOf) throw new HttpError(400, 'Only a branch can be updated from its main file.')
+    const main = await directory.getDocument(branch.branchOf)
+    if (!main) throw new HttpError(404, 'The file this branch comes from is gone.')
+    const { savedAt } = await body(request, BranchUpdateRequest)
+    if ((main.fileSavedAt ?? 0) !== savedAt) throw new HttpError(409, 'The main file changed again; update from it once more.')
+    const data = main.hasFile ? await roomOf(env, main.id).getFile() : null
+    if (!data) throw new HttpError(409, 'No Kalka file has been saved for the main file yet.')
+    await roomOf(env, branch.id).putBase(data)
+    await directory.setBranchBase(branch.id, savedAt)
+    await log(user, 'document.branch_updated', { name: branch.name, main: main.name })
+    return json(await directory.getDocument(branch.id))
   }
   // Merging puts the branch's latest saved file into the file it branches from, as a version
   // its editors apply, then moves the branch to the trash. Once that file changed since the
@@ -351,11 +395,25 @@ async function documentRoute(
     const main = await directory.getDocument(branch.branchOf)
     if (!main) throw new HttpError(404, 'The file this branch comes from is gone.')
     if (documentRole(user, main) === 'viewer') throw new HttpError(403, 'You can only view the file this branch comes from.')
-    const { force } = await body(request, MergeRequest)
-    if (!force && (main.fileSavedAt ?? 0) > (branch.branchBase ?? 0)) {
-      throw new HttpError(409, 'The main file changed since this branch began; merging replaces those changes.')
+    // Kalka may send the merged file itself, the main file with the branch changes chosen layer
+    // by layer, made from the main file saved at `mainSavedAt`.
+    const merged = request.headers.get('Content-Type') === 'application/vnd.kalka+zip'
+    let data: ArrayBuffer | null
+    if (merged) {
+      const mainSavedAt = Number(new URL(request.url).searchParams.get('mainSavedAt'))
+      if ((main.fileSavedAt ?? 0) !== mainSavedAt) {
+        throw new HttpError(409, 'The main file changed since these changes were chosen.')
+      }
+      data = await request.arrayBuffer()
+      if (data.byteLength === 0) throw new HttpError(400, 'The merged file is empty.')
+      if (data.byteLength > MAX_FILE_BYTES) throw new HttpError(413, 'This file is too large.')
+    } else {
+      const { force } = await body(request, MergeRequest)
+      if (!force && (main.fileSavedAt ?? 0) > (branch.branchBase ?? 0)) {
+        throw new HttpError(409, 'The main file changed since this branch began; merging replaces those changes.')
+      }
+      data = branch.hasFile ? await roomOf(env, branch.id).getFile() : null
     }
-    const data = branch.hasFile ? await roomOf(env, branch.id).getFile() : null
     if (!data) throw new HttpError(409, 'Open this branch in Kalka once, so the server has it to merge.')
     await roomOf(env, main.id).putFile(data, main.id, directoryName(tenantOf(env)), true)
     await directory.setPending(main.id, user.name)

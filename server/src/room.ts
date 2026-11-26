@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS log (seq INTEGER NOT NULL, part INTEGER NOT NULL, dat
 CREATE TABLE IF NOT EXISTS snapshot (part INTEGER PRIMARY KEY, data BLOB NOT NULL);
 CREATE TABLE IF NOT EXISTS file (part INTEGER PRIMARY KEY, data BLOB NOT NULL);
 CREATE TABLE IF NOT EXISTS pending (part INTEGER PRIMARY KEY, data BLOB NOT NULL);
+CREATE TABLE IF NOT EXISTS base (part INTEGER PRIMARY KEY, data BLOB NOT NULL);
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS version (id TEXT NOT NULL, part INTEGER NOT NULL, data BLOB NOT NULL, PRIMARY KEY (id, part));
 CREATE TABLE IF NOT EXISTS version_info (id TEXT PRIMARY KEY, created_at INTEGER NOT NULL, kind TEXT NOT NULL, label TEXT, by TEXT, size INTEGER NOT NULL);
@@ -231,7 +232,7 @@ export class DocumentRoom extends DurableObject<Env> {
     if (namespace === YJS_UPDATE && !target) this.store(payload)
   }
 
-  private writeParts(table: 'log' | 'snapshot' | 'file' | 'pending', data: Uint8Array, seq?: number) {
+  private writeParts(table: 'log' | 'snapshot' | 'file' | 'pending' | 'base', data: Uint8Array, seq?: number) {
     const count = Math.max(1, Math.ceil(data.length / PART_BYTES))
     for (let part = 0; part < count; part++) {
       const chunk = data.subarray(part * PART_BYTES, (part + 1) * PART_BYTES)
@@ -367,7 +368,7 @@ export class DocumentRoom extends DurableObject<Env> {
     if (version) for (const { ws } of this.sockets()) ws.send(this.pendingFrame(version))
   }
 
-  private readParts(table: 'file' | 'pending'): ArrayBuffer | null {
+  private readParts(table: 'file' | 'pending' | 'base'): ArrayBuffer | null {
     const parts = this.sql
       .exec(`SELECT data FROM ${table} ORDER BY part`)
       .toArray()
@@ -377,6 +378,22 @@ export class DocumentRoom extends DurableObject<Env> {
 
   getFile(): ArrayBuffer | null {
     return this.readParts('file')
+  }
+
+  /**
+   * For a branch, the file it comes from as it was when the branch began or was last updated
+   * from it: what Kalka compares both sides with, so a change made on one side is not read as
+   * undoing the other's.
+   */
+  putBase(data: ArrayBuffer): void {
+    this.ctx.storage.transactionSync(() => {
+      this.sql.exec('DELETE FROM base')
+      this.writeParts('base', new Uint8Array(data))
+    })
+  }
+
+  getBase(): ArrayBuffer | null {
+    return this.readParts('base')
   }
 
   /** Size and save time of the Kalka file, without reading it. */
