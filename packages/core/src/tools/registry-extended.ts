@@ -44,6 +44,7 @@ import {
   setTextResize,
   setVisible
 } from './modify'
+import { getInteractions, setInteractions, setPrototypeFlows } from './prototype'
 import {
   getComponents,
   getCurrentPage,
@@ -164,6 +165,10 @@ export const EXTENDED_TOOLS: ToolDef[] = [
   setStrokeAlign,
   setStrokeDraw,
   setImageFill,
+  // Prototype
+  getInteractions,
+  setInteractions,
+  setPrototypeFlows,
   // Structure (advanced)
   cloneNode,
   nodeMove,

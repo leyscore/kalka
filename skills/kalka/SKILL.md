@@ -184,6 +184,8 @@ kalka eval design.fig -w -c '
 
 When you pick a typeface, keep it with the document: `kalka.searchFonts("grotesk")` lists open-licence families of the free catalogue (Google Fonts and Fontsource), and `await kalka.addFont("Space Grotesk")` downloads one with its licence into the document, so it draws the same offline, for teammates and in exported HTML. Over MCP, `search_fonts` and `add_font` do the same.
 
+Prototypes use the Plugin API's shapes: `node.reactions = [{ trigger: { type: "ON_CLICK" }, actions: [{ type: "SET_VARIABLE", variableId: count.id, variableValue: { type: "EXPRESSION", value: { expressionFunction: "ADDITION", expressionArguments: [{ type: "VARIABLE_ALIAS", value: { type: "VARIABLE_ALIAS", id: count.id } }, { type: "FLOAT", value: 1 }] } } }] }]`, with `NODE` (navigate, overlay, swap, scroll to, change to), `BACK`, `CLOSE`, `URL`, `SET_VARIABLE_MODE` and `CONDITIONAL` actions too, and `figma.currentPage.flowStartingPoints` for flows; over MCP, `get_interactions`, `set_interactions` and `set_prototype_flows`.
+
 A vector's or line's stroke can taper along its path or be drawn with a brush: `kalka.setStrokeDraw(line, { widthProfile: "taper", brush: "SCATTER:stars" })`, with `kalka.strokeDrawCatalog` listing the presets and brushes; over MCP, `set_stroke_draw`.
 
 ### Diff

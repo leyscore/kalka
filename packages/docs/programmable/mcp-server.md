@@ -376,6 +376,14 @@ Changes apply live in the open app. Settings tools never expose credentials, mod
 | `node_replace_with` | Replace a node with another node |
 | `arrange` | Align or distribute selected nodes |
 
+### Prototype
+
+| Tool | Description |
+|------|-------------|
+| `get_interactions` | Read a layer's interactions in the Plugin API `reactions` shape, and the flow that starts at it |
+| `set_interactions` | Replace a layer's interactions: triggers with navigate, overlay, scroll to, change to, back, link, set variable, set variable mode and conditional actions; what Kalka cannot play is refused with why |
+| `set_prototype_flows` | Set the current page's flows, in order, by the frame each starts at |
+
 ### Structure
 
 | Tool | Description |
