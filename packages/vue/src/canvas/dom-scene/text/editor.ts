@@ -21,6 +21,11 @@ import type {
 
 import type { DomSceneProjector } from '#vue/canvas/dom-scene/projector'
 import {
+  editsNatively,
+  outsideHTMLKeymap,
+  typeKeyPress
+} from '#vue/canvas/dom-scene/text/outside-html'
+import {
   handleListShortcut,
   indentListItem,
   liftListItem,
@@ -173,9 +178,12 @@ export class DomTextEditor implements ExternalTextEditor {
     this.stopHoldingKeys()
     const view = this.view
     if (!view || !early) return
+    const native = editsNatively(view.dom)
     for (const key of early) {
       if (EDITING_KEYS.has(key)) {
-        baseKeymap[key]?.(view.state, (tr) => this.dispatch(tr), view)
+        const dispatch = (tr: Parameters<EditorView['dispatch']>[0]) => this.dispatch(tr)
+        if (!native && outsideHTMLKeymap[key]?.(view.state, dispatch, view)) continue
+        baseKeymap[key]?.(view.state, dispatch, view)
       } else {
         this.dispatch(view.state.tr.insertText(key))
       }
@@ -199,6 +207,8 @@ export class DomTextEditor implements ExternalTextEditor {
       return
     }
     this.nodeId = nodeId
+    // A text on a path draws as SVG, where the browser types nothing itself.
+    const native = editsNatively(element)
     const toggle =
       (key: StyleKey, on: unknown, off: unknown, isOn: (value: unknown) => boolean): Command =>
       (state, dispatch) => {
@@ -245,6 +255,7 @@ export class DomTextEditor implements ExternalTextEditor {
           Tab: indentListItem(1),
           'Shift-Tab': indentListItem(-1)
         }),
+        ...(native ? [] : [keymap(outsideHTMLKeymap)]),
         keymap(baseKeymap)
       ]
     })
@@ -260,6 +271,7 @@ export class DomTextEditor implements ExternalTextEditor {
           return layer ? paragraphDecorations(current.doc, layer) : null
         },
         handleTextInput: handleListShortcut,
+        handleKeyPress: native ? undefined : typeKeyPress,
         // Pasted text keeps the style where it lands, as in Figma; formatting from elsewhere does not.
         handlePaste: (view, event) => {
           const text = event.clipboardData?.getData('text/plain')

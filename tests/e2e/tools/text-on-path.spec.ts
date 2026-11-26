@@ -1,3 +1,5 @@
+import { BLACK } from '@kalka/core/constants'
+
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 
 // Figma Draw's text on a path: the Text tool pressed on a path writes along it.
@@ -5,7 +7,7 @@ import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 const editor = useEditorSetupWithClear('/?test')
 
 async function setup() {
-  return editor.page.evaluate(() => {
+  return editor.page.evaluate((black) => {
     const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const frame = store.graph.createNode('FRAME', store.state.currentPageId, {
@@ -24,7 +26,7 @@ async function setup() {
       strokes: [
         {
           type: 'SOLID',
-          color: { r: 0, g: 0, b: 0, a: 1 },
+          color: black,
           opacity: 1,
           visible: true,
           weight: 2,
@@ -43,7 +45,7 @@ async function setup() {
       }
     })
     return { frame: frame.id, path: path.id }
-  })
+  }, BLACK)
 }
 
 function layers(frame: string) {
@@ -79,12 +81,20 @@ test('the Text tool pressed on a path writes along it', async () => {
   // The curve starts at (80, 200) on the page; its peak is near (230, 140).
   const point = await toScreen(230, 140)
   await page.mouse.click(point.x, point.y)
-  await expect.poll(async () => (await layers(frame)).map((layer) => layer.type)).toEqual(['TEXT'])
-  expect((await layers(frame))[0]).toMatchObject({ onPath: true })
-  expect((await layers(frame))[0].glyphs).toBeGreaterThan(0)
-
-  await page.keyboard.press('ControlOrMeta+a')
+  // Typed at once, while the text is still being laid on the path: every key lands in it, over
+  // the placeholder, and none picks a tool ("e" is the ellipse, "l" the line, "o" the ellipse).
   await page.keyboard.type('Hello')
+  await expect.poll(async () => (await layers(frame))[0]?.text).toBe('Hello')
+  expect(['TEXT', 'SELECT']).toContain(
+    await page.evaluate(() => window.kalka?.getStore?.().state.activeTool)
+  )
+  // Once the editor has focus, keys type, delete and move the caret along the path too.
+  await page.keyboard.type('!?')
+  await page.keyboard.press('ArrowLeft')
+  await page.keyboard.press('Backspace')
+  await expect.poll(async () => (await layers(frame))[0]?.text).toBe('Hello?')
+  await page.keyboard.press('Delete')
+  await expect.poll(async () => (await layers(frame))[0]?.text).toBe('Hello')
   await page.keyboard.press('Escape')
   await expect
     .poll(async () => (await layers(frame))[0])
