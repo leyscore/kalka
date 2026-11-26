@@ -19,6 +19,7 @@ import {
   assignNamedProperties,
   componentPropertyScope
 } from './component-properties'
+import { collectInteractions } from './interactions'
 import { applySizeOverrides, propsToOverrides } from './props-overrides'
 import { prepareScalarBindings } from './scalar-bindings'
 import type { DesignJSXServices } from './services'
@@ -86,21 +87,25 @@ export async function renderRoots<Artwork>(
   if (roots.length === 0) throw new Error('JSX must return a Figma element (Frame, Text, etc)')
   const parentId = options.parentId ?? graph.getPages()[0].id
 
+  // Interactions name the layers they go to, so they are set once every layer exists.
+  const interactions = collectInteractions(graph, options.onNode)
   const nodes: SceneNode[] = []
   for (const root of roots) {
-    const node = await renderNode(services, graph, root, parentId, options.onNode)
+    const node = await renderNode(services, graph, root, parentId, interactions.onNode)
     if (options.x !== undefined) graph.updateNode(node.id, { x: options.x })
     if (options.y !== undefined) graph.updateNode(node.id, { y: options.y })
     nodes.push(node)
   }
 
+  const warnings = interactions.apply(nodes, parentId)
   services.layout(graph)
 
-  return nodes.map((node) => ({
+  return nodes.map((node, index) => ({
     id: node.id,
     name: node.name,
     type: node.type,
-    childIds: node.childIds
+    childIds: node.childIds,
+    ...(index === 0 && warnings.length > 0 ? { warnings } : {})
   }))
 }
 

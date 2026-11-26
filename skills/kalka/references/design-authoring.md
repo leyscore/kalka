@@ -60,6 +60,27 @@ This reference describes scene creation, not React DOM output. Use the `render` 
 </Switch.Root>
 ```
 
+## Prototype interactions
+
+- `interactions` sets a layer's prototype interactions: `[{ trigger, delay, keys, at, actions }]`, with Figma's trigger names (`ON_CLICK` by default, `ON_HOVER`, `ON_PRESS`, `ON_DRAG`, `AFTER_TIMEOUT` with `delay` in seconds, `ON_KEY_DOWN` with `keys` as key codes, `ON_MEDIA_HIT` with `at` in seconds, `ON_MEDIA_END`, `MOUSE_ENTER`…).
+- Actions name what they go to by layer name: `{ navigate: 'Details' }`, `{ overlay: 'Menu', position: { x, y } }`, `{ swap }`, `{ scrollTo }`, `{ changeTo: 'State=On' }`, each with an optional `transition: { type: 'SMART_ANIMATE', direction, duration, easing }` (seconds, Figma's easing names). Also `{ back: true }`, `{ close: true }`, `{ url, newTab }`, `{ set: 'count', to: 'count + 1' }`, `{ mode: 'Dark', collection: 'Theme' }`, `{ conditional: [{ if: 'count > 2', actions }, { actions }] }`, and `{ media: 'PLAY', target, seconds }`.
+- Names are looked up once the whole JSX has rendered, so a button can go to a frame written after it; the layers just rendered come first, then the page, then the document. A name that matches nothing leaves that action without a destination and returns a warning. Variables and modes must exist before the render.
+
+```tsx
+<Frame name="Flow" flex="row" gap={40}>
+  <Frame name="Home" w={240} h={160} bg="#FFFFFF">
+    <Rectangle
+      name="Open"
+      w={96}
+      h={32}
+      bg="#3B6CF6"
+      interactions={[{ actions: [{ navigate: 'Details', transition: { type: 'DISSOLVE' } }] }]}
+    />
+  </Frame>
+  <Frame name="Details" w={240} h={160} bg="#F4F5F7" />
+</Frame>
+```
+
 ## Verification
 
 Inspect structure and actual rendered output. Node counts and `describe` diagnostics do not establish visual fidelity. Check wrapping with longer content, narrower containers, component edits, and relevant modes. Resolve overflow and contrast problems at their source. Reuse IDs returned by creation tools rather than repeatedly searching for the same nodes.
@@ -91,4 +112,4 @@ Generated from the renderer metadata. This inventory lists accepted names, not a
 
 **Helpers:** `solid`, `gradient`, `linearGradient`, `radialGradient`, `angularGradient`, `diamondGradient`, `dropShadow`, `innerShadow`, `layerBlur`, `backgroundBlur`, `foregroundBlur`, `noise`, `texture`, `glass`, `designVar`, `defineVars`.
 
-**Properties:** `name`, `key`, `flex`, `flow`, `dir`, `gap`, `wrap`, `rowGap`, `columnGap`, `justify`, `justifyContent`, `items`, `align`, `alignItems`, `grow`, `w`, `h`, `width`, `height`, `minW`, `maxW`, `minH`, `maxH`, `x`, `y`, `top`, `left`, `position`, `constraints`, `p`, `padding`, `px`, `py`, `pt`, `pr`, `pb`, `pl`, `bg`, `fill`, `fills`, `background`, `backgroundColor`, `stroke`, `border`, `borderColor`, `strokeWidth`, `borderWidth`, `strokeAlign`, `strokeDash`, `strokeCap`, `strokeJoin`, `dashPattern`, `strokes`, `strokeWeights`, `strokeWidthProfile`, `strokeBrush`, `rounded`, `borderRadius`, `roundedTL`, `roundedTR`, `roundedBL`, `roundedBR`, `cornerRadius`, `cornerSmoothing`, `opacity`, `blendMode`, `rotate`, `rotation`, `overflow`, `mask`, `visible`, `locked`, `shadow`, `blur`, `effects`, `size`, `fontSize`, `font`, `fontFamily`, `weight`, `fontWeight`, `italic`, `color`, `text`, `characters`, `content`, `value`, `title`, `textAlign`, `textAlignHorizontal`, `textHorizontalAlignment`, `textAlignVertical`, `textVerticalAlignment`, `textAutoResize`, `lineHeight`, `letterSpacing`, `textDecoration`, `textCase`, `maxLines`, `truncate`, `grid`, `columns`, `rows`, `colStart`, `rowStart`, `col`, `row`, `colSpan`, `rowSpan`, `justifySelf`, `alignSelf`, `reverseZIndex`, `strokesInLayout`, `points`, `pointCount`, `innerRadius`, `label`, `style`, `bind`, `component`, `componentId`, `properties`, `propertyRefs`, `of`, `modelValue`, `open`, `disabled`, `filled`, `states`, `min`, `max`, `step`, `defaultValue`.
+**Properties:** `name`, `key`, `flex`, `flow`, `dir`, `gap`, `wrap`, `rowGap`, `columnGap`, `justify`, `justifyContent`, `items`, `align`, `alignItems`, `grow`, `w`, `h`, `width`, `height`, `minW`, `maxW`, `minH`, `maxH`, `x`, `y`, `top`, `left`, `position`, `constraints`, `p`, `padding`, `px`, `py`, `pt`, `pr`, `pb`, `pl`, `bg`, `fill`, `fills`, `background`, `backgroundColor`, `stroke`, `border`, `borderColor`, `strokeWidth`, `borderWidth`, `strokeAlign`, `strokeDash`, `strokeCap`, `strokeJoin`, `dashPattern`, `strokes`, `strokeWeights`, `strokeWidthProfile`, `strokeBrush`, `rounded`, `borderRadius`, `roundedTL`, `roundedTR`, `roundedBL`, `roundedBR`, `cornerRadius`, `cornerSmoothing`, `opacity`, `blendMode`, `rotate`, `rotation`, `overflow`, `mask`, `visible`, `locked`, `shadow`, `blur`, `effects`, `size`, `fontSize`, `font`, `fontFamily`, `weight`, `fontWeight`, `italic`, `color`, `text`, `characters`, `content`, `value`, `title`, `textAlign`, `textAlignHorizontal`, `textHorizontalAlignment`, `textAlignVertical`, `textVerticalAlignment`, `textAutoResize`, `lineHeight`, `letterSpacing`, `textDecoration`, `textCase`, `maxLines`, `truncate`, `grid`, `columns`, `rows`, `colStart`, `rowStart`, `col`, `row`, `colSpan`, `rowSpan`, `justifySelf`, `alignSelf`, `reverseZIndex`, `strokesInLayout`, `points`, `pointCount`, `innerRadius`, `label`, `style`, `bind`, `component`, `componentId`, `properties`, `propertyRefs`, `of`, `interactions`, `modelValue`, `open`, `disabled`, `filled`, `states`, `min`, `max`, `step`, `defaultValue`.

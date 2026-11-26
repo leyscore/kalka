@@ -161,7 +161,11 @@ async function renderJSX<Artwork>(
   const results = await renderRoots(services, graph, tree, options)
   // After rendering, so an instance's component set drawn in the same JSX names its variants.
   // A helper called in a loop reports each ignored option once.
-  const warnings = uniq([...unsupportedPropWarnings(graph, tree), ...helperWarnings])
+  const warnings = uniq([
+    ...unsupportedPropWarnings(graph, tree),
+    ...helperWarnings,
+    ...(results[0].warnings ?? [])
+  ])
   if (warnings.length > 0) results[0].warnings = warnings
   return results
 }

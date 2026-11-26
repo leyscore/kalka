@@ -9,6 +9,7 @@ import {
   formatTracks,
   getNodeContext
 } from './helpers'
+import { collectInteractionProps } from './interactions'
 import { collectEffectProps, collectFillProps, collectStrokeProps } from './paint'
 import { collectStateProps } from './state'
 import type { JSXProp } from './value'
@@ -314,6 +315,7 @@ export function collectProps(node: SceneNode, graph: SceneGraph): JSXProp[] {
   }
   collectShapeNodeProps(node, props)
   collectStateProps(node, ctx, graph, props)
+  collectInteractionProps(node, graph, props)
 
   return props
 }

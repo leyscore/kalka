@@ -114,4 +114,47 @@ describe('reconcileRenderedLayers', () => {
     expect(graph.getNode(one)?.name).toBe('One again')
     expect(graph.getNode(two)).toBeUndefined()
   })
+
+  test('interactions go to the kept layers the rendered ones were folded into', () => {
+    const graph = new SceneGraph()
+    const layers: Layer = {
+      type: 'FRAME',
+      name: 'Flow',
+      children: [
+        { type: 'FRAME', name: 'Home', children: [{ type: 'RECTANGLE', name: 'Open' }] },
+        { type: 'FRAME', name: 'Details' }
+      ]
+    }
+    const before = build(graph, layers)
+    const after = build(graph, layers)
+    const find = (rootId: string, name: string) =>
+      [...graph.getAllNodes()].find(
+        (node) => node.name === name && graph.closest(node.id, (n) => n.id === rootId)
+      )
+    const open = find(after, 'Open')
+    const details = find(after, 'Details')
+    if (!open || !details) throw new Error('rendered layers missing')
+    graph.updateNode(open.id, {
+      reactions: [
+        {
+          trigger: { type: 'ON_CLICK', delay: 0, keyCodes: [] },
+          actions: [
+            {
+              type: 'NODE',
+              destinationId: details.id,
+              navigation: 'NAVIGATE',
+              transition: null,
+              preserveScrollPosition: false,
+              resetScrollPosition: false,
+              overlayRelativePosition: null
+            }
+          ]
+        }
+      ]
+    })
+    const keptDetails = find(before, 'Details')
+    reconcileRenderedLayers(graph, [before], [after])
+    const keptOpen = find(before, 'Open')
+    expect(keptOpen?.reactions[0]?.actions[0]).toMatchObject({ destinationId: keptDetails?.id })
+  })
 })

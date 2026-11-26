@@ -177,6 +177,8 @@ export const DESIGN_JSX_SUPPORTED_PROPERTY_NAMES = [
   'properties',
   'propertyRefs',
   'of',
+  // Prototype interactions, naming the layers they go to
+  'interactions',
   // A Reka UI root's behaviour, by its own property names
   'modelValue',
   'open',

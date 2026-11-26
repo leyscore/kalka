@@ -1,4 +1,4 @@
-import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import type { PrototypeAction, SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 /**
  * Fields a layer keeps when its code is rendered again: its place in the tree and the identity
@@ -130,5 +130,39 @@ export function reconcileRenderedLayers(
     return [rendered.id]
   })
   for (const id of existingRootIds.slice(renderedRootIds.length)) graph.deleteNode(id)
+  remapInteractions(graph, reconciler.ids)
   return { rootIds, ids: reconciler.ids }
+}
+
+/** An action pointing at a rendered layer, pointing at the layer it was folded into instead. */
+function remapAction(action: PrototypeAction, ids: ReadonlyMap<string, string>): PrototypeAction {
+  if (action.type === 'CONDITIONAL')
+    return {
+      ...action,
+      blocks: action.blocks.map((block) => ({
+        ...block,
+        actions: block.actions.map((item) => remapAction(item, ids))
+      }))
+    }
+  if ((action.type === 'NODE' || action.type === 'UPDATE_MEDIA_RUNTIME') && action.destinationId)
+    return { ...action, destinationId: ids.get(action.destinationId) ?? action.destinationId }
+  return action
+}
+
+/**
+ * Interactions written in the code go to the layers it rendered, by name; once those are folded
+ * into the layers they replace, they go to those instead.
+ */
+function remapInteractions(graph: SceneGraph, ids: ReadonlyMap<string, string>) {
+  const moved = [...ids].some(([rendered, kept]) => rendered !== kept)
+  if (!moved) return
+  for (const id of new Set(ids.values())) {
+    const node = graph.getNode(id)
+    if (!node || node.reactions.length === 0) continue
+    const reactions = node.reactions.map((reaction) => ({
+      ...reaction,
+      actions: reaction.actions.map((action) => remapAction(action, ids))
+    }))
+    graph.updateNode(id, { reactions })
+  }
 }
