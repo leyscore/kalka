@@ -998,5 +998,39 @@
         "accelerator": "CTRL+Alt+T"
       }
     ]
+  },
+  {
+    "label": "Window",
+    "items": [
+      {
+        "id": "window-minimize",
+        "label": "Minimize"
+      },
+      {
+        "id": "window-zoom",
+        "label": "Zoom"
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "id": "move-tab-to-new-window",
+        "label": "Move Tab to New Window"
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "id": "window-list",
+        "label": "Windows"
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "id": "window-front",
+        "label": "Bring All to Front"
+      }
+    ]
   }
 ]

@@ -46,6 +46,14 @@ describe('the keyboard shortcuts panel', () => {
     expect(entries.some((entry) => entry.ids.includes('tool:KeyR'))).toBe(true)
     expect(entries.some((entry) => entry.ids.includes('copy'))).toBe(true)
   })
+
+  test('lists New Window with Figma’s keys in the desktop app only', () => {
+    const desktop = buildShortcutCatalog(editorShortcutDefinitions(), 'mac', true)
+    const newWindow = desktop.entries.find((entry) => entry.ids.includes('new-window'))
+    expect(newWindow).toMatchObject({ category: 'file', keys: [['⇧', '⌘', 'N']] })
+    const browser = buildShortcutCatalog(editorShortcutDefinitions(), 'mac', false)
+    expect(browser.entries.some((entry) => entry.ids.includes('new-window'))).toBe(false)
+  })
 })
 
 describe('key names', () => {

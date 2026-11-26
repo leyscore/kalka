@@ -7,6 +7,8 @@ import { useEditorStore } from '@/app/editor/active-store'
 import { openFind } from '@/app/editor/find/state'
 import { clearRecentFiles, forgetRecentFile, recentLocalFileAt } from '@/app/recent-files'
 import { appPreferences } from '@/app/settings/preferences/store'
+import { useEditorWindows } from '@/app/shell/editor-windows/list'
+import { moveActiveTabToNewWindow } from '@/app/shell/editor-windows/move'
 import { openShortcutsHelp } from '@/app/shell/keyboard/help'
 import { changedChecks, menuChecks } from '@/app/shell/menu/checked'
 import { createSharedEditorMenuActions } from '@/app/shell/menu/editor-actions'
@@ -63,6 +65,7 @@ export function useEditorMenu() {
   if (!isTauri()) return
 
   watchRecentFilesMenu()
+  useEditorWindows()
 
   const { theme, setTheme } = useAppTheme()
   watchNativeMenuChecks(() =>
@@ -107,6 +110,7 @@ export function useEditorMenu() {
     },
     find: openFind,
     'keyboard-shortcuts': openShortcutsHelp,
+    'move-tab-to-new-window': moveActiveTabToNewWindow,
     ...createSelectionMenuActions(store),
     ...createSharedEditorMenuActions(setTheme)
   }

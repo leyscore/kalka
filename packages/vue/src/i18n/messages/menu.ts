@@ -159,6 +159,12 @@ export const menuMessageDefaults = {
   duplicateFile: 'Duplicate',
   saveToVersionHistory: 'Save to version history…',
   newWindow: 'New window',
+  window: 'Window',
+  moveTabToNewWindow: 'Move tab to new window',
+  moveTabToWindow: 'Move tab to window',
+  moveTabUnavailable:
+    'Only a file or a draft can move to another window. Documents on a server or in storage stay in this one.',
+  moveTabFailed: 'Couldn’t move the tab to the other window.',
   vector: 'Vector',
   joinSelection: 'Join selection',
   smoothJoinSelection: 'Smooth join selection',

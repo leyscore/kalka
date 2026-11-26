@@ -225,13 +225,13 @@ interface MenuItemInfo {
   category: ShortcutCategory
 }
 
-function menuItemIndex(): Map<string, MenuItemInfo> {
+function menuItemIndex(desktop: boolean): Map<string, MenuItemInfo> {
   const index = new Map<string, MenuItemInfo>()
   const groups: readonly AppMenuGroupSchema[] = APP_MENU_SCHEMA
   for (const group of groups) {
     if (group.target === 'native') continue
     for (const item of menuItems(group.items)) {
-      if (item.target === 'native' || (item.target === 'desktop' && !IS_TAURI)) continue
+      if (item.target === 'native' || (item.target === 'desktop' && !desktop)) continue
       const category = MENU_ITEM_CATEGORY[item.id] ?? MENU_GROUP_CATEGORY[group.label] ?? 'edit'
       index.set(item.id, { item, category })
     }
@@ -289,9 +289,11 @@ function menuShortcut(item: AppMenuActionItem): string | undefined {
  */
 export function buildShortcutCatalog(
   definitions: readonly Pick<ShortcutDefinition, 'id' | 'keys'>[],
-  platform: ShortcutPlatform
+  platform: ShortcutPlatform,
+  /** The desktop app, whose menus add items such as New Window. */
+  desktop = IS_TAURI
 ): { entries: ShortcutEntry[]; unlabeled: string[] } {
-  const menu = menuItemIndex()
+  const menu = menuItemIndex(desktop)
   const sources = [...toolSources(), ...structuredClone(HELD_KEYS)]
   const entries = new Map(sources.map((source) => [source.ids[0], source]))
   const unlabeled: string[] = []

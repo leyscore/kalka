@@ -11,6 +11,7 @@ import { useTabsStore, showNewTab } from '@/app/tabs'
 import { leaveTabRow, takeTabRowHandoff } from '@/app/tabs/placement'
 import PreparationIndicator from '@/components/preparation/tab/Indicator.vue'
 import { useScrollOverflow } from '@/components/shell/useScrollOverflow'
+import TabWindowMenu from '@/components/tab-bar/TabWindowMenu.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'
 import { IS_TAURI } from '@/constants'
 import tabBarTheme from '@/theme/tab-bar'
@@ -121,46 +122,50 @@ function onClose(e: MouseEvent, tabId: string) {
       :data-overflow-end="overflowEnd || undefined"
     >
       <TabsList :class="baseStyles.list()">
-        <div
-          v-for="tab in documentTabs"
-          :key="tab.id"
-          data-slot="tab-item"
-          :data-active="tab.isActive || undefined"
-          :class="tabBarStyles({ active: tab.isActive }).item()"
-          @mousedown="onMiddleClick($event, tab.id)"
-        >
-          <div v-if="tab.isActive && renaming" class="flex h-full min-w-0 items-center ps-2">
-            <slot name="rename" />
-          </div>
-          <TabsTrigger
-            v-else
-            :value="tab.id"
-            data-test-id="tabbar-tab"
-            :class="tabBarStyles({ active: tab.isActive }).trigger()"
+        <TabWindowMenu v-for="tab in documentTabs" :key="tab.id" :tab-id="tab.id">
+          <div
+            data-slot="tab-item"
             :data-active="tab.isActive || undefined"
-            :data-dirty="tab.isDirty || undefined"
-            @dblclick="tab.isActive && emit('rename')"
+            :class="tabBarStyles({ active: tab.isActive }).item()"
+            @mousedown="onMiddleClick($event, tab.id)"
           >
-            <PreparationIndicator v-if="tab.isPreparing" :progress="tab.preparationProgress" />
-            <span :class="baseStyles.label()">{{ tab.name }}</span>
-            <Tip v-if="tab.isDirty" :label="files.unsavedChanges" side="bottom">
-              <span role="img" :aria-label="files.unsavedChanges" :class="baseStyles.dirtyDot()" />
-            </Tip>
-          </TabsTrigger>
-          <Tip :label="files.closeTab({ name: tab.name })" side="bottom">
-            <button
-              type="button"
-              data-test-id="tabbar-close"
-              :class="tabBarStyles({ active: tab.isActive }).close()"
+            <div v-if="tab.isActive && renaming" class="flex h-full min-w-0 items-center ps-2">
+              <slot name="rename" />
+            </div>
+            <TabsTrigger
+              v-else
+              :value="tab.id"
+              data-test-id="tabbar-tab"
+              :class="tabBarStyles({ active: tab.isActive }).trigger()"
               :data-active="tab.isActive || undefined"
-              :aria-label="files.closeTab({ name: tab.name })"
-              tabindex="-1"
-              @click="onClose($event, tab.id)"
+              :data-dirty="tab.isDirty || undefined"
+              @dblclick="tab.isActive && emit('rename')"
             >
-              <icon-hugeicons-x :class="baseStyles.closeIcon()" />
-            </button>
-          </Tip>
-        </div>
+              <PreparationIndicator v-if="tab.isPreparing" :progress="tab.preparationProgress" />
+              <span :class="baseStyles.label()">{{ tab.name }}</span>
+              <Tip v-if="tab.isDirty" :label="files.unsavedChanges" side="bottom">
+                <span
+                  role="img"
+                  :aria-label="files.unsavedChanges"
+                  :class="baseStyles.dirtyDot()"
+                />
+              </Tip>
+            </TabsTrigger>
+            <Tip :label="files.closeTab({ name: tab.name })" side="bottom">
+              <button
+                type="button"
+                data-test-id="tabbar-close"
+                :class="tabBarStyles({ active: tab.isActive }).close()"
+                :data-active="tab.isActive || undefined"
+                :aria-label="files.closeTab({ name: tab.name })"
+                tabindex="-1"
+                @click="onClose($event, tab.id)"
+              >
+                <icon-hugeicons-x :class="baseStyles.closeIcon()" />
+              </button>
+            </Tip>
+          </div>
+        </TabWindowMenu>
       </TabsList>
     </div>
     <!-- Sits beside the hidden tabs; it keeps its width when it switches sides, so the overflow never flips back.

@@ -33,6 +33,8 @@ import {
 import { appPreferences } from '@/app/settings/preferences/store'
 import { openAbout } from '@/app/shell/about'
 import { openNewEditorWindow } from '@/app/shell/editor-windows'
+import { editorWindowList, showEditorDocument } from '@/app/shell/editor-windows/list'
+import { moveActiveTabToNewWindow } from '@/app/shell/editor-windows/move'
 import { openShortcutsHelp } from '@/app/shell/keyboard/help'
 import { appMenuChecked } from '@/app/shell/menu/checked'
 import { createSharedEditorMenuActions } from '@/app/shell/menu/editor-actions'
@@ -48,6 +50,7 @@ import { createSelectionMenuActions } from '@/app/shell/menu/selection-actions'
 import { appMenuShortcutLabel } from '@/app/shell/menu/shortcut'
 import { importClaudeDesignDialog, openFileDialog } from '@/app/shell/menu/use'
 import { viewOptionSetter } from '@/app/shell/menu/view-actions'
+import { WINDOW_LIST_MENU_ID } from '@/app/shell/menu/window-menu'
 import { useAppTheme } from '@/app/shell/theme'
 import { openExternalLink } from '@/app/shell/ui'
 import { saveDocumentToStorage } from '@/app/storage/workspace/save'
@@ -112,6 +115,7 @@ export function useAppMenu() {
   const translatedMenuItemLabels: Partial<Record<string, keyof typeof menu.value>> = {
     new: 'new',
     'new-window': 'newWindow',
+    'move-tab-to-new-window': 'moveTabToNewWindow',
     open: 'open',
     'open-folder': 'openFolder',
     'import-claude-design': 'importClaudeDesign',
@@ -239,6 +243,18 @@ export function useAppMenu() {
     }))
   )
 
+  /** Each editor window's documents, a separator between windows; choosing one shows it. */
+  const windowListMenu = computed<MenuEntry[]>(() =>
+    editorWindowList.value.flatMap((window, index) => [
+      ...(index > 0 ? [{ separator: true as const }] : []),
+      ...window.documents.map((document) => ({
+        label: document.name,
+        checked: window.front && document.active,
+        onCheckedChange: () => void showEditorDocument(window.label, document.id)
+      }))
+    ])
+  )
+
   function exportSelection(format: BuiltinIOFormatId) {
     if (store.state.selectedIds.size > 0) void store.exportSelection(1, format)
   }
@@ -248,6 +264,7 @@ export function useAppMenu() {
       void import('@/app/tabs').then((m) => m.createTab())
     },
     'new-window': () => void openNewEditorWindow(),
+    'move-tab-to-new-window': moveActiveTabToNewWindow,
     open: () => void openFileDialog(),
     'import-claude-design': () => void importClaudeDesignDialog(),
     'open-storage-workspace': () => openStorageWorkspace(router),
@@ -377,6 +394,8 @@ export function useAppMenu() {
       return { label: menuLabel(entry), sub: languageMenu.value }
     }
 
+    if (entry.id === WINDOW_LIST_MENU_ID) return null
+
     if (entry.id === 'selection.moveToPage') {
       if (otherPages.value.length === 0) return null
       const disabled = !commands['selection.moveToPage'].enabled.value
@@ -419,12 +438,20 @@ export function useAppMenu() {
     return menu.value[key] ?? group.label
   }
 
+  function buildGroupItems(entries: readonly AppMenuEntry[]): MenuEntry[] {
+    return entries.flatMap((entry) => {
+      if (!isSeparator(entry) && entry.id === WINDOW_LIST_MENU_ID) return windowListMenu.value
+      const built = buildEntry(entry)
+      return built ? [built] : []
+    })
+  }
+
   function buildGroup(group: AppMenuGroupSchema): AppMenuGroup | null {
     if (!isVisible(group)) return null
     return {
       label: groupLabel(group),
       paletteIcon: group.paletteIcon ? APP_MENU_ICONS[group.paletteIcon] : undefined,
-      items: group.items.map(buildEntry).filter((item): item is MenuEntry => item !== null)
+      items: buildGroupItems(group.items)
     }
   }
 

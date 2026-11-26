@@ -20,9 +20,10 @@ import {
   listMCPClients,
   reportedBridgeCommand
 } from './mcp/clients'
-import { setChecked, setRecentFiles } from './menu'
+import { setRecentFiles } from './menu'
 import { takePendingOpen, takePendingRooms, takePendingServers } from './pending'
 import { renderHTMLPage, type RenderHTMLRequest } from './raster'
+import { windowCommands } from './window-commands'
 import { openEditorWindow } from './windows'
 
 const AGENT_EXECUTABLES = [
@@ -177,9 +178,13 @@ async function proxyHttpRequest(request: ProxyRequest) {
 
 const httpStreams = createHttpStreams((url, init) => net.fetch(url, init))
 
-/** Tauri's custom commands, by name; arguments arrive as the object `invoke` was given. */
-const commands: Record<string, (args: never) => unknown> = {
+/**
+ * Tauri's custom commands, by name; arguments arrive as the object `invoke` was given, with the
+ * calling window for those that concern it.
+ */
+const commands: Record<string, (args: never, context: CallContext) => unknown> = {
   ...credentialCommands,
+  ...windowCommands,
   webview_version: () => process.versions.chrome ?? null,
   take_pending_open: () => takePendingOpen(),
   take_pending_rooms: () => takePendingRooms(),
@@ -188,8 +193,6 @@ const commands: Record<string, (args: never) => unknown> = {
   open_editor_window: () => {
     openEditorWindow()
   },
-  set_native_menu_checked: ({ id, checked }: { id: string; checked: boolean }) =>
-    setChecked(id, checked),
   path_matches_suffix: ({ candidate, suffix }: { candidate: string; suffix: string }) =>
     pathMatchesSuffix(candidate, suffix),
   async mcp_lookup() {
@@ -250,7 +253,7 @@ export function registerCommandHandlers(): void {
     Object.fromEntries(
       Object.entries(commands).map(([name, command]) => [
         name,
-        (_context: CallContext, args: never) => command(args)
+        (context: CallContext, args: never) => command(args, context)
       ])
     ),
     'command'

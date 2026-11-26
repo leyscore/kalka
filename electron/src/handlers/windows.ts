@@ -10,6 +10,7 @@ import {
 } from './close-ask'
 import { createFocusOrder, createQuitSequence, isEditorLabel, nextEditorLabel } from './editors'
 import { applyTitleBarTheme, TitleBarTheme } from './title-bar'
+import { WindowDocuments, type EditorWindowSummary, type WindowDocument } from './window-list'
 
 /** Tells each editor page whether the MCP server's calls are its own (`src/app/automation/mcp`). */
 export const MCP_TARGET_EVENT = 'mcp-target'
@@ -38,6 +39,18 @@ let exiting = false
 let openEditorWith: WindowHost['createWindow'] | null = null
 /** The editor window the pages were last told holds the MCP server's calls. */
 let mcpTarget: BrowserWindow | null = null
+/** Each editor's documents, as its page reports them, for the Window menu. */
+const documents = new WeakMap<BrowserWindow, WindowDocument[]>()
+const editorListeners = new Set<() => void>()
+
+/** Runs `listener` when an editor window opens, closes, comes forward or reports its documents. */
+export function onEditorsChanged(listener: () => void): void {
+  editorListeners.add(listener)
+}
+
+function editorsChanged(): void {
+  for (const listener of editorListeners) listener()
+}
 
 export function windowByLabel(label: string): BrowserWindow | null {
   const window = labels.get(label)
@@ -53,6 +66,8 @@ function isEditor(window: BrowserWindow): boolean {
   return !window.isDestroyed() && isEditorLabel(labelOf(window))
 }
 
+export { isEditor as isEditorWindow }
+
 export function editorWindows(): BrowserWindow[] {
   return BrowserWindow.getAllWindows().filter(isEditor)
 }
@@ -62,6 +77,23 @@ export function frontEditor(): BrowserWindow | null {
   const focused = BrowserWindow.getFocusedWindow()
   if (focused && isEditor(focused)) return focused
   return focusOrder.latest(isEditor) ?? editorWindows()[0] ?? null
+}
+
+/** The editor windows and their documents, for the Window menu here and in each page. */
+export function editorWindowSummaries(): EditorWindowSummary[] {
+  const front = frontEditor()
+  return editorWindows().map((window) => ({
+    label: labelOf(window) ?? '',
+    front: window === front,
+    documents: documents.get(window) ?? []
+  }))
+}
+
+export function setEditorDocuments(window: BrowserWindow, value: unknown): void {
+  const parsed = v.safeParse(WindowDocuments, value)
+  if (!parsed.success) throw new Error('Malformed window documents')
+  documents.set(window, parsed.output)
+  editorsChanged()
 }
 
 export function frontEditorContents(): WebContents | null {
@@ -109,9 +141,10 @@ export function track(window: BrowserWindow, label: string): void {
     focusOrder.focus(window)
     announceMCPTarget()
     window.on('focus', () => {
-      focusOrder.focus(window)
+      if (focusOrder.focus(window)) editorsChanged()
       announceMCPTarget(false)
     })
+    editorsChanged()
   }
   window.on('close', (event) => {
     if (exiting || destroying.has(window) || !intercepted.has(window)) return
@@ -131,6 +164,7 @@ export function track(window: BrowserWindow, label: string): void {
       focusOrder.remove(window)
       quit.gone(window)
       announceMCPTarget(true, window)
+      editorsChanged()
     }
     broadcast(`tauri://destroyed:${label}`)
   })

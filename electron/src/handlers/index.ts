@@ -6,7 +6,7 @@ import { registerDialogHandlers } from './dialog'
 import { registerFsHandlers } from './fs'
 import { registerGitHandlers } from './git'
 import { registerMCPStdioHandlers } from './mcp/stdio'
-import { buildMenu } from './menu'
+import { buildMenu, refreshWindowMenu } from './menu'
 import { registerOAuthHandlers } from './oauth'
 import { setOpenTarget } from './pending'
 import { registerShellHandlers } from './shell'
@@ -16,6 +16,7 @@ import {
   editorWindows,
   frontEditorContents,
   installQuitGuard,
+  onEditorsChanged,
   openEditorWindow,
   registerWindowHandlers,
   type WindowHost
@@ -50,5 +51,6 @@ export function registerHandlers(host: WindowHost): void {
     }
   })
   installQuitGuard()
+  onEditorsChanged(refreshWindowMenu)
   buildMenu()
 }

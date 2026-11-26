@@ -3,6 +3,7 @@ import type { EditorCommandId } from '@kalka/vue'
 import { FILE_MENU } from '@/app/shell/menu/file-menu'
 import { TEXT_MENU } from '@/app/shell/menu/text-menu'
 import { VECTOR_MENU } from '@/app/shell/menu/vector-menu'
+import { WINDOW_MENU } from '@/app/shell/menu/window-menu'
 
 /** Where an item shows: `desktop` is the native menu plus the app's own menu in the desktop app. */
 export type AppMenuTarget = 'all' | 'browser' | 'native' | 'desktop'
@@ -550,7 +551,8 @@ export const APP_MENU_SCHEMA = [
       },
       { id: 'selection.tidyUp', label: 'Tidy Up', command: 'selection.tidyUp' }
     ]
-  }
+  },
+  WINDOW_MENU
 ] satisfies AppMenuGroupSchema[]
 
 /**
