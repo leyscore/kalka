@@ -36,5 +36,7 @@
   "openQueuedFilesFailed": "无法打开传递给 Kalka 的文件：{error}",
   "tokensLeftOut": "未写入样式表：{names}",
   "designTokensLeftOut": "未写入设计令牌：{names}",
-  "designTokensImported": "已导入 {count} 个设计令牌。"
+  "designTokensImported": "已导入 {count} 个设计令牌。",
+  "selectionLinkCopied": "已复制所选内容的链接。",
+  "selectionLinkUnavailable": "在服务器上共享此文件，或在桌面应用中保存它，才能链接到其图层。"
 }

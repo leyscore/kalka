@@ -72,6 +72,8 @@ export const APP_MENU_SCHEMA = [
       { id: 'open-recent', label: 'Open Recent', target: 'native' },
       { id: 'open-storage-workspace', label: 'Open Storage Workspace…', handler: 'shell' },
       { id: 'import-claude-design', label: 'Import Claude Design Project…' },
+      // Figma's ⇧⌘K is Create component set here.
+      { id: 'place-image', label: 'Place Image…' },
       { type: 'separator' },
       { id: 'save', label: 'Save', shortcut: 'MOD+S' },
       { id: 'save-as', label: 'Save As…', shortcut: 'MOD+SHIFT+S' },
@@ -129,9 +131,12 @@ export const APP_MENU_SCHEMA = [
       { id: 'copy', label: 'Copy', shortcut: 'MOD+C' },
       { id: 'cut', label: 'Cut', shortcut: 'MOD+X' },
       { id: 'paste', label: 'Paste', shortcut: 'MOD+V' },
+      { id: 'paste-over-selection', label: 'Paste Over Selection', shortcut: 'MOD+SHIFT+V' },
       { id: 'paste-to-replace', label: 'Paste to replace', shortcut: 'MOD+SHIFT+R' },
       { id: 'copy-properties', label: 'Copy properties', shortcut: 'MOD+ALT+C' },
       { id: 'paste-properties', label: 'Paste properties', shortcut: 'MOD+ALT+V' },
+      { id: 'set-default-properties', label: 'Set Default Properties' },
+      { id: 'copy-link', label: 'Copy Link to Selection', shortcut: 'MOD+L' },
       {
         id: 'selection.duplicate',
         label: 'Duplicate',

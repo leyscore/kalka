@@ -40,5 +40,7 @@
   "designTokensImported": "{count} design tokens importés.",
   "folderNotEmpty": "« {name} » contient déjà d’autres fichiers. Choisissez un dossier vide, ou un dossier Kalka à remplacer.",
   "fileChangedOutside": "« {name} » a été modifié par une autre application. Vos modifications non enregistrées sont conservées ; enregistrer remplacera cette version.",
-  "reloadFromDisk": "Recharger depuis le disque"
+  "reloadFromDisk": "Recharger depuis le disque",
+  "selectionLinkCopied": "Lien vers la sélection copié.",
+  "selectionLinkUnavailable": "Partagez ce fichier sur un serveur, ou enregistrez-le dans l’app de bureau, pour créer un lien vers ses calques."
 }

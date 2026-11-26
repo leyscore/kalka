@@ -1,6 +1,7 @@
 import type { Ref } from 'vue'
 
 import { nodeToXPath } from '@kalka/core/xpath'
+import { layerCSS } from '@kalka/scene-graph/css-model'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { pasteClipboardToReplace } from '@/app/editor/clipboard/paste-to-replace'
@@ -61,6 +62,20 @@ export function createCanvasMenuActions(store: EditorStore, selectedIds: Ref<Set
     await clipboardWrite(xpaths.join('\n'), xpaths.length > 1 ? messages.xPaths : messages.xPath)
   }
 
+  /** Figma's Copy as CSS: each selected layer's CSS, under a comment naming it. */
+  async function copyAsCSS() {
+    const blocks = ids().flatMap((id) => {
+      const node = store.graph.getNode(id)
+      if (!node) return []
+      const parent = node.parentId ? store.graph.getNode(node.parentId) : undefined
+      const lines = Object.entries(layerCSS(node, parent)).map(
+        ([property, value]) => `${property}: ${value};`
+      )
+      return [[`/* ${node.name.replaceAll('*/', '* /')} */`, ...lines].join('\n')]
+    })
+    await clipboardWrite(blocks.length > 0 ? blocks.join('\n\n') : null, 'CSS')
+  }
+
   async function copyAsPNG() {
     if (typeof ClipboardItem === 'undefined') {
       toast.error(notificationMessages.get().pngClipboardUnavailable)
@@ -83,6 +98,7 @@ export function createCanvasMenuActions(store: EditorStore, selectedIds: Ref<Set
     copyNodeId,
     copyXPath,
     copyAsPNG,
+    copyAsCSS,
     canVectorizeImage: () => {
       void selectedIds.value
       return canVectorizeImageNode(store)

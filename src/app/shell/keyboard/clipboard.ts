@@ -1,6 +1,7 @@
 import { useEventListener } from '@vueuse/core'
 
 import { isSVGMarkup } from '@kalka/core/io'
+import type { Vector } from '@kalka/scene-graph/primitives'
 import { extractImageFilesFromClipboard } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
@@ -8,6 +9,7 @@ import { isHTMLSource } from '@/app/editor/clipboard/external-html'
 import { isDesignClipboardHTML } from '@/app/editor/clipboard/html'
 import { getInMemoryClipboardHTML } from '@/app/editor/clipboard/memory'
 import { pasteClipboardHTML, pastePoint, pasteSVGText } from '@/app/editor/clipboard/paste'
+import { selectionCenter } from '@/app/editor/clipboard/paste-over'
 import { browserSystemClipboard } from '@/app/editor/clipboard/system/browser'
 import { tauriSystemClipboard } from '@/app/editor/clipboard/system/tauri'
 import type { SystemClipboard } from '@/app/editor/clipboard/system/types'
@@ -44,6 +46,24 @@ function selectionMatches(store: EditorStore, selectedIds: Set<string>): boolean
 }
 
 export function bindEditorClipboard(store: EditorStore) {
+  /** Figma's Paste over selection: what the clipboard holds, centred on the selection. */
+  function pasteOver(e: ClipboardEvent, center: Vector) {
+    const imageFiles = extractImageFilesFromClipboard(e)
+    if (imageFiles.length) {
+      void store.placeImageFiles(imageFiles, center.x, center.y)
+      return
+    }
+    const html = e.clipboardData?.getData('text/html') ?? ''
+    const text = e.clipboardData?.getData('text/plain') ?? ''
+    if (!html && isSVGMarkup(text)) {
+      void pasteSVGText(store, text, center)
+      return
+    }
+    const source = html || (isHTMLSource(text) ? text : getInMemoryClipboardHTML())
+    if (source) void pasteClipboardHTML(store, source, center)
+    else toast.info(notificationMessages.get().nothingToPaste)
+  }
+
   useEventListener(window, 'copy', (e: ClipboardEvent) => {
     if (isEditing(e) || hasDocumentTextSelection()) return
     e.preventDefault()
@@ -68,9 +88,27 @@ export function bindEditorClipboard(store: EditorStore) {
     void copyAndDeleteSelection(store)
   })
 
+  // Cmd+Shift+V still pastes through the browser; the key says to paste over the selection.
+  let overSelection = false
+  useEventListener(
+    window,
+    'keydown',
+    (e: KeyboardEvent) => {
+      overSelection = e.code === 'KeyV' && e.shiftKey && (e.metaKey || e.ctrlKey) && !e.altKey
+    },
+    { capture: true }
+  )
+
   useEventListener(window, 'paste', (e: ClipboardEvent) => {
     if (isEditing(e)) return
     e.preventDefault()
+
+    const over = overSelection ? selectionCenter(store) : undefined
+    overSelection = false
+    if (over) {
+      pasteOver(e, over)
+      return
+    }
 
     const cursorPos = cursorPosition(store)
 

@@ -17,6 +17,7 @@ import {
   pasteClipboardProperties
 } from '@/app/editor/clipboard/properties'
 import { openFind } from '@/app/editor/find/state'
+import { copySelectionLink } from '@/app/editor/selection/link'
 import { requestRenameSelection } from '@/app/editor/selection/rename-dialog'
 import { TOOL_SHORTCUTS } from '@/app/editor/session'
 import { openSettings } from '@/app/settings/open'
@@ -161,6 +162,11 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
       id: 'paste-properties',
       keys: appMenuTinykeysShortcut('paste-properties') ?? '$mod+Alt+KeyV',
       run: ({ store }) => void pasteClipboardProperties(store)
+    },
+    {
+      id: 'copy-link',
+      keys: appMenuTinykeysShortcut('copy-link') ?? '$mod+KeyL',
+      run: ({ store }) => void copySelectionLink(store)
     },
     {
       id: 'export-selection-png',

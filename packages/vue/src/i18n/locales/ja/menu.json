@@ -110,5 +110,10 @@
   "zoomToNextFrame": "次のフレームにズーム",
   "zoomToPreviousFrame": "前のフレームにズーム",
   "previousPage": "前のページ",
-  "nextPage": "次のページ"
+  "nextPage": "次のページ",
+  "pasteOverSelection": "選択範囲の上にペースト",
+  "copyLinkToSelection": "選択範囲へのリンクをコピー",
+  "setDefaultProperties": "デフォルトのプロパティに設定",
+  "placeImage": "画像を配置…",
+  "copyAsCSS": "CSSとしてコピー"
 }

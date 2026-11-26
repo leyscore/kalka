@@ -110,5 +110,10 @@
   "zoomToNextFrame": "Powiększ do następnej ramki",
   "zoomToPreviousFrame": "Powiększ do poprzedniej ramki",
   "previousPage": "Poprzednia strona",
-  "nextPage": "Następna strona"
+  "nextPage": "Następna strona",
+  "pasteOverSelection": "Wklej na zaznaczenie",
+  "copyLinkToSelection": "Kopiuj link do zaznaczenia",
+  "setDefaultProperties": "Ustaw właściwości domyślne",
+  "placeImage": "Umieść obraz…",
+  "copyAsCSS": "Kopiuj jako CSS"
 }

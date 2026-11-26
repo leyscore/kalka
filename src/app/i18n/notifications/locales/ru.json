@@ -36,5 +36,7 @@
   "openQueuedFilesFailed": "Не удалось открыть файлы, переданные Kalka: {error}",
   "tokensLeftOut": "Не вошли в таблицу стилей: {names}.",
   "designTokensLeftOut": "Не вошли в дизайн-токены: {names}.",
-  "designTokensImported": "Импортировано дизайн-токенов: {count}."
+  "designTokensImported": "Импортировано дизайн-токенов: {count}.",
+  "selectionLinkCopied": "Ссылка на выделение скопирована.",
+  "selectionLinkUnavailable": "Чтобы ссылаться на слои, откройте доступ к файлу на сервере или сохраните его в настольном приложении."
 }

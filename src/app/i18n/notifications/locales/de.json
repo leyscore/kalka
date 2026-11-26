@@ -40,5 +40,7 @@
   "designTokensImported": "{count} Design-Tokens importiert.",
   "folderNotEmpty": "„{name}“ enthält bereits andere Dateien. Wähle einen leeren Ordner oder einen Kalka-Ordner, den du ersetzen möchtest.",
   "fileChangedOutside": "„{name}“ wurde von einer anderen App geändert. Deine ungesicherten Änderungen bleiben erhalten; Sichern ersetzt diese Version.",
-  "reloadFromDisk": "Von der Festplatte neu laden"
+  "reloadFromDisk": "Von der Festplatte neu laden",
+  "selectionLinkCopied": "Link zur Auswahl kopiert.",
+  "selectionLinkUnavailable": "Teile diese Datei auf einem Server oder speichere sie in der Desktop-App, um auf ihre Ebenen zu verlinken."
 }

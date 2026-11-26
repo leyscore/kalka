@@ -40,5 +40,7 @@
   "designTokensImported": "Se importaron {count} design tokens.",
   "folderNotEmpty": "«{name}» ya contiene otros archivos. Elige una carpeta vacía o una carpeta de Kalka que quieras reemplazar.",
   "fileChangedOutside": "Otra aplicación cambió «{name}». Tus cambios sin guardar se conservan; al guardar se reemplaza esa versión.",
-  "reloadFromDisk": "Volver a cargar desde el disco"
+  "reloadFromDisk": "Volver a cargar desde el disco",
+  "selectionLinkCopied": "Enlace a la selección copiado.",
+  "selectionLinkUnavailable": "Comparte este archivo en un servidor, o guárdalo en la app de escritorio, para enlazar sus capas."
 }

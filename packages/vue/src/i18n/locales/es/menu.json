@@ -110,5 +110,10 @@
   "zoomToNextFrame": "Zoom al marco siguiente",
   "zoomToPreviousFrame": "Zoom al marco anterior",
   "previousPage": "Página anterior",
-  "nextPage": "Página siguiente"
+  "nextPage": "Página siguiente",
+  "pasteOverSelection": "Pegar sobre la selección",
+  "copyLinkToSelection": "Copiar enlace a la selección",
+  "setDefaultProperties": "Establecer propiedades predeterminadas",
+  "placeImage": "Colocar imagen…",
+  "copyAsCSS": "Copiar como CSS"
 }

@@ -3,6 +3,7 @@ import { lineEndNetwork } from '@kalka/scene-graph/arrow-caps'
 
 import { prepareSlotEdits } from './components/slots'
 import { adoptCoveredLayers } from './shapes/adopt'
+import { defaultPropertiesFor, defaultPropertiesOf } from './shapes/default-properties'
 import { newLayerDefaults } from './shapes/defaults'
 import { createFramePresetActions } from './shapes/frame-presets'
 import { createPenActions } from './shapes/pen'
@@ -44,6 +45,7 @@ export function createShapeActions(ctx: EditorContext) {
     }
     const overrides: Partial<SceneNode> = {
       ...newLayerDefaults(type, ctx.state.theme),
+      ...defaultPropertiesFor(type, ctx.state.defaultLayerProperties),
       x,
       y,
       width: w,
@@ -70,6 +72,23 @@ export function createShapeActions(ctx: EditorContext) {
   }
 
   /**
+   * Figma's Set default properties: new shapes, or new texts, take the selected layer's look.
+   * False when the selection is not a single shape or text.
+   */
+  function setDefaultPropertiesFromSelection(): boolean {
+    const [id, ...rest] = ctx.state.selectedIds
+    const node = id && rest.length === 0 ? ctx.graph.getNode(id) : undefined
+    const taken = node ? defaultPropertiesOf(node) : null
+    if (!taken) return false
+    ctx.state.defaultLayerProperties = {
+      shape: ctx.state.defaultLayerProperties?.shape ?? null,
+      text: ctx.state.defaultLayerProperties?.text ?? null,
+      [taken.kind]: taken.properties
+    }
+    return true
+  }
+
+  /**
    * An arrow as Figma's Arrow tool draws it, "Arrow 1": a line whose end alone carries a line
    * arrowhead, kept on the network of its two ends.
    */
@@ -90,6 +109,7 @@ export function createShapeActions(ctx: EditorContext) {
   return {
     createShape,
     createArrow,
+    setDefaultPropertiesFromSelection,
     ...penActions,
     ...framePresetActions,
     adoptCoveredLayers: (containerId: string) => adoptCoveredLayers(ctx, containerId),

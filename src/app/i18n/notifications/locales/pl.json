@@ -36,5 +36,7 @@
   "openQueuedFilesFailed": "Nie udało się otworzyć plików przekazanych do Kalka: {error}",
   "tokensLeftOut": "Pominięte w arkuszu stylów: {names}.",
   "designTokensLeftOut": "Pominięte w tokenach projektowych: {names}.",
-  "designTokensImported": "Zaimportowano tokeny projektowe: {count}."
+  "designTokensImported": "Zaimportowano tokeny projektowe: {count}.",
+  "selectionLinkCopied": "Skopiowano link do zaznaczenia.",
+  "selectionLinkUnavailable": "Udostępnij ten plik na serwerze lub zapisz go w aplikacji desktopowej, aby linkować do jego warstw."
 }

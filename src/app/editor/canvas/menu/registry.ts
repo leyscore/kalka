@@ -3,6 +3,7 @@ import type { TestId } from '@kalka/vue'
 export type CanvasContextActionId =
   | 'copy-as-text'
   | 'copy-as-svg'
+  | 'copy-as-css'
   | 'copy-as-png'
   | 'copy-as-jsx'
   | 'copy-node-id'
@@ -13,6 +14,7 @@ export type CanvasContextActionId =
 export type CanvasContextLabelKey =
   | 'copyAsText'
   | 'copyAsSVG'
+  | 'copyAsCSS'
   | 'copyAsPNG'
   | 'copyAsJSX'
   | 'copyNodeId'
@@ -33,6 +35,7 @@ export const COPY_AS_PNG_SHORTCUT = 'MOD+SHIFT+C'
 
 export const CANVAS_COPY_AS_ACTIONS = [
   { id: 'copy-as-text', labelKey: 'copyAsText' },
+  { id: 'copy-as-css', labelKey: 'copyAsCSS', testId: 'context-copy-as-css' },
   { id: 'copy-as-svg', labelKey: 'copyAsSVG', testId: 'context-copy-as-svg' },
   { id: 'copy-as-png', labelKey: 'copyAsPNG', shortcut: COPY_AS_PNG_SHORTCUT },
   { id: 'copy-as-jsx', labelKey: 'copyAsJSX', testId: 'context-copy-as-jsx' },

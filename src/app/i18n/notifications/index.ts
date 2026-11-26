@@ -56,7 +56,10 @@ export const notificationMessageDefaults = {
   deepLinkPickerDismissed: 'Link cancelled: no file was chosen.',
   deepLinkCancelled: params('Link cancelled: expected a file ending in “{file}”.'),
   deepLinkNodeNotFound: params('Node “{node}” was not found in “{file}”.'),
-  openQueuedFilesFailed: params('Could not open the files handed to Kalka: {error}')
+  openQueuedFilesFailed: params('Could not open the files handed to Kalka: {error}'),
+  selectionLinkCopied: 'Link to the selection copied.',
+  selectionLinkUnavailable:
+    'Share this file on a server, or save it in the desktop app, to link to its layers.'
 } as const
 
 const localeLoaders = {

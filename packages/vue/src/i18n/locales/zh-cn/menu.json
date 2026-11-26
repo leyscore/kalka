@@ -110,5 +110,10 @@
   "zoomToNextFrame": "缩放至下一个画框",
   "zoomToPreviousFrame": "缩放至上一个画框",
   "previousPage": "上一页",
-  "nextPage": "下一页"
+  "nextPage": "下一页",
+  "pasteOverSelection": "粘贴到所选内容上方",
+  "copyLinkToSelection": "复制所选内容的链接",
+  "setDefaultProperties": "设为默认属性",
+  "placeImage": "置入图片…",
+  "copyAsCSS": "复制为 CSS"
 }

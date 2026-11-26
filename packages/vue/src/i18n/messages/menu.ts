@@ -118,7 +118,12 @@ export const menuMessageDefaults = {
   zoomToNextFrame: 'Zoom to next frame',
   zoomToPreviousFrame: 'Zoom to previous frame',
   previousPage: 'Previous page',
-  nextPage: 'Next page'
+  nextPage: 'Next page',
+  pasteOverSelection: 'Paste over selection',
+  copyLinkToSelection: 'Copy link to selection',
+  setDefaultProperties: 'Set default properties',
+  placeImage: 'Place image…',
+  copyAsCSS: 'Copy as CSS'
 } as const
 
 export const menuMessages = i18n('menu', menuMessageDefaults)

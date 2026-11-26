@@ -1,6 +1,7 @@
 import type { SceneNode } from '@kalka/scene-graph'
 
 import { useEditorStore } from '@/app/editor/active-store'
+import { placeImage } from '@/app/editor/clipboard/place-image'
 import { setDesignIssuesOnCanvas, setSnappingPreference } from '@/app/settings/preferences/apply'
 import { appPreferences } from '@/app/settings/preferences/store'
 import { createTextMenuActions } from '@/app/shell/menu/text-actions'
@@ -63,6 +64,7 @@ export function createSharedEditorMenuActions(
   return {
     'zoom-in': () => store.applyZoom(-100, window.innerWidth / 2, window.innerHeight / 2),
     'zoom-out': () => store.applyZoom(100, window.innerWidth / 2, window.innerHeight / 2),
+    'place-image': placeImage,
     'zoom-50': () => store.zoomToLevel(0.5),
     'zoom-200': () => store.zoomToLevel(2),
     'zoom-previous-frame': () => void store.zoomToAdjacentFrame(-1),

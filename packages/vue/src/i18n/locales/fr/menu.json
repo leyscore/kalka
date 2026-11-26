@@ -110,5 +110,10 @@
   "zoomToNextFrame": "Zoomer sur le cadre suivant",
   "zoomToPreviousFrame": "Zoomer sur le cadre précédent",
   "previousPage": "Page précédente",
-  "nextPage": "Page suivante"
+  "nextPage": "Page suivante",
+  "pasteOverSelection": "Coller par-dessus la sélection",
+  "copyLinkToSelection": "Copier le lien de la sélection",
+  "setDefaultProperties": "Définir les propriétés par défaut",
+  "placeImage": "Placer une image…",
+  "copyAsCSS": "Copier en CSS"
 }

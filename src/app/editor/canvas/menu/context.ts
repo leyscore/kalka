@@ -20,6 +20,7 @@ type CanvasCopyLabels = {
   copyPasteAs: string
   copyAsText: string
   copyAsSVG: string
+  copyAsCSS: string
   copyAsPNG: string
   copyAsJSX: string
   copyNodeId: string
@@ -54,6 +55,8 @@ function copyAction(
       )
     case 'copy-as-svg':
       return runAsync(() => actions.clipboardWrite(editor.copySelectionAsSVG(actions.ids()), 'SVG'))
+    case 'copy-as-css':
+      return runAsync(actions.copyAsCSS)
     case 'copy-as-png':
       return runAsync(actions.copyAsPNG)
     case 'copy-as-jsx':

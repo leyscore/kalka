@@ -29,6 +29,10 @@
         "label": "Import Claude Design Project…"
       },
       {
+        "id": "place-image",
+        "label": "Place Image…"
+      },
+      {
         "type": "separator"
       },
       {
@@ -122,6 +126,11 @@
         "accelerator": "CmdOrCtrl+V"
       },
       {
+        "id": "paste-over-selection",
+        "label": "Paste Over Selection",
+        "accelerator": "CmdOrCtrl+Shift+V"
+      },
+      {
         "id": "paste-to-replace",
         "label": "Paste to replace",
         "accelerator": "CmdOrCtrl+Shift+R"
@@ -135,6 +144,15 @@
         "id": "paste-properties",
         "label": "Paste properties",
         "accelerator": "CmdOrCtrl+Alt+V"
+      },
+      {
+        "id": "set-default-properties",
+        "label": "Set Default Properties"
+      },
+      {
+        "id": "copy-link",
+        "label": "Copy Link to Selection",
+        "accelerator": "CmdOrCtrl+L"
       },
       {
         "id": "selection.duplicate",

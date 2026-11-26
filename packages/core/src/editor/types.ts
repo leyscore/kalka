@@ -28,6 +28,7 @@ import type {
 import type { InterfaceTheme } from '#core/constants'
 import type { PlayState } from '#core/editor/play/actions'
 import type { SnappingPreferences } from '#core/editor/preferences'
+import type { DefaultLayerProperties } from '#core/editor/shapes/default-properties'
 import type { RotationPreview } from '#core/geometry'
 import type { IconProvider } from '#core/icons/provider'
 import type { TextEditor } from '#core/text/editor'
@@ -59,6 +60,8 @@ export interface EditorSharedState {
   /** The layer of the code element around the cursor in a code editor, shown in every pane. */
   codeFocusNodeId: string | null
   rulerTheme?: RulerTheme
+  /** The look new shapes and texts take, set by Figma's Set default properties. */
+  defaultLayerProperties?: DefaultLayerProperties
   /** The interface theme new sections take their fill from; light when unset. */
   theme?: InterfaceTheme
   /** Bumped by every document change; views, saving, and recovery follow it. */
