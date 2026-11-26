@@ -123,8 +123,15 @@ export function createSelectionOverlayActions(ctx: EditorContext) {
     ctx.requestRepaint()
   }
 
+  function setSmartSelectionHandle(handle: typeof ctx.state.smartSelectionHandle) {
+    if (isEqual(ctx.state.smartSelectionHandle, handle)) return
+    ctx.state.smartSelectionHandle = handle
+    ctx.requestRepaint()
+  }
+
   return {
     setMarquee,
+    setSmartSelectionHandle,
     setSnapGuides,
     setGuidePreview,
     setHoveredGuide,

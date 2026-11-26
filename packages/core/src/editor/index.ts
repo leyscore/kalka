@@ -39,6 +39,16 @@ export {
   type PlaygroundValues
 } from './components/playground'
 export { SELECT_SAME_KINDS, type SelectSameKind } from './selection/matching'
+export {
+  canTidyUp,
+  smartGapPositions,
+  smartGaps,
+  smartReorder,
+  smartSelectionOf,
+  smartSlotAt,
+  type SmartGap,
+  type SmartGrid
+} from './alignment/smart-selection'
 export { createGuideActions } from './guides'
 export { createTextActions } from './text'
 export {

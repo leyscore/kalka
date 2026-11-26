@@ -120,7 +120,7 @@ export function stripeSegments(
   return segments
 }
 
-function stripedRect(
+export function stripedRect(
   context: OverlayContext,
   [x, y, width, height]: RectTuple,
   color: Color,
@@ -148,7 +148,7 @@ function stripedRect(
 }
 
 /** A value in a pill as wide as its text, its digits centred, as Figma draws padding and gaps. */
-function valuePill(
+export function valuePill(
   context: OverlayContext,
   text: string,
   x: number,

@@ -131,6 +131,10 @@ export interface RenderOverlays {
   gradientEdit?: GradientEditState | null
   /** The progressive blur whose settings are open, which shows its ends on the layer. */
   blurEdit?: BlurEditState | null
+  /** The Select tool is on in a document open to edit: smart selection handles may show. */
+  smartSelection?: boolean
+  /** The smart selection handle under the pointer or being dragged. */
+  smartSelectionHandle?: SmartSelectionHandleState | null
 }
 
 /**
@@ -164,6 +168,18 @@ export interface BlurEditState {
   index: number
   /** The end under the pointer or being dragged. */
   handle: 'start' | 'end' | null
+  dragging: boolean
+}
+
+/**
+ * A handle of Figma's smart selection or the Tidy up button: a gap between evenly spaced layers,
+ * which drags every gap along its axis, a layer's centre, which reorders it among the others, or
+ * the button that tidies a selection that is not arranged yet.
+ */
+export interface SmartSelectionHandleState {
+  kind: 'gap' | 'center' | 'tidy'
+  axis?: 'x' | 'y'
+  nodeId?: string
   dragging: boolean
 }
 

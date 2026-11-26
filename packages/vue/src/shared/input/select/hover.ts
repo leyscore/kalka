@@ -10,6 +10,7 @@ import {
 } from '#vue/shared/input/geometry'
 import { hoverGradientHandle } from '#vue/shared/input/gradient'
 import type { HitTestFns } from '#vue/shared/input/select'
+import { hoverSmartSelection } from '#vue/shared/input/smart-selection'
 import { getNodeEditState } from '#vue/shared/input/vector'
 
 function getResizeCursorForSelection(cx: number, cy: number, editor: Editor): string | null {
@@ -93,6 +94,7 @@ export function updateHoverCursor(
     hoverBlurHandle(editor, cx, cy) ??
     hoverCornerRadiusHandle(editor, cx, cy) ??
     getResizeCursorForSelection(cx, cy, editor) ??
+    hoverSmartSelection(editor, cx, cy) ??
     getRotationCursorForSelection(cx, cy, editor)
   updateHoveredNode(cx, cy, editor, fns, deep)
   return cursor

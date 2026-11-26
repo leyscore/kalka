@@ -4,6 +4,11 @@ import type { RenderOverlays } from '#core/canvas/renderer/types'
 import { playIslandRoots } from '#core/editor/play/islands'
 import type { EditorState } from '#core/editor/types'
 
+/** Smart selection handles show with the Select tool in a document open to edit. */
+function showsSmartSelection(state: EditorState): boolean {
+  return state.play === null && state.activeTool === 'SELECT' && !state.viewOnly
+}
+
 /**
  * What the editor draws over the design for a view state. Every overlay backend reads this,
  * the Skia overlay canvas and the SVG overlay of the DOM scene alike.
@@ -57,6 +62,8 @@ export function overlaysFromEditorState(
     autoLayoutHover: state.autoLayoutHover,
     cornerRadiusHandle: previewing ? null : state.cornerRadiusHandle,
     gradientEdit: previewing ? null : state.gradientEdit,
-    blurEdit: previewing ? null : state.blurEdit
+    blurEdit: previewing ? null : state.blurEdit,
+    smartSelection: showsSmartSelection(state),
+    smartSelectionHandle: previewing ? null : state.smartSelectionHandle
   }
 }

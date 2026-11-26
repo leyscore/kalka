@@ -15,6 +15,7 @@ import {
   pressesSelection,
   selectionIsLocked
 } from '#vue/shared/input/select/move'
+import { tryStartSmartSelection } from '#vue/shared/input/smart-selection'
 import { tryStartAutoLayoutValueDrag } from '#vue/shared/input/spacing-drag'
 import type { DragState } from '#vue/shared/input/types'
 
@@ -35,7 +36,8 @@ function startMarquee(cx: number, cy: number, editor: Editor, setDrag: (d: DragS
 
 /**
  * Starts dragging a handle of the selection: a gradient's, a corner radius, the rotation, a
- * resize, or a padding or the gap of an auto layout frame.
+ * resize, a smart selection's gap or layer centre (or presses its Tidy up button), or a padding
+ * or the gap of an auto layout frame.
  */
 function startHandleDrag(
   e: MouseEvent,
@@ -59,6 +61,11 @@ function startHandleDrag(
   const resizeDrag = tryStartResize(cx, cy, editor)
   if (resizeDrag) {
     setDrag(resizeDrag)
+    return true
+  }
+  const smartDrag = tryStartSmartSelection(editor, cx, cy)
+  if (smartDrag) {
+    if (smartDrag !== 'tidied') setDrag(smartDrag)
     return true
   }
   const valueDrag = tryStartAutoLayoutValueDrag(editor, cx, cy, e.altKey)

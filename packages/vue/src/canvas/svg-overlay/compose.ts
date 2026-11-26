@@ -49,6 +49,7 @@ import {
   type OverlayContext
 } from '#vue/canvas/svg-overlay/layers/selection'
 import { shapeBuilderLayer } from '#vue/canvas/svg-overlay/layers/shape-builder'
+import { smartSelectionLayer } from '#vue/canvas/svg-overlay/layers/smart-selection'
 import { variableWidthLayer } from '#vue/canvas/svg-overlay/layers/variable-width'
 import { nodeEditLayer, penLayer, pencilLayer } from '#vue/canvas/svg-overlay/layers/vector-edit'
 import {
@@ -186,6 +187,7 @@ export function composeOverlay(input: ComposeInput): ComposedOverlay {
     ...marqueeLayer(input),
     ...insertIndicatorLayer(input),
     ...(isMeasuring ? [] : autoLayoutHoverLayer(input)),
+    ...(isMeasuring ? [] : smartSelectionLayer(input)),
     ...gradientLayer(input),
     ...blurLayer(input),
     ...prototypeLayer(input, input.pageId),

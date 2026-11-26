@@ -5,7 +5,13 @@ import Matrix from '@kalka/scene-graph/matrix'
 import type { Vector } from '@kalka/scene-graph/primitives'
 
 import { createFlipRotateActions } from '#core/editor/alignment/flip-rotate'
-import { tidyPositions } from '#core/editor/alignment/tidy'
+import {
+  canPositionNode as canPlaceNode,
+  canTidyUp,
+  smartSelectionOf,
+  type SmartGrid
+} from '#core/editor/alignment/smart-selection'
+import { tidyPositions, type TidyItem } from '#core/editor/alignment/tidy'
 
 import { collectNodePositions, pushPositionUndo } from './history/position'
 import type { EditorContext } from './types'
@@ -70,8 +76,7 @@ function alignMultipleNodes(
 }
 
 function canPositionNode(ctx: EditorContext, node: SceneNode): boolean {
-  const parent = node.parentId ? ctx.graph.getNode(node.parentId) : undefined
-  return !parent || parent.layoutMode === 'NONE' || node.layoutPositioning === 'ABSOLUTE'
+  return canPlaceNode(ctx.graph, node)
 }
 
 function parentLocalDelta(ctx: EditorContext, node: SceneNode, worldDelta: Vector): Vector | null {
@@ -184,35 +189,45 @@ export function createAlignmentActions(ctx: EditorContext) {
     return nodes.length >= 2 && nodes.every((node) => canPositionNode(ctx, node))
   }
 
-  /** Figma's Tidy up: the layers in an evenly spaced grid of the rows and columns they form. */
-  function tidyNodes(nodeIds: string[]) {
-    if (!canTidyNodes(nodeIds)) return
-    const nodes = nodeIds
+  function positionableNodes(nodeIds: Iterable<string>): SceneNode[] | null {
+    const nodes = [...nodeIds]
       .map((id) => ctx.graph.getNode(id))
       .filter((node): node is SceneNode => node != null)
-    const bounds = new Map(nodes.map((node) => [node.id, getAbsolutePositionFull(node, ctx.graph)]))
-    const targets = tidyPositions(
-      nodes.flatMap((node) => {
-        const box = bounds.get(node.id)
-        return box
-          ? [{ id: node.id, x: box.boundX, y: box.boundY, width: box.width, height: box.height }]
-          : []
-      })
-    )
-    const originals = collectNodePositions(
-      ctx,
-      nodes.map((node) => node.id)
-    )
-    for (const node of nodes) {
-      const box = bounds.get(node.id)
-      const target = targets.get(node.id)
-      if (!box || !target) continue
+    return nodes.length > 0 && nodes.every((node) => canPositionNode(ctx, node)) ? nodes : null
+  }
+
+  /** The layers' boxes on the page, as Tidy up and smart selection see them. */
+  function boxesOf(nodes: readonly SceneNode[]): TidyItem[] {
+    return nodes.map((node) => {
+      const box = getAbsolutePositionFull(node, ctx.graph)
+      return { id: node.id, x: box.boundX, y: box.boundY, width: box.width, height: box.height }
+    })
+  }
+
+  /** Moves each layer so its box's top left corner lands on its target on the page. */
+  function moveBoxesTo(targets: ReadonlyMap<string, Vector>) {
+    for (const [id, target] of targets) {
+      const node = ctx.graph.getNode(id)
+      if (!node) continue
+      const box = getAbsolutePositionFull(node, ctx.graph)
       const delta = parentLocalDelta(ctx, node, {
         x: target.x - box.boundX,
         y: target.y - box.boundY
       })
       if (delta) ctx.graph.updateNode(node.id, { x: node.x + delta.x, y: node.y + delta.y })
     }
+  }
+
+  /** Figma's Tidy up: the layers in an evenly spaced grid of the rows and columns they form. */
+  function tidyNodes(nodeIds: string[]) {
+    if (!canTidyNodes(nodeIds)) return
+    const nodes = positionableNodes(nodeIds)
+    if (!nodes) return
+    const originals = collectNodePositions(
+      ctx,
+      nodes.map((node) => node.id)
+    )
+    moveBoxesTo(tidyPositions(boxesOf(nodes)))
     const finals = collectNodePositions(ctx, originals.keys())
     pushPositionUndo(ctx, 'Tidy up', originals, finals)
 
@@ -220,15 +235,53 @@ export function createAlignmentActions(ctx: EditorContext) {
     ctx.requestRender()
   }
 
+  /**
+   * The selection as Figma's smart selection, three or more layers evenly spaced in a row, a
+   * column or a grid, whose gaps and order the canvas handles change; null otherwise.
+   */
+  function smartSelection(nodeIds: Iterable<string>): SmartGrid | null {
+    return smartSelectionOf(ctx.graph, nodeIds)
+  }
+
+  /** Whether Tidy up would rearrange the layers: they can move and are not evenly placed yet. */
+  function canTidyUpSelection(nodeIds: Iterable<string>): boolean {
+    return canTidyUp(ctx.graph, nodeIds)
+  }
+
+  /**
+   * Moves layers so their boxes' top left corners land on the given points on the page, as a
+   * smart selection handle previews; `commitArrangement` records it.
+   */
+  function arrangeNodes(targets: ReadonlyMap<string, Vector>) {
+    moveBoxesTo(targets)
+    for (const id of targets.keys()) ctx.runLayoutForNode(id)
+    ctx.requestRender()
+  }
+
+  /** Records the layers' moves since `originals`, their positions in their parents, as one step. */
+  function commitArrangement(originals: ReadonlyMap<string, Vector>, label: string) {
+    const before = new Map(originals)
+    const finals = collectNodePositions(ctx, before.keys())
+    const moved = [...finals].some(([id, position]) => {
+      const original = before.get(id)
+      return !original || original.x !== position.x || original.y !== position.y
+    })
+    if (moved) pushPositionUndo(ctx, label, before, finals)
+  }
+
   const { flipNodes, rotateNodes } = createFlipRotateActions(ctx)
 
   return {
     alignNodes,
+    arrangeNodes,
     canDistributeNodes,
     canTidyNodes,
+    canTidyUpSelection,
+    commitArrangement,
     distributeNodes,
     flipNodes,
     rotateNodes,
+    smartSelection,
     tidyNodes
   }
 }

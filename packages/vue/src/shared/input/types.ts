@@ -1,4 +1,4 @@
-import type { Editor, MoveOriginal, ScaleSession, Tool } from '@kalka/core/editor'
+import type { Editor, MoveOriginal, ScaleSession, SmartGrid, Tool } from '@kalka/core/editor'
 import type {
   CSSDeclarations,
   DerivedTextGlyph,
@@ -43,6 +43,34 @@ export interface DragAutoLayoutValue {
   startValue: number
   original: Partial<Pick<SceneNode, AutoLayoutValueField>>
 }
+
+interface SmartSelectionDragBase {
+  /** The selection as it stood at the press. */
+  grid: SmartGrid
+  /** The press on the page. */
+  start: Vector
+  /** The layers' positions in their parents at the press, for undo and Escape. */
+  original: Map<string, Vector>
+}
+
+/** A gap of Figma's smart selection dragged: every gap along its axis takes the new spacing. */
+export interface DragSmartGap extends SmartSelectionDragBase {
+  type: 'smart-gap'
+  axis: 'x' | 'y'
+  startGap: number
+  /** The spacing the drag has set. */
+  gap: number
+}
+
+/** A layer of a smart selection dragged by its centre to another place among the others. */
+export interface DragSmartReorder extends SmartSelectionDragBase {
+  type: 'smart-reorder'
+  nodeId: string
+  /** The slot it lands in, or -1 before the pointer moves. */
+  slot: number
+}
+
+export type DragSmartSelection = DragSmartGap | DragSmartReorder
 
 /** A corner radius handle being dragged. */
 export interface DragCornerRadius {
@@ -292,6 +320,8 @@ export type DragState =
   | DragGradientHandle
   | DragBlurHandle
   | DragAutoLayoutValue
+  | DragSmartGap
+  | DragSmartReorder
   | DragPrototypeLink
 
 export const TOOL_TO_NODE: Partial<Record<Tool, NodeType>> = {

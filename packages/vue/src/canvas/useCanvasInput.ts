@@ -14,9 +14,9 @@ import { bindShapeBuilder, updateShapeBuilderHover } from '#vue/canvas/shape-bui
 import { createTextEditInput } from '#vue/canvas/text-edit/input'
 import { endToolDrag, handleToolPointerUp, moveToolDrag } from '#vue/canvas/tools/drags'
 import { handleToolMouseDown } from '#vue/canvas/tools/input'
-import { bindVariableWidth, updateVariableWidthHover } from '#vue/canvas/variable-width/input'
 import { createCanvasTransformInput } from '#vue/canvas/transform/input'
 import { finishMarquee } from '#vue/canvas/transform/marquee'
+import { bindVariableWidth, updateVariableWidthHover } from '#vue/canvas/variable-width/input'
 import {
   handleBendHandleMove,
   toggleNodeEditVertexAt,
@@ -57,6 +57,8 @@ const CANCELLABLE_DRAGS = new Set<DragState['type']>([
   'pencil',
   'scale',
   'shape-builder',
+  'smart-gap',
+  'smart-reorder',
   'width'
 ])
 
@@ -530,6 +532,7 @@ export function useCanvasInput(
       editor.setHoveredNode(null)
       editor.setHoveredGuide(null)
       editor.setCornerRadiusHandle(null)
+      editor.setSmartSelectionHandle(null)
       const gradient = editor.state.gradientEdit
       if (gradient?.handle != null) editor.setGradientEdit({ ...gradient, handle: null })
       const blur = editor.state.blurEdit

@@ -23,6 +23,7 @@ import type {
   CornerRadiusHandleState,
   BlurEditState,
   GradientEditState,
+  SmartSelectionHandleState,
   MeasurementMode,
   OutlineMode,
   PixelPreview,
@@ -189,6 +190,8 @@ export interface EditorViewState {
   gradientEdit: GradientEditState | null
   /** The progressive blur whose settings are open, with its ends drawn on the layer. */
   blurEdit: BlurEditState | null
+  /** The smart selection handle under the pointer or being dragged. */
+  smartSelectionHandle: SmartSelectionHandleState | null
   panX: number
   pageColor: Color
   panY: number
