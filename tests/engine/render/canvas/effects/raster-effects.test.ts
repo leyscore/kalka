@@ -168,4 +168,41 @@ describe('raster export of the newer effects', () => {
     expect(textured(true)).toBe(0)
     expect(textured(false)).toBeGreaterThan(0)
   })
+
+  test('a glass lights its rim as the canvas does', () => {
+    const lit = (lightIntensity: number) => {
+      const graph = new SceneGraph()
+      const board = graph.createNode('FRAME', graph.getPages()[0].id, {
+        width: 100,
+        height: 100,
+        fills: [solid(0)]
+      })
+      const glass: Effect = {
+        ...effectBase,
+        type: 'GLASS',
+        refraction: 0,
+        lightIntensity,
+        lightAngle: -45
+      }
+      graph.createNode('FRAME', board.id, {
+        x: 20,
+        y: 20,
+        width: 60,
+        height: 60,
+        fills: [],
+        effects: [glass]
+      })
+      return exportPixels(graph, board.id)
+    }
+    const dark = lit(0)
+    const bright = lit(1)
+    // As the canvas's `box-shadow` insets: at -45° the bright rim runs along the bottom and
+    // right edges, a fainter one along the top and left.
+    expect(pixel(dark, 50, 79).r).toBe(0)
+    expect(pixel(bright, 50, 79).r).toBeGreaterThan(120)
+    expect(pixel(bright, 79, 50).r).toBeGreaterThan(120)
+    expect(pixel(bright, 50, 20).r).toBeGreaterThan(20)
+    expect(pixel(bright, 50, 20).r).toBeLessThan(pixel(bright, 50, 79).r)
+    expect(pixel(bright, 50, 50).r).toBe(0)
+  })
 })

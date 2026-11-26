@@ -1,6 +1,7 @@
 import type { Canvas, Path } from 'canvaskit-wasm'
 
 import type { SceneNode } from '@kalka/scene-graph'
+import { glassHighlights } from '@kalka/scene-graph/css-model'
 import type { Color } from '@kalka/scene-graph/primitives'
 
 import { figmaBlendModeToSkia } from './blend'
@@ -569,13 +570,27 @@ export function renderEffects(
       r.applyClippedBlur(canvas, node, rect, hasRadius, uniformBlurRadius(effect) / 2)
     }
 
-    if (pass === 'front' && effect.type === 'INNER_SHADOW') {
-      const shapeNode = shadowShapeChild ?? node
-      if (shapeNode.type === 'TEXT') {
-        drawTextInnerShadow(r, canvas, node, effect, shadowShapeChild)
-      } else {
-        drawShapeInnerShadow(r, canvas, node, rect, effect, hasRadius, shadowShapeChild)
-      }
+    // A glass's lit rim is the inner shadows the canvas draws as `box-shadow` insets.
+    if (pass === 'front' && (effect.type === 'INNER_SHADOW' || effect.type === 'GLASS')) {
+      for (const shadow of effect.type === 'GLASS' ? glassHighlights(effect) : [effect])
+        drawInnerShadow(r, canvas, node, rect, shadow, hasRadius, shadowShapeChild)
     }
+  }
+}
+
+function drawInnerShadow(
+  r: SkiaRenderer,
+  canvas: Canvas,
+  node: SceneNode,
+  rect: Float32Array,
+  effect: SceneEffect,
+  hasRadius: boolean,
+  shadowShapeChild?: SceneNode | null
+): void {
+  const shapeNode = shadowShapeChild ?? node
+  if (shapeNode.type === 'TEXT') {
+    drawTextInnerShadow(r, canvas, node, effect, shadowShapeChild)
+  } else {
+    drawShapeInnerShadow(r, canvas, node, rect, effect, hasRadius, shadowShapeChild)
   }
 }

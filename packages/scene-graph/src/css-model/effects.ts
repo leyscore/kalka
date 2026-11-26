@@ -209,18 +209,34 @@ function glassRefractionFilter(effect: Effect, width: number, height: number): s
   )
 }
 
-/** A glass's light: a bright rim on the side the light comes from, a faint one opposite. */
-function glassLightShadows(effect: Effect): string[] {
+/**
+ * A glass's light as inner shadows: a bright rim on the side the light comes from and a faint
+ * one opposite, each 1.5px in and softened by 1px. The canvas draws them as `box-shadow` insets
+ * and raster exports as inner shadows, so both light the glass the same way.
+ */
+export function glassHighlights(effect: Effect): Effect[] {
   const intensity = Math.max(0, Math.min(1, effect.lightIntensity ?? 0))
   if (intensity === 0) return []
   const angle = ((effect.lightAngle ?? -45) * Math.PI) / 180
   const dx = -Math.cos(angle) * 1.5
   const dy = Math.sin(angle) * 1.5
-  const light = (alpha: number) => colorToCSS({ r: 1, g: 1, b: 1, a: alpha })
-  return [
-    `inset ${num(dx)}px ${num(dy)}px 1px ${light(intensity * 0.8)}`,
-    `inset ${num(-dx)}px ${num(-dy)}px 1px ${light(intensity * 0.3)}`
-  ]
+  const light = (alpha: number, sign: 1 | -1): Effect => ({
+    type: 'INNER_SHADOW',
+    color: { r: 1, g: 1, b: 1, a: alpha },
+    offset: { x: dx * sign, y: dy * sign },
+    radius: 1,
+    spread: 0,
+    visible: true,
+    blendMode: 'NORMAL'
+  })
+  return [light(intensity * 0.8, 1), light(intensity * 0.3, -1)]
+}
+
+function glassLightShadows(effect: Effect): string[] {
+  return glassHighlights(effect).map(
+    ({ offset, radius, color }) =>
+      `inset ${num(offset.x)}px ${num(offset.y)}px ${num(radius)}px ${colorToCSS(color)}`
+  )
 }
 
 /** What a layer's effects add to its `filter`, `backdrop-filter` and `box-shadow` lists. */
