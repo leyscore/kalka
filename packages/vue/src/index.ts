@@ -206,7 +206,7 @@ export {
   PrototypePresenter,
   useCanvasContext
 } from '#vue/canvas'
-export type { CanvasContext } from '#vue/canvas'
+export type { CanvasContext, PresentTargets } from '#vue/canvas'
 export { ColorInputRoot, ColorPickerRoot } from '#vue/primitives/ColorPicker'
 export {
   ChannelSliderRoot,

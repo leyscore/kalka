@@ -237,8 +237,9 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     },
     {
       id: 'toggle-comment-mode',
-      // Viewers of a server file comment, as in Figma.
+      // Viewers of a server file comment, as in Figma, and so do people presenting a prototype.
       viewing: true,
+      preview: true,
       keys: 'KeyC',
       run: ({ store }) => {
         if (mayComment(store)) toggleCommentPlacing(store)

@@ -13,6 +13,7 @@ import PresentScreen from './PresentScreen.vue'
 import { usePresentScreens } from './screens'
 import { applyScrolling, overlayPlacement } from './scrolling'
 import { PADDING, usePresentStage } from './stage'
+import { presentTargets } from './targets'
 import { usePresentTriggers } from './triggers'
 
 /**
@@ -109,6 +110,8 @@ onBeforeUnmount(() => {
   timers.clear()
   for (const stop of unscroll) stop()
 })
+
+defineExpose(presentTargets(screens, () => scale.value))
 
 function overlayStyle(overlay: (typeof overlays.value)[number]) {
   const trigger = overlay.triggerId

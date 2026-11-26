@@ -41,7 +41,8 @@ import {
   useSVGOverlay,
   useViewportSize,
   useTextEdit,
-  type AutoLayoutValueField
+  type AutoLayoutValueField,
+  type PresentTargets
 } from '@kalka/vue'
 
 import { useAIChat } from '@/app/ai/chat/use'
@@ -70,6 +71,7 @@ import { canvasLabelPresentation } from './canvas/labels/presentation'
 import AnnotationLayer from './comments/AnnotationLayer.vue'
 import CommentLayer from './comments/CommentLayer.vue'
 import FrameReviewBadges from './comments/FrameReviewBadges.vue'
+import PresenterComments from './comments/PresenterComments.vue'
 import NumberField from './inputs/NumberField.vue'
 import AgentGhostFrames from './presence/AgentGhostFrames.vue'
 
@@ -85,6 +87,8 @@ const domScene = appRuntimeConfig.domScene
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
 const isActivePane = computed(() => !paneId || store.activePaneId.value === paneId)
+/** The presented prototype, which comments in the presenter pin onto. */
+const presenterRef = useTemplateRef<PresentTargets>('presenter')
 const followView = useFollowView(useTemplateRef<HTMLElement>('area'))
 
 function activatePane() {
@@ -372,7 +376,14 @@ const cursor = computed(() =>
           class="z-10"
           :page-id="paneView.currentPageId"
           :start-id="paneView.play.present.startId"
+          ref="presenter"
           :revision="paneView.play.revision"
+        />
+        <PresenterComments
+          v-if="paneView.play?.present"
+          class="z-20"
+          :presenter="presenterRef"
+          :page-id="paneView.currentPageId"
         />
         <AgentGhostFrames v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
         <FrameReviewBadges v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
