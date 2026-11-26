@@ -52,7 +52,7 @@ function distanceToSegment(segment: MeasurementSegment, x: number, y: number): n
   const high = Math.max(segment.from, segment.to)
   const along = segment.axis === 'x' ? x : y
   const across = segment.axis === 'x' ? y : x
-  const outside = along < low ? low - along : along > high ? along - high : 0
+  const outside = Math.max(low - along, along - high, 0)
   return Math.hypot(outside, across - segment.cross)
 }
 
