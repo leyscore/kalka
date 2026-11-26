@@ -83,6 +83,8 @@
   "serverPopupBlocked": "Dein Browser hat das Anmeldefenster blockiert. Erlaube Pop-ups für Kalka und versuche es erneut.",
   "serverWaitingForBrowser": "Schließe die Anmeldung in deinem Browser ab…",
   "serverNoDocuments": "Noch keine Dateien auf {server}. Um eine hier abzulegen, öffnen Sie sie und wählen Teilen › Auf {server} speichern.",
+  "serverBranchBadge": "Branches: {count}",
+  "serverOpenBranch": "Branch {name} öffnen",
   "serverNotSignedIn": "Melde dich bei einem Kalka-Server an, um seine Dateien zu sehen.",
   "serverShareOn": "Auf {server} speichern",
   "serverShareOnDescription": "Dein Team kann sie jederzeit öffnen, auch wenn du offline bist.",

@@ -94,6 +94,8 @@ export const collaborationMessageDefaults = {
   serverNoDocuments: params(
     'No files on {server} yet. To put one here, open it, then Share › Save on {server}.'
   ),
+  serverBranchBadge: params('Branches: {count}'),
+  serverOpenBranch: params('Open branch {name}'),
   serverNotSignedIn: 'Sign in to a Kalka server to see its files.',
   serverShareOn: params('Save on {server}'),
   serverShareOnDescription: 'Your team can open it any time, even when you’re offline.',

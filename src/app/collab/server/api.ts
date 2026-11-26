@@ -48,6 +48,26 @@ export const serverDocumentSchema = v.object({
 })
 export type ServerDocument = v.InferOutput<typeof serverDocumentSchema>
 
+/**
+ * The server's files as Home lists them, as Figma lists branches under their main file rather
+ * than as files of their own: the main files, and each one's branches in the server's order. A
+ * branch whose main file is not in the list stays a file of its own.
+ */
+export function groupServerBranches(documents: readonly ServerDocument[]): {
+  files: ServerDocument[]
+  branches: Map<string, ServerDocument[]>
+} {
+  const ids = new Set(documents.map((document) => document.id))
+  const branches = new Map<string, ServerDocument[]>()
+  const files: ServerDocument[] = []
+  for (const document of documents) {
+    const main = document.branchOf
+    if (main && ids.has(main)) branches.set(main, [...(branches.get(main) ?? []), document])
+    else files.push(document)
+  }
+  return { files, branches }
+}
+
 /** A version the server keeps of a file: every half hour it is saved, named, or before a restore. */
 export const serverVersionSchema = v.object({
   id: v.string(),

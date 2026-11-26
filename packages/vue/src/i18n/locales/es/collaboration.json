@@ -83,6 +83,8 @@
   "serverPopupBlocked": "Tu navegador bloqueó la ventana de inicio de sesión. Permite las ventanas emergentes para Kalka e inténtalo de nuevo.",
   "serverWaitingForBrowser": "Termina de iniciar sesión en tu navegador…",
   "serverNoDocuments": "Aún no hay archivos en {server}. Para poner uno aquí, ábrelo y elige Compartir › Guardar en {server}.",
+  "serverBranchBadge": "Ramas: {count}",
+  "serverOpenBranch": "Abrir la rama {name}",
   "serverNotSignedIn": "Inicia sesión en un servidor de Kalka para ver sus archivos.",
   "serverShareOn": "Guardar en {server}",
   "serverShareOnDescription": "Tu equipo puede abrirlo en cualquier momento, aunque estés desconectado.",

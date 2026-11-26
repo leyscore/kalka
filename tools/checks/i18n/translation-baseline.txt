@@ -20,6 +20,7 @@ de:code.sourceHTMLCSS
 de:code.sourceTailwindJSX
 de:collaboration.planPro
 de:collaboration.planTeam
+de:collaboration.serverBranchBadge
 de:collaboration.serverRoleAdmin
 de:collaboration.serverTab
 de:collaboration.teamGroup

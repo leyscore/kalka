@@ -83,6 +83,8 @@
   "serverPopupBlocked": "Przeglądarka zablokowała okno logowania. Zezwól na wyskakujące okna dla Kalka i spróbuj ponownie.",
   "serverWaitingForBrowser": "Dokończ logowanie w przeglądarce…",
   "serverNoDocuments": "Na {server} nie ma jeszcze plików. Aby dodać plik, otwórz go i wybierz Udostępnij › Zapisz na {server}.",
+  "serverBranchBadge": "Gałęzie: {count}",
+  "serverOpenBranch": "Otwórz gałąź {name}",
   "serverNotSignedIn": "Zaloguj się na serwer Kalka, aby zobaczyć jego pliki.",
   "serverShareOn": "Zapisz na {server}",
   "serverShareOnDescription": "Twój zespół może go otworzyć w każdej chwili, nawet gdy jesteś offline.",

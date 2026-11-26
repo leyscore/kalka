@@ -83,6 +83,8 @@
   "serverPopupBlocked": "浏览器拦截了登录窗口。请允许 Kalka 弹出窗口后重试。",
   "serverWaitingForBrowser": "请在浏览器中完成登录…",
   "serverNoDocuments": "{server} 上还没有文件。要放一个文件，请打开它，然后选择“共享 › 保存到 {server}”。",
+  "serverBranchBadge": "分支：{count}",
+  "serverOpenBranch": "打开分支 {name}",
   "serverNotSignedIn": "登录 Kalka 服务器以查看其文件。",
   "serverShareOn": "保存到 {server}",
   "serverShareOnDescription": "即使你离线，团队也可以随时打开。",

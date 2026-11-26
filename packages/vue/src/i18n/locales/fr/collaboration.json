@@ -83,6 +83,8 @@
   "serverPopupBlocked": "Votre navigateur a bloqué la fenêtre de connexion. Autorisez les fenêtres pop-up pour Kalka et réessayez.",
   "serverWaitingForBrowser": "Terminez la connexion dans votre navigateur…",
   "serverNoDocuments": "Aucun fichier sur {server} pour l’instant. Pour en mettre un ici, ouvrez-le, puis Partager › Enregistrer sur {server}.",
+  "serverBranchBadge": "Branches : {count}",
+  "serverOpenBranch": "Ouvrir la branche {name}",
   "serverNotSignedIn": "Connectez-vous à un serveur Kalka pour voir ses fichiers.",
   "serverShareOn": "Enregistrer sur {server}",
   "serverShareOnDescription": "Votre équipe peut l’ouvrir à tout moment, même quand vous êtes hors ligne.",

@@ -83,6 +83,8 @@
   "serverPopupBlocked": "Браузер заблокировал окно входа. Разрешите всплывающие окна для Kalka и попробуйте снова.",
   "serverWaitingForBrowser": "Завершите вход в браузере…",
   "serverNoDocuments": "На {server} пока нет файлов. Чтобы добавить файл, откройте его и выберите «Поделиться › Сохранить на {server}».",
+  "serverBranchBadge": "Ветки: {count}",
+  "serverOpenBranch": "Открыть ветку {name}",
   "serverNotSignedIn": "Войдите на сервер Kalka, чтобы увидеть его файлы.",
   "serverShareOn": "Сохранить на {server}",
   "serverShareOnDescription": "Команда сможет открыть его в любое время, даже когда вы не в сети.",

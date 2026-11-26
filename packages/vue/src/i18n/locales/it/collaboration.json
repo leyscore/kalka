@@ -83,6 +83,8 @@
   "serverPopupBlocked": "Il browser ha bloccato la finestra di accesso. Consenti i pop-up per Kalka e riprova.",
   "serverWaitingForBrowser": "Completa l’accesso nel browser…",
   "serverNoDocuments": "Ancora nessun file su {server}. Per metterne uno qui, aprilo e scegli Condividi › Salva su {server}.",
+  "serverBranchBadge": "Branch: {count}",
+  "serverOpenBranch": "Apri il branch {name}",
   "serverNotSignedIn": "Accedi a un server Kalka per vederne i file.",
   "serverShareOn": "Salva su {server}",
   "serverShareOnDescription": "Il tuo team può aprirlo in qualsiasi momento, anche quando sei offline.",

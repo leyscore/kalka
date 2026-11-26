@@ -12,7 +12,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from '@kalka/vue'
 
 import { serverAccount, serverSessionExpired } from '@/app/collab/server/account'
-import type { ServerDocument } from '@/app/collab/server/api'
+import { groupServerBranches, type ServerDocument } from '@/app/collab/server/api'
 import {
   openServerDocument,
   refreshServerDocuments,
@@ -52,13 +52,24 @@ async function moveToTrash(document: ServerDocument) {
     toast.error(reason instanceof Error ? reason.message : String(reason))
   }
 }
+const grouped = computed(() => groupServerBranches(serverDocuments.value))
+const branchesOf = computed(() => grouped.value.branches)
+
+const matches = (document: ServerDocument) =>
+  document.name.toLocaleLowerCase(locale.value).includes(query)
+
+/** The main files; a search also finds a file by one of its branches. */
 const filtered = computed(() =>
-  query
-    ? serverDocuments.value.filter((document) =>
-        document.name.toLocaleLowerCase(locale.value).includes(query)
-      )
-    : serverDocuments.value
+  grouped.value.files.filter(
+    (document) =>
+      !query || matches(document) || (branchesOf.value.get(document.id) ?? []).some(matches)
+  )
 )
+
+function branchBadge(document: ServerDocument): string | undefined {
+  const count = branchesOf.value.get(document.id)?.length ?? 0
+  return count > 0 ? collaboration.value.serverBranchBadge({ count }) : undefined
+}
 
 async function refresh() {
   if (!signedIn.value) return
@@ -122,9 +133,11 @@ const LIST = 'overflow-hidden rounded-[14px] bg-card'
       :view="view === 'list' ? 'list' : undefined"
       :name="document.name"
       :metadata="formattedDate(document.updatedAt)"
+      :badge="branchBadge(document)"
+      :data-branches="branchesOf.get(document.id)?.length"
       @open="open(document)"
     >
-      <template v-if="canDelete" #actions>
+      <template v-if="canDelete || branchesOf.has(document.id)" #actions>
         <DropdownMenuRoot>
           <DropdownMenuTrigger as-child>
             <IconButton
@@ -136,7 +149,17 @@ const LIST = 'overflow-hidden rounded-[14px] bg-card'
           </DropdownMenuTrigger>
           <DropdownMenuPortal>
             <DropdownMenuContent align="end" :side-offset="6" :class="menu.content">
-              <DropdownMenuItem :class="item" @select="moveToTrash(document)">
+              <DropdownMenuItem
+                v-for="branch in branchesOf.get(document.id) ?? []"
+                :key="branch.id"
+                :class="item"
+                data-test-id="home-server-branch"
+                @select="open(branch)"
+              >
+                <icon-hugeicons-git-branch class="size-3.5 text-muted" aria-hidden="true" />
+                {{ collaboration.serverOpenBranch({ name: branch.name }) }}
+              </DropdownMenuItem>
+              <DropdownMenuItem v-if="canDelete" :class="item" @select="moveToTrash(document)">
                 {{ files.moveToTrash }}
               </DropdownMenuItem>
             </DropdownMenuContent>

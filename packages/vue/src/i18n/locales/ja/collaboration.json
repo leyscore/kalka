@@ -83,6 +83,8 @@
   "serverPopupBlocked": "ブラウザーがサインイン画面をブロックしました。Kalka のポップアップを許可して、もう一度お試しください。",
   "serverWaitingForBrowser": "ブラウザーでサインインを完了してください…",
   "serverNoDocuments": "{server} にはまだファイルがありません。ここに置くには、ファイルを開いて「共有 › {server} に保存」を選びます。",
+  "serverBranchBadge": "ブランチ: {count}",
+  "serverOpenBranch": "ブランチ {name} を開く",
   "serverNotSignedIn": "Kalka サーバーにサインインすると、そのファイルが表示されます。",
   "serverShareOn": "{server} に保存",
   "serverShareOnDescription": "あなたがオフラインでも、チームはいつでも開けます。",
