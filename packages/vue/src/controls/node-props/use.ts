@@ -11,7 +11,7 @@ import { useEditor } from '#vue/editor/context'
 export { MIXED }
 
 /** Property value that may either be concrete or mixed across the selection. */
-export type { MixedValue } from '#vue/controls/node-props/helpers'
+export type { MergedNodeSelection, MixedValue } from '#vue/controls/node-props/helpers'
 
 /**
  * Returns shared property-panel helpers for the current selection.

@@ -7,7 +7,7 @@ import { cloneVectorNetwork } from '@kalka/scene-graph'
 import type { SceneNode, Stroke, StrokeCap, StrokeJoin } from '@kalka/scene-graph'
 
 import { MIXED } from '#vue/controls/node-props/use'
-import type { MixedValue } from '#vue/controls/node-props/use'
+import type { MergedNodeSelection } from '#vue/controls/node-props/use'
 
 export type StrokeSides = 'ALL' | 'TOP' | 'BOTTOM' | 'LEFT' | 'RIGHT' | 'CUSTOM'
 
@@ -42,11 +42,6 @@ export const DEFAULT_STROKE: Stroke = {
   align: 'CENTER'
 }
 
-export interface StrokeGeometryStateInput {
-  nodes: ComputedRef<SceneNode[]>
-  merged: <K extends keyof SceneNode>(key: K) => MixedValue<SceneNode[K]>
-}
-
 export interface StrokeGeometryActions {
   setCap: (value: StrokeCap) => void
   setJoin: (value: StrokeJoin) => void
@@ -54,7 +49,7 @@ export interface StrokeGeometryActions {
   commitMiterLimit: (value: number) => void
 }
 
-export function createStrokeGeometryState({ nodes, merged }: StrokeGeometryStateInput) {
+export function createStrokeGeometryState({ nodes, merged }: MergedNodeSelection) {
   return {
     advancedActive: computed(
       () => nodes.value.length > 0 && nodes.value.every((node) => node.strokes.length > 0)

@@ -4,7 +4,7 @@ import type { ComputedRef } from 'vue'
 import type { Editor } from '@kalka/core/editor'
 import type { SceneNode } from '@kalka/scene-graph'
 
-import { MIXED, type MixedValue } from '#vue/controls/node-props/use'
+import { MIXED, type MergedNodeSelection } from '#vue/controls/node-props/use'
 
 /** Figma's bounds for a polygon's sides and a star's points. */
 export const MIN_POINT_COUNT = 3
@@ -25,13 +25,8 @@ export function clampStarRatio(value: number): number {
   return Math.min(MAX_STAR_RATIO, Math.max(MIN_STAR_RATIO, value))
 }
 
-type PolygonOptions = {
-  nodes: ComputedRef<SceneNode[]>
-  merged: <K extends keyof SceneNode>(key: K) => MixedValue<SceneNode[K]>
-}
-
 /** Whether every selected layer is a polygon or a star, and the Count and Ratio they show. */
-export function createPolygonState({ nodes, merged }: PolygonOptions) {
+export function createPolygonState({ nodes, merged }: MergedNodeSelection) {
   const hasPointCount = computed(
     () =>
       nodes.value.length > 0 &&

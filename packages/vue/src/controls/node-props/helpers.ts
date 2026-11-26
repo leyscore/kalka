@@ -9,6 +9,12 @@ import { useSelectedNodeState } from '#vue/editor/selection-state/nodes'
 export const MIXED = Symbol('mixed')
 export type MixedValue<T> = T | typeof MIXED
 
+/** The selected layers and their value for a field, or MIXED where they differ. */
+export interface MergedNodeSelection {
+  nodes: ComputedRef<SceneNode[]>
+  merged: <K extends keyof SceneNode>(key: K) => MixedValue<SceneNode[K]>
+}
+
 export type ArrayItem = Fill | Stroke | Effect | Record<string, unknown>
 
 export function areArrayItemsEqual(a: ArrayItem, b: ArrayItem): boolean {
