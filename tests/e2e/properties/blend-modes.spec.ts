@@ -89,14 +89,18 @@ test.afterAll(async () => {
   await page.close()
 })
 
-test('edits fill and effect blend modes with style detachment and undo', async () => {
+test('edits fill and effect blend modes after detaching their styles, with undo', async () => {
+  // An applied style stands in for its paints, as in Figma: detaching it shows them to edit.
+  await page.getByTestId('fill-style-detach').click()
+  expect(await nodeState(firstId)).toMatchObject({ fillStyleId: null })
   await chooseBlend('Fill', 'Multiply')
   expect(await nodeState(firstId)).toMatchObject({ fillBlend: 'MULTIPLY', fillStyleId: null })
   await canvas.pressKey('Meta+z')
   await canvas.waitForRender()
-  expect(await nodeState(firstId)).toMatchObject({ fillBlend: 'NORMAL', fillStyleId: '1:10' })
+  expect(await nodeState(firstId)).toMatchObject({ fillBlend: 'NORMAL', fillStyleId: null })
 
   const effects = propertySection(page, 'Effects')
+  await page.getByTestId('effect-style-detach').click()
   await effects.getByRole('button', { name: 'Expand effect settings' }).click()
   await chooseBlend('Effects', 'Screen')
   expect(await nodeState(firstId)).toMatchObject({ effectBlend: 'SCREEN', effectStyleId: null })
@@ -108,6 +112,7 @@ test('batches fill blend modes across a compatible selection', async () => {
     ([first, second]) => {
       const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
+      store.updateNode(second, { fillStyleId: null })
       store.select([first, second])
     },
     [firstId, secondId]
