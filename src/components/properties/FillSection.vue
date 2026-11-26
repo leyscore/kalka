@@ -157,12 +157,15 @@ function updateSolidColor(
                 <FillPicker
                   :fill="displayFill(fill, binding.resolvedValue)"
                   :okhcl="createFillOkhclAdapter(okhcl, activeNode, index)"
+                  paint="fills"
+                  :index="index"
                   @update="
                     updatePickerFill(binding.actions, flush, $event, (next) =>
                       actions.update(index, next)
                     )
                   "
                   @open-change="!$event && commitPaintMutation(binding.actions)"
+                  @settle="commitPaintMutation(binding.actions)"
                   @cancel="cancelPaintMutation(binding.actions)"
                 />
               </template>

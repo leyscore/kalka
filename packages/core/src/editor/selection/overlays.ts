@@ -1,3 +1,5 @@
+import { isEqual } from 'es-toolkit'
+
 import type { Rect } from '@kalka/scene-graph/primitives'
 import type { SnapGuide } from '@kalka/scene-graph/snap'
 
@@ -109,6 +111,12 @@ export function createSelectionOverlayActions(ctx: EditorContext) {
     ctx.requestRepaint()
   }
 
+  function setGradientEdit(gradientEdit: typeof ctx.state.gradientEdit) {
+    if (isEqual(ctx.state.gradientEdit, gradientEdit)) return
+    ctx.state.gradientEdit = gradientEdit
+    ctx.requestRepaint()
+  }
+
   return {
     setMarquee,
     setSnapGuides,
@@ -124,6 +132,7 @@ export function createSelectionOverlayActions(ctx: EditorContext) {
     setDropTarget,
     setLayoutInsertIndicator,
     setAutoLayoutHover,
-    setCornerRadiusHandle
+    setCornerRadiusHandle,
+    setGradientEdit
   }
 }

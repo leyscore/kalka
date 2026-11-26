@@ -19,6 +19,8 @@ import fillPickerTheme from '@/theme/fill-picker'
 
 const { fill } = defineProps<{ fill: Fill }>()
 const emit = defineEmits<{ update: [fill: Fill] }>()
+/** The selected stop, shared with the gradient's handles on the canvas. */
+const activeStop = defineModel<number>('activeStop', { default: 0 })
 const { panels, editor } = useI18n()
 const fillPicker = tv(fillPickerTheme)
 
@@ -32,7 +34,12 @@ function listStopClass(active: boolean) {
 </script>
 
 <template>
-  <GradientEditorRoot :fill="fill" @update="emit('update', $event)" v-slot="root">
+  <GradientEditorRoot
+    v-model:active-stop-index="activeStop"
+    :fill="fill"
+    @update="emit('update', $event)"
+    v-slot="root"
+  >
     <div>
       <div class="mb-2 w-28">
         <AppSelect

@@ -96,6 +96,29 @@ export interface RenderOverlays {
   codeFocusNodeId?: string | null
   /** The selected layer under the pointer, with the corner radius handle hovered or dragged. */
   cornerRadiusHandle?: CornerRadiusHandleState | null
+  /** The gradient paint whose picker is open, which shows its handles on the layer. */
+  gradientEdit?: GradientEditState | null
+}
+
+/**
+ * A gradient handle: the start or end of the gradient line (the centre and the edge of a radial
+ * one), the width of a radial, angular, or diamond gradient, or a color stop by its index.
+ */
+export type GradientHandle = 'start' | 'end' | 'width' | number
+
+/**
+ * The gradient paint being edited in its picker, which Figma draws on the layer with a handle at
+ * each end of the gradient line and one per color stop.
+ */
+export interface GradientEditState {
+  nodeId: string
+  paint: 'fills' | 'strokes'
+  index: number
+  /** The stop selected in the picker. */
+  activeStop: number
+  /** The handle under the pointer or being dragged. */
+  handle: GradientHandle | null
+  dragging: boolean
 }
 
 /**

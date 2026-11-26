@@ -26,8 +26,11 @@ const SUBTYPES: { value: GradientSubtype; label: string }[] = [
  * Use this composable for gradient editors that need subtype switching,
  * active-stop selection, stop dragging, and stop color/opacity editing.
  */
-export function useGradientStops(fill: Ref<Fill>, onUpdate: (fill: Fill) => void) {
-  const activeStopIndex = ref(0)
+export function useGradientStops(
+  fill: Ref<Fill>,
+  onUpdate: (fill: Fill) => void,
+  activeStopIndex: Ref<number> = ref(0)
+) {
   const stops = computed(() => fill.value.gradientStops ?? [])
   const subtype = computed(() => fill.value.type as GradientSubtype)
 

@@ -37,6 +37,17 @@ export interface DragCornerRadius {
   original: CornerRadii
 }
 
+/** A gradient handle dragged on the canvas while its picker is open. */
+export interface DragGradientHandle {
+  type: 'gradient-handle'
+  nodeId: string
+  paint: 'fills' | 'strokes'
+  index: number
+  handle: 'start' | 'end' | 'width' | number
+  /** The layer's paints at the press. */
+  original: Pick<SceneNode, 'fills' | 'strokes'>
+}
+
 export interface DragDraw {
   type: 'draw'
   /** Start point in the parent's axes. */
@@ -204,6 +215,7 @@ export type DragState =
   | DragBendHandle
   | DragGuide
   | DragCornerRadius
+  | DragGradientHandle
 
 export const TOOL_TO_NODE: Partial<Record<Tool, NodeType>> = {
   FRAME: 'FRAME',

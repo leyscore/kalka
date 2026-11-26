@@ -20,6 +20,7 @@ import type { DesignIssueOverlay } from '#core/canvas/issues/types'
 import type { RulerTheme, SkiaRenderer } from '#core/canvas/renderer'
 import type {
   CornerRadiusHandleState,
+  GradientEditState,
   MeasurementMode,
   PresenceCursor,
   RenderOverlays
@@ -111,6 +112,8 @@ export interface EditorViewState {
   } | null
   /** The selected layer under the pointer, with the corner radius handle hovered or dragged. */
   cornerRadiusHandle: CornerRadiusHandleState | null
+  /** The gradient paint whose picker is open, with its handles drawn on the layer. */
+  gradientEdit: GradientEditState | null
   panX: number
   pageColor: Color
   panY: number

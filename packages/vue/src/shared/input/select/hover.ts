@@ -7,6 +7,7 @@ import {
   getHitHandleByMatrix,
   hitTestCornerRotationByMatrix
 } from '#vue/shared/input/geometry'
+import { hoverGradientHandle } from '#vue/shared/input/gradient'
 import type { HitTestFns } from '#vue/shared/input/select'
 import { getNodeEditState } from '#vue/shared/input/vector'
 
@@ -87,6 +88,7 @@ export function updateHoverCursor(
   }
 
   const cursor =
+    hoverGradientHandle(editor, cx, cy) ??
     hoverCornerRadiusHandle(editor, cx, cy) ??
     getResizeCursorForSelection(cx, cy, editor) ??
     getRotationCursorForSelection(cx, cy, editor)

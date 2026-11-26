@@ -6,6 +6,7 @@ import type { Editor } from '@kalka/core/editor'
 import type { SceneNode } from '@kalka/scene-graph'
 
 import { tryStartCornerRadius } from '#vue/shared/input/corner-radius'
+import { tryStartGradientHandle } from '#vue/shared/input/gradient'
 import { tryStartResize } from '#vue/shared/input/resize'
 import {
   createSelectionMoveDrag,
@@ -30,7 +31,10 @@ function startMarquee(cx: number, cy: number, editor: Editor, setDrag: (d: DragS
   setDrag({ type: 'marquee', startX: cx, startY: cy, containerId: container?.id })
 }
 
-/** Starts dragging a handle of the selection: a corner radius, the rotation, or a resize. */
+/**
+ * Starts dragging a handle of the selection: a gradient's, a corner radius, the rotation, or a
+ * resize.
+ */
 function startHandleDrag(
   e: MouseEvent,
   cx: number,
@@ -39,6 +43,11 @@ function startHandleDrag(
   tryStartRotation: (cx: number, cy: number) => boolean,
   setDrag: (d: DragState) => void
 ): boolean {
+  const gradientDrag = tryStartGradientHandle(editor, cx, cy)
+  if (gradientDrag) {
+    setDrag(gradientDrag)
+    return true
+  }
   const radiusDrag = tryStartCornerRadius(editor, cx, cy, e.altKey)
   if (radiusDrag) {
     setDrag(radiusDrag)

@@ -7,6 +7,8 @@ import { useGradientStops } from '#vue/primitives/GradientEditor/useGradientStop
 
 const { fill } = defineProps<{ fill: Fill }>()
 const emit = defineEmits<{ update: [fill: Fill] }>()
+/** The selected stop, for an editor that also shows the stops elsewhere, such as on the canvas. */
+const activeStop = defineModel<number>('activeStopIndex', { default: 0 })
 
 const {
   activeStopIndex,
@@ -26,7 +28,8 @@ const {
   dragStop
 } = useGradientStops(
   computed(() => fill),
-  (updated) => emit('update', updated)
+  (updated) => emit('update', updated),
+  activeStop
 )
 
 const actions = {

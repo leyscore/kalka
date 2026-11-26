@@ -13,6 +13,7 @@ import { aiMarksLayer, type AIMarks } from '#vue/canvas/svg-overlay/layers/ai-ma
 import { autoLayoutHoverLayer } from '#vue/canvas/svg-overlay/layers/auto-layout-hover'
 import { cornerRadiusLayer } from '#vue/canvas/svg-overlay/layers/corner-radius'
 import { flashesLayer, type Flash } from '#vue/canvas/svg-overlay/layers/flashes'
+import { gradientLayer } from '#vue/canvas/svg-overlay/layers/gradient'
 import { guideRedlineLayer, guidesLayer } from '#vue/canvas/svg-overlay/layers/guides'
 import {
   issueHighlightLayer,
@@ -171,6 +172,7 @@ export function composeOverlay(input: ComposeInput): ComposedOverlay {
     ...marqueeLayer(input),
     ...insertIndicatorLayer(input),
     ...(isMeasuring ? [] : autoLayoutHoverLayer(input)),
+    ...gradientLayer(input),
     // On top.
     ...nodeEditLayer(input),
     ...penLayer(input),

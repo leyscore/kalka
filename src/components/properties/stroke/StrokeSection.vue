@@ -158,12 +158,15 @@ function onToggleSides(activeNode: SceneNode | null) {
                 :label="panels.stroke"
                 :fill="displayStroke(stroke, binding.resolvedValue)"
                 :okhcl="createStrokeOkhclAdapter(okhcl, activeNode, index)"
+                paint="strokes"
+                :index="index"
                 @update="
                   updateStrokePaint(binding.actions, flush, stroke, $event, (next) =>
                     actions.update(index, next)
                   )
                 "
                 @open-change="!$event && commitPaintMutation(binding.actions)"
+                @settle="commitPaintMutation(binding.actions)"
                 @cancel="cancelPaintMutation(binding.actions)"
               />
             </template>

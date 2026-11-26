@@ -27,6 +27,11 @@ import {
   handleCornerRadiusMove
 } from '#vue/shared/input/corner-radius'
 import { handleDrawMove } from '#vue/shared/input/draw'
+import {
+  cancelGradientHandle,
+  commitGradientHandle,
+  handleGradientHandleMove
+} from '#vue/shared/input/gradient'
 import { handleMoveMove, handleMoveUp } from '#vue/shared/input/move'
 import { setupPanZoom } from '#vue/shared/input/pan-zoom'
 import { applyResize, commitResizePreview } from '#vue/shared/input/resize'
@@ -176,12 +181,12 @@ export function useCanvasInput(
       e.stopPropagation()
       return
     }
+    if (toggleNodeEditVertexAt(editor, cx, cy)) return
     onTextDblClick(e)
   }
 
   function onMouseDown(e: MouseEvent) {
     onActivate?.()
-    if (toggleNodeEditVertexAt(editor, cx, cy)) return
     if (!isEnabled()) return
     // Preview: controls live in islands above the canvas; the canvas itself only pans.
     if (editor.state.play && e.button === 0 && editor.state.activeTool !== 'HAND') {
@@ -327,6 +332,11 @@ export function useCanvasInput(
       return
     }
 
+    if (d.type === 'gradient-handle') {
+      handleGradientHandleMove(d, cx, cy, editor)
+      return
+    }
+
     handleMarqueeMove(d, cx, cy)
   }
 
@@ -363,6 +373,7 @@ export function useCanvasInput(
       if (editor.state.rotationPreview === preview) editor.setRotationPreview(null)
     } else if (d.type === 'draw') d.commit()
     else if (d.type === 'corner-radius') commitCornerRadius(d, editor)
+    else if (d.type === 'gradient-handle') commitGradientHandle(d, editor)
     else if (d.type === 'marquee') finishMarquee(editor, d)
 
     drag.value = null
@@ -389,6 +400,7 @@ export function useCanvasInput(
       drawing.cancel()
     }
     if (drag.value?.type === 'corner-radius') cancelCornerRadius(drag.value, editor)
+    if (drag.value?.type === 'gradient-handle') cancelGradientHandle(drag.value, editor)
     if (
       drag.value?.type === 'edit-node' ||
       drag.value?.type === 'edit-handle' ||
@@ -474,6 +486,8 @@ export function useCanvasInput(
       editor.setHoveredNode(null)
       editor.setHoveredGuide(null)
       editor.setCornerRadiusHandle(null)
+      const gradient = editor.state.gradientEdit
+      if (gradient?.handle != null) editor.setGradientEdit({ ...gradient, handle: null })
     }
   })
   useEventListener(

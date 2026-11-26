@@ -7,6 +7,7 @@ import { applySolidFillColor, FillRoot, useI18n, useRetainedPopup } from '@kalka
 import type { OkHCLControls } from '@kalka/vue'
 
 import ColorPickerPanel from '@/components/color-picker-panel/ColorPickerPanel.vue'
+import { useCanvasGradientHandles } from '@/components/fill-picker/canvas-gradient'
 import GradientEditor from '@/components/fill-picker/GradientEditor.vue'
 import ImageFillPicker from '@/components/fill-picker/ImageFillPicker.vue'
 import { usePopoverUI } from '@/components/ui/overlay/popover'
@@ -23,22 +24,35 @@ function tabClass(active: boolean) {
 const {
   fill,
   okhcl = null,
-  swatchBackground
+  swatchBackground,
+  paint,
+  index
 } = defineProps<{
   fill: Fill
   okhcl?: OkHCLControls | null
   swatchBackground?: string
   /** Names the trigger for a paint that is not a fill, such as a stroke. */
   label?: string
+  /** Where the paint sits on the selection, which shows a gradient's handles on the canvas. */
+  paint?: 'fills' | 'strokes'
+  index?: number
 }>()
 const emit = defineEmits<{
   update: [fill: Fill]
   openChange: [open: boolean]
   cancel: []
+  /** A gradient handle is dragged on the canvas: the picker's edits so far end their undo step. */
+  settle: []
 }>()
 const { open: popupOpen, portalActive } = useRetainedPopup(undefined, () => {
   emit('cancel')
   emit('openChange', false)
+})
+const { activeStop, keepOpen } = useCanvasGradientHandles({
+  open: popupOpen,
+  fill: () => fill,
+  target: () => (paint && index !== undefined ? { paint, index } : null),
+  onDragStart: () => emit('settle')
 })
 const cls = usePopoverUI({ content: 'w-60 p-2' })
 const { panels } = useI18n()
@@ -77,6 +91,7 @@ function closeFromEscape(event: KeyboardEvent) {
           side="left"
           data-picker-content
           @escape-key-down="closeFromEscape"
+          @interact-outside="keepOpen"
         >
           <div class="mb-2 flex items-center gap-0.5">
             <Tip :label="panels.solid">
@@ -120,6 +135,7 @@ function closeFromEscape(event: KeyboardEvent) {
 
           <GradientEditor
             v-if="root.category === 'GRADIENT'"
+            v-model:active-stop="activeStop"
             :fill="root.fill"
             @update="emit('update', $event)"
           />
