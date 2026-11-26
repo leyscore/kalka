@@ -80,9 +80,9 @@ describe('prototype through the Plugin API', () => {
       { type: 'ON_MEDIA_HIT', delay: 0, keyCodes: [], mediaHitTime: 1.5 },
       { type: 'ON_MEDIA_END', delay: 0, keyCodes: [] }
     ])
-    expect(button.reactions.map((reaction) => reaction.trigger)).toEqual([
-      { type: 'ON_MEDIA_HIT', mediaHitTime: 1.5 },
-      { type: 'ON_MEDIA_END' }
+    expect(button.reactions).toMatchObject([
+      { trigger: { type: 'ON_MEDIA_HIT', mediaHitTime: 1.5 } },
+      { trigger: { type: 'ON_MEDIA_END' } }
     ])
   })
 

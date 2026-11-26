@@ -450,8 +450,15 @@ describe('.fig prototype round trip', () => {
       { connectionType: 'UPDATE_MEDIA_RUNTIME', mediaAction: 'SKIP_TO', mediaSkipToTime: 7.5 }
     ])
     const reimported = await parseFigFile(bytes)
+    // The video keeps its place; its id is the reimported layer's.
     expect(byName(reimported, 'Controls').reactions[0].actions).toEqual([
-      { ...actions[0], destinationId: byName(reimported, 'Video').id },
+      {
+        type: 'UPDATE_MEDIA_RUNTIME',
+        destinationId: byName(reimported, 'Video').id,
+        mediaAction: 'SKIP_BACKWARD',
+        amountToSkip: 3,
+        newTimestamp: 0
+      },
       actions[1]
     ])
   })

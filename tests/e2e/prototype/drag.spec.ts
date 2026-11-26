@@ -54,7 +54,7 @@ test('On drag with Smart animate moves the layer with the pointer and plays on r
               direction: 'LEFT',
               matchLayers: false,
               duration: 0.2,
-              easing: { type: 'EASE_OUT' }
+              easing: { type: 'EASE_OUT', bezier: null, spring: null }
             },
             preserveScrollPosition: false,
             resetScrollPosition: false,
