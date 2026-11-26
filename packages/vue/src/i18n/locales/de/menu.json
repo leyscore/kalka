@@ -104,5 +104,11 @@
   "increaseLetterSpacing": "Zeichenabstand erhöhen",
   "decreaseLetterSpacing": "Zeichenabstand verringern",
   "collapseLayers": "Ebenen einklappen",
-  "rotate": "Drehen"
+  "rotate": "Drehen",
+  "zoomTo50": "Auf 50 % zoomen",
+  "zoomTo200": "Auf 200 % zoomen",
+  "zoomToNextFrame": "Zum nächsten Rahmen zoomen",
+  "zoomToPreviousFrame": "Zum vorherigen Rahmen zoomen",
+  "previousPage": "Vorherige Seite",
+  "nextPage": "Nächste Seite"
 }

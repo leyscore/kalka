@@ -40,6 +40,7 @@ export function usePageList() {
     currentPageId,
     switchPage: editor.switchPage,
     addPage: editor.addPage,
+    duplicatePage: editor.duplicatePage,
     deletePage: editor.deletePage,
     movePage: editor.movePage,
     renamePage: editor.renamePage

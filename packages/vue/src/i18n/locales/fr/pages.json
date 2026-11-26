@@ -7,5 +7,6 @@
   "goToPage": "Aller à la page…",
   "recentPage": "Récente",
   "currentPage": "Page actuelle",
-  "pageNameLabel": "Nom de la page"
+  "pageNameLabel": "Nom de la page",
+  "duplicate": "Dupliquer"
 }

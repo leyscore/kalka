@@ -104,5 +104,11 @@
   "increaseLetterSpacing": "Aumenta spaziatura lettere",
   "decreaseLetterSpacing": "Riduci spaziatura lettere",
   "collapseLayers": "Comprimi livelli",
-  "rotate": "Ruota"
+  "rotate": "Ruota",
+  "zoomTo50": "Zoom al 50%",
+  "zoomTo200": "Zoom al 200%",
+  "zoomToNextFrame": "Zoom sul frame successivo",
+  "zoomToPreviousFrame": "Zoom sul frame precedente",
+  "previousPage": "Pagina precedente",
+  "nextPage": "Pagina successiva"
 }

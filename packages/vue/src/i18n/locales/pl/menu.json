@@ -104,5 +104,11 @@
   "increaseLetterSpacing": "Zwiększ odstęp między literami",
   "decreaseLetterSpacing": "Zmniejsz odstęp między literami",
   "collapseLayers": "Zwiń warstwy",
-  "rotate": "Obróć"
+  "rotate": "Obróć",
+  "zoomTo50": "Powiększ do 50%",
+  "zoomTo200": "Powiększ do 200%",
+  "zoomToNextFrame": "Powiększ do następnej ramki",
+  "zoomToPreviousFrame": "Powiększ do poprzedniej ramki",
+  "previousPage": "Poprzednia strona",
+  "nextPage": "Następna strona"
 }

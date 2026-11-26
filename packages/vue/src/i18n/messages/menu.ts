@@ -112,7 +112,13 @@ export const menuMessageDefaults = {
   increaseLetterSpacing: 'Increase letter spacing',
   decreaseLetterSpacing: 'Decrease letter spacing',
   collapseLayers: 'Collapse layers',
-  rotate: 'Rotate'
+  rotate: 'Rotate',
+  zoomTo50: 'Zoom to 50%',
+  zoomTo200: 'Zoom to 200%',
+  zoomToNextFrame: 'Zoom to next frame',
+  zoomToPreviousFrame: 'Zoom to previous frame',
+  previousPage: 'Previous page',
+  nextPage: 'Next page'
 } as const
 
 export const menuMessages = i18n('menu', menuMessageDefaults)

@@ -104,5 +104,11 @@
   "increaseLetterSpacing": "Увеличить межбуквенный интервал",
   "decreaseLetterSpacing": "Уменьшить межбуквенный интервал",
   "collapseLayers": "Свернуть слои",
-  "rotate": "Повернуть"
+  "rotate": "Повернуть",
+  "zoomTo50": "Масштаб 50%",
+  "zoomTo200": "Масштаб 200%",
+  "zoomToNextFrame": "К следующему фрейму",
+  "zoomToPreviousFrame": "К предыдущему фрейму",
+  "previousPage": "Предыдущая страница",
+  "nextPage": "Следующая страница"
 }

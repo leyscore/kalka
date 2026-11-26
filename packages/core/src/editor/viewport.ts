@@ -1,3 +1,4 @@
+import type { SceneNode } from '@kalka/scene-graph'
 import { getAxisAlignedWorldBounds } from '@kalka/scene-graph/coordinate'
 import { computeBounds, computeAbsoluteBounds } from '@kalka/scene-graph/geometry'
 
@@ -8,6 +9,15 @@ import type { EditorContext } from './types'
 
 /** Space kept between revealed layers and the viewport edge. */
 const REVEAL_MARGIN = 48
+
+/** Top-level layers Figma's next and previous frame keys go through. */
+const NAVIGABLE_FRAME_TYPES: ReadonlySet<SceneNode['type']> = new Set([
+  'FRAME',
+  'COMPONENT',
+  'COMPONENT_SET',
+  'INSTANCE',
+  'SECTION'
+])
 
 export function createViewportActions(ctx: EditorContext) {
   function currentViewport() {
@@ -163,7 +173,34 @@ export function createViewportActions(ctx: EditorContext) {
     pan(width / 2 - (left + right) / 2, height / 2 - (top + bottom) / 2)
   }
 
+  /**
+   * Figma's Zoom to next frame (N) and Zoom to previous frame (Shift+N): selects the top-level
+   * frame after or before the one the selection is in, in the layers panel's order, and fits it
+   * in view. Without one it starts from the first or the last.
+   */
+  function zoomToAdjacentFrame(step: 1 | -1): string | null {
+    const pageId = ctx.state.currentPageId
+    // The layers panel lists the topmost layer first.
+    const frames = ctx.graph
+      .getChildren(pageId)
+      .filter((node) => node.visible && NAVIGABLE_FRAME_TYPES.has(node.type))
+      .toReversed()
+    if (frames.length === 0) return null
+    const current = frames.findIndex(({ id }) =>
+      [...ctx.state.selectedIds].some((selected) => ctx.graph.isDescendant(selected, id))
+    )
+    const first = step > 0 ? 0 : frames.length - 1
+    const index = current === -1 ? first : (current + step + frames.length) % frames.length
+    const frame = frames[index]
+    if (!frame) return null
+    ctx.setSelectedIds(new Set([frame.id]))
+    const bounds = getAxisAlignedWorldBounds(frame, ctx.graph)
+    zoomToBounds(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height)
+    return frame.id
+  }
+
   return {
+    zoomToAdjacentFrame,
     revealNodes,
     screenToCanvas,
     setZoomAroundPoint,

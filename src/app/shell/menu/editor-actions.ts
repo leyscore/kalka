@@ -49,12 +49,26 @@ export function toggleSelectedTextUnderline(): void {
   })
 }
 
+/** Figma's Previous page and Next page: the page above or below the one shown, if any. */
+export function showAdjacentPage(step: 1 | -1): void {
+  const pages = store.graph.getPages()
+  const index = pages.findIndex((page) => page.id === store.state.currentPageId)
+  const page = pages[index + step]
+  if (index !== -1 && page) void store.switchPage(page.id)
+}
+
 export function createSharedEditorMenuActions(
   setTheme: (theme: 'light' | 'dark' | 'auto') => void
 ) {
   return {
     'zoom-in': () => store.applyZoom(-100, window.innerWidth / 2, window.innerHeight / 2),
     'zoom-out': () => store.applyZoom(100, window.innerWidth / 2, window.innerHeight / 2),
+    'zoom-50': () => store.zoomToLevel(0.5),
+    'zoom-200': () => store.zoomToLevel(2),
+    'zoom-previous-frame': () => void store.zoomToAdjacentFrame(-1),
+    'zoom-next-frame': () => void store.zoomToAdjacentFrame(1),
+    'previous-page': () => showAdjacentPage(-1),
+    'next-page': () => showAdjacentPage(1),
     'view-split-right': () => store.splitPane(store.activePaneId.value, 'horizontal'),
     'view-split-down': () => store.splitPane(store.activePaneId.value, 'vertical'),
     'view-rulers': () => {

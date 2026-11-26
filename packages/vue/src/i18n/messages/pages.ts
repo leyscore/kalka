@@ -11,7 +11,8 @@ export const pageMessageDefaults = {
   goToPage: 'Go to page…',
   recentPage: 'Recent',
   currentPage: 'Current page',
-  pageNameLabel: 'Page name'
+  pageNameLabel: 'Page name',
+  duplicate: 'Duplicate'
 } as const
 
 export const pageMessages = i18n('pages', pageMessageDefaults)

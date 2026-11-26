@@ -7,5 +7,6 @@
   "goToPage": "Przejdź do strony…",
   "recentPage": "Ostatnio otwarta",
   "currentPage": "Bieżąca strona",
-  "pageNameLabel": "Nazwa strony"
+  "pageNameLabel": "Nazwa strony",
+  "duplicate": "Duplikuj"
 }

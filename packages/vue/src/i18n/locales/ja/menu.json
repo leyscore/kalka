@@ -104,5 +104,11 @@
   "increaseLetterSpacing": "文字間隔を広げる",
   "decreaseLetterSpacing": "文字間隔を狭める",
   "collapseLayers": "レイヤーを折りたたむ",
-  "rotate": "回転"
+  "rotate": "回転",
+  "zoomTo50": "50%にズーム",
+  "zoomTo200": "200%にズーム",
+  "zoomToNextFrame": "次のフレームにズーム",
+  "zoomToPreviousFrame": "前のフレームにズーム",
+  "previousPage": "前のページ",
+  "nextPage": "次のページ"
 }

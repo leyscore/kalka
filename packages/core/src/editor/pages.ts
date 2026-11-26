@@ -4,6 +4,7 @@ import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 import type { Color } from '@kalka/scene-graph/primitives'
 
 import {
+  getPageBackgrounds,
   getPageColor,
   setDefaultPageBackground,
   setPageBackgrounds
@@ -318,6 +319,37 @@ export function createPageActions(ctx: EditorContext) {
     return page.id
   }
 
+  /**
+   * Figma's Duplicate page: a copy of the page, its background and its layers, named after it and
+   * placed right after it, then shown. One undo step.
+   */
+  function duplicatePage(pageId: string): string | null {
+    const source = ctx.graph.getNode(pageId)
+    if (source?.type !== 'CANVAS') return null
+    const previousPageId = ctx.state.currentPageId
+    const page = ctx.graph.addPage(`${source.name} copy`)
+    setPageBackgrounds(ctx.graph, page, [...getPageBackgrounds(source)])
+    for (const child of ctx.graph.getChildren(pageId)) ctx.graph.cloneTree(child.id, page.id)
+    const root = ctx.graph.getChildren(ctx.graph.rootId)
+    ctx.graph.reorderChild(page.id, ctx.graph.rootId, root.findIndex(({ id }) => id === pageId) + 1)
+    const index = ctx.graph.getChildren(ctx.graph.rootId).findIndex(({ id }) => id === page.id)
+    const subtree = snapshotSubtree(ctx.graph, page.id)
+    ctx.undo.push({
+      label: 'Duplicate page',
+      forward: () => {
+        restorePage(page.id, index, subtree)
+        void switchPage(page.id)
+      },
+      inverse: () => {
+        if (ctx.state.currentPageId === page.id && ctx.graph.getNode(previousPageId))
+          void switchPage(previousPageId)
+        removePage(page.id)
+      }
+    })
+    void switchPage(page.id)
+    return page.id
+  }
+
   /** Deletes a page and its layers as one undo step, which brings both back where they were. */
   function deletePage(pageId: string) {
     const pages = ctx.graph.getPages()
@@ -387,6 +419,7 @@ export function createPageActions(ctx: EditorContext) {
     commitPageSwitch,
     switchPage,
     addPage,
+    duplicatePage,
     deletePage,
     movePage,
     renamePage,

@@ -7,5 +7,6 @@
   "goToPage": "ページへ移動…",
   "recentPage": "最近",
   "currentPage": "現在のページ",
-  "pageNameLabel": "ページ名"
+  "pageNameLabel": "ページ名",
+  "duplicate": "複製"
 }

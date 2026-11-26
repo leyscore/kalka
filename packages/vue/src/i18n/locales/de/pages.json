@@ -7,5 +7,6 @@
   "goToPage": "Zu Seite wechseln…",
   "recentPage": "Zuletzt besucht",
   "currentPage": "Aktuelle Seite",
-  "pageNameLabel": "Seitenname"
+  "pageNameLabel": "Seitenname",
+  "duplicate": "Duplizieren"
 }

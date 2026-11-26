@@ -29,6 +29,7 @@ import type {
   KeyboardShortcutOptions,
   KeyboardShortcutRunOptions
 } from '@/app/shell/keyboard/types'
+import { showAdjacentPage } from '@/app/shell/menu/editor-actions'
 import { appMenuTinykeysShortcut } from '@/app/shell/menu/shortcut'
 
 type ShortcutAction = (options: KeyboardShortcutRunOptions) => void
@@ -258,6 +259,14 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
       run: zoomAtViewportCenter(100),
       global: true
     },
+    { id: 'zoom-next-frame', keys: 'KeyN', run: ({ store }) => store.zoomToAdjacentFrame(1) },
+    {
+      id: 'zoom-previous-frame',
+      keys: 'Shift+KeyN',
+      run: ({ store }) => store.zoomToAdjacentFrame(-1)
+    },
+    { id: 'previous-page', keys: 'PageUp', run: () => showAdjacentPage(-1) },
+    { id: 'next-page', keys: 'PageDown', run: () => showAdjacentPage(1) },
     {
       id: 'zoom-in-unmodified',
       keys: 'Shift+Equal',

@@ -104,5 +104,11 @@
   "increaseLetterSpacing": "增加字间距",
   "decreaseLetterSpacing": "减小字间距",
   "collapseLayers": "折叠图层",
-  "rotate": "旋转"
+  "rotate": "旋转",
+  "zoomTo50": "缩放至 50%",
+  "zoomTo200": "缩放至 200%",
+  "zoomToNextFrame": "缩放至下一个画框",
+  "zoomToPreviousFrame": "缩放至上一个画框",
+  "previousPage": "上一页",
+  "nextPage": "下一页"
 }

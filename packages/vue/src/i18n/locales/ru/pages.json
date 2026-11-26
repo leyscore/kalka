@@ -7,5 +7,6 @@
   "goToPage": "Перейти к странице…",
   "recentPage": "Недавняя",
   "currentPage": "Текущая страница",
-  "pageNameLabel": "Название страницы"
+  "pageNameLabel": "Название страницы",
+  "duplicate": "Дублировать"
 }

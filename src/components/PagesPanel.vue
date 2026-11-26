@@ -197,6 +197,14 @@ useGlide(pageList, { items: '[data-slot="page-item"]', hover: true, pillClass: g
                   <span>{{ pageMessages.rename }}</span>
                 </ContextMenuItem>
                 <ContextMenuItem
+                  data-test-id="pages-context-duplicate"
+                  :class="menuCls.item"
+                  @select="actions.duplicate(pg.id)"
+                >
+                  <icon-hugeicons-copy-01 :class="menuCls.icon" />
+                  <span>{{ pageMessages.duplicate }}</span>
+                </ContextMenuItem>
+                <ContextMenuItem
                   data-test-id="pages-context-delete"
                   :class="menuCls.item"
                   :disabled="pages.length <= 1"
