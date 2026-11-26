@@ -35,6 +35,17 @@ export { layerTypeOptions, type LayerType } from './structure/layer-type'
 export type { NodePreview } from './node-preview'
 export { EDITOR_TOOLS, TOOL_SHORTCUTS } from './tool-registry'
 export type { RenameSelectionOptions, RenameSelectionPreview } from './structure/rename'
+export {
+  DEFAULT_FIND_OPTIONS,
+  FIND_LAYER_KINDS,
+  findInPages,
+  findLayerKind,
+  findRanges,
+  replacedText,
+  type FindLayerKind,
+  type FindMatch,
+  type FindOptions
+} from './find'
 export type { EditorToolDef } from './tool-registry'
 export type {
   VariantConflict,

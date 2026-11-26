@@ -268,7 +268,8 @@ export {
   toggleItalicInRange,
   toggleDecorationInRange,
   adjustRunsForInsert,
-  adjustRunsForDelete
+  adjustRunsForDelete,
+  replaceRangeInRuns
 } from './text/style-runs'
 export {
   renderNodesToImage,

@@ -36,6 +36,7 @@ import { createColorSpaceActions } from './color-space'
 import { createComponentSyncScheduler } from './component-sync'
 import { createComponentActions } from './components'
 import { createDesignTokenActions } from './design-tokens'
+import { createFindActions } from './find'
 import { createGraphEventSubscription } from './graph-events'
 import { createGraphReadActions } from './graph-reads'
 import { createGuideActions } from './guides'
@@ -300,6 +301,7 @@ export function createEditor(options?: EditorOptions) {
   )
   const variables = createVariableActions(ctx)
   const sharedStyles = createSharedStyleActions(ctx, nodes)
+  const find = createFindActions(ctx, nodes)
   const designTokens = createDesignTokenActions(ctx, variables, nodes, sharedStyles)
   const vectorize = createVectorizeActions(ctx)
   const icons = createIconActions(ctx)
@@ -457,6 +459,9 @@ export function createEditor(options?: EditorOptions) {
 
     // Shared styles: create, edit, rename, order and delete local styles
     ...sharedStyles,
+
+    // Find and replace
+    ...find,
 
     // Text editing
     ...text,

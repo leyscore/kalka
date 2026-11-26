@@ -241,3 +241,25 @@ function selectionAllHasDecoration(
   }
   return true
 }
+
+/**
+ * The runs after `start`–`end` is replaced by `insertLength` characters. The new characters take
+ * the style of the first one they replace, as a word typed over a selection does.
+ */
+export function replaceRangeInRuns(
+  runs: StyleRun[],
+  start: number,
+  end: number,
+  insertLength: number,
+  textLength: number
+): StyleRun[] {
+  const chars = expandRuns(runs, textLength)
+  // Typed at the very end, the characters carry on the style before them.
+  const style = (start < textLength ? chars[start] : chars[start - 1]) ?? null
+  chars.splice(
+    start,
+    end - start,
+    ...Array.from({ length: insertLength }, () => (style ? { ...style } : null))
+  )
+  return compactRuns(chars)
+}
