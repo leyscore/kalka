@@ -687,7 +687,26 @@ export const panelMessageDefaults = {
   brightness: 'Brightness',
   lightness: 'Lightness',
   chroma: 'Chroma',
-  alpha: 'Alpha'
+  alpha: 'Alpha',
+  instanceChanges: 'Instance changes',
+  resetOverrideText: 'Reset text',
+  resetOverrideTextStyle: 'Reset text style',
+  resetOverrideFill: 'Reset fill',
+  resetOverrideStroke: 'Reset stroke',
+  resetOverrideEffect: 'Reset effects',
+  resetOverrideAppearance: 'Reset opacity and blending',
+  resetOverrideCorner: 'Reset corner radius',
+  resetOverrideSize: 'Reset size',
+  resetOverrideLayout: 'Reset layout',
+  resetOverrideVisibility: 'Reset visibility',
+  resetOverrideName: 'Reset layer names',
+  resetOverrideSwap: 'Reset swapped instances',
+  resetOverrideVariables: 'Reset variables',
+  resetOverrideOther: 'Reset other changes',
+  componentPlayground: 'Playground',
+  componentPlaygroundHint: "Try the component's properties without changing the file.",
+  resetPlayground: 'Reset',
+  componentHiddenFromPublishing: 'Hide when publishing'
 } as const
 
 export const panelMessages = i18n('panels', panelMessageDefaults)

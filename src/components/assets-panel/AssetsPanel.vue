@@ -11,6 +11,7 @@ import {
 } from 'reka-ui'
 import { computed, onMounted, ref, shallowRef, watch } from 'vue'
 
+import { isHiddenFromPublishing, publishingName } from '@kalka/core/library'
 import { cycleSafeParent, type SceneNode } from '@kalka/scene-graph'
 import { createDefaultNode } from '@kalka/scene-graph/node-defaults'
 import { LIBRARY_ASSET_MIME, useI18n } from '@kalka/vue'
@@ -305,6 +306,12 @@ function onDragStart(event: DragEvent, asset: LocalAsset) {
   event.dataTransfer.effectAllowed = 'copy'
 }
 
+/** Figma's Hide when publishing: the name's leading `.` keeps the component out of the library. */
+function toggleHiddenFromPublishing(asset: LocalAsset) {
+  const name = publishingName(asset.node.name, !isHiddenFromPublishing(asset.node))
+  editor.updateNodeWithUndo(asset.id, { name }, 'Hide when publishing')
+}
+
 function focusAsset(asset: LocalAsset) {
   if (asset.libraryId) return
   void editor.focusComponent(asset.id)
@@ -485,6 +492,18 @@ async function insertSelectedAsset() {
                   @select="focusAsset(asset)"
                 >
                   {{ panels.goToMainComponent }}
+                </ContextMenuItem>
+                <ContextMenuItem
+                  v-if="!asset.libraryId"
+                  data-test-id="asset-context-hide-when-publishing"
+                  :class="contextMenu.item"
+                  @select="toggleHiddenFromPublishing(asset)"
+                >
+                  {{ panels.componentHiddenFromPublishing }}
+                  <icon-hugeicons-tick-02
+                    v-if="isHiddenFromPublishing(asset.node)"
+                    class="size-3"
+                  />
                 </ContextMenuItem>
                 <ContextMenuItem
                   data-test-id="asset-context-view-details"

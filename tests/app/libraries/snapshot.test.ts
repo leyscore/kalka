@@ -6,7 +6,10 @@ import {
   diffLibraryManifests,
   ensureLibraryAssetKeys,
   extractLibrarySnapshot,
+  isHiddenFromPublishing,
   MemoryLibraryCatalog,
+  publishableLibraryRoots,
+  publishingName,
   serializeLibraryRevision
 } from '@kalka/core/library'
 import { SceneGraph } from '@kalka/scene-graph'
@@ -148,5 +151,23 @@ describe('component library snapshots', () => {
         previousRevisionId: 'stale'
       })
     ).rejects.toThrow('latest revision has changed')
+  })
+})
+
+describe('hidden from publishing', () => {
+  test('leaves out components named with a leading . or _, but keeps them as dependencies', () => {
+    const { graph, icon, button } = setupLibraryGraph()
+    graph.updateNode(icon.id, { name: publishingName(icon.name, true) })
+    expect(graph.getNode(icon.id)?.name).toBe('.Icon')
+    expect(publishableLibraryRoots(graph).map((node) => node.name)).toEqual(['Button'])
+    const snapshot = extractLibrarySnapshot(graph)
+    expect(snapshot.assetRoots.map((node) => node.name)).toEqual(['Button'])
+    const components = [...snapshot.graph.getAllNodes()].filter((node) => node.type === 'COMPONENT')
+    expect(components.map((node) => node.name).sort()).toEqual(['.Icon', 'Button'])
+
+    graph.updateNode(button.id, { name: '_Button' })
+    expect(isHiddenFromPublishing({ name: '_Button' })).toBe(true)
+    expect(publishingName('_Button', false)).toBe('Button')
+    expect(publishableLibraryRoots(graph)).toEqual([])
   })
 })

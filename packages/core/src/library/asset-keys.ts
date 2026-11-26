@@ -17,13 +17,29 @@ function normalizeAssetKey(name: string): string {
   return normalized || 'component'
 }
 
+const HIDDEN_PREFIX = /^[._]+/
+
+/**
+ * Figma keeps a component or a set out of a published library while its name starts with `.` or
+ * `_`; Hide when publishing adds a `.` and showing it again takes the prefix away.
+ */
+export function isHiddenFromPublishing(node: Pick<SceneNode, 'name'>): boolean {
+  return HIDDEN_PREFIX.test(node.name)
+}
+
+/** The name that hides a component from publishing, or shows it again. */
+export function publishingName(name: string, hidden: boolean): string {
+  const shown = name.replace(HIDDEN_PREFIX, '')
+  return hidden ? `.${shown}` : shown
+}
+
 export function publishableLibraryRoots(
   graph: SceneGraph
 ): Array<SceneNode & { type: 'COMPONENT' | 'COMPONENT_SET' }> {
   return [...graph.getAllNodes()].filter(
     (node): node is SceneNode & { type: 'COMPONENT' | 'COMPONENT_SET' } => {
       if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET') return false
-      if (node.librarySource?.readOnly) return false
+      if (node.librarySource?.readOnly || isHiddenFromPublishing(node)) return false
       const parent = node.parentId ? graph.getNode(node.parentId) : undefined
       return parent?.type !== 'COMPONENT_SET'
     }

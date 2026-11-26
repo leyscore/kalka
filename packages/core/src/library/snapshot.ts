@@ -1,6 +1,7 @@
 import { cloneNodeProps, contentPluginData, SceneGraph } from '@kalka/scene-graph'
 import type { SceneNode } from '@kalka/scene-graph'
 
+import { isHiddenFromPublishing } from './asset-keys'
 import { contentHash } from './hash'
 import { assertLibraryAssetKey } from './identity'
 import type { LibraryAssetDescriptor, PortableLibrarySnapshot } from './types'
@@ -81,6 +82,8 @@ export function extractLibrarySnapshot(
       (node): node is SceneNode => node?.type === 'COMPONENT' || node?.type === 'COMPONENT_SET'
     )
     .filter((node) => node.parentId && source.getNode(node.parentId)?.type !== 'COMPONENT_SET')
+    // A hidden component still reaches the library through the components that use it.
+    .filter((node) => !isHiddenFromPublishing(node))
   const closure = collectNodeClosure(
     source,
     roots.map((node) => node.id)
