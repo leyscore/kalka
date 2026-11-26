@@ -1,3 +1,5 @@
+import type { SceneGraph } from '@kalka/scene-graph'
+
 type ThumbnailPage = {
   id: string
   name: string
@@ -15,4 +17,11 @@ export function findFigThumbnailPageId(pages: readonly ThumbnailPage[]): string 
     normalizedNames.find(({ name }) => name === COVER_PAGE_NAME)?.page.id ??
     normalizedNames.find(({ name }) => name.includes(COVER_PAGE_NAME))?.page.id
   )
+}
+
+/** The layer set as the file's thumbnail and its page, when it is still in the document. */
+export function thumbnailLayer(graph: SceneGraph): { nodeId: string; pageId: string } | null {
+  const node = graph.thumbnailNodeId ? graph.getNode(graph.thumbnailNodeId) : undefined
+  const page = node?.parentId ? graph.getNode(node.parentId) : undefined
+  return node && page?.type === 'CANVAS' ? { nodeId: node.id, pageId: page.id } : null
 }

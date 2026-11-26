@@ -140,6 +140,7 @@ export function useAppMenu() {
     'select-all-with-same': 'selectAllWithSame',
     'collapse-layers': 'collapseLayers',
     'rasterize-selection': 'rasterizeSelection',
+    'set-thumbnail': 'setAsThumbnail',
     language: 'language',
     preferences: 'preferences',
     settings: 'settings',

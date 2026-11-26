@@ -225,6 +225,8 @@ export class SceneGraph {
   /** Deflated kiwi schema bytes from the original .fig file, preserved for roundtrip fidelity. */
   figSchemaDeflated: Uint8Array | null = null
   documentColorSpace: DocumentColorSpace = 'srgb'
+  /** The layer the file's thumbnail shows, Figma's Set as thumbnail; null for the default. */
+  thumbnailNodeId: string | null = null
   interVersion: InterVersion = DEFAULT_INTER_VERSION
   enabledLibraries = new Map<string, EnabledLibraryBinding>()
   readonly emitter = new BufferedSceneEmitter()

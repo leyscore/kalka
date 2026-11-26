@@ -18,6 +18,7 @@ export function captureGraphCheckpoint(graph: SceneGraph) {
     figKiwiVersion: graph.figKiwiVersion,
     figSchemaDeflated: graph.figSchemaDeflated,
     documentColorSpace: graph.documentColorSpace,
+    thumbnailNodeId: graph.thumbnailNodeId,
     interVersion: graph.interVersion
   })
   // Atomic property tools cannot edit assets. Retain existing buffers, not copies of every bitmap.
@@ -67,6 +68,7 @@ export function captureGraphCheckpoint(graph: SceneGraph) {
       [...images].some(([id, bytes]) => graph.images.get(id) !== bytes) ||
       graph.rootId !== snapshot.rootId ||
       graph.documentColorSpace !== snapshot.documentColorSpace ||
+      graph.thumbnailNodeId !== snapshot.thumbnailNodeId ||
       graph.interVersion !== snapshot.interVersion ||
       graph.figKiwiVersion !== snapshot.figKiwiVersion ||
       !isEqual(graph.figSchemaDeflated, snapshot.figSchemaDeflated)
@@ -88,6 +90,7 @@ export function captureGraphCheckpoint(graph: SceneGraph) {
     graph.figKiwiVersion = snapshot.figKiwiVersion
     graph.figSchemaDeflated = structuredClone(snapshot.figSchemaDeflated)
     graph.documentColorSpace = snapshot.documentColorSpace
+    graph.thumbnailNodeId = snapshot.thumbnailNodeId
     graph.interVersion = snapshot.interVersion
     graph.clearAbsPosCache()
     // Notify consumers only after the complete hierarchy and indexes have been restored.

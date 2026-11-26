@@ -39,6 +39,7 @@ interface ArchiveChanges {
 interface SettingsSnapshot {
   colorSpace: DocumentColorSpace
   libraries: Array<[string, EnabledLibraryBinding]>
+  thumbnail: string | null
 }
 
 /** The variable collections and the modes the document shows them in. */
@@ -52,7 +53,8 @@ const changes = new WeakMap<SceneGraph, ArchiveChanges>()
 function settingsSnapshot(graph: SceneGraph): SettingsSnapshot {
   return structuredClone({
     colorSpace: graph.documentColorSpace,
-    libraries: [...graph.enabledLibraries]
+    libraries: [...graph.enabledLibraries],
+    thumbnail: graph.thumbnailNodeId
   })
 }
 

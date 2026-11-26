@@ -56,6 +56,7 @@ import { createDefaultEditorState } from './state'
 import { createStructureActions } from './structure'
 import { createTextActions } from './text'
 import { createPendingTextLayout } from './text/pending-layout'
+import { createThumbnailActions } from './thumbnail'
 import type {
   EditorContext,
   EditorEventName,
@@ -292,6 +293,7 @@ export function createEditor(options?: EditorOptions) {
   const components = createComponentActions(ctx)
   const clipboard = createClipboardActions(ctx)
   const colorSpace = createColorSpaceActions(ctx)
+  const thumbnail = createThumbnailActions(ctx)
   const undoActions = createUndoActions(ctx)
   const text = createTextActions(ctx, { deleteNodes: clipboard.deleteNodes })
   const nodes = createNodeActions(ctx)
@@ -476,6 +478,7 @@ export function createEditor(options?: EditorOptions) {
     ...undoBridge,
 
     setDocumentColorSpace: colorSpace.setDocumentColorSpace,
+    ...thumbnail,
 
     // Clipboard — bridge functions that need selectedNodes
     ...clipboardBridge,

@@ -56,7 +56,9 @@ const SettingsSchema = v.object({
    * The Inter the text uses: `3.19` for a document from Figma, which lays text out with it.
    * Absent means Inter 4, which every folder written before the field used.
    */
-  interVersion: v.optional(v.picklist(['3.19', '4']))
+  interVersion: v.optional(v.picklist(['3.19', '4'])),
+  /** The layer the file's thumbnail shows, set with Set as thumbnail. */
+  thumbnail: v.optional(v.string())
 })
 
 export const ProjectSchema = v.object({

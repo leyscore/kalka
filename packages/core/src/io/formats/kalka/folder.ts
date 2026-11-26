@@ -108,6 +108,8 @@ function settings(graph: SceneGraph): NonNullable<Project['settings']> {
   }
   if (graph.enabledLibraries.size > 0) saved.libraries = encodeValue(graph.enabledLibraries)
   if (graph.interVersion !== DEFAULT_INTER_VERSION) saved.interVersion = graph.interVersion
+  if (graph.thumbnailNodeId && graph.nodes.has(graph.thumbnailNodeId))
+    saved.thumbnail = graph.thumbnailNodeId
   return saved
 }
 
@@ -164,6 +166,7 @@ function applySettings(graph: SceneGraph, saved: Project['settings']): void {
   if (!saved) return
   if (saved.colorSpace) graph.documentColorSpace = saved.colorSpace
   if (saved.interVersion) graph.interVersion = saved.interVersion
+  if (saved.thumbnail) graph.thumbnailNodeId = saved.thumbnail
   for (const [collectionId, modeId] of Object.entries(saved.activeModes ?? {}))
     if (graph.variableCollections.has(collectionId)) graph.activeMode.set(collectionId, modeId)
   const libraries = saved.libraries === undefined ? undefined : decodeValue(saved.libraries)

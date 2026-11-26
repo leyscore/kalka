@@ -1,4 +1,5 @@
 import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { guidToString } from '@kalka/kiwi/fig/guid'
 import { canonicalPluginId, KALKA_PLUGIN_DATA, type SceneGraph } from '@kalka/scene-graph'
 
 import { readNodeChangePluginData } from '../node-change/plugin-data'
@@ -21,6 +22,9 @@ export function applyDocumentMetadata(graph: SceneGraph, document: NodeChange | 
   // A file Kalka wrote says when its text uses Inter 4; Figma's files keep Figma's Inter.
   const interVersion = readNodeChangePluginData(document, KALKA_PLUGIN_DATA.interVersion)
   if (interVersion) graph.interVersion = interVersion
+  // Figma's Set as thumbnail; the layer keeps its record's GUID as its id.
+  const thumbnail = document.thumbnailInfo?.nodeID
+  if (thumbnail) graph.thumbnailNodeId = guidToString(thumbnail)
   const bindings = readNodeChangePluginData(document, KALKA_PLUGIN_DATA.enabledLibraries)
   for (const binding of bindings ?? []) graph.enabledLibraries.set(binding.libraryId, binding)
 }

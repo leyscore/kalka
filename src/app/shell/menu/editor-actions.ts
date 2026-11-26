@@ -6,6 +6,7 @@ import { revertToSaved } from '@/app/document/io/revert'
 import { useEditorStore } from '@/app/editor/active-store'
 import { placeImage } from '@/app/editor/clipboard/place-image'
 import { rasterizeSelection } from '@/app/editor/selection/rasterize'
+import { toggleSelectionThumbnail } from '@/app/editor/selection/thumbnail'
 import {
   setDesignIssuesOnCanvas,
   setEditingPreference,
@@ -127,6 +128,7 @@ export function createSharedEditorMenuActions(
     'toggle-preview': () => store.togglePlay(),
     'collapse-layers': () => store.collapseLayers(),
     'rasterize-selection': () => void rasterizeSelection(store),
+    'set-thumbnail': () => toggleSelectionThumbnail(store),
     'theme-light': () => setTheme('light'),
     'theme-dark': () => setTheme('dark'),
     'theme-auto': () => setTheme('auto'),

@@ -145,6 +145,7 @@ export function serializeSceneGraph(graph: SceneGraph): SerializedSceneGraph {
     figSchemaDeflated: graph.figSchemaDeflated,
     documentColorSpace: graph.documentColorSpace,
     interVersion: graph.interVersion,
+    thumbnailNodeId: graph.thumbnailNodeId,
     enabledLibraries: [...graph.enabledLibraries],
     fonts: [...graph.fonts]
   }
@@ -196,6 +197,7 @@ export function cloneSceneGraphForFigExport(graph: SceneGraph): SceneGraph {
   cloned.figSchemaDeflated = graph.figSchemaDeflated
   cloned.documentColorSpace = graph.documentColorSpace
   cloned.interVersion = graph.interVersion
+  cloned.thumbnailNodeId = graph.thumbnailNodeId
   cloned.enabledLibraries = new Map(graph.enabledLibraries)
   cloned.fonts = new Map(graph.fonts)
 
@@ -227,6 +229,7 @@ export function deserializeSceneGraph(data: SerializedSceneGraph): SceneGraph {
   graph.figSchemaDeflated = data.figSchemaDeflated
   graph.documentColorSpace = data.documentColorSpace
   if (data.interVersion) graph.interVersion = data.interVersion
+  graph.thumbnailNodeId = data.thumbnailNodeId ?? null
   graph.enabledLibraries = data.enabledLibraries ? new Map(data.enabledLibraries) : new Map()
   graph.fonts = data.fonts ? new Map(data.fonts) : new Map()
 

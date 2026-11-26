@@ -698,6 +698,10 @@
         "accelerator": "CmdOrCtrl+E"
       },
       {
+        "id": "set-thumbnail",
+        "label": "Set as Thumbnail"
+      },
+      {
         "type": "separator"
       },
       {

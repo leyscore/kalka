@@ -50,6 +50,7 @@ function archivedGraph(source: SceneGraph, baseline: ArchiveBaseline): SceneGrap
   // The document record compares with the settings the archive saved, as the layers do.
   graph.documentColorSpace = baseline.settings.colorSpace
   graph.enabledLibraries = new Map(structuredClone(baseline.settings.libraries))
+  graph.thumbnailNodeId = baseline.settings.thumbnail
   return graph
 }
 

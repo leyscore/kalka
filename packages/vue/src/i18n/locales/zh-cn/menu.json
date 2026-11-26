@@ -119,6 +119,7 @@
   "decreaseLetterSpacing": "减小字间距",
   "collapseLayers": "折叠图层",
   "rasterizeSelection": "栅格化所选内容",
+  "setAsThumbnail": "设为缩略图",
   "rotate": "旋转",
   "zoomTo50": "缩放至 50%",
   "zoomTo200": "缩放至 200%",

@@ -52,3 +52,14 @@ export function assignOwnLayerGuids(
     assignedGuidValues.add(`${guid.sessionID}:${guid.localID}`)
   }
 }
+
+/**
+ * The GUID a layer's record is written under: the one assigned for this write, or the record it
+ * was opened from. Null for a layer the write has no record for.
+ */
+export function writtenLayerGuid(
+  node: SceneNode,
+  nodeIdToGuid: ReadonlyMap<string, GUID>
+): GUID | null {
+  return nodeIdToGuid.get(node.id) ?? (node.source.id ? parseGuidOrNull(node.source.id) : null)
+}

@@ -15,4 +15,6 @@ export interface PortableSceneGraphData {
   activeMode: Array<[string, string]>
   documentColorSpace: DocumentColorSpace
   interVersion?: InterVersion
+  /** The layer set as the file's thumbnail. */
+  thumbnailNodeId?: string | null
 }

@@ -431,6 +431,7 @@ export const APP_MENU_SCHEMA = [
         command: 'selection.outlineStroke'
       },
       { id: 'rasterize-selection', label: 'Rasterize Selection', shortcut: 'MOD+E' },
+      { id: 'set-thumbnail', label: 'Set as Thumbnail' },
       { type: 'separator' },
       {
         id: 'selection.createComponent',

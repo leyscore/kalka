@@ -31,8 +31,13 @@ import type { SkiaRenderer } from '#core/canvas'
 import { CANVAS_BG_COLOR, IS_BROWSER, IS_TAURI } from '#core/constants'
 import { getPageColor } from '#core/figma-api/page-backgrounds'
 import { applyDocumentPluginData } from '#core/io/formats/fig/document-metadata'
-import { assignOwnLayerGuids, layerSourceOwners, ownGuid } from '#core/io/formats/fig/layer-guids'
-import { findFigThumbnailPageId } from '#core/io/formats/fig/thumbnail-page'
+import {
+  assignOwnLayerGuids,
+  layerSourceOwners,
+  ownGuid,
+  writtenLayerGuid
+} from '#core/io/formats/fig/layer-guids'
+import { findFigThumbnailPageId, thumbnailLayer } from '#core/io/formats/fig/thumbnail-page'
 import { renderThumbnail, thumbnailFrame, type ThumbnailFrame } from '#core/io/formats/raster'
 import type { NodeRasterizer } from '#core/io/types'
 import {
@@ -89,7 +94,8 @@ async function rasterizeFigThumbnail(
   graph: SceneGraph,
   pageId: string,
   frame: ThumbnailFrame,
-  rasterize: NodeRasterizer
+  rasterize: NodeRasterizer,
+  nodeIds: readonly string[] | undefined
 ): Promise<Uint8Array | null> {
   const page = graph.getNode(pageId)
   if (!page) return null
@@ -97,7 +103,7 @@ async function rasterizeFigThumbnail(
     return await rasterize({
       graph,
       pageId,
-      nodeIds: page.childIds,
+      nodeIds: nodeIds ? [...nodeIds] : page.childIds,
       scale: frame.scale,
       format: 'PNG',
       background: { ...getPageColor(page), a: 1 }
@@ -132,12 +138,17 @@ async function renderFigThumbnailPNG(
   graph: SceneGraph,
   pageId: string,
   frame: ThumbnailFrame,
-  { ck, renderer, rasterize, renderHeadless = false }: FigThumbnailSources
+  { ck, renderer, rasterize, renderHeadless = false }: FigThumbnailSources,
+  nodeIds: readonly string[] | undefined
 ): Promise<Uint8Array | null> {
-  const drawn = rasterize ? await rasterizeFigThumbnail(graph, pageId, frame, rasterize) : null
+  const drawn = rasterize
+    ? await rasterizeFigThumbnail(graph, pageId, frame, rasterize, nodeIds)
+    : null
   if (drawn) return drawn
   if (ck && renderer)
-    return renderThumbnail(ck, renderer, graph, pageId, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT)
+    return renderThumbnail(ck, renderer, graph, pageId, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, nodeIds)
+  // The headless renderer draws the whole page; a layer set as thumbnail is drawn with the rest.
+  if (nodeIds) return null
   if (!renderHeadless || IS_BROWSER || IS_TAURI) return null
   const { headlessRenderThumbnail } = await import('#core/io/formats/raster')
   return headlessRenderThumbnail(graph, pageId, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT)
@@ -146,11 +157,14 @@ async function renderFigThumbnailPNG(
 async function renderFigThumbnail(
   graph: SceneGraph,
   pageId: string | undefined,
-  sources: FigThumbnailSources
+  sources: FigThumbnailSources,
+  nodeIds?: readonly string[]
 ): Promise<FigThumbnail> {
-  const frame = pageId ? thumbnailFrame(graph, pageId, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT) : null
+  const frame = pageId
+    ? thumbnailFrame(graph, pageId, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, nodeIds)
+    : null
   if (!pageId || !frame) return placeholderThumbnail()
-  const png = await renderFigThumbnailPNG(graph, pageId, frame, sources)
+  const png = await renderFigThumbnailPNG(graph, pageId, frame, sources, nodeIds)
   if (!png) return placeholderThumbnail()
   const { minX, minY, maxX, maxY } = frame.bounds
   return {
@@ -489,6 +503,10 @@ export async function prepareFigExport(
   )
   const pluginDataOverrides = renamedBehaviourPluginData(graph, propertyIdToGuid)
   assignOwnLayerGuids(graph, sourceOwners, nodeIdToGuid, assignedGuidValues)
+  // Figma's Set as thumbnail, on the document record.
+  const thumbnailNode = graph.thumbnailNodeId ? graph.getNode(graph.thumbnailNodeId) : undefined
+  const thumbnailGuid = thumbnailNode && writtenLayerGuid(thumbnailNode, nodeIdToGuid)
+  if (thumbnailGuid) documentNc.thumbnailInfo = { nodeID: thumbnailGuid }
 
   return {
     graph,
@@ -547,13 +565,21 @@ export async function figFileExtras(
   imageNames: ReadonlyMap<string, string>,
   options: FigFileExtrasOptions
 ): Promise<FigFileExtras> {
-  const thumbnailPageId = options.pageId ?? findFigThumbnailPageId(graph.getPages(true))
-  const drawn = await renderFigThumbnail(graph, thumbnailPageId, {
-    ck: options.ck,
-    renderer: options.renderer,
-    rasterize: options.rasterize,
-    renderHeadless: options.renderHeadlessThumbnail
-  })
+  // The layer set as the file's thumbnail, else the cover page.
+  const chosen = options.pageId ? null : thumbnailLayer(graph)
+  const thumbnailPageId =
+    options.pageId ?? chosen?.pageId ?? findFigThumbnailPageId(graph.getPages(true))
+  const drawn = await renderFigThumbnail(
+    graph,
+    thumbnailPageId,
+    {
+      ck: options.ck,
+      renderer: options.renderer,
+      rasterize: options.rasterize,
+      renderHeadless: options.renderHeadlessThumbnail
+    },
+    chosen ? [chosen.nodeId] : undefined
+  )
   const metaJSON = figArchiveMetaJSON({
     fileName: options.documentName || UNTITLED_FILE_NAME,
     backgroundColor: getPageColor(thumbnailPageId ? graph.getNode(thumbnailPageId) : undefined),

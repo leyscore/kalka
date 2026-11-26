@@ -316,17 +316,22 @@ export interface ThumbnailFrame {
   height: number
 }
 
-/** The page region a thumbnail fitted into `width` by `height` pixels shows, and its size. */
+/**
+ * The page region a thumbnail fitted into `width` by `height` pixels shows, and its size: the
+ * page's layers, or only `nodeIds` of them, such as the layer set as the file's thumbnail.
+ */
 export function thumbnailFrame(
   graph: SceneGraph,
   pageId: string,
   width: number,
-  height: number
+  height: number,
+  nodeIds?: readonly string[]
 ): ThumbnailFrame | null {
   const page = graph.getNode(pageId)
-  if (!page || page.childIds.length === 0) return null
+  const shown = nodeIds ?? page?.childIds ?? []
+  if (!page || shown.length === 0) return null
 
-  const bounds = computeContentBounds(graph, page.childIds)
+  const bounds = computeContentBounds(graph, [...shown])
   if (!bounds) return null
 
   const contentW = bounds.maxX - bounds.minX
@@ -348,9 +353,10 @@ export function renderThumbnail(
   graph: SceneGraph,
   pageId: string,
   width: number,
-  height: number
+  height: number,
+  nodeIds?: readonly string[]
 ): Uint8Array | null {
-  const frame = thumbnailFrame(graph, pageId, width, height)
+  const frame = thumbnailFrame(graph, pageId, width, height, nodeIds)
   if (!frame) return null
   const { bounds, scale, width: pixelW, height: pixelH } = frame
   // The page's own background, which the editor's page colour matches only while it is open.
