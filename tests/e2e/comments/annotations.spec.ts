@@ -155,3 +155,41 @@ test('Alt-hover a layer, then click to keep the distance drawn', async ({ page }
   })
   expect(count).toBe(3)
 })
+
+test('an annotation takes a category of the file’s own, made in Manage categories', async ({
+  page
+}) => {
+  await page.goto('/?test')
+  await new CanvasHelper(page).waitForInit()
+  const frame = await writeHTML(
+    page,
+    '<div style="width: 200px; height: 120px; padding: 16px; background: #F4EFE6"><div style="width: 80px; height: 32px; background: #3F2D10"></div></div>'
+  )
+  const [button] = await childIds(page, frame)
+  await select(page, [button])
+  await page.keyboard.press('Shift+T')
+  const handoff = page.getByTestId('handoff-section')
+  await handoff.getByTestId('annotation-label').fill('Link the terms')
+  await handoff.getByTestId('annotation-label').press('Enter')
+
+  await handoff.getByTestId('annotation-category').click()
+  await page.getByRole('option', { name: 'Manage categories…' }).click()
+  const dialog = page.getByTestId('annotation-categories')
+  await dialog.getByTestId('annotation-category-new').fill('Legal')
+  await dialog.getByTestId('annotation-category-add').click()
+  await expect(dialog.locator('[data-slot="annotation-category"]')).toHaveCount(1)
+  await dialog.getByTestId('annotation-category-color').click()
+  await page.getByRole('option', { name: 'Teal' }).click()
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
+
+  // The new category is the annotation's, drawn in its colour on the canvas.
+  await expect(handoff.getByTestId('annotation-category')).toContainText('Legal')
+  const callout = page.locator('[data-slot="annotation-callout"]')
+  await expect(callout).toHaveCSS('border-left-color', 'rgb(18, 165, 148)')
+
+  // Undo takes the colour back, as any edit of the file.
+  await page.getByTestId('canvas-element').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(callout).toHaveCSS('border-left-color', 'rgb(229, 168, 0)')
+})

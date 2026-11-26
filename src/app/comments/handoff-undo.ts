@@ -1,5 +1,6 @@
 import {
   isHandoffThread,
+  type AnnotationCategoryDefinition,
   type CommentThread,
   type FrameReview,
   type SceneGraph
@@ -17,13 +18,15 @@ import type { EditorStore } from '@/app/editor/active-store'
 interface HandoffState {
   threads: CommentThread[]
   reviews: FrameReview[]
+  categories: AnnotationCategoryDefinition[]
 }
 
 function readHandoff(graph: SceneGraph): HandoffState {
   const root = graph.getNode(graph.rootId)
   return {
     threads: structuredClone((root?.comments ?? []).filter(isHandoffThread)),
-    reviews: structuredClone(root?.frameReviews ?? [])
+    reviews: structuredClone(root?.frameReviews ?? []),
+    categories: structuredClone(root?.annotationCategories ?? [])
   }
 }
 
@@ -33,11 +36,14 @@ function writeHandoff(graph: SceneGraph, state: HandoffState): void {
   )
   graph.updateNode(graph.rootId, {
     comments: [...comments, ...structuredClone(state.threads)],
-    frameReviews: structuredClone(state.reviews)
+    frameReviews: structuredClone(state.reviews),
+    annotationCategories: structuredClone(state.categories)
   })
 }
 
-/** Runs an edit of annotations, measurements or dev status as one undoable step. */
+/**
+ * Runs an edit of annotations, their categories, measurements or dev status as one undoable step.
+ */
 export function editHandoff<T>(store: EditorStore, label: string, edit: () => T): T {
   const before = readHandoff(store.graph)
   const result = edit()

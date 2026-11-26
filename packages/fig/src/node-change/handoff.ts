@@ -1,15 +1,11 @@
-import * as v from 'valibot'
-
 import type { NodeChange } from '@kalka/kiwi/fig/codec'
 import { guidToString } from '@kalka/kiwi/fig/guid'
 import {
-  ANNOTATION_CATEGORIES,
   ANNOTATION_PROPERTIES,
   documentComments,
   documentFrameReviews,
   isDevResourceURL,
   isHandoffThread,
-  type AnnotationCategory,
   type AnnotationProperty,
   type CommentAuthor,
   type CommentThread,
@@ -22,6 +18,7 @@ import {
 import type { GUID } from '@kalka/scene-graph/primitives'
 
 import type { InstanceOccurrence } from '../instance-overrides/occurrence/types'
+import { annotationCategoryGuid } from './handoff-categories'
 
 /**
  * Figma's handoff records, both ways: annotations and measurements on layers, the dev status of
@@ -89,36 +86,6 @@ const SIDE_NAMES: Record<string, MeasurementSide> = {
   RIGHT: 'right'
 }
 
-/**
- * The document's annotation categories by GUID: Figma's presets, by name. A custom category has
- * a label and colour of its own, which Kalka does not keep, so its annotations come uncategorized.
- */
-export function annotationCategoriesOf(
-  document: NodeChange | undefined
-): Map<string, AnnotationCategory> {
-  const categories = new Map<string, AnnotationCategory>()
-  const parsed = v.safeParse(CategoriesSchema, document?.annotationCategories)
-  for (const item of parsed.success ? (parsed.output?.items ?? []) : []) {
-    const preset = item.preset?.toLowerCase()
-    const category = ANNOTATION_CATEGORIES.find((name) => name === preset)
-    if (category && item.id) categories.set(guidToString(item.id), category)
-  }
-  return categories
-}
-
-const CategoriesSchema = v.optional(
-  v.object({
-    items: v.optional(
-      v.array(
-        v.object({
-          id: v.optional(v.object({ sessionID: v.number(), localID: v.number() })),
-          preset: v.optional(v.string())
-        })
-      )
-    )
-  })
-)
-
 /** A layer's dev resources from its record: web links only, named after them when unnamed. */
 export function importDevResources(nc: NodeChange): { devResources?: DevResource[] } {
   const links = nc.developerRelatedLinks ?? []
@@ -145,7 +112,7 @@ type ThreadMaker = (kind: string, index: number, text: string) => CommentThread
 /** The record's annotations that say something: a note or a pinned property. */
 function importedAnnotations(
   nc: NodeChange,
-  categories: ReadonlyMap<string, AnnotationCategory>,
+  categories: ReadonlyMap<string, string>,
   thread: ThreadMaker
 ): CommentThread[] {
   return (nc.annotations ?? []).flatMap((annotation, index) => {
@@ -202,7 +169,7 @@ export function importHandoffRecord(
   graph: SceneGraph,
   nodeId: string,
   nc: NodeChange,
-  categories: ReadonlyMap<string, AnnotationCategory>,
+  categories: ReadonlyMap<string, string>,
   now = 0
 ): void {
   const node = graph.getNode(nodeId)
@@ -236,7 +203,7 @@ export function importHandoffRecords(
   graph: SceneGraph,
   pages: readonly InstanceOccurrence[],
   sources: ReadonlyMap<string, string>,
-  categories: ReadonlyMap<string, AnnotationCategory>
+  categories: ReadonlyMap<string, string>
 ): void {
   const visit = (occurrence: InstanceOccurrence): void => {
     const { properties } = occurrence
@@ -267,7 +234,10 @@ export function exportHandoffFields(
             label: thread.messages[0]?.text ?? '',
             properties: thread.annotation.properties.map((property) => ({
               type: propertyToFigma(property)
-            }))
+            })),
+            ...(thread.annotation.category
+              ? { categoryId: annotationCategoryGuid(graph, thread.annotation.category) }
+              : {})
           }
         ]
       : []

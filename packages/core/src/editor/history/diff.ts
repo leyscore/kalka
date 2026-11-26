@@ -13,7 +13,11 @@ export interface FieldChanges<T> {
  * Document fields changed outside the undo history: comment threads and frame reviews, which
  * an edit recorded around them must neither take back nor bring back (`src/AGENTS.md`).
  */
-export const OUTSIDE_HISTORY_FIELDS: ReadonlySet<string> = new Set(['comments', 'frameReviews'])
+export const OUTSIDE_HISTORY_FIELDS: ReadonlySet<string> = new Set([
+  'comments',
+  'frameReviews',
+  'annotationCategories'
+])
 
 /** Compares two states of one record field by field; `null` when nothing differs. */
 export function diffFields<T extends object>(

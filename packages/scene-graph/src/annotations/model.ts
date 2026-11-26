@@ -17,6 +17,45 @@ export const ANNOTATION_CATEGORIES = [
 ] as const
 export type AnnotationCategory = (typeof ANNOTATION_CATEGORIES)[number]
 
+/** The colours a category of the document's own can take, as Figma's category editor offers. */
+export const ANNOTATION_COLORS = [
+  'yellow',
+  'orange',
+  'red',
+  'pink',
+  'violet',
+  'blue',
+  'teal',
+  'green'
+] as const
+export type AnnotationColor = (typeof ANNOTATION_COLORS)[number]
+
+/**
+ * A category the document defines next to Figma's presets, as Figma's Manage categories adds
+ * one: a label and a colour. Annotations name it by its ID.
+ */
+export interface AnnotationCategoryDefinition {
+  id: string
+  label: string
+  color: AnnotationColor
+}
+
+/** An annotation's category: one of Figma's presets by name, or one of the document's by ID. */
+export type AnnotationCategoryRef = AnnotationCategory | (string & {})
+
+export function isPresetCategory(category: string): category is AnnotationCategory {
+  return ANNOTATION_CATEGORIES.some((name) => name === category)
+}
+
+export const annotationCategoryDefinitionSchema = v.object({
+  id: v.pipe(v.string(), v.minLength(1)),
+  label: v.string(),
+  color: v.picklist(ANNOTATION_COLORS)
+})
+
+export const annotationCategoriesSchema: v.GenericSchema<unknown, AnnotationCategoryDefinition[]> =
+  v.array(annotationCategoryDefinitionSchema)
+
 /**
  * Properties an annotation can pin, with the Plugin API's names, in the order of Figma's
  * `AnnotationPropertyType`, which `.fig` files store by index.
@@ -99,7 +138,7 @@ export const ANNOTATION_PROPERTY_CSS: Record<AnnotationProperty, string> = {
 }
 
 export interface CommentAnnotation {
-  category?: AnnotationCategory
+  category?: AnnotationCategoryRef
   /** Properties of the layer shown with the note, with their current values. */
   properties: AnnotationProperty[]
 }
@@ -119,7 +158,7 @@ export interface CommentMeasurement {
 }
 
 export const annotationSchema = v.object({
-  category: v.optional(v.picklist(ANNOTATION_CATEGORIES)),
+  category: v.optional(v.pipe(v.string(), v.minLength(1))),
   properties: v.pipe(
     v.array(v.string()),
     v.transform((names) => ANNOTATION_PROPERTIES.filter((name) => names.includes(name)))

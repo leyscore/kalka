@@ -311,6 +311,7 @@ export function cloneNodeProps(
     cssClasses: structuredClone(src.cssClasses),
     comments: structuredClone(src.comments),
     frameReviews: structuredClone(src.frameReviews),
+    annotationCategories: structuredClone(src.annotationCategories),
     devResources: src.devResources.map((resource) => ({ ...resource })),
     ...copyPrototypeFields(src)
   }

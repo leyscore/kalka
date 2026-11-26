@@ -7,7 +7,12 @@ export * from './derived-text/glyphs'
 export { parseGuidOrNull } from './export/context'
 export * from './export/node'
 export * from './export/runtime'
-export { annotationCategoriesOf, importHandoffRecord } from './handoff'
+export { importHandoffRecord } from './handoff'
+export {
+  annotationCategoriesOf,
+  customAnnotationCategoriesOf,
+  exportAnnotationCategories
+} from './handoff-categories'
 export { placeSlotContent } from './export/slots'
 export * from './font/features'
 export * from './font/style'

@@ -4,12 +4,14 @@ import * as v from 'valibot'
 
 import {
   addAnnotation,
+  addAnnotationCategory,
   addMeasurement,
   annotationPropertiesFor,
   annotationPropertyValue,
   canHaveDevStatus,
   commentThreadsSchema,
   devStatusTargetsOf,
+  documentAnnotationCategories,
   documentComments,
   documentFrameReviews,
   inheritedDevResources,
@@ -18,10 +20,12 @@ import {
   layerHandoffThreads,
   markChangedFramesForReview,
   measurementSpan,
+  removeAnnotationCategory,
   SceneGraph,
   setCommentResolved,
   setFrameDevStatus,
-  updateAnnotation
+  updateAnnotation,
+  updateAnnotationCategory
 } from '@kalka/scene-graph'
 
 const person = { kind: 'person' as const, name: 'Ada' }
@@ -194,5 +198,32 @@ describe('dev resources', () => {
     const instance = graph.createInstance(main.id, first.id)
     if (!instance) throw new Error('no instance')
     expect(inheritedDevResources(graph, instance).map((entry) => entry.from.id)).toEqual([main.id])
+  })
+})
+
+describe('annotation categories of the document', () => {
+  test('are added with a free colour, edited, and removed from the annotations using them', () => {
+    const graph = new SceneGraph()
+    const [first] = graph.getPages()
+    const node = graph.createNode('RECTANGLE', first.id, { width: 10, height: 10 })
+    const legal = addAnnotationCategory(graph, ' Legal ')
+    const review = addAnnotationCategory(graph, 'Review')
+    expect([legal.label, legal.color, review.color]).toEqual(['Legal', 'yellow', 'orange'])
+    updateAnnotationCategory(graph, review.id, { label: 'Copy review', color: 'blue' })
+    expect(documentAnnotationCategories(graph)[1]).toEqual({
+      id: review.id,
+      label: 'Copy review',
+      color: 'blue'
+    })
+
+    const thread = addAnnotation(graph, node.id, person, { label: 'Terms', category: legal.id })
+    // A saved file reads the category back as it is.
+    expect(v.parse(commentThreadsSchema, documentComments(graph))[0]?.annotation?.category).toBe(
+      legal.id
+    )
+    removeAnnotationCategory(graph, legal.id)
+    expect(documentAnnotationCategories(graph).map((category) => category.id)).toEqual([review.id])
+    const kept = documentComments(graph).find((candidate) => candidate.id === thread?.id)
+    expect(kept?.annotation).toEqual({ properties: [] })
   })
 })

@@ -23,6 +23,7 @@ de:collaboration.planTeam
 de:collaboration.serverRoleAdmin
 de:collaboration.serverTab
 de:collaboration.teamGroup
+de:comments.colorOrange
 de:comments.resourceName
 de:comments.resourceURL
 de:common.ok

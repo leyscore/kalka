@@ -2,6 +2,7 @@ import type { NodeChange } from '@kalka/kiwi/fig/codec'
 import { guidToString } from '@kalka/kiwi/fig/guid'
 import { canonicalPluginId, KALKA_PLUGIN_DATA, type SceneGraph } from '@kalka/scene-graph'
 
+import { customAnnotationCategoriesOf } from '../node-change/handoff-categories'
 import { readNodeChangePluginData } from '../node-change/plugin-data'
 
 export function applyDocumentMetadata(graph: SceneGraph, document: NodeChange | undefined): void {
@@ -19,6 +20,10 @@ export function applyDocumentMetadata(graph: SceneGraph, document: NodeChange | 
   root.cssClasses = readNodeChangePluginData(document, KALKA_PLUGIN_DATA.cssClasses) ?? []
   root.comments = readNodeChangePluginData(document, KALKA_PLUGIN_DATA.comments) ?? []
   root.frameReviews = readNodeChangePluginData(document, KALKA_PLUGIN_DATA.frameReviews) ?? []
+  // A file Figma wrote lists its own categories next to the presets on the record itself.
+  root.annotationCategories =
+    readNodeChangePluginData(document, KALKA_PLUGIN_DATA.annotationCategories) ??
+    customAnnotationCategoriesOf(document)
   // A file Kalka wrote says when its text uses Inter 4; Figma's files keep Figma's Inter.
   const interVersion = readNodeChangePluginData(document, KALKA_PLUGIN_DATA.interVersion)
   if (interVersion) graph.interVersion = interVersion

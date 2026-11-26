@@ -12,6 +12,7 @@ import {
 import type { Vector } from '@kalka/scene-graph/primitives'
 import { useCommentsMessages } from '@kalka/vue'
 
+import { annotationCategoryStyle } from '@/app/comments/annotation-categories'
 import { annotationsVisible, focusedAnnotation } from '@/app/comments/annotations'
 import { useComments } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
@@ -168,6 +169,7 @@ function openAnnotation(callout: Callout) {
         class="pointer-events-auto flex max-w-56 flex-col gap-0.5 rounded-md border-l-4 border-l-muted bg-panel px-2 py-1 text-left text-[11px] text-surface shadow-md hover:ring-1 hover:ring-accent data-[category=accessibility]:border-l-component data-[category=behavior]:border-l-accent data-[category=content]:border-l-success data-[category=development]:border-l-warning-action data-[category=interaction]:border-l-error"
         data-slot="annotation-callout"
         :data-category="callout.thread.annotation?.category"
+        :style="annotationCategoryStyle(store.graph, callout.thread.annotation?.category)"
         :aria-label="messages.annotationPin({ name: callout.layer, text: callout.label })"
         @pointerdown.stop
         @click="openAnnotation(callout)"

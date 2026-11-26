@@ -5,6 +5,7 @@ import {
   ANNOTATION_PROPERTIES,
   addAnnotation,
   canHaveDevStatus,
+  documentAnnotationCategories,
   frameReview,
   handoffLabel,
   inheritedDevResources,
@@ -26,7 +27,8 @@ import {
 /**
  * Handoff through the Plugin API: a layer's `annotations`, a frame's or a section's `devStatus`,
  * and its dev resources (`getDevResourcesAsync` and the calls that add, edit and delete one), in
- * Figma's shapes. An annotation's `categoryId` is the name of one of Kalka's categories.
+ * Figma's shapes. An annotation's `categoryId` names a preset (`accessibility`...) or the ID of
+ * one of the document's own categories.
  */
 
 /** Who a script's annotations and statuses are from. */
@@ -36,7 +38,7 @@ const annotationSchema = v.object({
   label: v.optional(v.string()),
   labelMarkdown: v.optional(v.string()),
   properties: v.optional(v.array(v.object({ type: v.picklist(ANNOTATION_PROPERTIES) }))),
-  categoryId: v.optional(v.picklist(ANNOTATION_CATEGORIES))
+  categoryId: v.optional(v.string())
 })
 
 const devStatusSchema = v.nullable(
@@ -58,6 +60,14 @@ function setAnnotations(scene: SceneGraph, nodeId: string, value: unknown): void
   const kept = (scene.getNode(scene.rootId)?.comments ?? []).filter(
     (thread) => !(thread.anchor.nodeId === nodeId && thread.annotation)
   )
+  const known = new Set<string>([
+    ...ANNOTATION_CATEGORIES,
+    ...documentAnnotationCategories(scene).map((category) => category.id)
+  ])
+  const unknown = parsed.output.find(
+    (annotation) => annotation.categoryId !== undefined && !known.has(annotation.categoryId)
+  )
+  if (unknown) throw new Error(`Unknown annotation category: ${unknown.categoryId}`)
   scene.updateNode(scene.rootId, { comments: kept })
   for (const annotation of parsed.output)
     addAnnotation(scene, nodeId, SCRIPT_AUTHOR, {

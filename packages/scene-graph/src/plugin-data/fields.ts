@@ -1,5 +1,6 @@
 import * as v from 'valibot'
 
+import { annotationCategoriesSchema } from '../annotations/model'
 import { behaviourSchema } from '../behaviours/schema'
 import { cssClassesSchema } from '../class-styles'
 import type { OkHCLPayload } from '../color/okhcl'
@@ -192,6 +193,12 @@ export const KALKA_PLUGIN_DATA = {
   ),
   /** Which of the document's frames are ready for development, on its root. */
   frameReviews: jsonPluginDataField('frameReviews', 'bookkeeping', frameReviewsSchema),
+  /** The document's own annotation categories, on its root. */
+  annotationCategories: jsonPluginDataField(
+    'annotationCategories',
+    'bookkeeping',
+    annotationCategoriesSchema
+  ),
   /** The node-local rect a TEXT_PATH layout maps onto, which Kiwi has no field for. */
   textPathBox: jsonPluginDataField('textPathBox', 'format', textPathBox),
   /** The library asset a node was inserted from. */

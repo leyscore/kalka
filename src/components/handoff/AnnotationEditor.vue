@@ -6,21 +6,26 @@ import {
   ANNOTATION_PROPERTY_CSS,
   annotationPropertiesFor,
   annotationPropertyValue,
+  documentAnnotationCategories,
   handoffLabel,
   updateAnnotation,
   type AnnotationCategory,
+  type AnnotationCategoryRef,
   type AnnotationProperty,
   type CommentThread,
   type SceneNode
 } from '@kalka/scene-graph'
 import { useCommentsMessages } from '@kalka/vue'
 
+import { annotationCategoryStyle } from '@/app/comments/annotation-categories'
 import { focusedAnnotation } from '@/app/comments/annotations'
 import { editHandoff } from '@/app/comments/handoff-undo'
 import type { CommentsController } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
+
+import AnnotationCategoriesDialog from './AnnotationCategoriesDialog.vue'
 
 /**
  * One annotation of the selected layer: its note, its category, and the layer properties it
@@ -60,14 +65,34 @@ const CATEGORY_LABEL: Record<AnnotationCategory | 'none', () => string> = {
   interaction: () => messages.value.categoryInteraction
 }
 
-const categoryOptions = computed(() =>
-  (['none', ...ANNOTATION_CATEGORIES] as const).map((value) => ({
-    value,
-    label: CATEGORY_LABEL[value]()
-  }))
-)
+/** The option that opens Manage categories instead of choosing one. */
+const MANAGE = 'manage'
+const managing = ref(false)
 
-function setCategory(value: AnnotationCategory | 'none') {
+const categoryOptions = computed(() => {
+  void store.state.sceneVersion
+  return [
+    ...(['none', ...ANNOTATION_CATEGORIES] as const).map(
+      (value): { value: string; label: string } => ({ value, label: CATEGORY_LABEL[value]() })
+    ),
+    ...documentAnnotationCategories(store.graph).map((category) => ({
+      value: category.id,
+      label: category.label || messages.value.categoryUntitled
+    })),
+    { value: MANAGE, label: messages.value.manageCategories }
+  ]
+})
+
+const categoryStyle = computed(() => {
+  void store.state.sceneVersion
+  return annotationCategoryStyle(store.graph, thread.annotation?.category)
+})
+
+function setCategory(value: AnnotationCategoryRef) {
+  if (value === MANAGE) {
+    managing.value = true
+    return
+  }
   editHandoff(store, 'Edit annotation', () =>
     updateAnnotation(store.graph, thread.id, { category: value === 'none' ? null : value })
   )
@@ -125,6 +150,7 @@ watch(focusedAnnotation, async (id) => {
     class="flex flex-col gap-1.5 rounded-lg border border-border p-2"
     data-slot="annotation-editor"
     :data-category="thread.annotation?.category"
+    :style="categoryStyle ? { borderLeftWidth: '4px', ...categoryStyle } : undefined"
   >
     <div class="flex items-center gap-1">
       <AppSelect
@@ -138,6 +164,7 @@ watch(focusedAnnotation, async (id) => {
       <IconButton :label="messages.deleteAnnotation" @click="comments.remove(thread.id)">
         <icon-hugeicons-delete-02 />
       </IconButton>
+      <AnnotationCategoriesDialog v-model:open="managing" @added="setCategory" />
     </div>
     <textarea
       ref="field"

@@ -4,13 +4,14 @@ import type { Rect, Vector } from '../primitives'
 import { randomHex } from '../random'
 import {
   ANNOTATION_PROPERTIES,
-  type AnnotationCategory,
+  type AnnotationCategoryRef,
   type AnnotationProperty,
   type CommentAnnotation,
   type CommentMeasurement,
   type MeasurementSide
 } from './model'
 
+export * from './categories'
 export * from './model'
 export * from './values'
 
@@ -59,7 +60,11 @@ export function addAnnotation(
   graph: SceneGraph,
   nodeId: string,
   from: CommentAuthor,
-  annotation: { label?: string; category?: AnnotationCategory; properties?: AnnotationProperty[] },
+  annotation: {
+    label?: string
+    category?: AnnotationCategoryRef
+    properties?: AnnotationProperty[]
+  },
   now = Date.now()
 ): CommentThread | null {
   const thread = newThread(graph, nodeId, from, annotation.label?.trim() ?? '', now)
@@ -92,7 +97,7 @@ export function updateAnnotation(
   id: string,
   change: {
     label?: string
-    category?: AnnotationCategory | null
+    category?: AnnotationCategoryRef | null
     properties?: AnnotationProperty[]
   }
 ): CommentThread | undefined {

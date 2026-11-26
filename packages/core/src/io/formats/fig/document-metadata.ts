@@ -1,4 +1,4 @@
-import { mergePluginData } from '@kalka/fig/node-change'
+import { exportAnnotationCategories, mergePluginData } from '@kalka/fig/node-change'
 import type { KiwiNodeChange } from '@kalka/fig/node-change'
 import {
   FIGMA_INTER_VERSION,
@@ -9,13 +9,22 @@ import {
   type SceneGraph
 } from '@kalka/scene-graph'
 
-const { comments, cssClasses, documentId, enabledLibraries, frameReviews, interVersion } =
-  KALKA_PLUGIN_DATA
+const {
+  annotationCategories,
+  comments,
+  cssClasses,
+  documentId,
+  enabledLibraries,
+  frameReviews,
+  interVersion
+} = KALKA_PLUGIN_DATA
 
 /**
- * The document record's plugin data: its CSS classes, comments and frame reviews, the libraries it
+ * The document record's plugin data: its CSS classes, comments, frame reviews and annotation
+ * categories, the libraries it
  * has enabled, Inter 4 when its text uses it rather than Figma's Inter 3.19, and the root's id,
- * which a reopen restores since Figma saves the record itself as `0:0`.
+ * which a reopen restores since Figma saves the record itself as `0:0`. The annotation categories
+ * also go on the record in Figma's own field, so Figma shows them.
  */
 export function applyDocumentPluginData(
   documentNodeChange: KiwiNodeChange,
@@ -40,6 +49,12 @@ export function applyDocumentPluginData(
     frameReviews,
     reviews.length > 0 ? reviews : undefined
   )
+  const categories = root?.annotationCategories ?? []
+  rootPluginData = withPluginData(
+    rootPluginData,
+    annotationCategories,
+    categories.length > 0 ? categories : undefined
+  )
   rootPluginData = withPluginData(
     rootPluginData,
     interVersion,
@@ -55,4 +70,5 @@ export function applyDocumentPluginData(
   documentNodeChange.pluginData = mergePluginData(
     withPluginData(withLibraries, documentId, graph.rootId)
   )
+  exportAnnotationCategories(documentNodeChange, graph)
 }

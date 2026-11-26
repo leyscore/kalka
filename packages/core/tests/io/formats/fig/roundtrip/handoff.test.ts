@@ -1,10 +1,14 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 
+import * as v from 'valibot'
+
 import { exportFigFile, initCodec, parseFigFile, SceneGraph, type NodeChange } from '@kalka/core'
 import { materializeDocument, parseFigBuffer } from '@kalka/fig'
 import {
   addAnnotation,
+  addAnnotationCategory,
   addMeasurement,
+  documentAnnotationCategories,
   documentComments,
   documentFrameReviews,
   setFrameDevStatus,
@@ -32,6 +36,7 @@ function byName(graph: SceneGraph, name: string): SceneNode {
 }
 
 const ACCESSIBILITY = { sessionID: 5, localID: 1 }
+const LEGAL = { sessionID: 5, localID: 9 }
 
 /** A file as Figma writes it: annotations, a measurement, a dev status and a dev resource. */
 function figmaRecords(): NodeChange[] {
@@ -40,7 +45,12 @@ function figmaRecords(): NodeChange[] {
       guid: { sessionID: 0, localID: 0 },
       type: 'DOCUMENT',
       name: 'Document',
-      annotationCategories: { items: [{ id: ACCESSIBILITY, preset: 'ACCESSIBILITY' }] }
+      annotationCategories: {
+        items: [
+          { id: ACCESSIBILITY, preset: 'ACCESSIBILITY' },
+          { id: LEGAL, preset: 'NONE', custom: { color: 'TEAL', label: 'Legal' } }
+        ]
+      }
     }),
     record({
       guid: { sessionID: 0, localID: 1 },
@@ -68,7 +78,8 @@ function figmaRecords(): NodeChange[] {
           label: 'Disabled until the form is valid',
           properties: [{ type: 'WIDTH' }, { type: 'CORNER_RADIUS' }],
           categoryId: ACCESSIBILITY
-        }
+        },
+        { label: 'Needs the terms link', properties: [], categoryId: LEGAL }
       ],
       measurements: [
         {
@@ -101,13 +112,18 @@ describe('.fig handoff round trip', () => {
     const { graph } = materializeDocument(figmaRecords())
     const pay = byName(graph, 'Pay')
     const checkout = byName(graph, 'Checkout')
-    const [annotation, measurement] = documentComments(graph)
+    const [annotation, legal, measurement] = documentComments(graph)
     expect(annotation.anchor.nodeId).toBe(pay.id)
     expect(annotation.messages[0].text).toBe('Disabled until the form is valid')
     expect(annotation.annotation).toEqual({
       category: 'accessibility',
       properties: ['width', 'cornerRadius']
     })
+    // A category of the file's own comes with its label and colour.
+    expect(documentAnnotationCategories(graph)).toEqual([
+      { id: 'category-5-9', label: 'Legal', color: 'teal' }
+    ])
+    expect(legal.annotation?.category).toBe('category-5-9')
     expect(measurement.measurement).toEqual({
       toNodeId: checkout.id,
       side: 'left',
@@ -132,7 +148,9 @@ describe('.fig handoff round trip', () => {
       devResources: [{ name: '', url: 'https://storybook.example.com/button' }]
     })
     const author = { kind: 'person' as const, name: 'Ada' }
+    const review = addAnnotationCategory(graph, 'Review', 'pink')
     addAnnotation(graph, button.id, author, { label: 'Primary action', properties: ['height'] })
+    addAnnotation(graph, button.id, author, { label: 'Check copy', category: review.id })
     addMeasurement(graph, button.id, author, { toNodeId: frame.id, side: 'left', toSameSide: true })
     setFrameDevStatus(graph, frame.id, 'completed', 'Ada', { now: 5000 })
 
@@ -143,6 +161,24 @@ describe('.fig handoff round trip', () => {
       label: 'Primary action',
       properties: [{ type: 'HEIGHT' }]
     })
+    // The document lists Figma's presets and its own category, which the annotation names.
+    const categories = records.find((nc) => nc.type === 'DOCUMENT')?.annotationCategories
+    const custom = v
+      .parse(
+        v.object({
+          items: v.array(
+            v.object({
+              id: v.object({ sessionID: v.number(), localID: v.number() }),
+              preset: v.string(),
+              custom: v.optional(v.object({ color: v.string(), label: v.string() }))
+            })
+          )
+        }),
+        categories
+      )
+      .items.find((item) => item.custom)
+    expect(custom?.custom).toEqual({ color: 'PINK', label: 'Review' })
+    expect(written?.annotations?.[1]?.categoryId).toEqual(custom?.id)
     expect(written?.measurements?.[0]).toMatchObject({ fromNodeSide: 'LEFT', toSameSide: true })
     expect(written?.developerRelatedLinks?.[0]?.linkUrl).toBe(
       'https://storybook.example.com/button'
@@ -153,6 +189,7 @@ describe('.fig handoff round trip', () => {
     const read = await parseFigFile(bytes.buffer as ArrayBuffer)
     expect(documentComments(read)).toEqual(documentComments(graph))
     expect(documentFrameReviews(read)).toEqual(documentFrameReviews(graph))
+    expect(documentAnnotationCategories(read)).toEqual([review])
     expect(byName(read, 'Button').devResources).toEqual(button.devResources)
   })
 

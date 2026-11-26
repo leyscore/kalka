@@ -1,5 +1,6 @@
 /* eslint-disable max-lines -- scene node contracts are kept together as the public graph type surface */
 
+import type { AnnotationCategoryDefinition } from './annotations/model'
 import type { CSSClass } from './class-styles'
 import type { CommentThread } from './comments'
 import type { DevResource } from './dev-resources'
@@ -624,6 +625,8 @@ export interface SceneNode {
   comments: CommentThread[]
   /** Where the document's top-level frames stand in review; only the document's root holds any. */
   frameReviews: FrameReview[]
+  /** Annotation categories the document defines next to Figma's; only its root holds any. */
+  annotationCategories: AnnotationCategoryDefinition[]
   /** Links for developers on the layer, as Figma's dev resources. */
   devResources: DevResource[]
   /**
