@@ -79,6 +79,8 @@ export interface RenderOverlays {
     cursorX?: number
     cursorY?: number
   } | null
+  /** The pencil's stroke while it is drawn, page-absolute. */
+  pencilStroke?: Vector[] | null
   nodeEditState?: {
     nodeId: string
     vertices: VectorVertex[]

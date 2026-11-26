@@ -12,6 +12,7 @@ import IconSection from '~icons/hugeicons/layout-grid'
 import IconMinus from '~icons/hugeicons/minus'
 import IconMousePointer from '~icons/hugeicons/mouse-pointer'
 import IconPenTool from '~icons/hugeicons/pen-tool-01'
+import IconPencil from '~icons/hugeicons/pencil'
 import IconRows from '~icons/hugeicons/rows-3'
 import IconSmile from '~icons/hugeicons/smile'
 import IconSquare from '~icons/hugeicons/square'
@@ -35,6 +36,7 @@ export const toolIcons: Record<Tool, Component> = {
   POLYGON: IconTriangle,
   STAR: IconStar,
   PEN: IconPenTool,
+  PENCIL: IconPencil,
   TEXT: IconType,
   HAND: IconHand
 }

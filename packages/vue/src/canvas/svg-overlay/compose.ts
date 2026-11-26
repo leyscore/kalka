@@ -46,7 +46,7 @@ import {
   snapGuidesLayer,
   type OverlayContext
 } from '#vue/canvas/svg-overlay/layers/selection'
-import { nodeEditLayer, penLayer } from '#vue/canvas/svg-overlay/layers/vector-edit'
+import { nodeEditLayer, penLayer, pencilLayer } from '#vue/canvas/svg-overlay/layers/vector-edit'
 import type { OverlayShape } from '#vue/canvas/svg-overlay/shapes'
 
 /**
@@ -178,6 +178,7 @@ export function composeOverlay(input: ComposeInput): ComposedOverlay {
     // On top.
     ...nodeEditLayer(input),
     ...penLayer(input),
+    ...pencilLayer(input),
     ...issueLayer(input, issueMarkers, input.overlays.designIssues?.hoveredMarkerKey),
     ...presenceLayer(input),
     ...rulers

@@ -54,6 +54,7 @@ const TOOL_LABELS: Record<Tool, () => string> = {
   POLYGON: () => tools.value.polygon,
   STAR: () => tools.value.star,
   PEN: () => tools.value.pen,
+  PENCIL: () => tools.value.pencil,
   TEXT: () => tools.value.text,
   HAND: () => tools.value.hand
 }

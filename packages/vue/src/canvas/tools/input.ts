@@ -66,6 +66,12 @@ export function handleToolMouseDown({
     return
   }
 
+  if (tool === 'PENCIL') {
+    editor.pencilBegin(cx, cy)
+    setDrag({ type: 'pencil' })
+    return
+  }
+
   if (tool === 'TEXT') {
     startTextDraw(cx, cy, editor, setDrag)
     return

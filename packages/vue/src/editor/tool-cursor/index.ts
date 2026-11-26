@@ -12,6 +12,7 @@ const TOOL_CURSORS: Record<Tool, string> = {
   STAR: 'crosshair',
   TEXT: 'text',
   PEN: 'crosshair',
+  PENCIL: 'crosshair',
   HAND: 'grab'
 }
 

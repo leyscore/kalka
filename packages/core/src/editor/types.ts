@@ -46,6 +46,7 @@ export type Tool =
   | 'STAR'
   | 'TEXT'
   | 'PEN'
+  | 'PENCIL'
   | 'HAND'
 
 export interface EditorSharedState {
@@ -113,6 +114,8 @@ export interface EditorViewState {
   } | null
   penCursorX: number | null
   penCursorY: number | null
+  /** The pencil's stroke while it is drawn, page-absolute. */
+  pencilStroke: Vector[] | null
   autoLayoutHover: {
     nodeId: string
     kind: 'frame' | 'children' | 'spacing' | 'spacing-value' | 'padding' | 'padding-value'

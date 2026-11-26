@@ -396,3 +396,16 @@ export function penLayer(context: OverlayContext): OverlayShape[] {
   })
   return shapes
 }
+
+// ------------------------------------------------------------------ pencil
+
+/** The pencil's stroke as the pointer has drawn it so far, before it is smoothed into curves. */
+export function pencilLayer(context: OverlayContext): OverlayShape[] {
+  const stroke = context.overlays.pencilStroke
+  if (!stroke || stroke.length < 2) return []
+  const path = new PathData(screenMapper(context))
+  path.moveTo(stroke[0].x, stroke[0].y)
+  for (const point of stroke.slice(1)) path.lineTo(point.x, point.y)
+  // As thick as the stroke it becomes, the pencil's 2px at the current zoom.
+  return [{ type: 'path', d: path.d, stroke: BLACK, strokeWidth: 2 * context.view.zoom }]
+}

@@ -7,6 +7,7 @@ import { defaultPropertiesFor, defaultPropertiesOf } from './shapes/default-prop
 import { newLayerDefaults } from './shapes/defaults'
 import { createFramePresetActions } from './shapes/frame-presets'
 import { createPenActions } from './shapes/pen'
+import { createPencilActions } from './shapes/pencil'
 import { defaultNodeName, nextNumberedName } from './structure/rename'
 import type { EditorContext } from './types'
 export type { PenDragOptions } from './shapes/pen'
@@ -111,6 +112,7 @@ export function createShapeActions(ctx: EditorContext) {
     createArrow,
     setDefaultPropertiesFromSelection,
     ...penActions,
+    ...createPencilActions(ctx, createShape),
     ...framePresetActions,
     adoptCoveredLayers: (containerId: string) => adoptCoveredLayers(ctx, containerId),
     setTool

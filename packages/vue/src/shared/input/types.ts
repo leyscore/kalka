@@ -156,6 +156,11 @@ export interface DragRotate {
   rotationDirection: 1 | -1
 }
 
+/** A freehand stroke the pencil is drawing; the points live in the editor state. */
+export interface DragPencil {
+  type: 'pencil'
+}
+
 export interface DragPen {
   type: 'pen-drag'
   startX: number
@@ -227,6 +232,7 @@ export type DragState =
   | DragMarquee
   | DragRotate
   | DragPen
+  | DragPencil
   | DragTextSelect
   | DragEditNode
   | DragEditHandle
