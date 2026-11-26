@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
+import { createEditor } from '@kalka/core/editor'
 import {
   breakpointsOf,
   createBreakpoint,
@@ -83,6 +84,46 @@ describe('Kalka folder', () => {
       listSpacing: 6
     })
     expect(read.getNode(title.id)?.textStyleId).toBe('style:heading')
+  })
+
+  test('keeps colour, effect and grid styles made in Kalka and the layers using them', async () => {
+    const graph = new SceneGraph()
+    const editor = createEditor({ graph })
+    const page = editor.state.currentPageId
+    const card = graph.createNode('FRAME', page, {
+      name: 'Card',
+      width: 200,
+      height: 120,
+      fills: [{ type: 'SOLID', color: { r: 1, g: 0.2, b: 0, a: 1 }, opacity: 1, visible: true }],
+      effects: [
+        {
+          type: 'DROP_SHADOW',
+          color: { r: 0, g: 0, b: 0, a: 0.25 },
+          offset: { x: 0, y: 4 },
+          radius: 8,
+          spread: 0,
+          visible: true
+        }
+      ],
+      layoutGrids: [{ pattern: 'COLUMNS', count: 12, gutterSize: 16, visible: true }]
+    })
+    const fill = editor.createSharedStyle('fill', 'Brand/Primary', [card.id])
+    const effect = editor.createSharedStyle('effect', 'Elevation/1', [card.id])
+    const grid = editor.createSharedStyle('grid', 'Grid/12', [card.id])
+    if (!fill || !effect || !grid) throw new Error('No style')
+
+    const read = readKalkaFolder(asMap(await writeKalkaFolder(graph)))
+    expect(getSharedStyles(read, 'fill')).toEqual([fill])
+    expect(getSharedStyles(read, 'effect')).toEqual([effect])
+    expect(getSharedStyles(read, 'grid')).toEqual([grid])
+    expect(read.getNode(fill.nodeId)?.fills[0]?.color).toEqual({ r: 1, g: 0.2, b: 0, a: 1 })
+    expect(read.getNode(effect.nodeId)?.effects[0]?.radius).toBe(8)
+    expect(read.getNode(grid.nodeId)?.layoutGrids[0]).toMatchObject({ count: 12, gutterSize: 16 })
+    expect(read.getNode(card.id)).toMatchObject({
+      fillStyleId: fill.id,
+      effectStyleId: effect.id,
+      gridStyleId: grid.id
+    })
   })
 
   test('keeps the CSS a layer’s fields cannot hold', async () => {
