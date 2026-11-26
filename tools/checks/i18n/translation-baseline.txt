@@ -49,6 +49,9 @@ de:panels.colorFormatHsb
 de:panels.colorFormatHsl
 de:panels.colorFormatOkhcl
 de:panels.colorFormatRgb
+de:panels.compareGroupName
+de:panels.compareGroupPosition
+de:panels.compareGroupText
 de:panels.componentPropertyBoolean
 de:panels.componentPropertyName
 de:panels.componentPropertyText
@@ -151,6 +154,7 @@ es:panels.colorFormatHsb
 es:panels.colorFormatHsl
 es:panels.colorFormatOkhcl
 es:panels.colorFormatRgb
+es:panels.compareGroupLayout
 es:panels.framePresetCategoryFigmaCommunity
 es:panels.gridAuto
 es:panels.gridColor
@@ -249,6 +253,8 @@ fr:panels.colorFormatHsb
 fr:panels.colorFormatHsl
 fr:panels.colorFormatOkhcl
 fr:panels.colorFormatRgb
+fr:panels.compareGroupLayout
+fr:panels.compareGroupPosition
 fr:panels.description
 fr:panels.design
 fr:panels.dimensions
@@ -373,6 +379,7 @@ it:panels.colorFormatHsb
 it:panels.colorFormatHsl
 it:panels.colorFormatOkhcl
 it:panels.colorFormatRgb
+it:panels.compareGroupLayout
 it:panels.design
 it:panels.framePresetCategoryDesktop
 it:panels.framePresetCategoryFigmaCommunity
@@ -480,6 +487,7 @@ pl:panels.colorFormatHsb
 pl:panels.colorFormatHsl
 pl:panels.colorFormatOkhcl
 pl:panels.colorFormatRgb
+pl:panels.compareGroupLayout
 pl:panels.design
 pl:panels.folder
 pl:panels.framePresetCategoryFigmaCommunity

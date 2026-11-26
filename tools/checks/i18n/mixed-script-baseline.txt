@@ -231,6 +231,7 @@ ja:panels.builtInLibrary
 ja:panels.colorHintHsb
 ja:panels.colorHintHsl
 ja:panels.colorHintOkhcl
+ja:panels.compareGroupCss
 ja:panels.folderGenerated
 ja:panels.folderVersionsDesktop
 ja:panels.folderViewClean
@@ -560,6 +561,7 @@ zh-cn:panels.builtInLibrary
 zh-cn:panels.colorHintHsb
 zh-cn:panels.colorHintHsl
 zh-cn:panels.colorHintOkhcl
+zh-cn:panels.compareGroupCss
 zh-cn:panels.folderGenerated
 zh-cn:panels.folderVersionsDesktop
 zh-cn:panels.folderViewClean
