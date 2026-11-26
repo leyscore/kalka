@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 
 import { renderTree, renderJSX, computeLayout, computeAllLayouts } from '@kalka/core'
-import { Frame, Rectangle } from '@kalka/design-jsx'
+import { Frame, Rectangle, sceneNodeToJSX } from '@kalka/design-jsx'
 
 import { expectDefined, getNodeOrThrow } from '#tests/helpers/assert'
 import { makeSceneGraph } from '#tests/helpers/scene'
@@ -344,5 +344,43 @@ describe('grid layout rendering', () => {
       'grid node'
     )
     expect(grid.height).toBe(460)
+  })
+
+  it('places a child in its cell and keeps the layout flags through export', async () => {
+    const g = makeSceneGraph()
+    const tree = Frame(
+      {
+        name: 'Grid',
+        w: 300,
+        h: 200,
+        grid: true,
+        columns: '1fr 1fr',
+        reverseZIndex: true,
+        strokesInLayout: true
+      },
+      Rectangle({ name: 'A', w: 50, h: 50, justifySelf: 'center', alignSelf: 'end' })
+    )
+    const result = await renderTree(g, tree)
+    const grid = getNodeOrThrow(g, result.id)
+    const child = getNodeOrThrow(g, grid.childIds[0] ?? '')
+
+    expect(grid.itemReverseZIndex).toBe(true)
+    expect(grid.strokesIncludedInLayout).toBe(true)
+    expect(child.gridChildHorizontalAlign).toBe('CENTER')
+    expect(child.layoutAlignSelf).toBe('MAX')
+
+    const jsx = sceneNodeToJSX(grid.id, g)
+    expect(jsx).toContain('reverseZIndex')
+    expect(jsx).toContain('strokesInLayout')
+    expect(jsx).toContain('justifySelf="center"')
+    expect(jsx).toContain('alignSelf="end"')
+  })
+
+  it('aligns a row on its text baseline', async () => {
+    const g = makeSceneGraph()
+    const result = await renderTree(g, Frame({ name: 'Row', flex: 'row', items: 'baseline' }))
+    const row = getNodeOrThrow(g, result.id)
+    expect(row.counterAxisAlign).toBe('BASELINE')
+    expect(sceneNodeToJSX(row.id, g)).toContain('items="baseline"')
   })
 })

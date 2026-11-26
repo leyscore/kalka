@@ -67,6 +67,26 @@ function collectGridPositionProps(node: SceneNode, props: JSXProp[]): void {
   if (pos.rowSpan > 1) props.push(['rowSpan', pos.rowSpan])
 }
 
+const CELL_ALIGN_NAMES: Partial<Record<string, string>> = {
+  MIN: 'start',
+  CENTER: 'center',
+  MAX: 'end',
+  STRETCH: 'stretch'
+}
+
+/** A grid child's place in its cell, when it is not the grid's default. */
+function collectCellAlignmentProps(node: SceneNode, props: JSXProp[]): void {
+  const justifySelf = CELL_ALIGN_NAMES[node.gridChildHorizontalAlign]
+  if (justifySelf && justifySelf !== 'stretch') props.push(['justifySelf', justifySelf])
+  const alignSelf = CELL_ALIGN_NAMES[node.layoutAlignSelf]
+  if (alignSelf) props.push(['alignSelf', alignSelf])
+}
+
+function collectLayoutFlagProps(node: SceneNode, props: JSXProp[]): void {
+  if (node.itemReverseZIndex) props.push(['reverseZIndex', true])
+  if (node.strokesIncludedInLayout) props.push(['strokesInLayout', true])
+}
+
 function collectFlexAlignmentProps(node: SceneNode, props: JSXProp[]): void {
   if (node.itemSpacing > 0) props.push(['gap', node.itemSpacing])
 
@@ -82,6 +102,7 @@ function collectFlexAlignmentProps(node: SceneNode, props: JSXProp[]): void {
   if (node.counterAxisAlign === 'CENTER') props.push(['items', 'center'])
   else if (node.counterAxisAlign === 'MAX') props.push(['items', 'end'])
   else if (node.counterAxisAlign === 'STRETCH') props.push(['items', 'stretch'])
+  else if (node.counterAxisAlign === 'BASELINE') props.push(['items', 'baseline'])
 }
 
 function collectAutoLayoutPaddingProps(node: SceneNode, props: JSXProp[]): void {
@@ -277,9 +298,15 @@ export function collectProps(node: SceneNode, graph: SceneGraph): JSXProp[] {
 
   collectPositionProps(node, ctx, props)
   collectSizingProps(node, ctx, graph, props)
-  if (ctx.parentIsGrid) collectGridPositionProps(node, props)
+  if (ctx.parentIsGrid) {
+    collectGridPositionProps(node, props)
+    collectCellAlignmentProps(node, props)
+  }
   if (ctx.isFlex) collectFlexAlignmentProps(node, props)
-  if (ctx.isAutoLayout) collectAutoLayoutPaddingProps(node, props)
+  if (ctx.isAutoLayout) {
+    collectAutoLayoutPaddingProps(node, props)
+    collectLayoutFlagProps(node, props)
+  }
   collectAppearanceProps(node, props)
   if (node.type === 'TEXT') {
     collectTextNodeProps(node, props)

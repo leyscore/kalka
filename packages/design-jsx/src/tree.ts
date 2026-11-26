@@ -109,10 +109,18 @@ export type StyleProps = {
   columnGap?: number | DesignVariable
   justify?: 'start' | 'end' | 'center' | 'between'
   justifyContent?: 'start' | 'end' | 'center' | 'between'
-  items?: 'start' | 'end' | 'center' | 'stretch'
-  align?: 'start' | 'end' | 'center' | 'stretch'
-  alignItems?: 'start' | 'end' | 'center' | 'stretch'
+  items?: 'start' | 'end' | 'center' | 'stretch' | 'baseline'
+  align?: 'start' | 'end' | 'center' | 'stretch' | 'baseline'
+  alignItems?: 'start' | 'end' | 'center' | 'stretch' | 'baseline'
   grow?: number
+  /** Figma's "first on top": earlier children are drawn over later ones. */
+  reverseZIndex?: boolean
+  /** Strokes take space in the layout, as Figma's "Strokes included in layout". */
+  strokesInLayout?: boolean
+  /** A grid child's place across its cell. */
+  justifySelf?: 'start' | 'center' | 'end'
+  /** A grid child's place down its cell. */
+  alignSelf?: 'start' | 'center' | 'end' | 'stretch'
 
   w?: number | 'fill' | 'hug' | DesignVariable
   h?: number | 'fill' | 'hug' | DesignVariable

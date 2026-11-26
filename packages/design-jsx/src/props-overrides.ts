@@ -21,11 +21,19 @@ const ALIGN_MAP: Record<string, SceneNode['primaryAxisAlign']> = {
   between: 'SPACE_BETWEEN'
 }
 
-const COUNTER_ALIGN_MAP: Record<string, 'MIN' | 'MAX' | 'CENTER' | 'STRETCH'> = {
+const COUNTER_ALIGN_MAP: Record<string, SceneNode['counterAxisAlign']> = {
   start: 'MIN',
   end: 'MAX',
   center: 'CENTER',
-  stretch: 'STRETCH'
+  stretch: 'STRETCH',
+  baseline: 'BASELINE'
+}
+
+/** A grid child's place across or down its cell, as CSS's `justify-self` and `align-self`. */
+const CELL_ALIGN_MAP: Record<string, 'MIN' | 'CENTER' | 'MAX'> = {
+  start: 'MIN',
+  center: 'CENTER',
+  end: 'MAX'
 }
 
 const TEXT_ALIGN_MAP: Record<string, SceneNode['textAlignHorizontal']> = {
@@ -312,6 +320,19 @@ function applyGridChildOverrides(props: Record<string, unknown>, o: Partial<Scen
       rowSpan: rowSpan
     }
   }
+  const justifySelf = CELL_ALIGN_MAP[String(props.justifySelf)]
+  if (justifySelf) o.gridChildHorizontalAlign = justifySelf
+  const alignSelf =
+    props.alignSelf === 'stretch' ? 'STRETCH' : CELL_ALIGN_MAP[String(props.alignSelf)]
+  if (alignSelf) o.layoutAlignSelf = alignSelf
+}
+
+/** Figma's stacking ("first on top") and strokes counted in the layout, for any layout frame. */
+function applyLayoutFlagOverrides(props: Record<string, unknown>, o: Partial<SceneNode>): void {
+  if (typeof props.reverseZIndex === 'boolean') o.itemReverseZIndex = props.reverseZIndex
+  if (typeof props.strokesInLayout === 'boolean') {
+    o.strokesIncludedInLayout = props.strokesInLayout
+  }
 }
 
 function applyAutoLayoutSizing(
@@ -364,6 +385,7 @@ function applyLayoutOverrides(
   isText: boolean,
   parentLayout: SceneNode['layoutMode']
 ): void {
+  applyLayoutFlagOverrides(props, o)
   if (props.grid) {
     applyGridOverrides(props, o, w, h)
     applyPaddingOverrides(props, o)
