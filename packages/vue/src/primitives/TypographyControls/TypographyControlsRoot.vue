@@ -29,6 +29,7 @@ const actions = {
   setTextCase: ctx.setTextCase,
   setTruncation: ctx.setTruncation,
   setFontFeature: ctx.setFontFeature,
+  setListType: ctx.setListType,
   updateProp: ctx.updateProp,
   commitProp: ctx.commitProp,
   align: onAlignChange,
@@ -46,6 +47,7 @@ const actions = {
     :missing-fonts="ctx.missingFonts"
     :has-missing-fonts="ctx.hasMissingFonts"
     :active-formatting="ctx.activeFormatting"
+    :list-type="ctx.listType"
     :actions="actions"
   />
 </template>

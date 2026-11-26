@@ -221,6 +221,7 @@ fr:panels.instructions
 fr:panels.instructionsDocuments
 fr:panels.instructionsSkills
 fr:panels.libraryDestination
+fr:panels.lineHeightPixels
 fr:panels.maskTypeAlpha
 fr:panels.maskTypeLuminance
 fr:panels.maxHeightShort

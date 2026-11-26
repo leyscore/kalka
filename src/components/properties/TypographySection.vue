@@ -9,7 +9,9 @@ import FontPicker from '@/components/font-picker/FontPicker.vue'
 import FontSettingsPopover from '@/components/font-settings/FontSettingsPopover.vue'
 import NumberField from '@/components/inputs/NumberField.vue'
 import SharedStyleField from '@/components/properties/shared-style/SharedStyleField.vue'
+import LetterSpacingField from '@/components/properties/typography/LetterSpacingField.vue'
 import LineHeightField from '@/components/properties/typography/LineHeightField.vue'
+import ParagraphFields from '@/components/properties/typography/ParagraphFields.vue'
 import VariableNumberField from '@/components/properties/VariableNumberField.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'
@@ -130,21 +132,21 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
           />
         </PanelFieldGroup>
         <PanelFieldGroup :label="panels.letterSpacing">
-          <VariableNumberField
-            suffix="px"
-            :model-value="ctx.node.value.letterSpacing"
-            :aria-label="panels.letterSpacing"
-            :node-id="ctx.node.value.id"
-            binding-path="letterSpacing"
-            @update:model-value="ctx.actions.updateProp('letterSpacing', $event)"
-            @commit="(v: number, p: number) => ctx.actions.commitProp('letterSpacing', v, p)"
-          >
-            <template #icon>
-              <icon-hugeicons-a-large-small class="size-3" />
-            </template>
-          </VariableNumberField>
+          <LetterSpacingField
+            :node="ctx.node.value"
+            @update="ctx.actions.updateProp('letterSpacing', $event)"
+            @commit="(v, p) => ctx.actions.commitProp('letterSpacing', v, p)"
+          />
         </PanelFieldGroup>
       </PanelGrid>
+
+      <ParagraphFields
+        :node="ctx.node.value"
+        :list-type="ctx.listType.value"
+        @update="(field, value) => ctx.actions.updateProp(field, value)"
+        @commit="(field, value, previous) => ctx.actions.commitProp(field, value, previous)"
+        @list="ctx.actions.setListType"
+      />
 
       <div class="border-t border-border pt-3">
         <PanelFieldGroup :label="panels.direction" class="mb-3">

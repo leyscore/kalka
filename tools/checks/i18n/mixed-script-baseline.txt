@@ -224,6 +224,7 @@ ja:panels.folderVersionsDesktop
 ja:panels.folderViewClean
 ja:panels.gridSummaryGrid
 ja:panels.libraryId
+ja:panels.lineHeightPixels
 ja:panels.localFontsAccessHint
 ja:panels.sizingFillFr
 ja:panels.sizingFixedPx
@@ -534,6 +535,7 @@ zh-cn:panels.folderVersionsDesktop
 zh-cn:panels.folderViewClean
 zh-cn:panels.gridSummaryGrid
 zh-cn:panels.libraryId
+zh-cn:panels.lineHeightPixels
 zh-cn:panels.localFontsAccessHint
 zh-cn:panels.sizingFillFr
 zh-cn:panels.sizingFixedPx

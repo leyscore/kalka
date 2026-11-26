@@ -10,11 +10,14 @@ import {
 } from 'reka-ui'
 import { computed } from 'vue'
 
-import type { SceneNode } from '@kalka/scene-graph'
+import { pixelsFromPercent, spacingPercent, type SceneNode } from '@kalka/scene-graph'
 import { useEditor, useI18n, useRetainedPopup } from '@kalka/vue'
 
+import { parseTypedSpacing } from '@/components/properties/typography/spacing'
 import VariableNumberField from '@/components/properties/VariableNumberField.vue'
 import { useSelectUI } from '@/components/ui/select/select'
+
+type LineHeightMode = 'AUTO' | 'PIXELS' | 'PERCENT'
 
 const { node } = defineProps<{ node: SceneNode }>()
 const emit = defineEmits<{ update: [value: number]; commit: [value: number, previous: number] }>()
@@ -22,17 +25,49 @@ const editor = useEditor()
 const { open: popupOpen, portalActive } = useRetainedPopup()
 const { panels } = useI18n()
 const automatic = computed(() => node.lineHeight == null && !node.boundVariables.lineHeight)
-const value = computed(() => node.lineHeight ?? Math.round((node.fontSize || 14) * 1.2))
+const percent = computed(() => !automatic.value && node.lineHeightUnit === 'PERCENT')
+const pixels = computed(() => node.lineHeight ?? Math.round((node.fontSize || 14) * 1.2))
+/** The value as the field shows it: pixels, or a percentage of the font size, as Figma does. */
+const value = computed(() =>
+  percent.value ? spacingPercent(pixels.value, node.fontSize) : pixels.value
+)
+const mode = computed<LineHeightMode>(() => {
+  if (automatic.value) return 'AUTO'
+  return percent.value ? 'PERCENT' : 'PIXELS'
+})
 const menu = useSelectUI()
-function setMode(mode: string) {
-  if (mode === 'AUTO') {
+
+function toPixels(shown: number): number {
+  return percent.value ? pixelsFromPercent(shown, node.fontSize) : shown
+}
+
+function setLineHeight(lineHeight: number, unit: SceneNode['lineHeightUnit']) {
+  editor.updateNodeWithUndo(node.id, { lineHeight, lineHeightUnit: unit }, 'Set line height')
+}
+
+function setMode(next: string) {
+  if (next === 'AUTO') {
     editor.undo.runBatch('Use automatic line height', () => {
       if (node.boundVariables.lineHeight) editor.unbindVariable(node.id, 'lineHeight')
-      editor.updateNodeWithUndo(node.id, { lineHeight: null }, 'Use automatic line height')
+      editor.updateNodeWithUndo(
+        node.id,
+        { lineHeight: null, lineHeightUnit: 'PIXELS' },
+        'Use automatic line height'
+      )
     })
-  } else if (mode === 'FIXED' && automatic.value) {
-    editor.updateNodeWithUndo(node.id, { lineHeight: value.value }, 'Set line height')
+  } else if (next === 'PIXELS' || next === 'PERCENT') {
+    if (next !== mode.value) setLineHeight(pixels.value, next)
   }
+}
+
+/** Figma's field also takes `Auto`, `150%` and `24px`, which a number field does not read. */
+function onTyped(expression: string) {
+  const typed = parseTypedSpacing(expression)
+  if (!typed) return
+  if (typed.auto) setMode('AUTO')
+  else if (typed.unit === 'PERCENT')
+    setLineHeight(pixelsFromPercent(typed.value, node.fontSize), 'PERCENT')
+  else setLineHeight(typed.value, 'PIXELS')
 }
 </script>
 
@@ -40,23 +75,21 @@ function setMode(mode: string) {
   <VariableNumberField
     :model-value="value"
     :aria-label="panels.lineHeight"
-    suffix="px"
+    :suffix="percent ? '%' : 'px'"
     :min="0"
     :node-id="node.id"
     binding-path="lineHeight"
-    @update:model-value="emit('update', $event)"
-    @commit="(current, previous) => emit('commit', current, previous)"
+    data-property="line-height"
+    @update:model-value="emit('update', toPixels($event))"
+    @commit="(current, previous) => emit('commit', toPixels(current), toPixels(previous))"
+    @invalid="onTyped"
   >
     <template #icon><icon-hugeicons-baseline class="size-3" /></template>
     <template v-if="automatic" #display
       ><span class="min-w-0 flex-1 truncate text-surface">{{ panels.auto }}</span></template
     >
     <template #after-variable>
-      <SelectRoot
-        v-model:open="popupOpen"
-        :model-value="automatic ? 'AUTO' : 'FIXED'"
-        @update:model-value="setMode"
-      >
+      <SelectRoot v-model:open="popupOpen" :model-value="mode" @update:model-value="setMode">
         <SelectTrigger
           :aria-label="panels.lineHeightMode"
           class="flex shrink-0 items-center self-stretch px-1 text-muted"
@@ -69,8 +102,11 @@ function setMode(mode: string) {
               <SelectItem value="AUTO" :class="menu.item"
                 ><SelectItemText>{{ panels.auto }}</SelectItemText></SelectItem
               >
-              <SelectItem value="FIXED" :class="menu.item"
-                ><SelectItemText>{{ panels.sizingFixed }}</SelectItemText></SelectItem
+              <SelectItem value="PIXELS" :class="menu.item"
+                ><SelectItemText>{{ panels.lineHeightPixels }}</SelectItemText></SelectItem
+              >
+              <SelectItem value="PERCENT" :class="menu.item"
+                ><SelectItemText>{{ panels.lineHeightPercent }}</SelectItemText></SelectItem
               >
             </SelectViewport>
           </SelectContent>

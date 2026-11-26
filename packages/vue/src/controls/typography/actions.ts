@@ -3,7 +3,15 @@ import type { ComputedRef } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
 import { FONT_WEIGHT_NAMES, weightToStyle } from '@kalka/core/text'
-import type { SceneNode, TextDecoration } from '@kalka/scene-graph'
+import {
+  paragraphCount,
+  sharedListType,
+  textListLines,
+  withListType,
+  type SceneNode,
+  type TextDecoration,
+  type TextListType
+} from '@kalka/scene-graph'
 
 import { useHoverPreview } from '#vue/controls/node-preview/hover'
 import type { UseTypographyOptions } from '#vue/controls/typography/use'
@@ -43,8 +51,20 @@ export function createTypographyState(editor: Editor) {
     return result
   })
 
+  /** The list every paragraph of the layer is in, or null when they differ. */
+  const listType = computed(() => {
+    const n = node.value
+    if (!n) return null
+    const lines = textListLines(n)
+    return sharedListType(
+      lines,
+      lines.map((_, index) => index)
+    )
+  })
+
   return {
     node,
+    listType,
     fontFamily,
     fontWeight,
     fontSize,
@@ -182,6 +202,18 @@ export function createTypographyActions({
     editor.updateNodeWithUndo(node.value.id, { fontFeatures }, `Change ${tag} feature`)
   }
 
+  /**
+   * Figma's list buttons: the paragraphs the text edit's selection touches, or every paragraph
+   * of the layer, become a list of the type, or leave it when they all are one already.
+   */
+  function setListType(type: TextListType) {
+    const n = node.value
+    if (!n) return
+    if (editor.listTextSelection(n.id, type)) return
+    const paragraphs = Array.from({ length: paragraphCount(n.text) }, (_, index) => index)
+    editor.updateNodeWithUndo(n.id, { listLines: withListType(n, paragraphs, type) }, 'Set list')
+  }
+
   function toggleBold() {
     if (!node.value) return
     void setWeight(node.value.fontWeight >= 700 ? 400 : 700)
@@ -257,6 +289,7 @@ export function createTypographyActions({
     setTextCase,
     setTruncation,
     setFontFeature,
+    setListType,
     toggleBold,
     toggleItalic,
     toggleDecoration,
