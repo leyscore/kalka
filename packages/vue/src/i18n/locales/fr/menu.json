@@ -115,5 +115,6 @@
   "copyLinkToSelection": "Copier le lien de la sélection",
   "setDefaultProperties": "Définir les propriétés par défaut",
   "placeImage": "Placer une image…",
-  "copyAsCSS": "Copier en CSS"
+  "copyAsCSS": "Copier en CSS",
+  "pickColor": "Pipette"
 }

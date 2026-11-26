@@ -6,6 +6,7 @@ import {
   pasteClipboardProperties
 } from '@/app/editor/clipboard/properties'
 import { executeClipboardCommand } from '@/app/editor/clipboard/system'
+import { pickColorForSelection } from '@/app/editor/color/eyedropper'
 import { copySelectionLink } from '@/app/editor/selection/link'
 import { requestRenameSelection } from '@/app/editor/selection/rename-dialog'
 
@@ -18,6 +19,7 @@ export function createSelectionMenuActions(store: EditorStore) {
     'paste-over-selection': () => void pasteOverSelection(store),
     'set-default-properties': () => void store.setDefaultPropertiesFromSelection(),
     'copy-link': () => void copySelectionLink(store),
+    'pick-color': () => void pickColorForSelection(store),
     'copy-properties': () => void copySelectionProperties(store),
     'paste-properties': () => void pasteClipboardProperties(store),
     'selection.rename': () => requestRenameSelection(store)

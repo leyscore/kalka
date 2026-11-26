@@ -123,7 +123,8 @@ export const menuMessageDefaults = {
   copyLinkToSelection: 'Copy link to selection',
   setDefaultProperties: 'Set default properties',
   placeImage: 'Place image…',
-  copyAsCSS: 'Copy as CSS'
+  copyAsCSS: 'Copy as CSS',
+  pickColor: 'Pick color'
 } as const
 
 export const menuMessages = i18n('menu', menuMessageDefaults)

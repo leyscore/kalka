@@ -38,5 +38,6 @@
   "designTokensLeftOut": "デザイントークンに含まれていません: {names}",
   "designTokensImported": "{count} 個のデザイントークンを読み込みました。",
   "selectionLinkCopied": "選択範囲へのリンクをコピーしました。",
-  "selectionLinkUnavailable": "レイヤーへのリンクを作るには、このファイルをサーバーで共有するか、デスクトップアプリで保存してください。"
+  "selectionLinkUnavailable": "レイヤーへのリンクを作るには、このファイルをサーバーで共有するか、デスクトップアプリで保存してください。",
+  "eyedropperUnavailable": "スポイトには Chrome、Edge、またはデスクトップアプリが必要です。"
 }

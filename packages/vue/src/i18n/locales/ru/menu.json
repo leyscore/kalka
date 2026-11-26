@@ -115,5 +115,6 @@
   "copyLinkToSelection": "Копировать ссылку на выделение",
   "setDefaultProperties": "Сделать свойствами по умолчанию",
   "placeImage": "Поместить изображение…",
-  "copyAsCSS": "Копировать как CSS"
+  "copyAsCSS": "Копировать как CSS",
+  "pickColor": "Пипетка"
 }

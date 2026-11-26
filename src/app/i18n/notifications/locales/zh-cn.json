@@ -38,5 +38,6 @@
   "designTokensLeftOut": "未写入设计令牌：{names}",
   "designTokensImported": "已导入 {count} 个设计令牌。",
   "selectionLinkCopied": "已复制所选内容的链接。",
-  "selectionLinkUnavailable": "在服务器上共享此文件，或在桌面应用中保存它，才能链接到其图层。"
+  "selectionLinkUnavailable": "在服务器上共享此文件，或在桌面应用中保存它，才能链接到其图层。",
+  "eyedropperUnavailable": "吸管工具需要 Chrome、Edge 或桌面应用。"
 }

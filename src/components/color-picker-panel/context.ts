@@ -55,6 +55,8 @@ function createColorPickerPanelContext(props: ColorPanelProps, emit: ColorPanelE
     isOkHCLFormat,
     onRekaColorUpdate: colorModel.updateFromReka,
     setFieldFormat,
+    /** Sets the whole colour, as the eyedropper does. */
+    update: (next: Color) => emit('update', next),
     updateRGBAHue: colorModel.updateHue,
     updateRGBAAlpha: colorModel.updateAlpha,
     updateRGBChannelValue: colorModel.updateRGBChannel,

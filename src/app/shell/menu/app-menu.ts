@@ -120,6 +120,7 @@ export function useAppMenu() {
     'paste-to-replace': 'pasteToReplace',
     'paste-over-selection': 'pasteOverSelection',
     'set-default-properties': 'setDefaultProperties',
+    'pick-color': 'pickColor',
     'copy-link': 'copyLinkToSelection',
     'place-image': 'placeImage',
     'copy-properties': 'copyProperties',

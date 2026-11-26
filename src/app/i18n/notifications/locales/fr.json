@@ -42,5 +42,6 @@
   "fileChangedOutside": "« {name} » a été modifié par une autre application. Vos modifications non enregistrées sont conservées ; enregistrer remplacera cette version.",
   "reloadFromDisk": "Recharger depuis le disque",
   "selectionLinkCopied": "Lien vers la sélection copié.",
-  "selectionLinkUnavailable": "Partagez ce fichier sur un serveur, ou enregistrez-le dans l’app de bureau, pour créer un lien vers ses calques."
+  "selectionLinkUnavailable": "Partagez ce fichier sur un serveur, ou enregistrez-le dans l’app de bureau, pour créer un lien vers ses calques.",
+  "eyedropperUnavailable": "La pipette demande Chrome, Edge ou l’app de bureau."
 }

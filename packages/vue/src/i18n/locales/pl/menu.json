@@ -115,5 +115,6 @@
   "copyLinkToSelection": "Kopiuj link do zaznaczenia",
   "setDefaultProperties": "Ustaw właściwości domyślne",
   "placeImage": "Umieść obraz…",
-  "copyAsCSS": "Kopiuj jako CSS"
+  "copyAsCSS": "Kopiuj jako CSS",
+  "pickColor": "Pobierz kolor"
 }

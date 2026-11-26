@@ -42,5 +42,6 @@
   "fileChangedOutside": "Otra aplicación cambió «{name}». Tus cambios sin guardar se conservan; al guardar se reemplaza esa versión.",
   "reloadFromDisk": "Volver a cargar desde el disco",
   "selectionLinkCopied": "Enlace a la selección copiado.",
-  "selectionLinkUnavailable": "Comparte este archivo en un servidor, o guárdalo en la app de escritorio, para enlazar sus capas."
+  "selectionLinkUnavailable": "Comparte este archivo en un servidor, o guárdalo en la app de escritorio, para enlazar sus capas.",
+  "eyedropperUnavailable": "El cuentagotas necesita Chrome, Edge o la app de escritorio."
 }

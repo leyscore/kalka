@@ -42,5 +42,6 @@
   "fileChangedOutside": "“{name}” è stato modificato da un’altra app. Le modifiche non salvate restano; salvando sostituisci quella versione.",
   "reloadFromDisk": "Ricarica dal disco",
   "selectionLinkCopied": "Link alla selezione copiato.",
-  "selectionLinkUnavailable": "Condividi questo file su un server, o salvalo nell’app desktop, per creare link ai suoi livelli."
+  "selectionLinkUnavailable": "Condividi questo file su un server, o salvalo nell’app desktop, per creare link ai suoi livelli.",
+  "eyedropperUnavailable": "Il contagocce richiede Chrome, Edge o l’app desktop."
 }

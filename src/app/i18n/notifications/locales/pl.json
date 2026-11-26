@@ -38,5 +38,6 @@
   "designTokensLeftOut": "Pominięte w tokenach projektowych: {names}.",
   "designTokensImported": "Zaimportowano tokeny projektowe: {count}.",
   "selectionLinkCopied": "Skopiowano link do zaznaczenia.",
-  "selectionLinkUnavailable": "Udostępnij ten plik na serwerze lub zapisz go w aplikacji desktopowej, aby linkować do jego warstw."
+  "selectionLinkUnavailable": "Udostępnij ten plik na serwerze lub zapisz go w aplikacji desktopowej, aby linkować do jego warstw.",
+  "eyedropperUnavailable": "Pipeta wymaga Chrome, Edge lub aplikacji desktopowej."
 }

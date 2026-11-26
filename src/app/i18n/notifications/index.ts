@@ -59,7 +59,8 @@ export const notificationMessageDefaults = {
   openQueuedFilesFailed: params('Could not open the files handed to Kalka: {error}'),
   selectionLinkCopied: 'Link to the selection copied.',
   selectionLinkUnavailable:
-    'Share this file on a server, or save it in the desktop app, to link to its layers.'
+    'Share this file on a server, or save it in the desktop app, to link to its layers.',
+  eyedropperUnavailable: 'The eyedropper needs Chrome, Edge or the desktop app.'
 } as const
 
 const localeLoaders = {

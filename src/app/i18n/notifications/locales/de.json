@@ -42,5 +42,6 @@
   "fileChangedOutside": "„{name}“ wurde von einer anderen App geändert. Deine ungesicherten Änderungen bleiben erhalten; Sichern ersetzt diese Version.",
   "reloadFromDisk": "Von der Festplatte neu laden",
   "selectionLinkCopied": "Link zur Auswahl kopiert.",
-  "selectionLinkUnavailable": "Teile diese Datei auf einem Server oder speichere sie in der Desktop-App, um auf ihre Ebenen zu verlinken."
+  "selectionLinkUnavailable": "Teile diese Datei auf einem Server oder speichere sie in der Desktop-App, um auf ihre Ebenen zu verlinken.",
+  "eyedropperUnavailable": "Die Pipette braucht Chrome, Edge oder die Desktop-App."
 }

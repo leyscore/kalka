@@ -150,6 +150,11 @@
         "label": "Set Default Properties"
       },
       {
+        "id": "pick-color",
+        "label": "Pick Color",
+        "accelerator": "I"
+      },
+      {
         "id": "copy-link",
         "label": "Copy Link to Selection",
         "accelerator": "CmdOrCtrl+L"
