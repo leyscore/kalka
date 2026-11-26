@@ -46,7 +46,19 @@ export const commentsMessageDefaults = {
   changeLabel: params('{name} changed {page}'),
   edits: params('{count} edits'),
   restoreBefore: 'Restore before this',
-  restoreUndo: 'Restore before an agent change'
+  restoreUndo: 'Restore before an agent change',
+  addReaction: 'Add a reaction',
+  reactWith: params('React with {emoji}'),
+  reactedWith: params('{emoji} from {names}'),
+  mentionPeople: 'People to mention',
+  forYou: 'For you',
+  emptyForYou: 'Nothing for you yet. Mentions of you and replies to your comments show here.',
+  markAllRead: 'Mark all as read',
+  unread: 'Unread',
+  unreadCount: params('{count} unread'),
+  notifyMention: params('{name} mentioned you: {text}'),
+  notifyReply: params('{name} replied: {text}'),
+  showComment: 'Show'
 } as const
 
 export const commentsMessages = i18n('comments', commentsMessageDefaults)

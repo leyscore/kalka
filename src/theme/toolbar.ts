@@ -1,7 +1,7 @@
 const toolbarTheme = {
   slots: {
     button:
-      'flex size-9 cursor-pointer items-center justify-center border-none bg-transparent text-label transition-[background-color,color,box-shadow,scale] duration-150 outline-none focus-visible:ring-1 focus-visible:ring-panel-focus active:scale-[0.94] motion-reduce:active:scale-100',
+      'relative flex size-9 cursor-pointer items-center justify-center border-none bg-transparent text-label transition-[background-color,color,box-shadow,scale] duration-150 outline-none focus-visible:ring-1 focus-visible:ring-panel-focus active:scale-[0.94] motion-reduce:active:scale-100',
     icon: 'size-4',
     flyoutGroup: 'flex items-center',
     flyoutTrigger:

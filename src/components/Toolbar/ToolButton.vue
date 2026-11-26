@@ -34,5 +34,7 @@ const emit = defineEmits<{
     @click="emit('click')"
   >
     <component :is="icon" :class="styles.icon({ class: ui?.icon })" />
+    <!-- A badge over the icon, such as unread comments. -->
+    <slot />
   </ToolbarButton>
 </template>

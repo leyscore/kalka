@@ -26,13 +26,26 @@ export interface CommentAuthor {
   name: string
 }
 
+/** An emoji people reacted to a message with, and who did, each once. */
+export interface CommentReaction {
+  emoji: string
+  people: string[]
+}
+
 export interface CommentMessage {
   id: string
   author: CommentAuthor
   text: string
   /** Milliseconds since the epoch. */
   createdAt: number
+  /** Emoji reactions, in the order they were first given. */
+  reactions?: CommentReaction[]
+  /** People the message mentions by `@name`, who are notified of it. */
+  mentions?: string[]
 }
+
+/** The reactions a comment offers, as Figma's quick picks: a reaction is a nod, not a message. */
+export const COMMENT_REACTIONS = ['👍', '❤️', '😂', '🎉', '👀', '🙏', '✅', '🔥'] as const
 
 /**
  * What a thread is pinned to: a layer, with the point as an offset from its top-left corner so the
@@ -64,11 +77,22 @@ const author = v.object({
   name: v.pipe(v.string(), v.maxLength(80))
 })
 
+const personName = v.pipe(v.string(), v.maxLength(80))
+
 const message = v.object({
   id: v.string(),
   author,
   text: v.pipe(v.string(), v.maxLength(MAX_COMMENT_LENGTH)),
-  createdAt: v.pipe(v.number(), v.finite())
+  createdAt: v.pipe(v.number(), v.finite()),
+  reactions: v.optional(
+    v.array(
+      v.object({
+        emoji: v.pipe(v.string(), v.minLength(1), v.maxLength(16)),
+        people: v.array(personName)
+      })
+    )
+  ),
+  mentions: v.optional(v.array(personName))
 })
 
 const threadSchema = v.object({
@@ -128,13 +152,87 @@ function updateThread(
   return updated
 }
 
-function newMessage(from: CommentAuthor, text: string, now: number): CommentMessage {
-  return {
+function newMessage(
+  from: CommentAuthor,
+  text: string,
+  now: number,
+  mentions: readonly string[] = []
+): CommentMessage {
+  const message: CommentMessage = {
     id: randomHex(8),
     author: { ...from },
     text: text.trim().slice(0, MAX_COMMENT_LENGTH),
     createdAt: now
   }
+  if (mentions.length > 0) message.mentions = [...mentions]
+  return message
+}
+
+const NAME_CHARACTER = /[\p{L}\p{N}_-]/u
+
+/**
+ * The people a message mentions, by an `@name` among `people`, matched without case; a name with
+ * spaces is matched whole, so `@Ada Lovelace` mentions Ada Lovelace. Each person once, in order.
+ */
+export function mentionedPeople(text: string, people: readonly string[]): string[] {
+  const lower = text.toLowerCase()
+  const found: { name: string; at: number }[] = []
+  for (const name of people) {
+    const wanted = `@${name.toLowerCase()}`
+    let at = lower.indexOf(wanted)
+    while (at >= 0) {
+      const after = lower.charAt(at + wanted.length)
+      const before = at > 0 ? lower.charAt(at - 1) : ''
+      // A mention starts a word and ends the name: `@Ada` is not one of `@Adam` or `me@ada.com`.
+      if (!NAME_CHARACTER.test(after) && !NAME_CHARACTER.test(before)) {
+        found.push({ name, at })
+        break
+      }
+      at = lower.indexOf(wanted, at + 1)
+    }
+  }
+  // A longer name found at the same place wins: `@Ada Lovelace` over `@Ada`.
+  const kept = found.filter(
+    (entry) =>
+      !found.some(
+        (other) => other !== entry && other.at === entry.at && other.name.length > entry.name.length
+      )
+  )
+  return kept.sort((a, b) => a.at - b.at).map((entry) => entry.name)
+}
+
+/**
+ * Gives a reaction, or takes it back when `person` already gave it. A reaction nobody gives any
+ * more goes.
+ */
+export function toggleCommentReaction(
+  graph: SceneGraph,
+  threadId: string,
+  messageId: string,
+  emoji: string,
+  person: string
+): CommentThread | undefined {
+  return updateThread(graph, threadId, (thread) => ({
+    ...thread,
+    messages: thread.messages.map((message) => {
+      if (message.id !== messageId) return message
+      const reactions = message.reactions ?? []
+      const existing = reactions.find((reaction) => reaction.emoji === emoji)
+      let next: CommentReaction[]
+      if (!existing) next = [...reactions, { emoji, people: [person] }]
+      else
+        next = reactions
+          .map((reaction) => {
+            if (reaction !== existing) return reaction
+            const people = reaction.people.includes(person)
+              ? reaction.people.filter((name) => name !== person)
+              : [...reaction.people, person]
+            return { ...reaction, people }
+          })
+          .filter((reaction) => reaction.people.length > 0)
+      return { ...message, reactions: next }
+    })
+  }))
 }
 
 /**
@@ -155,12 +253,12 @@ export function addCommentThread(
   anchor: CommentAnchor,
   from: CommentAuthor,
   text: string,
-  options: { agent?: string | null; now?: number } = {}
+  options: { agent?: string | null; now?: number; mentions?: readonly string[] } = {}
 ): CommentThread {
   const thread: CommentThread = {
     id: randomHex(8),
     anchor: { ...anchor },
-    messages: [newMessage(from, text, options.now ?? Date.now())],
+    messages: [newMessage(from, text, options.now ?? Date.now(), options.mentions)],
     resolved: false
   }
   if (options.agent) thread.agent = { name: options.agent, state: 'waiting' }
@@ -177,12 +275,15 @@ export function replyToComment(
   id: string,
   from: CommentAuthor,
   text: string,
-  options: { agent?: string | null; now?: number } = {}
+  options: { agent?: string | null; now?: number; mentions?: readonly string[] } = {}
 ): CommentThread | undefined {
   return updateThread(graph, id, (thread) => {
     const next: CommentThread = {
       ...thread,
-      messages: [...thread.messages, newMessage(from, text, options.now ?? Date.now())],
+      messages: [
+        ...thread.messages,
+        newMessage(from, text, options.now ?? Date.now(), options.mentions)
+      ],
       resolved: false,
       resolvedBy: undefined
     }

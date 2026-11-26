@@ -5,6 +5,7 @@ import type { CommentThread } from '@kalka/scene-graph'
 import type { Vector } from '@kalka/scene-graph/primitives'
 import { useCommentsMessages } from '@kalka/vue'
 
+import { useCommentInbox } from '@/app/comments/inbox'
 import { useComments } from '@/app/comments/service'
 import { agentChanges, restoreBeforeChange } from '@/app/document/versions/bursts'
 import { useEditorStore } from '@/app/editor/active-store'
@@ -15,21 +16,33 @@ import AppButton from '@/components/ui/button/AppButton.vue'
  * Comments and agents' work: the document's threads, open or resolved, and what its agents said
  * they worked on. Choosing a thread or a task goes to where it is and, for a thread, opens it.
  */
-type Tab = 'open' | 'resolved' | 'tasks' | 'changes'
+type Tab = 'open' | 'forYou' | 'resolved' | 'tasks' | 'changes'
 
 const store = useEditorStore()
 const comments = useComments(store)
+const inbox = useCommentInbox(store, comments)
 const messages = useCommentsMessages()
 const tab = ref<Tab>('open')
-const tabs: Tab[] = ['open', 'resolved', 'tasks', 'changes']
+const tabs: Tab[] = ['open', 'resolved', 'tasks', 'changes', 'forYou']
+
+/** For you: the threads with a mention of this person or a reply to them, newest first. */
+const forYou = computed(() => {
+  const threads: CommentThread[] = []
+  for (const { thread } of inbox.notifications.value)
+    if (!threads.some((known) => known.id === thread.id)) threads.push(thread)
+  return threads
+})
 
 const listed = computed(() =>
-  comments.threads.value.filter((thread) => thread.resolved === (tab.value === 'resolved'))
+  tab.value === 'forYou'
+    ? forYou.value
+    : comments.threads.value.filter((thread) => thread.resolved === (tab.value === 'resolved'))
 )
 const tasks = computed(() => agentTasks(store.graph).value)
 const changes = computed(() => agentChanges(store.graph).value)
 
 function tabLabel(name: Tab): string {
+  if (name === 'forYou') return messages.value.forYou
   if (name === 'tasks') return messages.value.tasks
   if (name === 'changes') return messages.value.changes
   return name === 'open' ? messages.value.open : messages.value.resolved
@@ -65,9 +78,26 @@ async function revealTask(task: AgentTask) {
     data-slot="comments-panel"
     :aria-label="messages.title"
   >
-    <h3 class="shrink-0 px-4 pt-3 pb-2 text-[11px] font-semibold text-muted">
-      {{ messages.title }}
-    </h3>
+    <header class="flex shrink-0 items-center gap-2 px-4 pt-3 pb-2">
+      <h3 class="text-[11px] font-semibold text-muted">{{ messages.title }}</h3>
+      <span
+        v-if="inbox.unread.value.length > 0"
+        class="rounded-full bg-error px-1.5 text-[10px] font-semibold text-white"
+        data-slot="comments-unread-count"
+      >
+        {{ messages.unreadCount({ count: inbox.unread.value.length }) }}
+      </span>
+      <span class="flex-1" />
+      <AppButton
+        v-if="inbox.unread.value.length > 0"
+        size="xs"
+        variant="ghost"
+        data-slot="comments-mark-all-read"
+        @click="inbox.markAllRead()"
+      >
+        {{ messages.markAllRead }}
+      </AppButton>
+    </header>
     <div role="tablist" class="flex flex-wrap gap-1 px-3 pb-2">
       <button
         v-for="name in tabs"
@@ -160,7 +190,13 @@ async function revealTask(task: AgentTask) {
       >
         <icon-hugeicons-comment-01 class="size-5 text-surface/60" aria-hidden="true" />
         <p class="max-w-56 text-sm text-surface/75">
-          {{ tab === 'resolved' ? messages.emptyResolved : messages.empty }}
+          {{
+            tab === 'resolved'
+              ? messages.emptyResolved
+              : tab === 'forYou'
+                ? messages.emptyForYou
+                : messages.empty
+          }}
         </p>
       </div>
       <ul v-else class="flex min-h-0 flex-1 flex-col overflow-y-auto px-1.5 pb-2">
@@ -170,9 +206,17 @@ async function revealTask(task: AgentTask) {
             class="flex w-full flex-col gap-0.5 rounded-lg px-2 py-2 text-left hover:bg-hover data-[open]:bg-panel-selected"
             data-slot="comments-panel-thread"
             :data-open="comments.state.value.openThreadId === thread.id || undefined"
+            :data-unread="inbox.isUnread(thread) || undefined"
             @click="reveal(thread)"
           >
             <span class="flex items-center gap-1 text-xs text-muted">
+              <span
+                v-if="inbox.isUnread(thread)"
+                class="size-1.5 shrink-0 rounded-full bg-error"
+                data-slot="comment-unread-dot"
+              >
+                <span class="sr-only">{{ messages.unread }}</span>
+              </span>
               <span class="font-medium text-surface">{{ thread.messages[0]?.author.name }}</span>
               <span class="flex-1" />
               {{ messages.pageLabel({ page: pageName(thread.anchor.pageId) }) }}

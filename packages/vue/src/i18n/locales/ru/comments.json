@@ -42,5 +42,17 @@
   "changeLabel": "{name} изменил {page}",
   "edits": "Правок: {count}",
   "restoreBefore": "Восстановить до этого",
-  "restoreUndo": "Восстановить до изменения агента"
+  "restoreUndo": "Восстановить до изменения агента",
+  "addReaction": "Добавить реакцию",
+  "reactWith": "Реакция {emoji}",
+  "reactedWith": "{emoji} от {names}",
+  "mentionPeople": "Кого упомянуть",
+  "forYou": "Для вас",
+  "emptyForYou": "Пока ничего. Здесь появятся упоминания и ответы на ваши комментарии.",
+  "markAllRead": "Отметить все как прочитанные",
+  "unread": "Не прочитано",
+  "unreadCount": "Не прочитано: {count}",
+  "notifyMention": "{name} упоминает вас: {text}",
+  "notifyReply": "{name} отвечает: {text}",
+  "showComment": "Показать"
 }

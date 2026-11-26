@@ -11,6 +11,7 @@ import {
   replyToComment,
   setCommentAgentState,
   setCommentResolved,
+  toggleCommentReaction,
   type CommentAnchor,
   type CommentThread,
   type SceneGraph
@@ -295,23 +296,28 @@ export function useComments(store: EditorStore) {
     open(id: string | null) {
       state.value = { ...state.value, openThreadId: id, draft: null }
     },
-    /** Posts the draft as a new thread, asking an agent it mentions. */
-    post(text: string): CommentThread | null {
+    /** Posts the draft as a new thread, asking an agent it mentions and noting the people. */
+    post(text: string, mentions: readonly string[] = []): CommentThread | null {
       const anchor = state.value.draft
       if (!anchor || !text.trim()) return null
       const agent = mentionedAgent(text, mentionableAgents(store))
-      const thread = addCommentThread(store.graph, anchor, author(), text, { agent })
+      const thread = addCommentThread(store.graph, anchor, author(), text, { agent, mentions })
       state.value = { ...state.value, draft: null, openThreadId: thread.id, placing: false }
       changed()
       dispatch(thread)
       return thread
     },
-    reply(id: string, text: string) {
+    reply(id: string, text: string, mentions: readonly string[] = []) {
       if (!text.trim()) return
       const agent = mentionedAgent(text, mentionableAgents(store))
-      const thread = replyToComment(store.graph, id, author(), text, { agent })
+      const thread = replyToComment(store.graph, id, author(), text, { agent, mentions })
       changed()
       dispatch(thread)
+    },
+    /** Gives an emoji reaction to a message, or takes it back. */
+    react(threadId: string, messageId: string, emoji: string) {
+      toggleCommentReaction(store.graph, threadId, messageId, emoji, author().name)
+      changed()
     },
     /** A resolved thread closes, so its pin leaves the canvas at once. */
     resolve(id: string, resolved: boolean) {

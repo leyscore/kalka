@@ -42,5 +42,17 @@
   "changeLabel": "{name} が {page} を変更",
   "edits": "{count} 件の編集",
   "restoreBefore": "この前に戻す",
-  "restoreUndo": "エージェントの変更前に戻す"
+  "restoreUndo": "エージェントの変更前に戻す",
+  "addReaction": "リアクションを追加",
+  "reactWith": "{emoji} でリアクション",
+  "reactedWith": "{names} の {emoji}",
+  "mentionPeople": "メンションする人",
+  "forYou": "あなた宛て",
+  "emptyForYou": "まだありません。あなたへのメンションやコメントへの返信がここに表示されます。",
+  "markAllRead": "すべて既読にする",
+  "unread": "未読",
+  "unreadCount": "未読 {count} 件",
+  "notifyMention": "{name} があなたをメンションしました: {text}",
+  "notifyReply": "{name} が返信しました: {text}",
+  "showComment": "表示"
 }

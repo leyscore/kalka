@@ -1,15 +1,25 @@
 <script setup lang="ts">
 import { useElementSize } from '@vueuse/core'
-import { computed, nextTick, ref, useTemplateRef, watch, type ComponentPublicInstance } from 'vue'
+import {
+  computed,
+  nextTick,
+  ref,
+  toRaw,
+  useTemplateRef,
+  watch,
+  type ComponentPublicInstance
+} from 'vue'
 
 import type { ViewportTransform } from '@kalka/core/geometry'
 import type { CommentAnchor, CommentThread } from '@kalka/scene-graph'
 import type { Vector } from '@kalka/scene-graph/primitives'
 import { useCommentsMessages } from '@kalka/vue'
 
+import { useCommentInbox, type CommentNotification } from '@/app/comments/inbox'
 import { commentCardPlacement } from '@/app/comments/placement'
 import { useComments } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
+import { toast } from '@/app/shell/ui'
 
 import CommentThreadCard from './CommentThreadCard.vue'
 
@@ -25,6 +35,7 @@ const { view, drawn } = defineProps<{
 
 const store = useEditorStore()
 const comments = useComments(store)
+const inbox = useCommentInbox(store, comments)
 const messages = useCommentsMessages()
 const layer = ref<HTMLElement | null>(null)
 const placement = computed(() => drawn ?? view)
@@ -143,6 +154,66 @@ const cardPosition = computed(() => {
   return { left: `${left}px`, top: `${top}px` }
 })
 
+// An open thread is read, and so is what arrives in it while it stays open.
+watch(
+  () => {
+    const thread = comments.openThread.value
+    return thread ? [thread.id, thread.messages.length] : null
+  },
+  () => {
+    const thread = comments.openThread.value
+    if (thread) inbox.markRead(thread)
+  },
+  { immediate: true }
+)
+
+/**
+ * What arrives for this person while the document is open, from someone else in the room: a
+ * mention of them or a reply to them shows as a notice that goes to the thread. What was there
+ * when the document opened waits in the comments panel instead.
+ */
+const LIVE_NOTICE_MS = 2 * 60 * 1000
+let notifiedGraph: unknown = null
+const notified = new Set<string>()
+const notificationKey = (entry: CommentNotification) => `${entry.thread.id}:${entry.message.id}`
+watch(
+  inbox.notifications,
+  (entries) => {
+    const graph = toRaw(store.graph)
+    const seeding = notifiedGraph !== graph
+    if (seeding) {
+      notifiedGraph = graph
+      notified.clear()
+    }
+    for (const entry of entries) {
+      const key = notificationKey(entry)
+      if (notified.has(key)) continue
+      notified.add(key)
+      // A room's comments arrive after it opens: only what was written just now is news.
+      const recent = Date.now() - entry.message.createdAt < LIVE_NOTICE_MS
+      if (seeding || !recent || entry.thread.id === comments.state.value.openThreadId) continue
+      const params = { name: entry.message.author.name, text: entry.message.text.slice(0, 80) }
+      toast.info(
+        entry.reason === 'mention'
+          ? messages.value.notifyMention(params)
+          : messages.value.notifyReply(params),
+        { label: messages.value.showComment, run: () => void revealThread(entry.thread.id) }
+      )
+    }
+  },
+  { immediate: true }
+)
+
+async function revealThread(id: string) {
+  const thread = comments.threads.value.find((candidate) => candidate.id === id)
+  if (!thread) return
+  if (store.state.currentPageId !== thread.anchor.pageId)
+    await store.switchPage(thread.anchor.pageId)
+  const point = comments.position(thread)
+  if (point) store.centerOn(point.x, point.y, Math.max(store.state.zoom, 1))
+  comments.open(thread.id)
+}
+
 watch(
   () => [comments.state.value.draft, comments.state.value.openThreadId],
   async () => {
@@ -179,6 +250,7 @@ watch(
       class="group pointer-events-auto absolute flex size-4 -translate-y-full items-center justify-center rounded-full rounded-bl-none border-2 border-white bg-accent text-xs font-semibold text-white shadow-md transition-[width,height] hover:size-7 data-[open]:size-7 data-[state=answered]:bg-success data-[state=failed]:bg-error data-[state=resolved]:bg-muted data-[state=waiting]:animate-pulse data-[state=working]:bg-component"
       data-slot="comment-pin"
       :data-state="stateOf(pin.thread)"
+      :data-unread="inbox.isUnread(pin.thread) || undefined"
       :data-open="comments.state.value.openThreadId === pin.thread.id || undefined"
       :aria-label="
         messages.pin({
@@ -199,6 +271,14 @@ watch(
       <span v-else class="hidden group-hover:inline group-data-[open]:inline">
         {{ initial(pin.thread) }}
       </span>
+      <!-- Unread: a dot on the pin until the thread is opened. -->
+      <span
+        v-if="inbox.isUnread(pin.thread)"
+        class="absolute -top-1 -right-1 size-2 rounded-full border border-white bg-error"
+        data-slot="comment-unread-dot"
+      >
+        <span class="sr-only">{{ messages.unread }}</span>
+      </span>
     </button>
     <span
       v-if="draftPosition"
@@ -212,6 +292,7 @@ watch(
       class="pointer-events-auto absolute"
       :thread="draftPosition ? undefined : openPin?.thread"
       :comments="comments"
+      :inbox="inbox"
       :style="cardPosition"
     />
   </div>

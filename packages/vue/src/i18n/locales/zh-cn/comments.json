@@ -42,5 +42,17 @@
   "changeLabel": "{name} 修改了 {page}",
   "edits": "{count} 次编辑",
   "restoreBefore": "还原到此之前",
-  "restoreUndo": "还原到智能体更改之前"
+  "restoreUndo": "还原到智能体更改之前",
+  "addReaction": "添加回应",
+  "reactWith": "用 {emoji} 回应",
+  "reactedWith": "{names} 的 {emoji}",
+  "mentionPeople": "要提及的人",
+  "forYou": "与你相关",
+  "emptyForYou": "暂时没有。提及你的内容和对你评论的回复会显示在这里。",
+  "markAllRead": "全部标为已读",
+  "unread": "未读",
+  "unreadCount": "{count} 条未读",
+  "notifyMention": "{name} 提及了你：{text}",
+  "notifyReply": "{name} 回复了：{text}",
+  "showComment": "查看"
 }

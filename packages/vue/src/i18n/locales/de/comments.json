@@ -42,5 +42,17 @@
   "changeLabel": "{name} hat {page} geändert",
   "edits": "{count} Bearbeitungen",
   "restoreBefore": "Davor wiederherstellen",
-  "restoreUndo": "Vor einer Agentenänderung wiederherstellen"
+  "restoreUndo": "Vor einer Agentenänderung wiederherstellen",
+  "addReaction": "Reaktion hinzufügen",
+  "reactWith": "Mit {emoji} reagieren",
+  "reactedWith": "{emoji} von {names}",
+  "mentionPeople": "Personen erwähnen",
+  "forYou": "Für Sie",
+  "emptyForYou": "Noch nichts für Sie. Erwähnungen und Antworten auf Ihre Kommentare erscheinen hier.",
+  "markAllRead": "Alle als gelesen markieren",
+  "unread": "Ungelesen",
+  "unreadCount": "{count} ungelesen",
+  "notifyMention": "{name} hat Sie erwähnt: {text}",
+  "notifyReply": "{name} hat geantwortet: {text}",
+  "showComment": "Anzeigen"
 }
