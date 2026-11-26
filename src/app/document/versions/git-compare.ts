@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 
 import type { SceneGraph } from '@kalka/scene-graph'
-import { applyLayerChanges, diffLayers, type LayerChange } from '@kalka/scene-graph/diff'
+import { applyDocumentChanges, diffDocument } from '@kalka/scene-graph/diff'
 
 import { call } from '@/app/platform/tauri/bridge'
 
@@ -9,7 +9,7 @@ import { compareForMerge, compareStates } from './compare'
 
 /**
  * Compare changes for a document kept in Git: a version read back from a commit, and a branch
- * reviewed layer by layer from the version it shares with the current one.
+ * reviewed change by change from the version it shares with the current one.
  */
 
 const DocumentAtSchema = v.variant('kind', [
@@ -89,19 +89,36 @@ export async function reviewGitBranch(review: GitBranchReview): Promise<void> {
       kind: 'merge',
       otherSide: review.labels.current,
       apply: async (changes) => {
-        const taken = new Set(changes.map((change) => change.id))
+        const taken = new Set([...changes.layers, ...changes.variables].map((change) => change.id))
+        // A layer taken with only some of its properties is put back for the others.
+        const partly = new Map(changes.layers.map((change) => [change.id, change]))
+        const branchChanges = diffDocument(base, incoming)
         const left = new Set(
-          diffLayers(base, incoming)
+          [...branchChanges.layers, ...branchChanges.variables]
             .filter((change) => !taken.has(change.id))
             .map((change) => change.id)
         )
+        const narrowed = branchChanges.layers.some((change) => {
+          const kept = partly.get(change.id)
+          return kept !== undefined && kept.fields.length < change.fields.length
+        })
         await review.merge()
-        if (left.size === 0) return []
+        if (left.size === 0 && !narrowed) return []
         const graph = review.merged()
-        const putBack: LayerChange[] = diffLayers(graph, before).filter((change) =>
-          left.has(change.id)
-        )
-        return applyLayerChanges(graph, before, putBack)
+        const back = diffDocument(graph, before)
+        const putBack = {
+          layers: back.layers.flatMap((change) => {
+            if (left.has(change.id)) return [change]
+            const kept = partly.get(change.id)
+            if (!kept) return []
+            const fields = change.fields.filter((field) => !kept.fields.includes(field))
+            return fields.length > 0
+              ? [{ ...change, fields, moved: change.moved && !kept.moved }]
+              : []
+          }),
+          variables: back.variables.filter((change) => left.has(change.id))
+        }
+        return applyDocumentChanges(graph, before, putBack)
       }
     }
   })

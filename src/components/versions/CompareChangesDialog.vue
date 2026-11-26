@@ -4,7 +4,7 @@ import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
 import { tv } from 'tailwind-variants'
 import { computed, ref, shallowRef, watch } from 'vue'
 
-import type { LayerChange, LayerPropertyGroup } from '@kalka/scene-graph/diff'
+import type { LayerChange } from '@kalka/scene-graph/diff'
 import { useI18n } from '@kalka/vue'
 
 import { renderToolChangeImages } from '@/app/ai/tools/changes/images'
@@ -20,15 +20,22 @@ import AppCheckbox from '@/components/ui/toggle/AppCheckbox.vue'
 import { chatToolTheme } from '@/theme/chat/tool'
 import splitterTheme from '@/theme/splitter'
 
+import { useCompareChoices } from './useCompareChoices'
+
 /**
- * Compare changes: the layers two states of a document differ by, grouped by page, each with
- * what changed, and the selected one drawn before and after, side by side or overlaid. When the
- * comparison leads to a merge, each change has a tick to take it or keep the other side.
+ * Compare changes: the layers two states of a document differ by, grouped by page, then its
+ * components, styles and variables, each with what changed, and the selected layer drawn before
+ * and after, side by side or overlaid. When the comparison leads to a merge, each change has a
+ * tick to take it or keep the other side, and a changed layer a tick per property family.
  */
 const { panels } = useI18n()
 const store = useEditorStore()
 const images = chatToolTheme()
 const splitter = tv(splitterTheme)({ direction: 'horizontal' })
+const row =
+  'flex items-start gap-2 rounded-md px-1.5 py-1 text-left text-xs hover:bg-hover data-[selected]:bg-hover'
+const dot =
+  'mt-1 size-2 shrink-0 rounded-full data-[kind=added]:bg-success data-[kind=changed]:bg-accent data-[kind=removed]:bg-error'
 
 const open = computed({
   get: () => openComparison.value !== null,
@@ -37,44 +44,30 @@ const open = computed({
   }
 })
 const comparison = computed(() => openComparison.value)
-const selectedId = ref<string | null>(null)
-const taken = ref(new Set<string>())
 const mode = ref<'side' | 'overlay'>('side')
 const busy = ref(false)
 const error = ref('')
-
-watch(
-  comparison,
-  (next) => {
-    selectedId.value = next?.changes[0]?.id ?? null
-    // A change the other side made too stays theirs until it is ticked.
-    taken.value = new Set(
-      next?.changes.filter((change) => !next.merge?.conflicts.has(change.id)).map((c) => c.id)
-    )
-    error.value = ''
-  },
-  { immediate: true }
-)
-
-const pages = computed(() => {
-  const current = comparison.value
-  if (!current) return []
-  const byPage = new Map<string, LayerChange[]>()
-  for (const change of current.changes) {
-    const key = change.pageId ?? ''
-    byPage.set(key, [...(byPage.get(key) ?? []), change])
-  }
-  return [...byPage].map(([pageId, changes]) => ({
-    id: pageId,
-    name: (current.after.getNode(pageId) ?? current.before.getNode(pageId))?.name ?? '',
-    changes: changes.filter((change) => change.id !== pageId),
-    page: changes.find((change) => change.id === pageId) ?? null
-  }))
-})
-
-const selected = computed(
-  () => comparison.value?.changes.find((change) => change.id === selectedId.value) ?? null
-)
+const {
+  sections,
+  selected,
+  selectedId,
+  selectedVariable,
+  selectedVariableId,
+  taken,
+  takenVariables,
+  isEmpty,
+  select,
+  selectVariable,
+  summary,
+  variableSummary,
+  groupLabel,
+  toggle,
+  toggleVariable,
+  takesGroup,
+  toggleGroup,
+  chosen
+} = useCompareChoices(comparison)
+watch(comparison, () => (error.value = ''))
 
 const preview = shallowRef<ToolChangeImages | null>(null)
 const rendering = ref(false)
@@ -104,39 +97,6 @@ const aspectRatio = computed(() =>
     : undefined
 )
 
-const GROUP_LABEL = {
-  name: 'compareGroupName',
-  order: 'compareGroupOrder',
-  position: 'compareGroupPosition',
-  size: 'compareGroupSize',
-  fill: 'compareGroupFill',
-  stroke: 'compareGroupStroke',
-  effects: 'compareGroupEffects',
-  opacity: 'compareGroupOpacity',
-  corners: 'compareGroupCorners',
-  text: 'compareGroupText',
-  layout: 'compareGroupLayout',
-  visibility: 'compareGroupVisibility',
-  css: 'compareGroupCss',
-  other: 'compareGroupOther'
-} as const satisfies Record<LayerPropertyGroup, string>
-
-function summary(change: LayerChange): string {
-  if (change.kind === 'changed')
-    return change.groups.map((group) => panels.value[GROUP_LABEL[group]]).join(', ')
-  const kind = change.kind === 'added' ? panels.value.compareAdded : panels.value.compareRemoved
-  return change.descendants > 0
-    ? panels.value.compareWithInside({ kind, count: change.descendants })
-    : kind
-}
-
-function toggle(id: string, value: boolean) {
-  const next = new Set(taken.value)
-  if (value) next.add(id)
-  else next.delete(id)
-  taken.value = next
-}
-
 function showOnCanvas(change: LayerChange) {
   closeComparison()
   void focusNodesOnTheirPage(store, [change.id])
@@ -148,8 +108,7 @@ async function apply() {
   busy.value = true
   error.value = ''
   try {
-    const chosen = current.changes.filter((change) => taken.value.has(change.id))
-    const skipped = await current.merge.apply(chosen)
+    const skipped = await current.merge.apply(chosen())
     if (skipped.length > 0) toast.info(panels.value.compareSkipped({ count: skipped.length }))
     closeComparison()
   } catch (cause) {
@@ -181,10 +140,10 @@ async function apply() {
   >
     <div v-if="comparison" class="flex min-h-80 gap-4">
       <div class="flex w-72 shrink-0 flex-col gap-2 overflow-y-auto">
-        <p v-if="!comparison.changes.length" class="text-xs text-muted">
+        <p v-if="isEmpty" class="text-xs text-muted">
           {{ panels.compareNone }}
         </p>
-        <section v-for="page in pages" :key="page.id" class="flex flex-col gap-0.5">
+        <section v-for="page in sections" :key="page.id" class="flex flex-col gap-0.5">
           <h4 class="px-1 text-[11px] font-semibold text-muted">
             {{ page.name }}
             <span v-if="page.page">{{ summary(page.page) }}</span>
@@ -193,11 +152,11 @@ async function apply() {
             v-for="change in page.changes"
             :key="change.id"
             type="button"
-            class="flex items-start gap-2 rounded-md px-1.5 py-1 text-left text-xs hover:bg-hover data-[selected]:bg-hover"
+            :class="row"
             :data-selected="change.id === selectedId || undefined"
             :data-kind="change.kind"
             data-slot="compare-change"
-            @click="selectedId = change.id"
+            @click="select(change)"
           >
             <span v-if="comparison.merge" class="flex" data-slot="compare-take" @click.stop>
               <AppCheckbox
@@ -206,14 +165,50 @@ async function apply() {
                 @update:model-value="toggle(change.id, $event)"
               />
             </span>
-            <span
-              class="mt-1 size-2 shrink-0 rounded-full data-[kind=added]:bg-success data-[kind=changed]:bg-accent data-[kind=removed]:bg-error"
-              :data-kind="change.kind"
-              aria-hidden="true"
-            />
+            <span :class="dot" :data-kind="change.kind" aria-hidden="true" />
             <span class="min-w-0 flex-1">
               <span class="block truncate text-surface">{{ change.name }}</span>
               <span class="block truncate text-[11px] text-muted">{{ summary(change) }}</span>
+              <span
+                v-if="comparison.merge?.conflicts.has(change.id)"
+                class="block text-[11px] text-warning"
+                data-slot="compare-conflict"
+              >
+                {{ panels.compareConflict({ name: comparison.merge.otherSide }) }}
+              </span>
+            </span>
+          </button>
+        </section>
+        <section v-if="comparison.variables.length" class="flex flex-col gap-0.5">
+          <h4 class="px-1 text-[11px] font-semibold text-muted">{{ panels.compareVariables }}</h4>
+          <button
+            v-for="change in comparison.variables"
+            :key="change.id"
+            type="button"
+            :class="row"
+            :data-selected="change.id === selectedVariableId || undefined"
+            :data-kind="change.kind"
+            data-slot="compare-variable"
+            @click="selectVariable(change)"
+          >
+            <span v-if="comparison.merge" class="flex" data-slot="compare-take" @click.stop>
+              <AppCheckbox
+                :model-value="takenVariables.has(change.id)"
+                :ariaLabel="panels.compareTake({ name: change.name })"
+                @update:model-value="toggleVariable(change.id, $event)"
+              />
+            </span>
+            <span :class="dot" :data-kind="change.kind" aria-hidden="true" />
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-surface">
+                {{ change.name }}
+                <span v-if="change.entity === 'variable'" class="text-muted">
+                  {{ change.collection }}
+                </span>
+              </span>
+              <span class="block truncate text-[11px] text-muted">
+                {{ variableSummary(change) }}
+              </span>
               <span
                 v-if="comparison.merge?.conflicts.has(change.id)"
                 class="block text-[11px] text-warning"
@@ -256,6 +251,37 @@ async function apply() {
             {{ panels.compareShowOnCanvas }}
           </AppButton>
         </div>
+        <fieldset
+          v-if="comparison.merge && selected?.kind === 'changed' && selected.groups.length > 1"
+          class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs"
+          data-slot="compare-groups"
+        >
+          <legend class="pb-1 text-[11px] text-muted">{{ panels.compareProperties }}</legend>
+          <label
+            v-for="group in selected.groups"
+            :key="group"
+            class="flex items-center gap-1"
+            :data-conflict="
+              comparison.merge.conflictGroups.get(selected.id)?.has(group) || undefined
+            "
+          >
+            <AppCheckbox
+              :model-value="taken.has(selected.id) && takesGroup(selected.id, group)"
+              :ariaLabel="panels.compareTakeGroup({ group: groupLabel(group) })"
+              @update:model-value="toggleGroup(selected, group, $event)"
+            />
+            <span
+              :class="
+                comparison.merge.conflictGroups.get(selected.id)?.has(group) ? 'text-warning' : ''
+              "
+            >
+              {{ groupLabel(group) }}
+            </span>
+          </label>
+        </fieldset>
+        <p v-if="selectedVariable" class="text-xs text-muted" data-slot="compare-variable-detail">
+          {{ variableSummary(selectedVariable) }}
+        </p>
         <p v-if="rendering" class="text-xs text-muted">{{ panels.compareRendering }}</p>
         <div
           v-else-if="preview && mode === 'side'"

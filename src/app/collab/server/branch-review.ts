@@ -1,4 +1,4 @@
-import { applyLayerChanges } from '@kalka/scene-graph/diff'
+import { applyDocumentChanges } from '@kalka/scene-graph/diff'
 
 import { compareForMerge } from '@/app/document/versions/compare'
 import type { EditorStore } from '@/app/editor/active-store'
@@ -8,7 +8,7 @@ import { serverAPI, type ServerDocument } from './api'
 import { openServerDocument, saveServerFile, serverDocuments } from './documents'
 
 /**
- * Reviewing a server branch layer by layer, as Figma reviews one before a merge: what the branch
+ * Reviewing a server branch change by change, as Figma reviews one before a merge: what the branch
  * changed since it began, each change taken or left, merged into the main file as one version;
  * and the other way, updating the branch with what the main file changed since.
  */
@@ -58,7 +58,7 @@ export async function reviewServerMerge(
       otherSide: labels.main,
       apply: async (changes) => {
         const target = await readArchive(main.data)
-        const skipped = applyLayerChanges(target, store.graph, changes)
+        const skipped = applyDocumentChanges(target, store.graph, changes)
         const { writeKalkaArchive } = await import('@kalka/core/io/formats/kalka')
         const bytes = await writeKalkaArchive(target)
         const document = await withServerSession((url, token) =>
@@ -96,7 +96,7 @@ export async function reviewServerUpdate(
       kind: 'update',
       otherSide: labels.branch,
       apply: async (changes) => {
-        const skipped = applyLayerChanges(store.graph, incoming, changes)
+        const skipped = applyDocumentChanges(store.graph, incoming, changes)
         store.undo.clear()
         store.requestRender()
         await saveServerFile(roomId, store)

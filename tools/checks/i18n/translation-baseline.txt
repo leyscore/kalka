@@ -156,6 +156,7 @@ es:panels.colorFormatHsl
 es:panels.colorFormatOkhcl
 es:panels.colorFormatRgb
 es:panels.compareGroupLayout
+es:panels.compareVariables
 es:panels.framePresetCategoryFigmaCommunity
 es:panels.gridAuto
 es:panels.gridColor
@@ -256,6 +257,10 @@ fr:panels.colorFormatOkhcl
 fr:panels.colorFormatRgb
 fr:panels.compareGroupLayout
 fr:panels.compareGroupPosition
+fr:panels.compareStyles
+fr:panels.compareVariableDescription
+fr:panels.compareVariableModes
+fr:panels.compareVariables
 fr:panels.description
 fr:panels.design
 fr:panels.dimensions

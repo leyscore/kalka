@@ -35,11 +35,18 @@ export const LAYER_PROPERTY_GROUPS = [
 
 export type LayerPropertyGroup = (typeof LAYER_PROPERTY_GROUPS)[number]
 
+/**
+ * What a layer is to a review, which lists components and styles apart from other layers, as
+ * Figma's branch review does: a component or a component set, a style's definition, or a layer.
+ */
+export type LayerAsset = 'component' | 'style' | null
+
 export interface LayerChange {
   id: string
   kind: LayerChangeKind
   name: string
   type: NodeType
+  asset: LayerAsset
   /** The page it is on: in the later state, or in the earlier one for a removed layer. */
   pageId: string | null
   /** The fields that differ on a changed layer; empty for one added or removed. */
@@ -74,14 +81,43 @@ group('layout', [...AUTO_LAYOUT_FIELDS, 'layoutPositioning', 'layoutGrow', 'layo
 group('visibility', ['visible', 'locked'])
 group('css', ['style'])
 
+/** The family a field belongs to. */
+export function layerFieldGroup(field: string): LayerPropertyGroup {
+  return FIELD_GROUPS.get(field) ?? 'other'
+}
+
+/**
+ * A changed layer's change kept to some of its families, as a review takes some properties of a
+ * layer and leaves the others; null when none of its families is kept.
+ */
+export function narrowLayerChange(
+  change: LayerChange,
+  groups: ReadonlySet<LayerPropertyGroup>
+): LayerChange | null {
+  if (change.kind !== 'changed') return change
+  if (!change.groups.some((group) => groups.has(group))) return null
+  // A field of a family the change does not list, as CSS beside named properties, goes with it.
+  const kept = change.fields.filter((field) => {
+    const group = layerFieldGroup(field)
+    return !change.groups.includes(group) || groups.has(group)
+  })
+  const moved = change.moved && groups.has('order')
+  return { ...change, fields: kept, moved, groups: layerPropertyGroups(kept, moved) }
+}
+
+/** What a layer is to a review: a component, a style's definition, or another layer. */
+export function layerAsset(node: SceneNode): LayerAsset {
+  if (node.sharedStyleType) return 'style'
+  if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') return 'component'
+  return null
+}
+
 /** The families the fields belong to; CSS counts only when no field explains it. */
 export function layerPropertyGroups(
   fields: readonly string[],
   moved = false
 ): LayerPropertyGroup[] {
-  const found = new Set<LayerPropertyGroup>(
-    fields.map((field) => FIELD_GROUPS.get(field) ?? 'other')
-  )
+  const found = new Set<LayerPropertyGroup>(fields.map((field) => layerFieldGroup(field)))
   if (moved) found.add('order')
   if (found.size > 1) found.delete('css')
   return LAYER_PROPERTY_GROUPS.filter((name) => found.has(name))
@@ -106,6 +142,11 @@ export function changedLayerFields(before: SceneNode, after: SceneNode): (keyof 
     if (!isEqualWith(before[field], after[field], sameValue)) changed.push(field)
   }
   return changed
+}
+
+/** Whether a node is a page the document keeps for itself, such as the one holding styles. */
+export function isInternalPage(graph: SceneGraph, node: SceneNode): boolean {
+  return node.type === 'CANVAS' && node.parentId === graph.rootId && node.internalOnly === true
 }
 
 function pageOf(graph: SceneGraph, id: string): string | null {
@@ -160,12 +201,15 @@ export function diffLayers(before: SceneGraph, after: SceneGraph): LayerChange[]
   const changes: LayerChange[] = []
   walk(after, (node) => {
     const previous = before.getNode(node.id)
+    // The page that holds style definitions is no page to a review: its styles are listed.
+    if (!previous && isInternalPage(after, node)) return true
     if (!previous || previous.id === before.rootId) {
       changes.push({
         id: node.id,
         kind: 'added',
         name: node.name,
         type: node.type,
+        asset: layerAsset(node),
         pageId: pageOf(after, node.id),
         fields: [],
         groups: [],
@@ -182,6 +226,7 @@ export function diffLayers(before: SceneGraph, after: SceneGraph): LayerChange[]
         kind: 'changed',
         name: node.name,
         type: node.type,
+        asset: layerAsset(node),
         pageId: pageOf(after, node.id),
         fields,
         groups: layerPropertyGroups(fields, moved),
@@ -192,12 +237,13 @@ export function diffLayers(before: SceneGraph, after: SceneGraph): LayerChange[]
     return true
   })
   walk(before, (node) => {
-    if (after.getNode(node.id)) return true
+    if (after.getNode(node.id) || isInternalPage(before, node)) return true
     changes.push({
       id: node.id,
       kind: 'removed',
       name: node.name,
       type: node.type,
+      asset: layerAsset(node),
       pageId: pageOf(before, node.id),
       fields: [],
       groups: [],

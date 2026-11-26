@@ -60,7 +60,7 @@ test('a named version is previewed in its own tab, then restored from there', as
   expect(await page.evaluate(() => window.kalka?.getStore?.()?.state.viewOnly)).toBeFalsy()
 })
 
-test('Compare changes lists the layers a version differs by and draws them', async ({ page }) => {
+test('Compare changes lists the layers and variables a version differs by', async ({ page }) => {
   const id = await open(page)
   await page.getByTestId('left-panel-history-tab').click()
   const history = page.getByTestId('checkpoint-history')
@@ -72,6 +72,8 @@ test('Compare changes lists the layers a version differs by and draws them', asy
   await page.evaluate((nodeId) => {
     const store = window.kalka?.getStore?.()
     store?.graph.updateNode(nodeId, { name: 'Card', width: 320 })
+    const colors = store?.graph.createCollection('Colors')
+    if (colors) store?.graph.createVariable('brand', 'COLOR', colors.id)
   }, id)
 
   await version.getByTestId('checkpoint-compare').click()
@@ -82,6 +84,13 @@ test('Compare changes lists the layers a version differs by and draws them', asy
   await expect(change).toHaveAttribute('data-kind', 'changed')
   await expect(change).toContainText('Card')
   await expect(change).toContainText(/Nom|Name/)
+  // Variables are listed after the layers, a collection with the variables it brings.
+  const variable = dialog.locator('[data-slot="compare-variable"]')
+  await expect(variable).toHaveCount(1)
+  await expect(variable).toHaveAttribute('data-kind', 'added')
+  await expect(variable).toContainText('Colors')
+  await expect(variable).toContainText(/: 1/)
+  await change.click()
   await expect(dialog.locator('[data-slot="compare-side"] img')).toHaveCount(2)
   await dialog.getByTestId('compare-overlay').click()
   await expect(dialog.locator('[data-slot="compare-overlay"] img')).toHaveCount(2)

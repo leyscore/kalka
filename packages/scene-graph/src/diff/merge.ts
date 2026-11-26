@@ -1,7 +1,7 @@
 import { omit } from 'es-toolkit'
 
 import type { SceneGraph, SceneNode } from '../'
-import { diffLayers, type LayerChange } from './layers'
+import { diffLayers, isInternalPage, type LayerChange } from './layers'
 
 /**
  * Bringing one state's layer changes into another, as a branch merge or an update from main
@@ -36,10 +36,17 @@ export function layerMerge(
   }
 }
 
-/** The target's parent for a layer whose parent in `from` is `parentId`; roots differ. */
+/**
+ * The target's parent for a layer whose parent in `from` is `parentId`; roots differ. A style
+ * taken into a document without the page that holds styles brings that page.
+ */
 function targetParent(target: SceneGraph, from: SceneGraph, parentId: string | null) {
   if (!parentId) return undefined
-  return target.getNode(parentId === from.rootId ? target.rootId : parentId)
+  const existing = target.getNode(parentId === from.rootId ? target.rootId : parentId)
+  const page = from.getNode(parentId)
+  if (existing || !page || !isInternalPage(from, page)) return existing
+  const props = omit(structuredClone(page), ['id', 'parentId', 'childIds'])
+  return target.createNodeWithId(page.id, 'CANVAS', target.rootId, { ...props, childIds: [] })
 }
 
 /**
