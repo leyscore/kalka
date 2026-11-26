@@ -120,12 +120,21 @@ export function listSetting(env: Env, name: string): string[] {
 
 /** Settings an administrator may change from the console; the environment wins over them. */
 export const CONSOLE_SETTINGS = [
-  'KALKA_SERVER_NAME', 'KALKA_LOCAL_LOGIN', 'KALKA_APP_ORIGINS', 'KALKA_LICENSE_KEY',
+  'KALKA_SERVER_NAME', 'KALKA_LOCAL_LOGIN', 'KALKA_APP_ORIGINS', 'KALKA_LICENSE_KEY', 'KALKA_VERSION_RETENTION_DAYS',
   'KALKA_SMTP_HOST', 'KALKA_SMTP_PORT', 'KALKA_SMTP_SECURE', 'KALKA_SMTP_USER', 'KALKA_SMTP_PASSWORD', 'KALKA_SMTP_FROM',
   'KALKA_OIDC_ISSUER', 'KALKA_OIDC_CLIENT_ID', 'KALKA_OIDC_CLIENT_SECRET', 'KALKA_OIDC_LABEL', 'KALKA_OIDC_SCOPES',
   'KALKA_OIDC_GROUPS_CLAIM', 'KALKA_OIDC_ADMIN_GROUPS', 'KALKA_OIDC_EDITOR_GROUPS', 'KALKA_OIDC_VIEWER_GROUPS',
   'KALKA_OIDC_ALLOWED_GROUPS', 'KALKA_OIDC_DEFAULT_ROLE', 'KALKA_OIDC_TRUST_EMAIL', 'KALKA_OIDC_TOKEN_AUTH'
 ] as const
+
+/**
+ * How many days the versions a file keeps by itself stay, or null to keep them all (the latest
+ * 50, as always). Named versions, and those kept before a restore, stay until the file goes.
+ */
+export function versionRetentionDays(env: Env): number | null {
+  const days = Number(setting(env, 'KALKA_VERSION_RETENTION_DAYS'))
+  return Number.isInteger(days) && days >= 1 && days <= 36500 ? days : null
+}
 
 /** Never sent back to the console, only whether they are set. */
 export const SECRET_SETTINGS = new Set(['KALKA_SMTP_PASSWORD', 'KALKA_OIDC_CLIENT_SECRET', 'KALKA_LICENSE_KEY'])

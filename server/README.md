@@ -15,6 +15,7 @@ The self-hosted server for [Kalka](https://kalka.design), the design editor whos
 - **Accounts.** The first administrator, then people you invite by link or email, as administrators, editors or viewers. Password reset, profile, deactivation and deletion.
 - **Share to edit or to view.** Whoever made a file, or an administrator, chooses whether members who open it can edit it or only view it; the server turns their edits away, in open rooms and over WebDAV. Viewers still comment, reply and react, as in Figma: the server keeps what they write, under their own name, until an editor's Kalka writes it into the file. The console shows which files are shared to view only.
 - **Branches.** Try changes on a branch of a file, made from its saved copy, then merge it back from Kalka: the branch replaces the file as a whole, and Kalka asks first when the file changed since the branch began.
+- **Version history.** Every file keeps a version every half hour it is edited, and the versions people name; Kalka previews and restores them. Administrators choose how long the automatic ones stay.
 - **A files folder over WebDAV.** Mount the server's files as `.kalka` archives in Finder, Windows, Nextcloud or rclone, with app passwords.
 - **Single sign-on** with OpenID Connect: Authentik, Keycloak, Authelia, Google Workspace, Microsoft Entra ID and any standard provider. Free for up to 5 people (Community); Business is $8 per editor per month, billed yearly.
 - **Business features** with a Business license: an audit log, managed backups to S3-compatible storage, and user provisioning with SCIM 2.0 (Okta, Microsoft Entra ID, Authentik).
@@ -73,6 +74,7 @@ Most settings can be changed in the console, under Settings. Each one can also b
 | `KALKA_SMTP_HOST`, `KALKA_SMTP_PORT`, `KALKA_SMTP_SECURE`, `KALKA_SMTP_USER`, `KALKA_SMTP_PASSWORD`, `KALKA_SMTP_FROM` | Email for invitations, password resets and seat warnings. `KALKA_SMTP_SECURE` is `starttls` (port 587, the default), `tls` (port 465) or `none`. |
 | `KALKA_LICENSE_KEY` | License for single sign-on. See below. |
 | `KALKA_OIDC_*` | Single sign-on. See below. |
+| `KALKA_VERSION_RETENTION_DAYS` | Days the versions a file keeps by itself, every half hour of editing, stay. Default: all of them, up to the latest 50. Named versions stay until their file is deleted. |
 | `KALKA_AUDIT_RETENTION_DAYS` | Days the audit log keeps events (Business). Default `365`. |
 | `KALKA_BACKUP_*` | Managed backups (Business). See [Managed backups](#managed-backups). |
 

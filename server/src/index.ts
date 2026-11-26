@@ -34,6 +34,7 @@ import {
   ROLES,
   SERVER_VERSION,
   setting,
+  versionRetentionDays,
   withStoredSettings,
   type DocumentInfo,
   type Env,
@@ -299,7 +300,7 @@ async function documentRoute(
     await requireDocumentEditor()
     const data = await request.arrayBuffer()
     if (data.byteLength > MAX_FILE_BYTES) throw new HttpError(413, 'This file is too large.')
-    await roomOf(env, documentId).putFile(data, documentId, directoryName(tenantOf(env)))
+    await roomOf(env, documentId).putFile(data, documentId, directoryName(tenantOf(env)), false, versionRetentionDays(env))
     return json({ saved: true })
   }
   // Branches: a copy of the file to change apart, merged back into it later.
@@ -370,7 +371,7 @@ async function documentRoute(
   // Version history: versions the server keeps of the saved file, named or every half hour.
   if (rest === '/versions' && method === 'GET') {
     await requireUser(env, request)
-    return json(await roomOf(env, documentId).listVersions())
+    return json(await roomOf(env, documentId).listVersions(versionRetentionDays(env)))
   }
   if (rest === '/versions' && method === 'POST') {
     const { user } = await requireDocumentEditor()

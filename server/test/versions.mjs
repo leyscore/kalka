@@ -56,6 +56,13 @@ assert.equal(versions[0].kind, 'restore')
 assert.equal(versions[0].label, 'Before restoring')
 assert.equal(await read(editor.token, `/api/documents/${file.id}/versions/${versions[0].id}/file`), 'broken')
 
+// How long automatic versions stay is the administrator's choice; recent ones stay either way.
+await assert.rejects(call('PUT', '/api/settings', { values: { KALKA_VERSION_RETENTION_DAYS: '30' } }, editor.token), /403/)
+const settings = await call('PUT', '/api/settings', { values: { KALKA_VERSION_RETENTION_DAYS: '30' } }, root.token)
+assert.equal(settings.values.KALKA_VERSION_RETENTION_DAYS, '30')
+assert.equal((await call('GET', `/api/documents/${file.id}/versions`, null, editor.token)).length, versions.length)
+await call('PUT', '/api/settings', { values: { KALKA_VERSION_RETENTION_DAYS: '' } }, root.token)
+
 await call('DELETE', `/api/documents/${file.id}`, null, editor.token)
 for (const person of [editor, viewer]) await call('DELETE', `/api/users/${person.user.id}`, null, root.token)
 console.log('versions: all checks passed')

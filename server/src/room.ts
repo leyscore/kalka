@@ -337,7 +337,13 @@ export class DocumentRoom extends DurableObject<Env> {
    * file came from outside Kalka (WebDAV, a restore): it is also kept as a version Kalka
    * clients may apply, since the live document is the log, which this server never decodes.
    */
-  putFile(data: ArrayBuffer, documentId: string, directory?: string, pending?: boolean): void {
+  putFile(
+    data: ArrayBuffer,
+    documentId: string,
+    directory?: string,
+    pending?: boolean,
+    retentionDays: number | null = null
+  ): void {
     this.setMeta('document', documentId)
     if (directory) this.setMeta('directory', directory)
     this.ctx.storage.transactionSync(() => {
@@ -353,6 +359,7 @@ export class DocumentRoom extends DurableObject<Env> {
     if (!pending && Date.now() - this.numberMeta('autoVersionAt') >= AUTO_VERSION_EVERY_MS) {
       this.keepVersion('auto')
       this.setMeta('autoVersionAt', Date.now())
+      this.dropOldVersions(retentionDays)
     }
     this.touch(true, data.byteLength)
     // Kalka windows that have the document open apply the new version without reopening it.
@@ -411,8 +418,20 @@ export class DocumentRoom extends DurableObject<Env> {
     return info
   }
 
-  /** The document's versions, newest first. */
-  listVersions(): VersionInfo[] {
+  /** Deletes the versions kept by themselves more than `days` ago; null keeps them. */
+  private dropOldVersions(days: number | null): void {
+    if (days === null) return
+    const before = Date.now() - days * 24 * 60 * 60 * 1000
+    const stale = this.sql.exec("SELECT id FROM version_info WHERE kind = 'auto' AND created_at < ?", before).toArray()
+    for (const row of stale) {
+      this.sql.exec('DELETE FROM version WHERE id = ?', row.id)
+      this.sql.exec('DELETE FROM version_info WHERE id = ?', row.id)
+    }
+  }
+
+  /** The document's versions, newest first, past the server's retention gone. */
+  listVersions(retentionDays: number | null = null): VersionInfo[] {
+    this.dropOldVersions(retentionDays)
     return this.sql
       .exec('SELECT id, created_at, kind, label, by, size FROM version_info ORDER BY created_at DESC')
       .toArray()

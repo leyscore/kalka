@@ -572,6 +572,10 @@
       textRow(settings, draft, 'KALKA_SERVER_NAME', 'Name', { placeholder: 'Acme Design', note: 'What your team sees in Kalka and on this page.' }),
       copyRow('Address', settings.publicUrl, 'In Kalka, open Settings, then Server, and enter this address.'),
       textRow(settings, draft, 'KALKA_APP_ORIGINS', 'App origins', { placeholder: 'https://kalka.example.com', note: 'Other web addresses a sign-in may return to, separated by commas. The desktop app is always allowed.' }),
+      dropdownRow(settings, draft, 'KALKA_VERSION_RETENTION_DAYS', 'Version history', settings.values.KALKA_VERSION_RETENTION_DAYS || '', [
+        { value: '', label: 'Keep every version' }, { value: '30', label: '30 days' }, { value: '90', label: '90 days' }, { value: '365', label: '1 year' }
+      ].concat(['', '30', '90', '365'].includes(settings.values.KALKA_VERSION_RETENTION_DAYS || '') ? [] : [{ value: settings.values.KALKA_VERSION_RETENTION_DAYS, label: plural(Number(settings.values.KALKA_VERSION_RETENTION_DAYS), 'day') }]),
+      'How long the versions Kalka keeps every half hour of editing stay. Named versions stay until their file is deleted.'),
       switchRow(settings, draft, 'KALKA_LOCAL_LOGIN', 'Passwords', passwords, settings.ssoReady ? 'Turn off once everyone signs in with single sign-on. Administrators keep theirs as a way back in.' : 'People sign in with an email and a password.'),
       settingsRow('Version', el('span', { class: 'mono', style: { color: 'var(--sub)' } }, 'Kalka Server ' + server.version + ', protocol ' + server.protocol))
     ], draft)
