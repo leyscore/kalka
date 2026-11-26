@@ -93,6 +93,8 @@ const DocumentPatchRequest = v.object({
   linkRole: v.optional(v.picklist(LINK_ROLES))
 })
 const MergeRequest = v.object({ force: v.optional(v.boolean()) })
+const VersionRequest = v.object({ label: v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(200)) })
+const RestoreRequest = v.object({ before: v.optional(v.pipe(v.string(), v.maxLength(200))) })
 const AppPasswordRequest = v.object({ name: v.pipe(v.string(), v.maxLength(80)) })
 
 function bearer(request: Request): string | null {
@@ -364,6 +366,36 @@ async function documentRoute(
     const dismissed = await roomOf(env, documentId).clearPending(version)
     if (dismissed) await directory.setPending(documentId, null)
     return json({ dismissed })
+  }
+  // Version history: versions the server keeps of the saved file, named or every half hour.
+  if (rest === '/versions' && method === 'GET') {
+    await requireUser(env, request)
+    return json(await roomOf(env, documentId).listVersions())
+  }
+  if (rest === '/versions' && method === 'POST') {
+    const { user } = await requireDocumentEditor()
+    const { label } = await body(request, VersionRequest)
+    const version = await roomOf(env, documentId).keepVersion('named', label, user.name)
+    if (!version) throw new HttpError(409, 'Open this file in Kalka once, so the server has it to keep.')
+    await log(user, 'document.version_saved', { label })
+    return json(version, 201)
+  }
+  const versionPath = /^\/versions\/([A-Za-z0-9]{1,64})(\/file|\/restore)$/.exec(rest)
+  const versionId = versionPath?.[1] ?? ''
+  if (versionPath && versionPath[2] === '/file' && method === 'GET') {
+    await requireUser(env, request)
+    const data = await roomOf(env, documentId).getVersion(versionId)
+    if (!data) throw new HttpError(404, 'No such version.')
+    return new Response(data, { headers: { 'Content-Type': 'application/vnd.kalka+zip', ...CORS_HEADERS } })
+  }
+  if (versionPath && versionPath[2] === '/restore' && method === 'POST') {
+    const { user } = await requireDocumentEditor()
+    const { before } = await body(request, RestoreRequest)
+    const restored = await roomOf(env, documentId).restoreVersion(versionId, documentId, before ?? null, user.name)
+    if (!restored) throw new HttpError(404, 'No such version.')
+    await directory.setPending(documentId, user.name)
+    await log(user, 'document.version_restored', { version: versionId })
+    return json({ restored: true })
   }
   throw new HttpError(404, 'Not found.')
 }
@@ -659,7 +691,7 @@ async function api(env: Env, request: Request, path: string): Promise<Response> 
     await log(user, 'document.created', document.id, { name: document.name })
     return json(document, 201)
   }
-  const documentMatch = /^\/api\/documents\/([^/]+)(\/[a-z]+)?$/.exec(path)
+  const documentMatch = /^\/api\/documents\/([^/]+)(\/[a-z]+(?:\/[A-Za-z0-9]+\/[a-z]+)?)?$/.exec(path)
   if (documentMatch?.[1]) {
     return documentRoute(env, request, documentMatch[1], documentMatch[2] ?? '')
   }

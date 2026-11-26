@@ -45,7 +45,30 @@ CREATE TABLE IF NOT EXISTS snapshot (part INTEGER PRIMARY KEY, data BLOB NOT NUL
 CREATE TABLE IF NOT EXISTS file (part INTEGER PRIMARY KEY, data BLOB NOT NULL);
 CREATE TABLE IF NOT EXISTS pending (part INTEGER PRIMARY KEY, data BLOB NOT NULL);
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS version (id TEXT NOT NULL, part INTEGER NOT NULL, data BLOB NOT NULL, PRIMARY KEY (id, part));
+CREATE TABLE IF NOT EXISTS version_info (id TEXT PRIMARY KEY, created_at INTEGER NOT NULL, kind TEXT NOT NULL, label TEXT, by TEXT, size INTEGER NOT NULL);
 `
+
+/**
+ * Version history, as Figma keeps one for every file: a version of the saved file every half
+ * hour it is edited, versions named by hand, and the version kept before a restore. The latest
+ * `MAX_AUTO_VERSIONS` kept automatically stay; named ones stay until the document is erased.
+ */
+const AUTO_VERSION_EVERY_MS = 30 * 60 * 1000
+const MAX_AUTO_VERSIONS = 50
+
+export type VersionKind = 'auto' | 'named' | 'restore'
+
+export interface VersionInfo {
+  id: string
+  createdAt: number
+  kind: VersionKind
+  /** A named version's name, or what a restore was about to replace. */
+  label: string | null
+  /** Who named it or restored. */
+  by: string | null
+  size: number
+}
 
 function withKind(kind: number, data: Uint8Array): Uint8Array {
   const out = new Uint8Array(data.length + 1)
@@ -303,6 +326,10 @@ export class DocumentRoom extends DurableObject<Env> {
       }
     })
     this.setMeta('fileSavedAt', Date.now())
+    if (!pending && Date.now() - this.numberMeta('autoVersionAt') >= AUTO_VERSION_EVERY_MS) {
+      this.keepVersion('auto')
+      this.setMeta('autoVersionAt', Date.now())
+    }
     this.touch(true, data.byteLength)
     // Kalka windows that have the document open apply the new version without reopening it.
     const version = pending ? this.pendingVersion() : null
@@ -326,6 +353,73 @@ export class DocumentRoom extends DurableObject<Env> {
     const row = this.sql.exec('SELECT COUNT(*) AS parts, COALESCE(SUM(LENGTH(data)), 0) AS size FROM file').toArray()[0]
     if (!row || Number(row.parts) === 0) return null
     return { size: Number(row.size), savedAt: this.numberMeta('fileSavedAt') }
+  }
+
+  /** Keeps the saved file as a version; null when no file has been saved yet. */
+  keepVersion(kind: VersionKind, label: string | null = null, by: string | null = null): VersionInfo | null {
+    const data = this.readParts('file')
+    if (!data) return null
+    const info: VersionInfo = { id: randomId(16), createdAt: Date.now(), kind, label, by, size: data.byteLength }
+    const bytes = new Uint8Array(data)
+    this.ctx.storage.transactionSync(() => {
+      const count = Math.max(1, Math.ceil(bytes.length / PART_BYTES))
+      for (let part = 0; part < count; part++) {
+        const chunk = bytes.subarray(part * PART_BYTES, (part + 1) * PART_BYTES)
+        this.sql.exec('INSERT INTO version (id, part, data) VALUES (?, ?, ?)', info.id, part, chunk)
+      }
+      this.sql.exec(
+        'INSERT INTO version_info (id, created_at, kind, label, by, size) VALUES (?, ?, ?, ?, ?, ?)',
+        info.id,
+        info.createdAt,
+        kind,
+        label,
+        by,
+        info.size
+      )
+      const stale = this.sql
+        .exec("SELECT id FROM version_info WHERE kind = 'auto' ORDER BY created_at DESC LIMIT -1 OFFSET ?", MAX_AUTO_VERSIONS)
+        .toArray()
+      for (const row of stale) {
+        this.sql.exec('DELETE FROM version WHERE id = ?', row.id)
+        this.sql.exec('DELETE FROM version_info WHERE id = ?', row.id)
+      }
+    })
+    return info
+  }
+
+  /** The document's versions, newest first. */
+  listVersions(): VersionInfo[] {
+    return this.sql
+      .exec('SELECT id, created_at, kind, label, by, size FROM version_info ORDER BY created_at DESC')
+      .toArray()
+      .map((row) => ({
+        id: String(row.id),
+        createdAt: Number(row.created_at),
+        kind: String(row.kind) as VersionKind,
+        label: row.label === null ? null : String(row.label),
+        by: row.by === null ? null : String(row.by),
+        size: Number(row.size)
+      }))
+  }
+
+  getVersion(id: string): ArrayBuffer | null {
+    const parts = this.sql
+      .exec('SELECT data FROM version WHERE id = ? ORDER BY part', id)
+      .toArray()
+      .map((row) => row.data as ArrayBuffer)
+    return parts.length ? (joinParts(parts).buffer as ArrayBuffer) : null
+  }
+
+  /**
+   * Puts a version back: the file as it is now is kept first, under `before`, then the version
+   * becomes the file and waits, as any version from outside Kalka does, for its editors to apply.
+   */
+  restoreVersion(id: string, documentId: string, before: string | null, by: string | null): boolean {
+    const data = this.getVersion(id)
+    if (!data) return false
+    this.keepVersion('restore', before, by)
+    this.putFile(data, documentId, undefined, true)
+    return true
   }
 
   /** The version waiting to be applied, with its id, or null. */
