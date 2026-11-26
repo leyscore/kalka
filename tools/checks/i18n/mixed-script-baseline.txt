@@ -567,6 +567,7 @@ zh-cn:panels.lineHeightPixels
 zh-cn:panels.localFontsAccessHint
 zh-cn:panels.sizingFillFr
 zh-cn:panels.sizingFixedPx
+zh-cn:panels.versionsAutoHint
 zh-cn:panels.versionsIdentityHint
 zh-cn:panels.versionsRemoteHint
 zh-cn:panels.versionsUntracked

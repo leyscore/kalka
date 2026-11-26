@@ -76,6 +76,7 @@ de:panels.radius
 de:panels.shader
 de:panels.slots
 de:panels.textCaseOriginal
+de:panels.versionsBranches
 de:prototype.animation
 de:prototype.design
 de:prototype.easeIn
@@ -141,6 +142,7 @@ es:diagnostics.durationMs
 es:diagnostics.runtimeError
 es:fonts.variable
 es:menu.variables
+es:menu.vector
 es:panels.auto
 es:panels.blendModeColor
 es:panels.blendModeNormal
@@ -283,6 +285,7 @@ fr:panels.slots
 fr:panels.styleDescription
 fr:panels.variables
 fr:panels.versions
+fr:panels.versionsBranches
 fr:panels.versionsBurst
 fr:prototype.action
 fr:prototype.animation
