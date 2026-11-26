@@ -8,6 +8,15 @@ import type { CanvasGuide } from './guides'
 import type { HTMLTag } from './html-element'
 import type { InstanceOverrideState } from './instance-overrides'
 import type { Color, Matrix, Rect, Vector } from './primitives'
+import type {
+  OverflowDirection,
+  OverlayBackgroundInteraction,
+  OverlayPositionType,
+  PrototypeDevice,
+  PrototypeReaction,
+  PrototypeStartingPoint,
+  ScrollBehavior
+} from './prototype'
 import type { ShaderLayer } from './shader'
 
 export interface SceneGraphEvents {
@@ -765,6 +774,24 @@ export interface SceneNode {
   textPathData: TextPathData | null
   /** Node-local box that maps textPathData into the node coordinate space. */
   textPathBox: Rect | null
+
+  /** The layer's prototype interactions, in the order they run. */
+  reactions: PrototypeReaction[]
+  /** Which ways the frame scrolls when presented. */
+  overflowDirection: OverflowDirection
+  /** How the layer moves while the frame around it scrolls. */
+  scrollBehavior: ScrollBehavior
+  /** Where the frame opens when an action opens it as an overlay. */
+  overlayPositionType: OverlayPositionType
+  /** The colour behind the frame when it opens as an overlay; null leaves the screen clear. */
+  overlayBackground: Color | null
+  overlayBackgroundInteraction: OverlayBackgroundInteraction
+  /** On a top-level frame: the flow it starts. */
+  prototypeStartingPoint: PrototypeStartingPoint | null
+  /** On a page: the device its prototype plays on. */
+  prototypeDevice: PrototypeDevice | null
+  /** On a page: the colour around the presented screen; null keeps the presenter's own. */
+  prototypeBackground: Color | null
 }
 
 export type ComponentPropertyType = 'VARIANT' | 'TEXT' | 'BOOLEAN' | 'INSTANCE_SWAP' | 'SLOT'

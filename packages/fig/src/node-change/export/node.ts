@@ -36,6 +36,7 @@ import {
   mergePluginData,
   serializePluginRelaunchData
 } from '../plugin-data'
+import { exportPrototypeFields } from '../prototype'
 import { effectWithVariableBindings } from '../variable/bindings'
 import {
   applyColorVariableBinding,
@@ -1041,6 +1042,29 @@ export function overridableNodeFields(
   return nc
 }
 
+/**
+ * Prototype fields, with destinations named by the GUIDs their layers are written with. An
+ * instance writes interactions only when they are its own, not the ones its main component plays.
+ */
+function applyPrototypeFields(
+  context: SceneNodeToKiwiContext,
+  node: SceneNode,
+  nc: KiwiNodeChange,
+  localIdCounter: { value: number }
+): void {
+  const main =
+    node.type === 'INSTANCE' && node.componentId
+      ? context.graph.getNode(node.componentId)
+      : undefined
+  const inherited = main && JSON.stringify(main.reactions) === JSON.stringify(node.reactions)
+  exportPrototypeFields(
+    inherited ? { ...node, reactions: [] } : node,
+    nc,
+    effectiveFigmaRawNodeFields(node),
+    (id) => getOrCreateNodeGuid(context, id, localIdCounter)
+  )
+}
+
 export function sceneNodeToKiwiWithContext(
   source: SceneNode,
   parentGuid: GUID,
@@ -1082,6 +1106,7 @@ export function sceneNodeToKiwiWithContext(
   applyNodeVisualProps(context, node, nc)
   applyComponentMetadata(context, node, nc, localIdCounter)
   applyInstancePayload(context, node, nc, localIdCounter)
+  applyPrototypeFields(context, node, nc, localIdCounter)
   if (node.type === 'COMPONENT_SET') {
     node.pluginData = withPluginData(node.pluginData, KALKA_PLUGIN_DATA.nodeType, node.type)
     applyStateGroup(context, node, nc)

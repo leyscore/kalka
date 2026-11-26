@@ -31,6 +31,7 @@ import {
   extractPluginRelaunchData,
   readNodeChangePluginData
 } from './plugin-data'
+import { importPrototypeFields } from './prototype'
 import { importStyleRuns } from './style/runs'
 import { importListLines } from './text/lines'
 import { convertLetterSpacing, convertLineHeight, mapTextDecoration } from './text/values'
@@ -781,7 +782,8 @@ export function nodeChangeToProps(
     componentPropertyReferences: extractComponentPropertyRefs(nc),
     componentPropertyAssignments: extractComponentPropertyAssignments(nc),
     componentPropertyValues: extractComponentPropertyValues(nc),
-    ...extractComponentMetadata(nc)
+    ...extractComponentMetadata(nc),
+    ...importPrototypeFields(nc)
   }
 
   // See path/text-layout.ts — expand the layout box before node creation so

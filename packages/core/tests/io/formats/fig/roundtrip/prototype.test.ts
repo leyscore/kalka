@@ -1,0 +1,201 @@
+import { beforeAll, describe, expect, test } from 'bun:test'
+
+import { exportFigFile, initCodec, parseFigFile, SceneGraph, type NodeChange } from '@kalka/core'
+import { materializeDocument, parseFigBuffer } from '@kalka/fig'
+import { createNodeAction, createPrototypeTransition, type SceneNode } from '@kalka/scene-graph'
+
+const IDENTITY = { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0 }
+
+function record(overrides: Partial<NodeChange>): NodeChange {
+  return {
+    visible: true,
+    opacity: 1,
+    phase: 'CREATED',
+    transform: IDENTITY,
+    ...overrides
+  } as NodeChange
+}
+
+function byName(graph: SceneGraph, name: string): SceneNode {
+  const node = [...graph.getAllNodes()].find((candidate) => candidate.name === name)
+  if (!node) throw new Error(`no layer ${name}`)
+  return node
+}
+
+describe('.fig prototype round trip', () => {
+  beforeAll(async () => {
+    await initCodec()
+  })
+
+  test('reads Figma interactions, scrolling, overlays and flows', () => {
+    const { graph } = materializeDocument([
+      record({ guid: { sessionID: 0, localID: 0 }, type: 'DOCUMENT', name: 'Document' }),
+      record({
+        guid: { sessionID: 0, localID: 1 },
+        parentIndex: { guid: { sessionID: 0, localID: 0 }, position: '!' },
+        type: 'CANVAS',
+        name: 'Page 1',
+        prototypeDevice: { type: 'PRESET', size: { x: 393, y: 852 }, presetIdentifier: 'IPHONE_16' }
+      }),
+      record({
+        guid: { sessionID: 1, localID: 2 },
+        parentIndex: { guid: { sessionID: 0, localID: 1 }, position: '!' },
+        type: 'FRAME',
+        name: 'Home',
+        size: { x: 390, y: 844 },
+        scrollDirection: 'VERTICAL',
+        prototypeStartingPoint: { name: 'Onboarding', description: 'First run', position: 'a' },
+        prototypeInteractions: [
+          {
+            event: { interactionType: 'ON_CLICK' },
+            actions: [
+              {
+                connectionType: 'INTERNAL_NODE',
+                transitionNodeID: { sessionID: 1, localID: 3 },
+                navigationType: 'NAVIGATE',
+                transitionType: 'SLIDE_FROM_RIGHT',
+                transitionDuration: 0.4,
+                easingType: 'INOUT_CUBIC'
+              }
+            ]
+          },
+          {
+            event: { interactionType: 'AFTER_TIMEOUT', transitionTimeout: 2 },
+            actions: [{ connectionType: 'BACK' }]
+          },
+          {
+            event: { interactionType: 'ON_CLICK' },
+            actions: [{ connectionType: 'SET_VARIABLE' }]
+          }
+        ]
+      }),
+      record({
+        guid: { sessionID: 1, localID: 3 },
+        parentIndex: { guid: { sessionID: 0, localID: 1 }, position: '"' },
+        type: 'FRAME',
+        name: 'Menu',
+        size: { x: 200, y: 300 },
+        overlayPositionType: 'TOP_RIGHT',
+        overlayBackgroundInteraction: 'CLOSE_ON_CLICK_OUTSIDE',
+        overlayBackgroundAppearance: {
+          backgroundType: 'SOLID_COLOR',
+          backgroundColor: { r: 0, g: 0, b: 0, a: 0.4 }
+        },
+        scrollBehavior: 'FIXED_WHEN_CHILD_OF_SCROLLING_FRAME'
+      })
+    ])
+    const home = byName(graph, 'Home')
+    const menu = byName(graph, 'Menu')
+    expect(home.overflowDirection).toBe('VERTICAL')
+    expect(home.prototypeStartingPoint).toEqual({
+      name: 'Onboarding',
+      description: 'First run',
+      position: 'a'
+    })
+    expect(home.reactions).toHaveLength(2)
+    expect(home.reactions[0]).toEqual({
+      trigger: { type: 'ON_CLICK', delay: 0, keyCodes: [] },
+      actions: [
+        {
+          type: 'NODE',
+          destinationId: menu.id,
+          navigation: 'NAVIGATE',
+          transition: {
+            type: 'SLIDE_IN',
+            direction: 'LEFT',
+            matchLayers: false,
+            duration: 0.4,
+            easing: { type: 'EASE_IN_AND_OUT', bezier: null, spring: null }
+          },
+          preserveScrollPosition: false,
+          resetScrollPosition: false,
+          overlayRelativePosition: null
+        }
+      ]
+    })
+    expect(home.reactions[1].trigger).toEqual({ type: 'AFTER_TIMEOUT', delay: 2, keyCodes: [] })
+    expect(menu.overlayPositionType).toBe('TOP_RIGHT')
+    expect(menu.overlayBackgroundInteraction).toBe('CLOSE_ON_CLICK_OUTSIDE')
+    expect(menu.overlayBackground).toEqual({ r: 0, g: 0, b: 0, a: 0.4 })
+    expect(menu.scrollBehavior).toBe('FIXED')
+    expect(graph.getPages()[0].prototypeDevice).toEqual({
+      presetIdentifier: 'IPHONE_16',
+      size: { x: 393, y: 852 },
+      rotation: 'NONE'
+    })
+  })
+
+  test('writes interactions made in Kalka and reads them back', async () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const second = graph.createNode('FRAME', page.id, { name: 'Second', x: 500 })
+    const smart = createNodeAction(second.id)
+    smart.transition = { ...createPrototypeTransition('SMART_ANIMATE'), duration: 0.6 }
+    const first = graph.createNode('FRAME', page.id, {
+      name: 'First',
+      overflowDirection: 'BOTH',
+      prototypeStartingPoint: { name: 'Flow 1', description: '', position: 'a' },
+      reactions: [
+        { trigger: { type: 'ON_HOVER', delay: 0, keyCodes: [] }, actions: [smart] },
+        {
+          trigger: { type: 'ON_KEY_DOWN', delay: 0, keyCodes: [16, 75] },
+          actions: [{ type: 'URL', url: 'https://example.com', openInNewTab: false }]
+        }
+      ]
+    })
+    graph.createNode('RECTANGLE', first.id, { name: 'Sticky', scrollBehavior: 'STICKY_SCROLLS' })
+    graph.updateNode(page.id, { prototypeBackground: { r: 1, g: 0, b: 0, a: 1 } })
+
+    const bytes = await exportFigFile(graph)
+    const reimported = await parseFigFile(bytes.buffer as ArrayBuffer)
+    const firstBack = byName(reimported, 'First')
+    const secondBack = byName(reimported, 'Second')
+    expect(firstBack.overflowDirection).toBe('BOTH')
+    expect(firstBack.prototypeStartingPoint?.name).toBe('Flow 1')
+    expect(firstBack.reactions).toEqual(
+      first.reactions.map((reaction, index) =>
+        index === 0
+          ? {
+              ...reaction,
+              actions: [{ ...smart, destinationId: secondBack.id }]
+            }
+          : reaction
+      )
+    )
+    expect(byName(reimported, 'Sticky').scrollBehavior).toBe('STICKY_SCROLLS')
+    expect(reimported.getPages()[0].prototypeBackground).toEqual({ r: 1, g: 0, b: 0, a: 1 })
+  })
+
+  test('keeps interactions Kalka does not play while the layer keeps its own', async () => {
+    const records = [
+      record({ guid: { sessionID: 0, localID: 0 }, type: 'DOCUMENT', name: 'Document' }),
+      record({
+        guid: { sessionID: 0, localID: 1 },
+        parentIndex: { guid: { sessionID: 0, localID: 0 }, position: '!' },
+        type: 'CANVAS',
+        name: 'Page 1'
+      }),
+      record({
+        guid: { sessionID: 1, localID: 2 },
+        parentIndex: { guid: { sessionID: 0, localID: 1 }, position: '!' },
+        type: 'FRAME',
+        name: 'Counter',
+        size: { x: 100, y: 100 },
+        prototypeInteractions: [
+          { event: { interactionType: 'ON_CLICK' }, actions: [{ connectionType: 'SET_VARIABLE' }] }
+        ]
+      })
+    ]
+    const { graph } = materializeDocument(records)
+    const written = parseFigBuffer((await exportFigFile(graph)).buffer as ArrayBuffer)
+    const counter = written.nodeChanges.find((nc) => nc.name === 'Counter')
+    expect(counter?.prototypeInteractions).toHaveLength(1)
+
+    // Removing the layer's interactions does not bring the file's back.
+    graph.updateNode(byName(graph, 'Counter').id, { reactions: [] })
+    const cleared = parseFigBuffer((await exportFigFile(graph)).buffer as ArrayBuffer)
+    expect(
+      cleared.nodeChanges.find((nc) => nc.name === 'Counter')?.prototypeInteractions
+    ).toBeUndefined()
+  })
+})

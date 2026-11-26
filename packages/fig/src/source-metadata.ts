@@ -95,7 +95,9 @@ const EDITED_RAW_FIELDS: Partial<Record<string, readonly string[]>> = {
   componentPropertyAssignments: ['componentPropAssignments'],
   // A variant's specs are written from its values.
   componentPropertyValues: ['variantPropSpecs'],
-  variantPropSpecs: ['variantPropSpecs']
+  variantPropSpecs: ['variantPropSpecs'],
+  // Edited interactions are written from the layer's, without what Kalka does not play.
+  reactions: ['prototypeInteractions']
 }
 
 export function staleFigmaRawFields(editedFields: readonly string[] = []): ReadonlySet<string> {

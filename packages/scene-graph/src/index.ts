@@ -1049,6 +1049,7 @@ export class SceneGraph {
 export * from './class-styles'
 export * from './comments'
 export * from './frame-reviews'
+export * from './prototype'
 export * from './fonts'
 export * from './html-element'
 export * from './responsive'

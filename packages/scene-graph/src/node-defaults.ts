@@ -221,6 +221,15 @@ export function createDefaultNode(
     textPathData: null,
     textPathBox: null,
     booleanOperation: undefined,
+    reactions: [],
+    overflowDirection: 'NONE',
+    scrollBehavior: 'SCROLLS',
+    overlayPositionType: 'CENTER',
+    overlayBackground: null,
+    overlayBackgroundInteraction: 'NONE',
+    prototypeStartingPoint: null,
+    prototypeDevice: null,
+    prototypeBackground: null,
     ...overrides
   } satisfies CompleteNodeFields
 }

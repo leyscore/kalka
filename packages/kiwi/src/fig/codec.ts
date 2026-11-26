@@ -448,6 +448,14 @@ export interface NodeChange {
   prototypeStartNodeID?: GUID
   prototypeInteractions?: unknown[]
   transitionInfo?: unknown
+  scrollDirection?: string
+  scrollBehavior?: string
+  overlayPositionType?: string
+  overlayBackgroundInteraction?: string
+  overlayBackgroundAppearance?: { backgroundType?: string; backgroundColor?: Color }
+  prototypeStartingPoint?: { name?: string; description?: string; position?: string }
+  prototypeDevice?: unknown
+  prototypeBackgroundColor?: Color
   // Variables
   variableData?: VariableDataEntry
   variableConsumptionMap?: { entries?: VariableConsumptionEntry[] }

@@ -26,6 +26,7 @@ import type {
 import { geometryCommandCoordCount } from './geometry'
 import { cloneInstanceOverrideState } from './instance-overrides'
 import { createDefaultSourceMetadata } from './node-defaults'
+import { copyPrototypeFields } from './prototype'
 
 // --- Individual copy functions ---
 
@@ -307,7 +308,8 @@ export function cloneNodeProps(
     htmlClasses: [...src.htmlClasses],
     cssClasses: structuredClone(src.cssClasses),
     comments: structuredClone(src.comments),
-    frameReviews: structuredClone(src.frameReviews)
+    frameReviews: structuredClone(src.frameReviews),
+    ...copyPrototypeFields(src)
   }
 }
 

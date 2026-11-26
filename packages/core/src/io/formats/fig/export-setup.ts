@@ -6,6 +6,7 @@ import { figArchiveMetaJSON, KALKA_ARCHIVE_PREFIX, pngSize } from '@kalka/fig'
 import {
   buildComponentPropIndex,
   exportCanvasGuides,
+  exportPageSettings,
   figImageEntries,
   importCanvasGuides,
   stringToGuid,
@@ -316,6 +317,7 @@ function buildCanvasEntries(
       }
     )
     applyImportedCanvasFields(page, canvasNc)
+    exportPageSettings(page, canvasNc)
     if (page.internalOnly) canvasNc.internalOnly = true
     canvasEntries.push({ page, canvasGuid, canvasNc })
   }

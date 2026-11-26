@@ -84,6 +84,10 @@ export const INSTANCE_SYNC_PROPS: (keyof SceneNode)[] = [
   'itemReverseZIndex',
   'strokesIncludedInLayout',
   'layoutGrids',
+  // Interactive components: an instance plays the interactions of the variant it shows.
+  'reactions',
+  'overflowDirection',
+  'scrollBehavior',
   'blendMode',
   'cornerSmoothing',
   'strokeWeight',
