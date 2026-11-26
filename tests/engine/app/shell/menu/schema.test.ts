@@ -57,6 +57,9 @@ describe('APP_MENU_SCHEMA', () => {
       'snap-geometry',
       'snap-objects',
       'snap-pixel-grid',
+      'keep-tool-selected',
+      'rename-duplicated-layers',
+      'nudge-amount',
       'settings',
       'documentation'
     ])
