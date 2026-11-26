@@ -39,12 +39,12 @@ test('⌘F finds text on every page and replaces it in one undo step', async ({ 
 
   await canvas.click(600, 500)
   await page.keyboard.press('ControlOrMeta+KeyF')
-  const panel = page.locator('[data-test-id="find-panel"]')
+  const panel = page.getByTestId('find-panel')
   const search = panel.getByRole('searchbox')
   await expect(search).toBeFocused()
   await search.fill('sign up')
 
-  const results = panel.locator('[data-test-id="find-result"]')
+  const results = panel.getByTestId('find-result')
   await expect(results).toHaveCount(1)
 
   // Enter goes to the result: the layer is selected.
@@ -54,9 +54,9 @@ test('⌘F finds text on every page and replaces it in one undo step', async ({ 
     .poll(() => page.evaluate(() => [...(window.kalka?.getStore?.().state.selectedIds ?? [])]))
     .toEqual([ids.title])
 
-  await panel.locator('[data-test-id="find-filters-toggle"]').click()
+  await panel.getByTestId('find-filters-toggle').click()
   await panel
-    .locator('[data-test-id="find-filters"]')
+    .getByTestId('find-filters')
     .getByRole('group')
     .first()
     .getByRole('button')
@@ -64,9 +64,9 @@ test('⌘F finds text on every page and replaces it in one undo step', async ({ 
     .click()
   await expect(results).toHaveCount(2)
 
-  await panel.locator('[data-test-id="find-replace-toggle"]').click()
-  await panel.locator('[data-test-id="find-replacement"]').fill('Start')
-  await panel.locator('[data-test-id="find-replace-all"]').click()
+  await panel.getByTestId('find-replace-toggle').click()
+  await panel.getByTestId('find-replacement').fill('Start')
+  await panel.getByTestId('find-replace-all').click()
   await expect(results).toHaveCount(0)
 
   const texts = () =>

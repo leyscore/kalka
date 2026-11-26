@@ -1,8 +1,9 @@
 import { groupBy } from 'es-toolkit'
 
-import { getNodeEditCapability } from '../capabilities'
-import type { createNodeActions } from '../nodes'
-import type { EditorContext } from '../types'
+import { getNodeEditCapability } from '#core/editor/capabilities'
+import type { createNodeActions } from '#core/editor/nodes'
+import type { EditorContext } from '#core/editor/types'
+
 import { replacedText, type ReplaceMatchOptions } from './replace'
 import { findInPages, type FindMatch, type FindOptions } from './search'
 
