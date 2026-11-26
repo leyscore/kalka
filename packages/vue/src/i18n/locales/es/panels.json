@@ -127,6 +127,8 @@
   "opacity": "Opacidad",
   "radius": "Redondeado",
   "cornerSmoothing": "Suavizado de esquinas",
+  "pointCount": "Número",
+  "starRatio": "Proporción",
   "spread": "Esparcimiento",
   "fill": "Relleno",
   "stroke": "Trazo",

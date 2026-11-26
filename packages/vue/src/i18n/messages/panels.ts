@@ -226,6 +226,8 @@ export const panelMessageDefaults = {
   blendMode: 'Blend mode',
   radius: 'Radius',
   cornerSmoothing: 'Corner smoothing',
+  pointCount: 'Count',
+  starRatio: 'Ratio',
   spread: 'Spread',
 
   page: 'Page',

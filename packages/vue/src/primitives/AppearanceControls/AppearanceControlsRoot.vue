@@ -14,7 +14,11 @@ const actions = {
   updateUniformRadius: ctx.updateUniformRadius,
   commitUniformRadius: ctx.commitUniformRadius,
   updateCornerProp: ctx.updateCornerProp,
-  commitCornerProp: ctx.commitCornerProp
+  commitCornerProp: ctx.commitCornerProp,
+  updatePointCount: ctx.updatePointCount,
+  commitPointCount: ctx.commitPointCount,
+  updateStarRatio: ctx.updateStarRatio,
+  commitStarRatio: ctx.commitStarRatio
 }
 </script>
 
@@ -32,6 +36,10 @@ const actions = {
     :opacity-percent="ctx.opacityPercent.value"
     :blend-mode-value="ctx.blendModeValue.value"
     :visibility-state="ctx.visibilityState.value"
+    :has-point-count="ctx.hasPointCount.value"
+    :has-star-ratio="ctx.hasStarRatio.value"
+    :point-count-value="ctx.pointCountValue.value"
+    :star-ratio-percent="ctx.starRatioPercent.value"
     :actions="actions"
   />
 </template>

@@ -40,6 +40,10 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
       opacityPercent,
       blendModeValue,
       visibilityState,
+      hasPointCount,
+      hasStarRatio,
+      pointCountValue,
+      starRatioPercent,
       actions
     }"
   >
@@ -224,6 +228,42 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
           >
             <template #icon>
               <icon-hugeicons-squircle class="size-3" />
+            </template>
+          </NumberField>
+        </PanelFieldGroup>
+      </PanelGrid>
+
+      <PanelGrid v-if="hasPointCount" :columns="2" class="mt-1.5">
+        <PanelFieldGroup :label="panels.pointCount">
+          <NumberField
+            data-property="point-count"
+            :aria-label="panels.pointCount"
+            :model-value="pointCountValue"
+            :min="3"
+            :max="60"
+            :step="1"
+            :sensitivity="0.2"
+            @update:model-value="actions.updatePointCount"
+            @commit="actions.commitPointCount"
+          >
+            <template #icon>
+              <icon-hugeicons-pentagon class="size-3" />
+            </template>
+          </NumberField>
+        </PanelFieldGroup>
+        <PanelFieldGroup v-if="hasStarRatio" :label="panels.starRatio">
+          <NumberField
+            suffix="%"
+            data-property="star-ratio"
+            :aria-label="panels.starRatio"
+            :model-value="starRatioPercent"
+            :min="1"
+            :max="100"
+            @update:model-value="actions.updateStarRatio"
+            @commit="actions.commitStarRatio"
+          >
+            <template #icon>
+              <icon-hugeicons-star class="size-3" />
             </template>
           </NumberField>
         </PanelFieldGroup>

@@ -17,6 +17,12 @@ export interface AppearanceControlsActions {
   commitUniformRadius(): void
   updateCornerProp(key: CornerGeometryKey, value: number): void
   commitCornerProp(key: CornerGeometryKey, value: number, previous: number): void
+  /** Previews a polygon's sides or a star's points; `commitPointCount` records the change. */
+  updatePointCount(value: number): void
+  commitPointCount(value: number): void
+  /** Previews a star's inner radius as a percentage of its outer one. */
+  updateStarRatio(percent: number): void
+  commitStarRatio(percent: number): void
 }
 
 export interface AppearanceControlsRootSlotProps {
@@ -32,6 +38,12 @@ export interface AppearanceControlsRootSlotProps {
   opacityPercent: MixedValue<number>
   blendModeValue: MixedValue<BlendMode>
   visibilityState: 'visible' | 'hidden' | 'mixed'
+  /** Every selected layer is a polygon or a star, which shows Count. */
+  hasPointCount: boolean
+  /** Every selected layer is a star, which shows Ratio. */
+  hasStarRatio: boolean
+  pointCountValue: MixedValue<number>
+  starRatioPercent: MixedValue<number>
   actions: AppearanceControlsActions
 }
 

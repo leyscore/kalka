@@ -1,14 +1,15 @@
 import { ref } from 'vue'
 
 import { createAppearanceActions, createAppearanceState } from '#vue/controls/appearance/helpers'
+import { createPolygonActions, createPolygonState } from '#vue/controls/appearance/polygon'
 import { useNodeProps } from '#vue/controls/node-props/use'
 import { useEditor } from '#vue/editor/context'
 
 /**
  * Returns appearance-related state and actions for the current selection.
  *
- * Use this composable for visibility, opacity, and corner-radius controls in
- * property panels.
+ * Use this composable for visibility, opacity, corner-radius, and polygon or star
+ * count and ratio controls in property panels.
  */
 export function useAppearance() {
   const editor = useEditor()
@@ -18,6 +19,8 @@ export function useAppearance() {
   const options = { node, nodes, isMulti, merged, expandedCornerNodeId }
   const appearanceState = createAppearanceState(options)
   const appearanceActions = createAppearanceActions({ editor, ...options })
+  const polygonState = createPolygonState({ nodes, merged })
+  const polygonActions = createPolygonActions(editor, nodes)
 
   return {
     editor,
@@ -26,8 +29,10 @@ export function useAppearance() {
     active,
     isMulti,
     ...appearanceState,
+    ...polygonState,
     updateProp,
     commitProp,
-    ...appearanceActions
+    ...appearanceActions,
+    ...polygonActions
   }
 }
