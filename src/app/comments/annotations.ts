@@ -70,15 +70,23 @@ export function selectionMeasurement(
   return measure('left', true)
 }
 
-/** Keeps the measurement of the selection on the canvas. */
-export function measureSelection(store: EditorStore): CommentThread | null {
-  const target = selectionMeasurement(store)
-  if (!target) return null
+/** Keeps a measurement from a layer on the canvas, as one undoable step. */
+export function pinMeasurement(
+  store: EditorStore,
+  from: string,
+  measurement: CommentMeasurement
+): CommentThread | null {
   const thread = editHandoff(store, 'Add measurement', () =>
-    addMeasurement(store.graph, target.from, author(), target.measurement)
+    addMeasurement(store.graph, from, author(), measurement)
   )
   if (!thread) return null
   annotationsVisible.value = true
   store.requestRefresh()
   return thread
+}
+
+/** Keeps the measurement of the selection on the canvas. */
+export function measureSelection(store: EditorStore): CommentThread | null {
+  const target = selectionMeasurement(store)
+  return target ? pinMeasurement(store, target.from, target.measurement) : null
 }

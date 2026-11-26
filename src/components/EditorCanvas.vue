@@ -45,6 +45,7 @@ import {
 } from '@kalka/vue'
 
 import { useAIChat } from '@/app/ai/chat/use'
+import { pinMeasurement } from '@/app/comments/annotations'
 import { useEditorStore } from '@/app/editor/active-store'
 import { canvasBackgroundColor, showsKalkaCanvas } from '@/app/editor/canvas/background'
 import { useBooleanOperationsCanvasKit } from '@/app/editor/canvas/booleans'
@@ -216,7 +217,8 @@ const {
   labelHits.hitTestFrameTitle,
   updatePaneCursor,
   activatePane,
-  () => isActivePane.value
+  () => isActivePane.value,
+  (from, measurement) => pinMeasurement(store, from, measurement) !== null
 )
 
 watch(isActivePane, (active) => {

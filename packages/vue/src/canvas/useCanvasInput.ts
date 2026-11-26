@@ -2,11 +2,13 @@ import { useEventListener } from '@vueuse/core'
 import { onScopeDispose, ref, watch, type Ref } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
-import type { SceneNode } from '@kalka/scene-graph'
+import type { CommentMeasurement, SceneNode } from '@kalka/scene-graph'
 
 import { createAutoLayoutValueEdit } from '#vue/canvas/auto-layout/value-edit'
 import { createGuideInput, selectedTopLevelGuideFrameId } from '#vue/canvas/guides/input'
 import { createCanvasLabelEdit } from '#vue/canvas/labels/edit'
+import { createMeasurementModifiers } from '#vue/canvas/measurement/modifiers'
+import { createMeasurementPin } from '#vue/canvas/measurement/pin'
 import { handlePenDragMove, updatePenHover } from '#vue/canvas/pen/input'
 import { createCanvasPointer } from '#vue/canvas/pointer/use'
 import { createPrototypeLinkPan, startPrototypeDrag } from '#vue/canvas/prototype-link'
@@ -79,7 +81,9 @@ export function useCanvasInput(
   hitTestFrameTitle: (cx: number, cy: number) => SceneNode | null,
   onCursorMove?: (cx: number, cy: number) => void,
   onActivate?: () => void,
-  isEnabled: () => boolean = () => true
+  isEnabled: () => boolean = () => true,
+  /** Keeps a measurement Alt-clicked on the canvas; true when it was pinned. */
+  onPinMeasurement?: (from: string, measurement: CommentMeasurement) => boolean
 ) {
   const drag = ref<DragState | null>(null)
   // Canvas chrome that explains layout, such as auto layout child outlines, steps aside while
@@ -95,9 +99,6 @@ export function useCanvasInput(
   const selectedIdsBeforeClickSequence = ref<ReadonlySet<string>>(new Set())
   const lastPointer = ref<{ cx: number; cy: number } | null>(null)
   const pointerInside = ref(false)
-  let altHeld = false
-  let metaHeld = false
-  let controlHeld = false
   const spaceHeld = useSpaceHeld()
   const { recordClick, getClickCount } = createClickCounter()
 
@@ -110,58 +111,20 @@ export function useCanvasInput(
   )
 
   const linkPan = createPrototypeLinkPan(editor, canvasRef)
+  const measurementPin = onPinMeasurement
+    ? createMeasurementPin(editor, getCoords, onPinMeasurement)
+    : null
 
-  function canMeasure() {
-    return (
-      pointerInside.value &&
-      !drag.value &&
-      editor.state.activeTool === 'SELECT' &&
-      editor.state.selectedIds.size > 0 &&
-      !editor.state.editingTextId &&
-      !editor.state.nodeEditState &&
-      !editor.state.penState
-    )
-  }
-
-  /** ⌘ or Ctrl held: hover reaches the deepest layer, the one a click would select, as in Figma. */
-  function hoverDeep(e?: MouseEvent) {
-    return e ? e.metaKey || e.ctrlKey : metaHeld || controlHeld
-  }
-
-  function refreshMeasurement() {
-    const mode = altHeld && canMeasure() ? (metaHeld || controlHeld ? 'deep' : 'shallow') : 'off'
-    editor.setMeasurementMode(mode)
-    const pointer = lastPointer.value
-    if (!pointer || drag.value || editor.state.activeTool !== 'SELECT' || !pointerInside.value)
-      return
-    cursorOverride.value = updateHoverCursor(
-      pointer.cx,
-      pointer.cy,
+  const { hoverDeep, refreshMeasurement, updateModifier, resetMeasurementModifiers } =
+    createMeasurementModifiers({
       editor,
       hitFns,
-      mode === 'deep' || hoverDeep()
-    )
-    editor.setAutoLayoutHover(
-      mode === 'off' ? resolveAutoLayoutHover(pointer.cx, pointer.cy, editor) : null
-    )
-  }
-
-  function updateModifier(code: string, held: boolean) {
-    if (!isEnabled()) return
-    if (code === 'AltLeft' || code === 'AltRight') altHeld = held
-    if (code === 'MetaLeft' || code === 'MetaRight') metaHeld = held
-    if (code === 'ControlLeft' || code === 'ControlRight') controlHeld = held
-    if (code.startsWith('Alt') || code.startsWith('Meta') || code.startsWith('Control')) {
-      refreshMeasurement()
-    }
-  }
-
-  function resetMeasurementModifiers() {
-    altHeld = false
-    metaHeld = false
-    controlHeld = false
-    editor.setMeasurementMode('off')
-  }
+      isEnabled,
+      isDragging: () => drag.value !== null,
+      pointerInside,
+      lastPointer,
+      cursorOverride
+    })
 
   function setDrag(d: DragState) {
     editor.setMeasurementMode('off')
@@ -220,6 +183,14 @@ export function useCanvasInput(
       e.preventDefault()
       return
     }
+    if (measurementPin?.press(e)) {
+      e.preventDefault()
+      return
+    }
+    startPress(e)
+  }
+
+  function startPress(e: MouseEvent) {
     editor.setMeasurementMode('off')
     const openValueEdit = valueEdit.edit.value
     if (openValueEdit) valueEdit.commit(openValueEdit.value)
@@ -270,6 +241,9 @@ export function useCanvasInput(
     }
 
     if (editor.state.play && !drag.value) return
+
+    const press = measurementPin?.move(e)
+    if (press) startPress(press)
 
     if (!drag.value) {
       const { cx, cy } = coords
@@ -387,6 +361,11 @@ export function useCanvasInput(
     handleMarqueeMove(d, cx, cy)
   }
 
+  /** A release pins a held Alt-press's measurement, or ends the drag. */
+  function onRelease() {
+    if (!measurementPin?.release()) onMouseUp()
+  }
+
   function onMouseUp() {
     if (!drag.value) return
     const d = drag.value
@@ -437,6 +416,7 @@ export function useCanvasInput(
   }
 
   function cancelPointerInteraction() {
+    measurementPin?.cancel()
     if (drag.value?.type === 'rotate') {
       const rotation = drag.value
       drag.value = null
@@ -473,7 +453,7 @@ export function useCanvasInput(
 
   function onPointerUp(e: PointerEvent) {
     if (e.pointerType !== 'mouse') return
-    onMouseUp()
+    onRelease()
     if (canvasRef.value?.hasPointerCapture(e.pointerId)) {
       canvasRef.value.releasePointerCapture(e.pointerId)
     }
@@ -493,7 +473,7 @@ export function useCanvasInput(
   useEventListener(canvasRef, 'dblclick', onDblClick)
   useEventListener(canvasRef, 'mousedown', onMouseDown)
   useEventListener(canvasRef, 'mousemove', onMouseMove)
-  useEventListener(canvasRef, 'mouseup', onMouseUp)
+  useEventListener(canvasRef, 'mouseup', onRelease)
   useEventListener(window, 'keydown', (event) => {
     if (!guideInput.deleteSelected(event)) updateModifier(event.code, true)
   })

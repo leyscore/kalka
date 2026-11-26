@@ -122,3 +122,36 @@ test('annotate a layer, mark its frame ready and keep a measurement and a link',
     'ready'
   )
 })
+
+test('Alt-hover a layer, then click to keep the distance drawn', async ({ page }) => {
+  await page.goto('/?test')
+  const canvas = new CanvasHelper(page)
+  await canvas.waitForInit()
+  await canvas.drawRect(100, 100, 100, 100)
+  await canvas.drawRect(260, 120, 40, 40)
+  const [first] = await page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    const page = store?.graph.getNode(store.state.currentPageId)
+    return page?.childIds ?? []
+  })
+  await select(page, [first])
+
+  await canvas.hover(280, 140)
+  await page.keyboard.down('Alt')
+  await canvas.hover(282, 140)
+  await canvas.click(282, 140)
+  await page.keyboard.up('Alt')
+  await expect(page.locator('[data-slot="measurement-label"]')).toHaveText('60')
+  // The click kept the distance and left the selection as it was.
+  expect(
+    await page.evaluate(() => [...(window.kalka?.getStore?.()?.state.selectedIds ?? [])])
+  ).toEqual([first])
+
+  // Alt-dragging still duplicates the layer under the pointer.
+  await canvas.altDrag(282, 140, 282, 260)
+  const count = await page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    return store?.graph.getNode(store.state.currentPageId)?.childIds.length ?? 0
+  })
+  expect(count).toBe(3)
+})
