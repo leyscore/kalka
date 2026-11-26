@@ -42,8 +42,8 @@
   "conditionContainerNarrower": "der Container schmaler ist als",
   "conditionContainerWider": "der Container breiter ist als",
   "conditionCustom": "Benutzerdefiniertes CSS",
-  "conditionManualHint": "Fügen Sie im Code {attribute} zu einem Element hinzu, um diesen Modus darauf anzuwenden.",
-  "conditionAutomaticHint": "Wird im Browser automatisch aktiv, sobald seine Bedingung erfüllt ist.",
+  "conditionManualHint": "Wählen Sie ihn für eine Ebene mit „Variablenmodus anwenden“ in ihrem Bereich Darstellung. Fügen Sie im Code {attribute} zu einem Element hinzu.",
+  "conditionAutomaticHint": "Wird im Browser automatisch aktiv, sobald seine Bedingung erfüllt ist. Zur Vorschau auf der Arbeitsfläche eine Ebene im Bereich Darstellung auf diesen Modus setzen; darauf gesetzte Ebenen werden mit festen Werten exportiert.",
   "conditionWidth": "Breite",
   "collectionActions": "Sammlungsaktionen",
   "value": "Wert",
@@ -115,5 +115,8 @@
   "importInvalidFile": "{file} ist keine Design-Token-Datei",
   "importMissingFile": "{file}, auf die {from} verweist, wurde nicht ausgewählt",
   "importNothing": "Diese Dateien enthalten keine Design-Tokens.",
-  "importAction": "Importieren"
+  "importAction": "Importieren",
+  "applyVariableMode": "Variablenmodus anwenden",
+  "autoMode": "Auto ({mode})",
+  "layerModeLabel": "Modus von {collection} ändern"
 }

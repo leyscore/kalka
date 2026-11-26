@@ -84,6 +84,7 @@ de:tools.polygon
 de:tools.text
 de:variableTypes.boolean
 de:variableTypes.text
+de:variables.autoMode
 de:variables.name
 de:variables.stylesheet
 de:welcome.designApps
@@ -145,6 +146,7 @@ es:storage.providerAmazonS3
 es:storage.providerBackblaze
 es:storage.providerR2
 es:variableTypes.color
+es:variables.autoMode
 es:variables.unitAuto
 es:welcome.designApps
 es:welcome.jobMarketing
@@ -256,6 +258,7 @@ fr:storage.providerR2
 fr:tools.ellipse
 fr:tools.rectangle
 fr:tools.section
+fr:variables.autoMode
 fr:variables.collection
 fr:variables.collections
 fr:variables.condition
@@ -329,6 +332,7 @@ it:storage.endpoint
 it:storage.providerAmazonS3
 it:storage.providerBackblaze
 it:storage.providerR2
+it:variables.autoMode
 it:variables.unitAuto
 it:welcome.jobDesigner
 it:welcome.jobMarketing
@@ -413,6 +417,7 @@ pl:storage.providerAmazonS3
 pl:storage.providerBackblaze
 pl:storage.providerR2
 pl:storage.region
+pl:variables.autoMode
 pl:variables.unitAuto
 pl:welcome.jobMarketing
 pl:welcome.jobProduct

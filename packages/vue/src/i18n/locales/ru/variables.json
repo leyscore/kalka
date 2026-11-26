@@ -42,8 +42,8 @@
   "conditionContainerNarrower": "контейнер уже, чем",
   "conditionContainerWider": "контейнер шире, чем",
   "conditionCustom": "Свой CSS",
-  "conditionManualHint": "В коде добавьте {attribute} к элементу, чтобы применить к нему этот режим.",
-  "conditionAutomaticHint": "Включается сам в браузере, когда выполняется его условие.",
+  "conditionManualHint": "Выберите его для слоя командой «Применить режим переменных» в разделе «Внешний вид». В коде добавьте {attribute} к элементу.",
+  "conditionAutomaticHint": "Включается сам в браузере, когда выполняется его условие. Чтобы увидеть на холсте, задайте слою этот режим в разделе «Внешний вид»; слои с ним экспортируются с буквальными значениями.",
   "conditionWidth": "Ширина",
   "collectionActions": "Действия с коллекцией",
   "value": "Значение",
@@ -115,5 +115,8 @@
   "importInvalidFile": "{file} — не файл дизайн-токенов",
   "importMissingFile": "Не выбран {file}, на который ссылается {from}",
   "importNothing": "В этих файлах нет дизайн-токенов.",
-  "importAction": "Импортировать"
+  "importAction": "Импортировать",
+  "applyVariableMode": "Применить режим переменных",
+  "autoMode": "Авто ({mode})",
+  "layerModeLabel": "Изменить режим коллекции {collection}"
 }

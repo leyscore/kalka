@@ -42,8 +42,8 @@
   "conditionContainerNarrower": "el contenedor es más estrecho que",
   "conditionContainerWider": "el contenedor es más ancho que",
   "conditionCustom": "CSS personalizado",
-  "conditionManualHint": "En el código, añade {attribute} a un elemento para aplicarle este modo.",
-  "conditionAutomaticHint": "Se activa solo en el navegador cuando se cumple su condición.",
+  "conditionManualHint": "Elígelo para una capa con «Aplicar modo de variables» en su sección Apariencia. En el código, añade {attribute} a un elemento.",
+  "conditionAutomaticHint": "Se activa solo en el navegador cuando se cumple su condición. Para previsualizarlo en el lienzo, pon una capa en este modo desde su sección Apariencia; las capas con este modo se exportan con valores literales.",
   "conditionWidth": "Ancho",
   "collectionActions": "Acciones de la colección",
   "value": "Valor",
@@ -115,5 +115,8 @@
   "importInvalidFile": "{file} no es un archivo de design tokens",
   "importMissingFile": "No se eligió {file}, al que hace referencia {from}",
   "importNothing": "Estos archivos no contienen design tokens.",
-  "importAction": "Importar"
+  "importAction": "Importar",
+  "applyVariableMode": "Aplicar modo de variables",
+  "autoMode": "Auto ({mode})",
+  "layerModeLabel": "Cambiar el modo de {collection}"
 }

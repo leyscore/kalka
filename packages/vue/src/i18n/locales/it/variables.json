@@ -42,8 +42,8 @@
   "conditionContainerNarrower": "il contenitore è più stretto di",
   "conditionContainerWider": "il contenitore è più largo di",
   "conditionCustom": "CSS personalizzato",
-  "conditionManualHint": "Nel codice, aggiungi {attribute} a un elemento per applicargli questa modalità.",
-  "conditionAutomaticHint": "Si attiva da sola nel browser quando la sua condizione è soddisfatta.",
+  "conditionManualHint": "Sceglila per un livello con «Applica modalità delle variabili» nella sua sezione Aspetto. Nel codice, aggiungi {attribute} a un elemento.",
+  "conditionAutomaticHint": "Si attiva da sola nel browser quando la sua condizione è soddisfatta. Per vederne l’anteprima sulla tela, imposta un livello su questa modalità nella sua sezione Aspetto; i livelli impostati su di essa vengono esportati con valori letterali.",
   "conditionWidth": "Larghezza",
   "collectionActions": "Azioni della raccolta",
   "value": "Valore",
@@ -115,5 +115,8 @@
   "importInvalidFile": "{file} non è un file di design token",
   "importMissingFile": "{file}, a cui rimanda {from}, non è stato scelto",
   "importNothing": "Questi file non contengono design token.",
-  "importAction": "Importa"
+  "importAction": "Importa",
+  "applyVariableMode": "Applica modalità delle variabili",
+  "autoMode": "Auto ({mode})",
+  "layerModeLabel": "Cambia la modalità di {collection}"
 }

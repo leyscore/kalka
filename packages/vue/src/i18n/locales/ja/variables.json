@@ -42,8 +42,8 @@
   "conditionContainerNarrower": "コンテナの幅が次の値より狭いとき",
   "conditionContainerWider": "コンテナの幅が次の値より広いとき",
   "conditionCustom": "カスタム CSS",
-  "conditionManualHint": "コードでは、要素に {attribute} を追加すると、このモードが適用されます。",
-  "conditionAutomaticHint": "条件を満たすと、ブラウザーで自動的にオンになります。",
+  "conditionManualHint": "レイヤーの「外観」セクションにある「変数モードを適用」で選択します。コードでは、要素に {attribute} を追加します。",
+  "conditionAutomaticHint": "条件を満たすと、ブラウザーで自動的にオンになります。キャンバスでプレビューするには、レイヤーの「外観」セクションでこのモードに設定します。このモードのレイヤーは固定値で書き出されます。",
   "conditionWidth": "幅",
   "collectionActions": "コレクションのアクション",
   "value": "値",
@@ -115,5 +115,8 @@
   "importInvalidFile": "{file} はデザイントークンのファイルではありません",
   "importMissingFile": "{from} が参照する {file} が選ばれていません",
   "importNothing": "これらのファイルにデザイントークンはありません。",
-  "importAction": "読み込む"
+  "importAction": "読み込む",
+  "applyVariableMode": "変数モードを適用",
+  "autoMode": "自動（{mode}）",
+  "layerModeLabel": "{collection} のモードを変更"
 }

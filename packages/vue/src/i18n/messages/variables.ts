@@ -46,8 +46,11 @@ export const variablesMessageDefaults = {
   conditionContainerNarrower: 'Container is narrower than',
   conditionContainerWider: 'Container is wider than',
   conditionCustom: 'Custom CSS',
-  conditionManualHint: params('In code, add {attribute} to an element to apply this mode to it.'),
-  conditionAutomaticHint: 'Turns on by itself in the browser when its condition is met.',
+  conditionManualHint: params(
+    'Pick it for a layer with Apply variable mode in its Appearance section. In code, add {attribute} to an element.'
+  ),
+  conditionAutomaticHint:
+    'Turns on by itself in the browser when its condition is met. Preview it on the canvas by setting a layer to this mode in its Appearance section; layers set to it export with literal values.',
   conditionWidth: 'Width',
   collectionActions: 'Collection actions',
   value: 'Value',
@@ -120,6 +123,9 @@ export const variablesMessageDefaults = {
   importInvalidFile: params('{file} isn’t a design token file'),
   importMissingFile: params('{file}, which {from} refers to, wasn’t picked'),
   importNothing: 'These files hold no design tokens.',
+  applyVariableMode: 'Apply variable mode',
+  autoMode: params('Auto ({mode})'),
+  layerModeLabel: params('Change the mode of {collection}'),
   importAction: 'Import'
 } as const
 

@@ -13,6 +13,8 @@ import AppSelect from '@/components/ui/select/AppSelect.vue'
 
 import PropertyBindButton from './component-properties/PropertyBindButton.vue'
 import PropertyBoundField from './component-properties/PropertyBoundField.vue'
+import VariableModeMenu from './variable-mode/VariableModeMenu.vue'
+import VariableModeRows from './variable-mode/VariableModeRows.vue'
 
 const { panels } = useI18n()
 type BlendModeSelectValue = BlendMode | 'MIXED'
@@ -49,6 +51,7 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
   >
     <PanelSection v-if="active" :label="panels.appearance">
       <template #actions>
+        <VariableModeMenu />
         <PropertyBindButton field="VISIBLE" />
         <IconButton
           :label="panels.toggleVisibility"
@@ -61,6 +64,7 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
         </IconButton>
       </template>
       <PropertyBoundField field="VISIBLE" />
+      <VariableModeRows />
 
       <PanelGrid :columns="2">
         <PanelFieldGroup :label="panels.blendMode">

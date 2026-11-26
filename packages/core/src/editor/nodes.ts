@@ -131,11 +131,35 @@ export function createNodeActions(ctx: EditorContext) {
     )
   }
 
+  /**
+   * Sets the mode a layer and the layers inside it use for one collection, as Figma's "Change
+   * variable mode" does; `undefined` goes back to the mode it inherits. One undo step for the whole
+   * selection.
+   */
+  function setNodeVariableMode(ids: string[], collectionId: string, modeId: string | undefined) {
+    const collection = ctx.graph.variableCollections.get(collectionId)
+    if (!collection) return
+    if (modeId !== undefined && !collection.modes.some((mode) => mode.modeId === modeId)) return
+    const changed = ids.flatMap((id) => {
+      const node = ctx.graph.getNode(id)
+      return node && node.variableModes[collectionId] !== modeId ? [node] : []
+    })
+    if (changed.length === 0) return
+    ctx.undo.runBatch('Change variable mode', () => {
+      for (const node of changed) {
+        const { [collectionId]: _previous, ...rest } = node.variableModes
+        const variableModes = modeId === undefined ? rest : { ...rest, [collectionId]: modeId }
+        updateNodeWithUndo(node.id, { variableModes }, 'Change variable mode')
+      }
+    })
+  }
+
   return {
     updateNode,
     ...createNodePreviewActions(ctx, updateNode),
     updateNodeWithUndo,
     setOpacity,
+    setNodeVariableMode,
     ...layoutModeActions,
     ...variableBindingActions,
     ...nudgeActions

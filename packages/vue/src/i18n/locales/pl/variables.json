@@ -42,8 +42,8 @@
   "conditionContainerNarrower": "kontener jest węższy niż",
   "conditionContainerWider": "kontener jest szerszy niż",
   "conditionCustom": "Własny CSS",
-  "conditionManualHint": "W kodzie dodaj {attribute} do elementu, aby zastosować do niego ten tryb.",
-  "conditionAutomaticHint": "Włącza się sam w przeglądarce, gdy jego warunek jest spełniony.",
+  "conditionManualHint": "Wybierz go dla warstwy poleceniem „Zastosuj tryb zmiennych” w jej sekcji Wygląd. W kodzie dodaj {attribute} do elementu.",
+  "conditionAutomaticHint": "Włącza się sam w przeglądarce, gdy jego warunek jest spełniony. Aby zobaczyć podgląd na kanwie, ustaw warstwę na ten tryb w jej sekcji Wygląd; warstwy z tym trybem są eksportowane z wartościami dosłownymi.",
   "conditionWidth": "Szerokość",
   "collectionActions": "Akcje kolekcji",
   "value": "Wartość",
@@ -115,5 +115,8 @@
   "importInvalidFile": "{file} nie jest plikiem tokenów projektowych",
   "importMissingFile": "Nie wybrano pliku {file}, do którego odwołuje się {from}",
   "importNothing": "Te pliki nie zawierają tokenów projektowych.",
-  "importAction": "Importuj"
+  "importAction": "Importuj",
+  "applyVariableMode": "Zastosuj tryb zmiennych",
+  "autoMode": "Auto ({mode})",
+  "layerModeLabel": "Zmień tryb kolekcji {collection}"
 }
