@@ -5,6 +5,7 @@ import type {
   Effect,
   GeometryPath,
   NodeType,
+  PrototypeReaction,
   SceneNode,
   Stroke,
   StrokeWidthPoint,
@@ -299,6 +300,22 @@ export interface DragPrototypeLink {
   sourceId: string
 }
 
+/** Where a manual overlay of the selected layer opens, dragged on the canvas. */
+export interface DragPrototypeOverlay {
+  type: 'prototype-overlay'
+  sourceId: string
+  /** The Open overlay action: its interaction's index and its own. */
+  reaction: number
+  action: number
+  /** The pointer where the drag started, in canvas coordinates. */
+  startX: number
+  startY: number
+  /** The overlay's offset from the layer when the drag started, and where it is now. */
+  origin: Vector
+  offset: Vector | null
+  before: PrototypeReaction[]
+}
+
 export type DragState =
   | DragDraw
   | DragMove
@@ -323,6 +340,7 @@ export type DragState =
   | DragSmartGap
   | DragSmartReorder
   | DragPrototypeLink
+  | DragPrototypeOverlay
 
 export const TOOL_TO_NODE: Partial<Record<Tool, NodeType>> = {
   FRAME: 'FRAME',

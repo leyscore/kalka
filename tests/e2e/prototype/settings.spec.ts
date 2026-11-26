@@ -153,3 +153,83 @@ test('a manual overlay takes its position from the triggering layer', async () =
     )
     .toEqual({ x: 24, y: 40 })
 })
+
+test("a manual overlay's preview on the canvas drags where it opens", async () => {
+  const { page } = editor
+  const { buttonId, farId } = await createScreens(page)
+  await page.evaluate(
+    ({ buttonId, farId }) => {
+      const store = window.kalka?.getStore?.()
+      store?.graph.updateNode(farId, { overlayPositionType: 'MANUAL', width: 200, height: 120 })
+      store?.setReactions(buttonId, [
+        {
+          trigger: { type: 'ON_CLICK', delay: 0, keyCodes: [] },
+          actions: [
+            {
+              type: 'NODE',
+              destinationId: farId,
+              navigation: 'OVERLAY',
+              transition: null,
+              preserveScrollPosition: false,
+              resetScrollPosition: false,
+              overlayRelativePosition: null
+            }
+          ]
+        }
+      ])
+      store?.select([buttonId])
+    },
+    { buttonId, farId }
+  )
+  await page.getByRole('tab', { name: 'Prototype' }).click()
+  const offsetOf = () =>
+    page.evaluate((id) => {
+      const action = window.kalka?.getStore?.().graph.getNode(id)?.reactions[0]?.actions[0]
+      return action?.type === 'NODE' ? action.overlayRelativePosition : null
+    }, buttonId)
+
+  // Without an offset the overlay opens just below the button, at (40, 80) in Home.
+  const box = await editor.canvas.canvas.boundingBox()
+  const view = await page.evaluate(() => {
+    const state = window.kalka?.getStore?.().state
+    return { zoom: state?.zoom ?? 1, panX: state?.panX ?? 0, panY: state?.panY ?? 0 }
+  })
+  const screen = (x: number, y: number) => ({
+    x: (box?.x ?? 0) + x * view.zoom + view.panX,
+    y: (box?.y ?? 0) + y * view.zoom + view.panY
+  })
+  const start = screen(140, 140)
+  const end = screen(190, 170)
+  await page.mouse.move(start.x, start.y)
+  await page.mouse.down()
+  await page.mouse.move((start.x + end.x) / 2, (start.y + end.y) / 2)
+  await page.mouse.move(end.x, end.y)
+  await page.mouse.up()
+  // Moved by (50, 30) from just below the button, give or take a screen pixel at this zoom.
+  await expect.poll(offsetOf).not.toBeNull()
+  const offset = await offsetOf()
+  const pixel = 1 / view.zoom
+  expect(Math.abs((offset?.x ?? 0) - 50)).toBeLessThanOrEqual(pixel)
+  expect(Math.abs((offset?.y ?? 0) - 70)).toBeLessThanOrEqual(pixel)
+  // The layer stays selected and in place: the drag moved only the overlay.
+  expect(
+    await page.evaluate((id) => {
+      const store = window.kalka?.getStore?.()
+      const node = store?.graph.getNode(id)
+      return { selected: [...(store?.state.selectedIds ?? [])], x: node?.x, y: node?.y }
+    }, buttonId)
+  ).toEqual({ selected: [buttonId], x: 40, y: 40 })
+
+  // Escape during a drag puts the overlay back.
+  const before = await offsetOf()
+  await page.mouse.move(start.x, start.y)
+  await page.mouse.down()
+  await page.mouse.move(end.x, end.y)
+  await page.keyboard.press('Escape')
+  await page.mouse.up()
+  expect(await offsetOf()).toEqual(before)
+
+  await editor.canvas.undo()
+  await expect.poll(offsetOf).toBeNull()
+  editor.canvas.assertNoErrors()
+})

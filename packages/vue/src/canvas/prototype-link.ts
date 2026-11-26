@@ -2,6 +2,7 @@ import type { Ref } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
 
+import { startManualOverlayDrag } from '#vue/canvas/prototype-overlay'
 import type { DragPrototypeLink, DragState } from '#vue/shared/input/types'
 
 /** Screen pixels between a layer's right edge and its connection handle, and the handle's reach. */
@@ -29,6 +30,22 @@ export function startPrototypeLink(
   setDrag({ type: 'prototype-link', sourceId: id })
   editor.setPrototypeLink({ sourceId: id, x: bounds.x + bounds.width, y: bounds.y, targetId: null })
   return true
+}
+
+/**
+ * Starts a drag of the Prototype tab's canvas at a pointer, in screen (`sx`, `sy`) and canvas
+ * (`cx`, `cy`) coordinates: a connection from the selected layer's handle, or where one of its
+ * manual overlays opens.
+ */
+export function startPrototypeDrag(
+  editor: Editor,
+  at: { sx: number; sy: number; cx: number; cy: number },
+  setDrag: (drag: DragState) => void
+): boolean {
+  return (
+    startPrototypeLink(editor, at.sx, at.sy, setDrag) ||
+    startManualOverlayDrag(editor, at.cx, at.cy, setDrag)
+  )
 }
 
 export function movePrototypeLink(editor: Editor, drag: DragPrototypeLink, cx: number, cy: number) {

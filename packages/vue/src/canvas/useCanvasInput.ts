@@ -9,7 +9,7 @@ import { createGuideInput, selectedTopLevelGuideFrameId } from '#vue/canvas/guid
 import { createCanvasLabelEdit } from '#vue/canvas/labels/edit'
 import { handlePenDragMove, updatePenHover } from '#vue/canvas/pen/input'
 import { createCanvasPointer } from '#vue/canvas/pointer/use'
-import { createPrototypeLinkPan, startPrototypeLink } from '#vue/canvas/prototype-link'
+import { createPrototypeLinkPan, startPrototypeDrag } from '#vue/canvas/prototype-link'
 import { bindShapeBuilder, updateShapeBuilderHover } from '#vue/canvas/shape-builder/input'
 import { createTextEditInput } from '#vue/canvas/text-edit/input'
 import { textOnPathCursor } from '#vue/canvas/text-on-path/input'
@@ -56,6 +56,7 @@ const CANCELLABLE_DRAGS = new Set<DragState['type']>([
   'draw',
   'rotate',
   'pencil',
+  'prototype-overlay',
   'scale',
   'shape-builder',
   'smart-gap',
@@ -225,7 +226,7 @@ export function useCanvasInput(
     if (!editor.state.editingTextId) canvasRef.value?.focus()
     editor.setHoveredNode(null)
     const { sx, sy, cx, cy } = getCoords(e)
-    if (e.button === 0 && startPrototypeLink(editor, sx, sy, setDrag)) {
+    if (e.button === 0 && startPrototypeDrag(editor, { sx, sy, cx, cy }, setDrag)) {
       e.preventDefault()
       return
     }

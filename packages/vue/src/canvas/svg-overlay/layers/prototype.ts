@@ -1,6 +1,7 @@
 import { prototypeConnections, type SceneGraph } from '@kalka/scene-graph'
 import type { Color, Rect, Vector } from '@kalka/scene-graph/primitives'
 
+import { manualOverlays } from '#vue/canvas/prototype-overlay'
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import { css, type OverlayShape } from '#vue/canvas/svg-overlay/shapes'
 
@@ -95,6 +96,7 @@ export function prototypeLayer(context: OverlayContext, pageId: string): Overlay
         strokeWidth: 2
       })
   }
+  if (selected.length === 1) shapes.push(...manualOverlayShapes(context, selected[0]))
   if (selected.length === 1 && !drag) {
     const point = prototypeHandlePoint(context, selected[0])
     if (point)
@@ -110,6 +112,33 @@ export function prototypeLayer(context: OverlayContext, pageId: string): Overlay
       })
   }
   return shapes
+}
+
+/**
+ * The manual overlays the selected layer opens, where they open from it, as Figma previews them
+ * on the canvas for dragging: a dashed box the overlay's size, with its name.
+ */
+function manualOverlayShapes(context: OverlayContext, sourceId: string): OverlayShape[] {
+  const { panX, panY, zoom } = context.view
+  return manualOverlays(context.graph, sourceId).flatMap(({ frameId, rect }) => {
+    const x = rect.x * zoom + panX
+    const y = rect.y * zoom + panY
+    const name = context.graph.getNode(frameId)?.name ?? ''
+    return [
+      {
+        type: 'rect',
+        x,
+        y,
+        width: rect.width * zoom,
+        height: rect.height * zoom,
+        stroke: css(CONNECTION),
+        strokeWidth: 1.5,
+        dash: [4, 3],
+        fill: css(CONNECTION, 0.08)
+      },
+      { type: 'text', x, y: y - 4, text: name, fill: css(CONNECTION), fontSize: 11 }
+    ] satisfies OverlayShape[]
+  })
 }
 
 /** Whether a screen point is on the connection handle of the selected layer. */

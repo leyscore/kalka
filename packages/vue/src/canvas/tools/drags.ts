@@ -3,25 +3,30 @@ import type { Ref } from 'vue'
 import type { Editor } from '@kalka/core/editor'
 
 import { endPrototypeLink } from '#vue/canvas/prototype-link'
+import { endManualOverlayDrag, moveManualOverlay } from '#vue/canvas/prototype-overlay'
 import { scaleFactor } from '#vue/canvas/scale/input'
 import { finishShapeBuilderDrag, moveShapeBuilderDrag } from '#vue/canvas/shape-builder/input'
 import { finishVariableWidthDrag, moveVariableWidthDrag } from '#vue/canvas/variable-width/input'
 import { handleNodeEditPointerUp } from '#vue/canvas/vector-input/input'
 import type {
   DragPencil,
+  DragPrototypeOverlay,
   DragScale,
   DragShapeBuilder,
   DragState,
   DragWidth
 } from '#vue/shared/input/types'
 
-/** A pointer move for the pencil and the Scale, Shape builder and Variable width tools; whether it was theirs. */
+/**
+ * A pointer move for the pencil, the Scale, Shape builder and Variable width tools and a manual
+ * overlay's preview; whether it was theirs.
+ */
 export function moveToolDrag(
   d: DragState,
   cx: number,
   cy: number,
   editor: Editor
-): d is DragPencil | DragScale | DragShapeBuilder | DragWidth {
+): d is DragPencil | DragScale | DragShapeBuilder | DragWidth | DragPrototypeOverlay {
   if (d.type === 'pencil') {
     editor.pencilExtend(cx, cy)
     return true
@@ -38,14 +43,19 @@ export function moveToolDrag(
     moveVariableWidthDrag(d, cx, cy, editor)
     return true
   }
+  if (d.type === 'prototype-overlay') {
+    moveManualOverlay(editor, d, cx, cy)
+    return true
+  }
   return false
 }
 
 /**
- * Ends a pencil stroke or a Scale tool drag: kept on pointer up, dropped on cancel. Whether the
- * drag was one of theirs.
+ * Ends a pencil stroke, a Scale tool drag or a manual overlay's: kept on pointer up, dropped on
+ * cancel. Whether the drag was one of theirs.
  */
 export function endToolDrag(drag: Ref<DragState | null>, editor: Editor, commit: boolean): boolean {
+  if (endManualOverlayDrag(drag, editor, commit)) return true
   const d = drag.value
   if (d?.type === 'pencil') {
     drag.value = null
