@@ -83,12 +83,15 @@ export function compactListLines(lines: readonly TextListLine[]): TextListLine[]
   return lines.some((line) => line.type !== 'NONE') ? lines.map((line) => ({ ...line })) : []
 }
 
-/** Whether the text has paragraphs to set apart: spacing, an indent or a list. */
+/**
+ * Whether the text has paragraphs to set apart: spacing between two paragraphs or more, an
+ * indent or a list. A single paragraph's spacing sets nothing apart, so it stays inline.
+ */
 export function hasParagraphBlocks(
-  node: Pick<SceneNode, 'paragraphSpacing' | 'paragraphIndent' | 'listLines'>
+  node: Pick<SceneNode, 'text' | 'paragraphSpacing' | 'paragraphIndent' | 'listLines'>
 ): boolean {
   return (
-    node.paragraphSpacing !== 0 ||
+    (node.paragraphSpacing !== 0 && node.text.includes('\n')) ||
     node.paragraphIndent !== 0 ||
     node.listLines.some((line) => line.type !== 'NONE')
   )

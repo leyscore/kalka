@@ -37,3 +37,7 @@ test('paragraph spacing and indent set each paragraph apart', () => {
 test('text without paragraph settings stays one run of characters', () => {
   expect(html({ text: 'One\nTwo' })).toMatch(/^<span[^>]*>One\nTwo<\/span>$/)
 })
+
+test('paragraph spacing on a single paragraph keeps the text inline', () => {
+  expect(html({ text: 'Only one', paragraphSpacing: 24 })).toMatch(/^<span[^>]*>Only one<\/span>$/)
+})
