@@ -48,6 +48,7 @@ export type Tool =
   | 'PEN'
   | 'PENCIL'
   | 'SCALE'
+  | 'SHAPE_BUILDER'
   | 'HAND'
 
 export interface EditorSharedState {
@@ -79,6 +80,16 @@ export interface EditorSharedState {
    * name or CSS name, bump only `sceneVersion`, so the canvas keeps its recorded pictures.
    */
   canvasVersion: number
+}
+
+/** What the Shape builder draws: each region's outline, the hovered one and those picked. */
+export interface ShapeBuilderOverlay {
+  /** SVG path data on the page. */
+  outlines: string[]
+  hovered: number | null
+  picked: number[]
+  /** The picked regions are being removed (Option/Alt), not merged. */
+  removing: boolean
 }
 
 export interface EditorViewState {
@@ -117,6 +128,8 @@ export interface EditorViewState {
   penCursorY: number | null
   /** The pencil's stroke while it is drawn, page-absolute. */
   pencilStroke: Vector[] | null
+  /** The Shape builder's regions while the tool is on. */
+  shapeBuilder: ShapeBuilderOverlay | null
   autoLayoutHover: {
     nodeId: string
     kind: 'frame' | 'children' | 'spacing' | 'spacing-value' | 'padding' | 'padding-value'

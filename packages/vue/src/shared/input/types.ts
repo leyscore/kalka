@@ -165,6 +165,13 @@ export interface DragScale {
   handle: Vector
 }
 
+/** A drag across the Shape builder's regions: those it crossed are merged, or removed with Alt. */
+export interface DragShapeBuilder {
+  type: 'shape-builder'
+  picked: number[]
+  remove: boolean
+}
+
 /** A freehand stroke the pencil is drawing; the points live in the editor state. */
 export interface DragPencil {
   type: 'pencil'
@@ -243,6 +250,7 @@ export type DragState =
   | DragPen
   | DragPencil
   | DragScale
+  | DragShapeBuilder
   | DragTextSelect
   | DragEditNode
   | DragEditHandle

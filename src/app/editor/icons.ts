@@ -15,6 +15,7 @@ import IconPenTool from '~icons/hugeicons/pen-tool-01'
 import IconPencil from '~icons/hugeicons/pencil'
 import IconScale from '~icons/hugeicons/resize-02'
 import IconRows from '~icons/hugeicons/rows-3'
+import IconShapeBuilder from '~icons/hugeicons/shapes'
 import IconSmile from '~icons/hugeicons/smile'
 import IconSquare from '~icons/hugeicons/square'
 import IconSlot from '~icons/hugeicons/square-dashed'
@@ -39,6 +40,7 @@ export const toolIcons: Record<Tool, Component> = {
   PEN: IconPenTool,
   PENCIL: IconPencil,
   SCALE: IconScale,
+  SHAPE_BUILDER: IconShapeBuilder,
   TEXT: IconType,
   HAND: IconHand
 }

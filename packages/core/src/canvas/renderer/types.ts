@@ -81,6 +81,13 @@ export interface RenderOverlays {
   } | null
   /** The pencil's stroke while it is drawn, page-absolute. */
   pencilStroke?: Vector[] | null
+  /** The Shape builder's regions, with the hovered and picked ones. */
+  shapeBuilder?: {
+    outlines: string[]
+    hovered: number | null
+    picked: number[]
+    removing: boolean
+  } | null
   nodeEditState?: {
     nodeId: string
     vertices: VectorVertex[]

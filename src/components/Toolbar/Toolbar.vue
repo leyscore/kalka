@@ -42,6 +42,7 @@ const toolLabels = computed<Record<Tool, string>>(() => ({
   PEN: toolTexts.value.pen,
   PENCIL: toolTexts.value.pencil,
   SCALE: toolTexts.value.scale,
+  SHAPE_BUILDER: toolTexts.value.shapeBuilder,
   TEXT: toolTexts.value.text,
   HAND: toolTexts.value.hand
 }))
@@ -59,6 +60,7 @@ const toolShortcuts: Record<Tool, string> = {
   PEN: 'P',
   PENCIL: formatShortcut('SHIFT+P') ?? '',
   SCALE: 'K',
+  SHAPE_BUILDER: formatShortcut('SHIFT+M') ?? '',
   TEXT: 'T',
   HAND: 'H'
 }

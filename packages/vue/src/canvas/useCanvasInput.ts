@@ -9,6 +9,7 @@ import { createGuideInput, selectedTopLevelGuideFrameId } from '#vue/canvas/guid
 import { createCanvasLabelEdit } from '#vue/canvas/labels/edit'
 import { handlePenDragMove, updatePenHover } from '#vue/canvas/pen/input'
 import { createCanvasPointer } from '#vue/canvas/pointer/use'
+import { bindShapeBuilder, updateShapeBuilderHover } from '#vue/canvas/shape-builder/input'
 import { createTextEditInput } from '#vue/canvas/text-edit/input'
 import { endToolDrag, handleToolPointerUp, moveToolDrag } from '#vue/canvas/tools/drags'
 import { handleToolMouseDown } from '#vue/canvas/tools/input'
@@ -45,6 +46,15 @@ import {
 } from '#vue/shared/input/spacing-drag'
 import type { DragState } from '#vue/shared/input/types'
 import { handleNodeEditMove } from '#vue/shared/input/vector'
+
+/** Drags Escape cancels, putting the canvas back as it was before the press. */
+const CANCELLABLE_DRAGS = new Set<DragState['type']>([
+  'draw',
+  'rotate',
+  'pencil',
+  'scale',
+  'shape-builder'
+])
 
 /**
  * Wires pointer and mouse interaction to an Kalka canvas.
@@ -249,6 +259,7 @@ export function useCanvasInput(
     if (!drag.value) {
       const { cx, cy } = coords
       updatePenHover(cx, cy, editor)
+      updateShapeBuilderHover(cx, cy, e.altKey, editor)
     }
 
     if (!drag.value) {
@@ -471,7 +482,7 @@ export function useCanvasInput(
     (event) => {
       if (event.code !== 'Escape' || event.isComposing || !isEnabled()) return
       const type = drag.value?.type
-      if (type !== 'draw' && type !== 'rotate' && type !== 'pencil' && type !== 'scale') return
+      if (!type || !CANCELLABLE_DRAGS.has(type)) return
       event.preventDefault()
       event.stopImmediatePropagation()
       cancelPointerInteraction()
@@ -521,6 +532,7 @@ export function useCanvasInput(
     if (drag.value?.type === 'rotate' && preview?.nodeId !== drag.value.nodeId)
       cancelPointerInteraction()
   })
+  bindShapeBuilder(editor)
   const stopToolListener = editor.onEditorEvent('tool:changed', () => {
     if (!isEnabled()) return
     editor.setMeasurementMode('off')

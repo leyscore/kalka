@@ -14,7 +14,8 @@ export const toolMessageDefaults = {
   text: 'Text',
   hand: 'Hand',
   pencil: 'Pencil',
-  scale: 'Scale'
+  scale: 'Scale',
+  shapeBuilder: 'Shape builder'
 } as const
 
 export const toolMessages = i18n('tools', toolMessageDefaults)

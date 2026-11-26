@@ -12,5 +12,6 @@
   "text": "Testo",
   "hand": "Mano",
   "pencil": "Matita",
-  "scale": "Scala"
+  "scale": "Scala",
+  "shapeBuilder": "Generatore di forme"
 }

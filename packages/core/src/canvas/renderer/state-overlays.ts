@@ -40,6 +40,7 @@ export function overlaysFromEditorState(
         } as RenderOverlays['penState'])
       : null,
     pencilStroke: state.pencilStroke,
+    shapeBuilder: state.shapeBuilder,
     nodeEditState: state.nodeEditState ?? null,
     presenceCursors: state.presenceCursors,
     designIssues: state.designIssues,

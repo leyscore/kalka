@@ -4,6 +4,7 @@ import type { Editor } from '@kalka/core/editor'
 
 import { startPenInput } from '#vue/canvas/pen/input'
 import { tryStartScale } from '#vue/canvas/scale/input'
+import { startShapeBuilderDrag } from '#vue/canvas/shape-builder/input'
 import { startShapeDraw, startTextDraw } from '#vue/shared/input/draw'
 import { startPanDrag } from '#vue/shared/input/pan'
 import { handleSelectDown } from '#vue/shared/input/select'
@@ -46,6 +47,14 @@ export function handleToolMouseDown({
     return
   }
 
+  if (tool === 'SHAPE_BUILDER') {
+    const building = startShapeBuilderDrag(cx, cy, event.altKey, editor)
+    if (building) {
+      setDrag(building)
+      return
+    }
+  }
+
   if (tool === 'SCALE') {
     const scale = tryStartScale(cx, cy, editor)
     if (scale) {
@@ -54,7 +63,7 @@ export function handleToolMouseDown({
     }
   }
 
-  if (tool === 'SELECT' || tool === 'SCALE') {
+  if (tool === 'SELECT' || tool === 'SCALE' || tool === 'SHAPE_BUILDER') {
     handleSelectDown(
       event,
       cx,
