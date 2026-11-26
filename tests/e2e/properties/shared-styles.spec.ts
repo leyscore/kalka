@@ -287,3 +287,31 @@ test('lists colour, effect and grid styles in Local styles when nothing is selec
   await local.locator('[data-local-effect-style="Effects/Card"]').click()
   await expect(page.getByTestId('effect-style-editor')).toBeVisible()
 })
+
+test('describes a style in its editor and duplicates it from Local styles', async () => {
+  await page.keyboard.press('Escape')
+  await page.evaluate(() => window.kalka?.getStore?.().clearSelection())
+  const local = page.getByTestId('local-styles')
+  const accent = local.locator('[data-local-fill-style="Brand/Accent"]')
+  await accent.click()
+  const description = page
+    .getByTestId('fill-style-editor')
+    .locator('[data-property="style-description"]')
+  await description.fill('Links and focus rings')
+  await description.blur()
+  const described = () =>
+    page.evaluate(() => {
+      const store = window.kalka?.getStore?.()
+      return [...(store?.graph.getAllNodes() ?? [])]
+        .filter((node) => node.name === 'Brand/Accent' && node.sharedStyleType === 'FILL')
+        .map((node) => node.symbolDescription)
+    })
+  await expect.poll(described).toEqual(['Links and focus rings'])
+  await page.keyboard.press('Escape')
+
+  await accent.hover()
+  await accent.locator('xpath=..').getByTestId('fill-style-actions').click()
+  await page.getByTestId('fill-style-duplicate').click()
+  await expect(local.locator('[data-local-fill-style="Brand/Accent"]')).toHaveCount(2)
+  await expect.poll(described).toEqual(['Links and focus rings', 'Links and focus rings'])
+})
