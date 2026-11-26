@@ -61,14 +61,11 @@ function literalFromFigma(value: unknown): PrototypeLiteral | null {
 
 /** `VAR_MODE_LOOKUP` over a variable alias and a mode id: the variable read in that mode. */
 function modeLookupFromFigma(args: unknown[], depth: number): PrototypeExpression {
+  const message = 'A variable mode lookup needs a variable alias and a mode id'
+  if (args.length !== 2) throw new Error(message)
   const [variable, mode] = args.map((argument) => variableDataFromFigma(argument, depth + 1))
-  if (
-    args.length !== 2 ||
-    variable?.type !== 'VARIABLE' ||
-    mode?.type !== 'VALUE' ||
-    typeof mode.value !== 'string'
-  )
-    throw new Error('A variable mode lookup needs a variable alias and a mode id')
+  if (variable.type !== 'VARIABLE' || mode.type !== 'VALUE' || typeof mode.value !== 'string')
+    throw new Error(message)
   return { type: 'VARIABLE', variableId: variable.variableId, modeId: mode.value }
 }
 
@@ -201,6 +198,10 @@ export function variableActionFromFigma(
           actions: block.actions.map(actionFromFigma)
         }))
       }
+    default: {
+      const exhaustive: never = action
+      return exhaustive
+    }
   }
 }
 
@@ -230,5 +231,9 @@ export function variableActionToFigma(
           actions: block.actions.map(actionToFigma)
         }))
       }
+    default: {
+      const exhaustive: never = action
+      return exhaustive
+    }
   }
 }

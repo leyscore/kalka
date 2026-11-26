@@ -10,7 +10,7 @@ export function toggleSelectionThumbnail(store: EditorStore): void {
   const messages = notificationMessages.get()
   const [id, ...rest] = [...store.state.selectedIds]
   const node = id && rest.length === 0 ? store.graph.getNode(id) : undefined
-  if (node && store.graph.thumbnailNodeId === node.id) {
+  if (node?.id === store.graph.thumbnailNodeId) {
     store.setThumbnailNode(null)
     toast.info(messages.thumbnailRestored)
   } else if (node && store.setThumbnailNode(node.id)) {

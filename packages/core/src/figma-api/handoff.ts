@@ -181,7 +181,7 @@ export function installHandoffAccessors(prototype: object, internals: NodeProxyI
           })
           return Promise.resolve()
         } catch (error) {
-          return Promise.reject(error)
+          return Promise.reject(error instanceof Error ? error : new Error(String(error)))
         }
       }
     },
@@ -203,7 +203,7 @@ export function installHandoffAccessors(prototype: object, internals: NodeProxyI
           })
           return Promise.resolve()
         } catch (error) {
-          return Promise.reject(error)
+          return Promise.reject(error instanceof Error ? error : new Error(String(error)))
         }
       }
     },
@@ -218,7 +218,7 @@ export function installHandoffAccessors(prototype: object, internals: NodeProxyI
           })
           return Promise.resolve()
         } catch (error) {
-          return Promise.reject(error)
+          return Promise.reject(error instanceof Error ? error : new Error(String(error)))
         }
       }
     }

@@ -19,7 +19,7 @@ const PLAYGROUND_TYPES = new Set<ComponentPropertyDefinition['type']>([
   'TEXT'
 ])
 
-export type PlaygroundValues = Record<string, string>
+export type PlaygroundValues = Partial<Record<string, string>>
 
 export interface ComponentPlayground {
   /** A private copy of the document: nothing tried here reaches the file or its history. */

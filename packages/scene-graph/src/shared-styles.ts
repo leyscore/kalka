@@ -99,6 +99,10 @@ export function sharedStyleFields(type: SharedStyleType): readonly (keyof SceneN
       return ['layoutGrids']
     case 'TEXT':
       return SHARED_TEXT_STYLE_FIELDS
+    default: {
+      const exhaustive: never = type
+      return exhaustive
+    }
   }
 }
 
@@ -113,6 +117,10 @@ export function sharedStyleKindsForType(type: SharedStyleType): SharedStyleKind[
       return ['grid']
     case 'TEXT':
       return ['text']
+    default: {
+      const exhaustive: never = type
+      return exhaustive
+    }
   }
 }
 
@@ -184,6 +192,10 @@ export function sharedStyleValues(
       return { layoutGrids: copyLayoutGrids(style.layoutGrids) }
     case 'text':
       return sharedTextStyleValues(style)
+    default: {
+      const exhaustive: never = kind
+      return exhaustive
+    }
   }
 }
 
@@ -240,6 +252,10 @@ export function sharedStyleValuesFromLayer(
       return { layoutGrids: copyLayoutGrids(source.layoutGrids) }
     case 'text':
       return sharedTextStyleValues(source)
+    default: {
+      const exhaustive: never = kind
+      return exhaustive
+    }
   }
 }
 

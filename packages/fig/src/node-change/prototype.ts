@@ -429,6 +429,10 @@ function exportAction(action: PrototypeAction, refs: PrototypeRefs): Obj | null 
         fields.overlayRelativePosition = { ...action.overlayRelativePosition }
       return fields
     }
+    default: {
+      const exhaustive: never = action
+      return exhaustive
+    }
   }
 }
 

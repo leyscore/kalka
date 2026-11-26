@@ -67,7 +67,7 @@ export function toggleSelectedTextUnderline(): void {
 export function showAdjacentPage(step: 1 | -1): void {
   const pages = store.graph.getPages()
   const index = pages.findIndex((page) => page.id === store.state.currentPageId)
-  const page = pages[index + step]
+  const page = pages[index + step] as SceneNode | undefined
   if (index !== -1 && page) void store.switchPage(page.id)
 }
 

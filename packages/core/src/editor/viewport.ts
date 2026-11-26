@@ -192,7 +192,6 @@ export function createViewportActions(ctx: EditorContext) {
     const first = step > 0 ? 0 : frames.length - 1
     const index = current === -1 ? first : (current + step + frames.length) % frames.length
     const frame = frames[index]
-    if (!frame) return null
     ctx.setSelectedIds(new Set([frame.id]))
     const bounds = getAxisAlignedWorldBounds(frame, ctx.graph)
     zoomToBounds(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height)

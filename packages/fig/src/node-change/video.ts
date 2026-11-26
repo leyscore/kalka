@@ -16,7 +16,7 @@ function seconds(ms: number | undefined): number | null {
  */
 export function importVideoPlayback(nc: NodeChange): Pick<SceneNode, 'videoPlayback'> {
   const playback = nc.videoPlayback
-  if (typeof playback !== 'object' || playback === null) return { videoPlayback: null }
+  if (!playback) return { videoPlayback: null }
   const startTime = seconds(playback.startTimeMs) ?? 0
   const endTime = seconds(playback.endTimeMs)
   return {

@@ -79,7 +79,7 @@ function propertyToFigma(property: AnnotationProperty): string {
   return FIGMA_PROPERTY_TYPES[ANNOTATION_PROPERTIES.indexOf(property)]
 }
 
-const SIDE_NAMES: Record<string, MeasurementSide> = {
+const SIDE_NAMES: Partial<Record<string, MeasurementSide>> = {
   TOP: 'top',
   BOTTOM: 'bottom',
   LEFT: 'left',

@@ -9,7 +9,7 @@ import type { EditorContext } from './types'
 export function loadBoundFontFamilies(ctx: EditorContext, ids: readonly string[]): void {
   const texts = ids.filter((id) => {
     const node = ctx.graph.getNode(id)
-    return node?.type === 'TEXT' && node.boundVariables.fontFamily !== undefined
+    return node?.type === 'TEXT' && Object.hasOwn(node.boundVariables, 'fontFamily')
   })
   if (texts.length === 0) return
   void createClipboardFontActions(ctx).loadFontsForNodes(texts)

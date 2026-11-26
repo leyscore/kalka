@@ -127,7 +127,7 @@ class ParseError extends Error {
   }
 }
 
-const COMPARISONS: Readonly<Record<string, PrototypeOperator>> = {
+const COMPARISONS: Readonly<Partial<Record<string, PrototypeOperator>>> = {
   '==': 'EQUALS',
   '=': 'EQUALS',
   '!=': 'NOT_EQUAL',
@@ -165,7 +165,7 @@ export function parsePrototypeExpression(
   ): PrototypeExpression => ({ type: 'EXPRESSION', operator, operands: [a, b] })
 
   const primary = (): PrototypeExpression => {
-    const token = tokens[at++]
+    const token = tokens[at++] as Token | undefined
     if (!token) throw new ParseError()
     if (token.kind === 'number' || token.kind === 'string' || token.kind === 'color')
       return { type: 'VALUE', value: token.value }
@@ -222,9 +222,10 @@ export function parsePrototypeExpression(
   const comparison = (): PrototypeExpression => {
     const left = sum()
     const token = peek()
-    if (token?.kind === 'op' && COMPARISONS[token.value]) {
+    const operator = token?.kind === 'op' ? COMPARISONS[token.value] : undefined
+    if (operator) {
       at++
-      return binary(COMPARISONS[token.value], left, sum())
+      return binary(operator, left, sum())
     }
     return left
   }

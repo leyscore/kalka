@@ -41,7 +41,7 @@ function applyTextStyle(
   style: (node: SceneNode) => CharacterStyleOverride
 ): void {
   const nodes = targetTextNodes(store)
-  const [first] = nodes
+  const first = nodes.at(0)
   if (!first) return
   if (store.state.editingTextId && store.styleTextSelection(first.id, style(first))) return
   store.undo.runBatch(label, () => {
@@ -126,7 +126,7 @@ export function toggleStrikethrough(store: EditorStore): void {
  */
 export function toggleTextList(store: EditorStore, type: TextListType): void {
   const nodes = targetTextNodes(store)
-  const [first] = nodes
+  const first = nodes.at(0)
   if (!first) return
   if (store.state.editingTextId && store.listTextSelection(first.id, type)) return
   store.undo.runBatch('Set list', () => {

@@ -91,6 +91,6 @@ export const setPrototypeFlows = defineTool({
     } catch (error) {
       return { error: error instanceof Error ? error.message : String(error) }
     }
-    return { flows: figma.currentPage.flowStartingPoints ?? [] }
+    return { flows: figma.currentPage.flowStartingPoints }
   }
 })

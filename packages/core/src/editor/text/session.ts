@@ -131,7 +131,7 @@ export function followedTextName(
   beforeText: string,
   afterText: string
 ): string | null {
-  if (!node || node.type !== 'TEXT' || !node.autoRename) return null
+  if (node?.type !== 'TEXT' || !node.autoRename) return null
   const next = textLayerName(afterText)
   if (!next || next === node.name || node.name !== textLayerName(beforeText)) return null
   return next

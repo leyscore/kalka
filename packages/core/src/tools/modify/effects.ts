@@ -148,6 +148,10 @@ function effectFromInput(args: EffectInput): FigmaEffect {
         visible: true,
         blendMode: 'NORMAL'
       }
+    default: {
+      const exhaustive: never = args.type
+      return exhaustive
+    }
   }
 }
 

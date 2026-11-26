@@ -105,7 +105,7 @@ export function presentationStart(
     const screen = screenOf(graph, id)
     if (screen) return screen.id
   }
-  const [flow] = flowStartingPoints(graph, pageId)
+  const flow = flowStartingPoints(graph, pageId).at(0)
   if (flow) return flow.node.id
   const frame = graph
     .getChildren(pageId)

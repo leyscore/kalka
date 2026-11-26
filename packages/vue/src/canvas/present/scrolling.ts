@@ -37,12 +37,11 @@ export function applyScrolling(
     const node = graph.getNode(id)
     if (!node || node.scrollBehavior === 'SCROLLS') continue
     // The frame that scrolls it: the nearest one with an overflow direction, else the screen.
-    let frame: HTMLElement | null = null
-    graph.closest(node.parentId ?? id, (ancestor) => {
-      if (ancestor.overflowDirection === 'NONE') return false
-      frame = elementOf.get(ancestor.id) ?? null
-      return true
-    })
+    const scroller = graph.closest(
+      node.parentId ?? id,
+      (ancestor) => ancestor.overflowDirection !== 'NONE'
+    )
+    const frame = scroller ? (elementOf.get(scroller.id) ?? null) : null
     const scrollers: HTMLElement[] = frame
       ? [frame]
       : screenScrollers.filter((scroller): scroller is HTMLElement => scroller !== null)

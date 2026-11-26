@@ -79,7 +79,7 @@ export async function reviewGitBranch(review: GitBranchReview): Promise<void> {
   ])
   const { writeKalkaArchive, readKalkaArchive } = await import('@kalka/core/io/formats/kalka')
   // What the current branch holds before the merge, to put back the changes left unticked.
-  const before = await readKalkaArchive(await writeKalkaArchive(review.current))
+  const before = readKalkaArchive(await writeKalkaArchive(review.current))
   compareForMerge({
     base,
     target: review.current,

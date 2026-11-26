@@ -136,7 +136,7 @@ export function layerEffectFilter(r: SkiaRenderer, node: SceneNode): LayerEffect
     if (isProgressiveBlur(blur, node)) {
       const progressive = progressiveBlurFilter(r, blur, node.width, node.height)
       blurFilter = progressive.filter
-      made.push({ delete: progressive.release })
+      made.push({ delete: () => progressive.release() })
     }
     if (filter) {
       filter = r.ck.ImageFilter.MakeCompose(blurFilter, filter)

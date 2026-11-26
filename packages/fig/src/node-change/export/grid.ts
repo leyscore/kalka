@@ -101,8 +101,8 @@ export function serializeGridLayout(
   if (!place) return
   const columns = trackGuids(context, parent, 'columns', localIdCounter)
   const rows = trackGuids(context, parent, 'rows', localIdCounter)
-  const column = columns[place.column - 1]
-  const row = rows[place.row - 1]
+  const column = columns[place.column - 1] as GUID | undefined
+  const row = rows[place.row - 1] as GUID | undefined
   if (column) nc.gridColumnAnchor = column
   if (row) nc.gridRowAnchor = row
   nc.gridColumnSpan = Math.max(1, place.columnSpan)

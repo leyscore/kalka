@@ -74,7 +74,7 @@ export function viewOptionSetter(
   id: string,
   store: ViewOptionsStore
 ): ((value: boolean) => void) | undefined {
-  const option = VIEW_OPTIONS[id]
+  const option = VIEW_OPTIONS[id] as ViewOption | undefined
   if (!option) return undefined
   return (value) => {
     option.set(store.state, value)

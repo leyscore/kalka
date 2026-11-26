@@ -119,7 +119,7 @@ function importOverrideRuns(nc: NodeChange): StyleRun[] {
 export function importStyleRuns(nc: NodeChange): StyleRun[] {
   const runs = importOverrideRuns(nc)
   const link = importHyperlink(nc)
-  const length = nc.textData?.characters?.length ?? 0
+  const length = (nc.textData?.characters ?? '').length
   // Figma's link on a whole text layer, which Kalka keeps on its characters.
   return link && length > 0 ? runsWithHyperlink(runs, length, link) : runs
 }

@@ -105,7 +105,7 @@ export async function restoreCheckpoint(
   replaceDocumentContent(store.graph, incoming)
   store.refreshVariables({ variables: store.graph.variables.keys() })
   const pages = store.graph.getPages()
-  const first = pages[0]
+  const first = pages.at(0)
   if (first && !pages.some((page) => page.id === store.state.currentPageId))
     await store.switchPage(first.id)
   store.clearSelection()

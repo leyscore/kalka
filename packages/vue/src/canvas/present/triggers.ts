@@ -123,7 +123,7 @@ export function usePresentTriggers(options: {
   let dragged = false
 
   function followsPointer(reaction: PrototypeReaction): boolean {
-    const [first] = reaction.actions
+    const first = reaction.actions.at(0)
     return first?.type === 'NODE' && first.transition?.type === 'SMART_ANIMATE'
   }
 

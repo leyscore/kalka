@@ -112,7 +112,8 @@ export function updateAnnotation(
     }
     if (change.category === null) delete annotation.category
     else if (change.category) annotation.category = change.category
-    const [first, ...rest] = thread.messages
+    const first = thread.messages.at(0)
+    const rest = thread.messages.slice(1)
     const messages =
       change.label === undefined || !first
         ? thread.messages

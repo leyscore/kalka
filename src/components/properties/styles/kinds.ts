@@ -21,6 +21,10 @@ export function styleKindForType(type: SharedStyleType): SharedStyleKind {
       return 'effect'
     case 'GRID':
       return 'grid'
+    default: {
+      const exhaustive: never = type
+      return exhaustive
+    }
   }
 }
 

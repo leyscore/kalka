@@ -125,6 +125,10 @@ class InteractionWriter {
           seconds: seconds > 0 ? seconds : undefined
         }
       }
+      default: {
+        const exhaustive: never = action
+        return exhaustive
+      }
     }
   }
 

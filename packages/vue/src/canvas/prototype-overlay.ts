@@ -1,7 +1,12 @@
 import { markRaw, type Ref } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
-import type { PrototypeNodeAction, SceneGraph, SceneNode } from '@kalka/scene-graph'
+import type {
+  PrototypeAction,
+  PrototypeNodeAction,
+  SceneGraph,
+  SceneNode
+} from '@kalka/scene-graph'
 import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 import { computeSnap, type SnapGuide } from '@kalka/scene-graph/snap'
 
@@ -98,7 +103,7 @@ export function startManualOverlayDrag(
 /** The interactions with the dragged overlay opening at `offset`. */
 function withOffset(drag: DragPrototypeOverlay, offset: Vector) {
   const reactions = structuredClone(drag.before)
-  const action = reactions[drag.reaction]?.actions[drag.action]
+  const action = reactions[drag.reaction]?.actions[drag.action] as PrototypeAction | undefined
   // A plain copy: the drag state hands out reactive objects.
   if (action?.type === 'NODE') action.overlayRelativePosition = { x: offset.x, y: offset.y }
   return reactions

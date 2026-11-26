@@ -111,7 +111,7 @@ function handleShapes(
   for (const { id, point } of handles.centers) {
     shapes.push(centerHandle(context, point, handle?.kind === 'center' && handle.nodeId === id))
   }
-  const [first] = active
+  const first = active.at(0)
   if (!handle?.dragging || !first) return shapes
   const value = activeAxis === 'x' ? handles.grid.columnGap : handles.grid.rowGap
   const c = screen(context, { x: first.x + first.width / 2, y: first.y + first.height / 2 })

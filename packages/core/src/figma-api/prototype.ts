@@ -173,6 +173,10 @@ function actionToFigma(action: PrototypeAction): unknown {
           ? { overlayRelativePosition: { ...action.overlayRelativePosition } }
           : {})
       }
+    default: {
+      const exhaustive: never = action
+      return exhaustive
+    }
   }
 }
 
@@ -294,7 +298,7 @@ export function installPrototypeAccessors(prototype: object, internals: NodeProx
           updateNode(this, internals, { reactions: reactionsFromFigma(value) })
           return Promise.resolve()
         } catch (error) {
-          return Promise.reject(error)
+          return Promise.reject(error instanceof Error ? error : new Error(String(error)))
         }
       }
     },

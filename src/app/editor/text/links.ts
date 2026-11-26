@@ -16,7 +16,7 @@ export const textLinkDialog = {
 
 /** The link a text layer has, when one link is on every character of it. */
 function wholeTextLink(store: EditorStore): TextHyperlink | null {
-  const [node] = targetTextNodes(store)
+  const node = targetTextNodes(store).at(0)
   const link = node ? hyperlinkAt(node.styleRuns, 0) : null
   if (!node || !link) return null
   for (let index = 1; index < node.text.length; index++) {
@@ -31,7 +31,7 @@ function wholeTextLink(store: EditorStore): TextHyperlink | null {
  * being edited, the whole link the caret is in, or each selected text layer as a whole.
  */
 export function requestTextLink(store: EditorStore): void {
-  const [node] = targetTextNodes(store)
+  const node = targetTextNodes(store).at(0)
   if (!node) return
   const editing = store.state.editingTextId
   const link = editing ? store.selectTextLink(editing) : wholeTextLink(store)
@@ -47,7 +47,7 @@ export function requestTextLink(store: EditorStore): void {
  */
 export function setTextLink(store: EditorStore, link: TextHyperlink | null): void {
   const nodes = targetTextNodes(store)
-  const [first] = nodes
+  const first = nodes.at(0)
   if (!first) return
   const label = link ? 'Create link' : 'Remove link'
   const decoration = link ? 'UNDERLINE' : 'NONE'

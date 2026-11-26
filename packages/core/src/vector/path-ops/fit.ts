@@ -205,7 +205,7 @@ function fitRun(
 export function dedupePoints(points: readonly Vector[], minDistance = 1e-6): Vector[] {
   const result: Vector[] = []
   for (const point of points) {
-    const previous = result[result.length - 1]
+    const previous = result.at(-1)
     if (previous && length(sub(point, previous)) <= minDistance) continue
     result.push({ x: point.x, y: point.y })
   }

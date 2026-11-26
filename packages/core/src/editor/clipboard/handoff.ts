@@ -54,7 +54,7 @@ export function pairCopiedTree(
   const copy = graph.getChildren(copyId)
   if (source.length !== copy.length) return
   source.forEach((child, index) => {
-    const twin = copy[index]
-    if (twin) pairCopiedTree(graph, child.id, twin.id, copies)
+    // The two lists have the same length, so each child has its twin.
+    pairCopiedTree(graph, child.id, copy[index].id, copies)
   })
 }

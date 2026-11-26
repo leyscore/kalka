@@ -255,6 +255,10 @@ export function exportVariableAction(
           return written
         })
       }
+    default: {
+      const exhaustive: never = action
+      return exhaustive
+    }
   }
 }
 

@@ -62,11 +62,6 @@ export async function showEditorDocument(windowLabel: string, documentId: string
   await emitTo(windowLabel, 'show-tab', documentId)
 }
 
-async function listenNative<T>(event: string, handler: (payload: T) => void) {
-  const { listen } = await import('@tauri-apps/api/event')
-  return listen<T>(event, ({ payload }) => handler(payload))
-}
-
 /**
  * Keeps the Window menus in step with this editor window: reports its documents to the main
  * process, follows the list it sends back, shows the tab chosen in a Window menu and opens the
@@ -99,11 +94,15 @@ export function useEditorWindows(): void {
     )
 
   void (async () => {
+    const { listen } = await import('@tauri-apps/api/event')
     keep(
-      await listenNative<EditorWindowList>('editor-windows', (list) => (windowList.value = list))
+      await listen<EditorWindowList>(
+        'editor-windows',
+        ({ payload }) => (windowList.value = payload)
+      )
     )
-    keep(await listenNative<string>('show-tab', (id) => switchTab(id)))
-    keep(await listenNative('tab-moves', drainMoves))
+    keep(await listen<string>('show-tab', ({ payload }) => switchTab(payload)))
+    keep(await listen('tab-moves', drainMoves))
     const { invoke } = await import('@tauri-apps/api/core')
     windowList.value = await invoke<EditorWindowList>('editor_windows')
     drainMoves()

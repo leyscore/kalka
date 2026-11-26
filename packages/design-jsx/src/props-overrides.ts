@@ -31,7 +31,7 @@ const COUNTER_ALIGN_MAP: Record<string, SceneNode['counterAxisAlign']> = {
 }
 
 /** A grid child's place across or down its cell, as CSS's `justify-self` and `align-self`. */
-const CELL_ALIGN_MAP: Record<string, 'MIN' | 'CENTER' | 'MAX'> = {
+const CELL_ALIGN_MAP: Partial<Record<string, 'MIN' | 'CENTER' | 'MAX'>> = {
   start: 'MIN',
   center: 'CENTER',
   end: 'MAX'

@@ -76,7 +76,7 @@ export interface QueuedComments {
 export function decodeQueuedComments(bytes: Uint8Array): QueuedComments | null {
   let at = 0
   const text = (): string | null => {
-    const length = bytes[at]
+    const length = bytes.at(at)
     if (length === undefined || at + 1 + length > bytes.length) return null
     const value = decoder.decode(bytes.subarray(at + 1, at + 1 + length))
     at += 1 + length
@@ -130,7 +130,7 @@ function applyOne(
     ]
   }
   const index = threads.findIndex((thread) => thread.id === op.threadId)
-  const thread = threads[index]
+  const thread = index === -1 ? undefined : threads.at(index)
   if (!thread || !isPlainThread(thread)) return threads
   let next: CommentThread | null = thread
   if (op.op === 'reply') {
@@ -151,7 +151,7 @@ function applyOne(
     else delete next.resolvedBy
   } else {
     // Only whoever started a thread deletes it.
-    const [first] = thread.messages
+    const first = thread.messages.at(0)
     if (first?.author.kind !== 'person' || first.author.name !== author) return threads
     next = null
   }
@@ -217,8 +217,9 @@ export function diffCommentOps(before: CommentThread[], after: CommentThread[]):
     const previous = known.get(thread.id)
     if (!previous) {
       if (!isPlainThread(thread)) continue
-      const [first, ...replies] = thread.messages
+      const first = thread.messages.at(0)
       if (!first) continue
+      const replies = thread.messages.slice(1)
       ops.push({
         op: 'add',
         threadId: thread.id,

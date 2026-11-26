@@ -146,7 +146,7 @@ export function changedLayerFields(before: SceneNode, after: SceneNode): (keyof 
 
 /** Whether a node is a page the document keeps for itself, such as the one holding styles. */
 export function isInternalPage(graph: SceneGraph, node: SceneNode): boolean {
-  return node.type === 'CANVAS' && node.parentId === graph.rootId && node.internalOnly === true
+  return node.type === 'CANVAS' && node.parentId === graph.rootId && node.internalOnly
 }
 
 function pageOf(graph: SceneGraph, id: string): string | null {

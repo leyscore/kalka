@@ -56,14 +56,14 @@ export function presentVariableValue(
     inMode && collection?.modes.some((mode) => mode.modeId === inMode) ? inMode : undefined
   const modeId =
     lookedUp ??
-    variables.modes[variable.collectionId] ??
+    (variables.modes[variable.collectionId] as string | undefined) ??
     (nodeId
       ? graph.getNodeVariableModeId(nodeId, variable.collectionId)
       : graph.getActiveModeId(variable.collectionId))
+  const valueIn = (mode: string | undefined): VariableValue | undefined =>
+    mode === undefined ? undefined : variable.valuesByMode[mode]
   const value =
-    variable.valuesByMode[modeId] ??
-    (collection ? variable.valuesByMode[collection.defaultModeId] : undefined) ??
-    Object.values(variable.valuesByMode)[0]
+    valueIn(modeId) ?? valueIn(collection?.defaultModeId) ?? Object.values(variable.valuesByMode)[0]
   if (value && typeof value === 'object' && 'aliasId' in value)
     return presentVariableValue(graph, variables, value.aliasId, nodeId, undefined, seen)
   return value
