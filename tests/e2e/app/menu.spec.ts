@@ -10,7 +10,7 @@ test('the logo opens the main menu in browser mode', async () => {
 test('the main menu has all top-level menus', async () => {
   await editor.page.getByTestId('app-menu-trigger').click()
   const triggers = editor.page.getByTestId('app-menu').getByRole('menuitem')
-  await expect(triggers).toHaveText(['File', 'Edit', 'View', 'Object', 'Text', 'Arrange'])
+  await expect(triggers).toHaveText(['File', 'Edit', 'View', 'Object', 'Vector', 'Text', 'Arrange'])
   await editor.page.keyboard.press('Escape')
 })
 
