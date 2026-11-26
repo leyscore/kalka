@@ -10,6 +10,8 @@ import { useShadowContainer } from '#vue/canvas/islands/shadow'
 import { createIslandState, instanceStates } from '#vue/canvas/islands/state'
 import { useEditor } from '#vue/editor/context'
 
+import { usePresentVideos } from './media'
+
 /**
  * One frame of a presented prototype, a screen or an overlay: its layers as live DOM in a shadow
  * root, as preview islands draw them, with controls running and instances shown in the variants
@@ -29,6 +31,7 @@ const editor = useEditor()
 
 const SCREEN_CSS = ':host{all:initial;display:block}*,*::before,*::after{box-sizing:border-box}'
 const container = useShadowContainer(useTemplateRef<HTMLElement>('host'), SCREEN_CSS)
+const videos = usePresentVideos()
 
 const controls = computed(() => {
   void editor.state.sceneVersion
@@ -58,7 +61,14 @@ function Layers() {
   const { graph, root } = projection.value
   return root
     ? renderNode(
-        { graph, rootId, controls: controls.value, roles: roles.value, state: state.value },
+        {
+          graph,
+          rootId,
+          controls: controls.value,
+          roles: roles.value,
+          state: state.value,
+          media: (nodeId) => videos.videoOf(graph, nodeId)
+        },
         root,
         ''
       )

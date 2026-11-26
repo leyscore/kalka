@@ -199,3 +199,54 @@ test('a variant an interactive component changes to starts its own After delay',
   // Done arrives on its own, after the Loading variant's own delay.
   await expect.poll(() => mark('Done'), { timeout: 3000 }).toBe(true)
 })
+
+test('a video paint plays its clip in the presented prototype, over its poster', async () => {
+  const { page } = editor
+  const { homeId, buttonId } = await createFlows(page)
+  await page.evaluate((buttonId) => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    // Any bytes stand for the clip and its poster; the presenter only has to play what it holds.
+    store.graph.images.set('clip', new Uint8Array([0, 0, 0, 24, 102, 116, 121, 112]))
+    store.graph.images.set('poster', new Uint8Array([137, 80, 78, 71]))
+    const video = {
+      type: 'VIDEO' as const,
+      color: { r: 1, g: 1, b: 1, a: 1 },
+      opacity: 1,
+      visible: true,
+      imageHash: 'poster',
+      videoHash: 'clip',
+      imageScaleMode: 'FIT' as const
+    }
+    store.graph.updateNode(buttonId, { fills: [video] })
+    const other = store.graph.createNode(
+      'RECTANGLE',
+      store.graph.getNode(buttonId)?.parentId ?? '',
+      {
+        name: 'Missing clip',
+        y: 200,
+        width: 80,
+        height: 40,
+        fills: [{ ...video, videoHash: 'not-here' }]
+      }
+    )
+    return other.id
+  }, buttonId)
+  // The test before leaves its prototype presented.
+  await page.evaluate(() => window.kalka?.getStore?.().stopPlay())
+  await page.evaluate((id) => window.kalka?.getStore?.().startPlay({ startId: id }), homeId)
+  const home = frame(page, homeId)
+  const clip = home.locator('[data-layer="Button"] > video[data-present-video]')
+  await expect(clip).toHaveCount(1)
+  expect(
+    await clip.evaluate((video: HTMLVideoElement) => ({
+      src: video.src.startsWith('blob:'),
+      muted: video.muted,
+      loop: video.loop,
+      fit: video.style.objectFit,
+      poster: video.poster.startsWith('data:image/')
+    }))
+  ).toEqual({ src: true, muted: true, loop: true, fit: 'contain', poster: true })
+  await expect(home.locator('[data-layer="Missing clip"] video')).toHaveCount(0)
+  await page.evaluate(() => window.kalka?.getStore?.().stopPlay())
+})

@@ -1,4 +1,4 @@
-import { h, type VNode } from 'vue'
+import { cloneVNode, h, type VNode } from 'vue'
 
 import {
   BUTTON_RESET,
@@ -19,6 +19,8 @@ export interface IslandRenderContext {
   controls: ReadonlyMap<string, ControlModel>
   roles: ReadonlyMap<string, ControlRole>
   state: IslandState
+  /** What a layer plays behind its own content, such as a presented video paint's clip. */
+  media?: (nodeId: string) => VNode | null
 }
 
 /** How a role's wrapper changes the element it wraps. */
@@ -51,10 +53,18 @@ export function renderElement(
   const children =
     override.children ?? (() => element.children.map((child) => renderNode(context, child, path)))
   const { 'data-kalka-node-id': _id, ...attrs } = element.attrs
+  const media = element.sourceSceneNodeId ? context.media?.(element.sourceSceneNodeId) : null
+  // Media plays behind the layer's content, in a stacking context of its own.
+  if (media) Object.assign(style, { isolation: 'isolate', position: style.position ?? 'relative' })
+  // A layer drawn as its picture alone holds the media instead, the picture as its poster.
+  if (media && element.tagName === 'img' && !override.tag)
+    return h('div', { key: path, 'data-layer': path, style }, [
+      cloneVNode(media, { poster: attrs.src })
+    ])
   return h(
     override.tag ?? element.tagName,
     { ...attrs, key: path, 'data-layer': path, style, ...override.props },
-    children()
+    media ? [media, ...children()] : children()
   )
 }
 
