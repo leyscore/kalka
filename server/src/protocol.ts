@@ -31,6 +31,14 @@ export const SERVER_SNAPSHOT = 'srv-snap'
  * id. Sent before `srv-load`'s done item and whenever a new one arrives. Older Kalka ignores it.
  */
 export const SERVER_PENDING = 'srv-pending'
+/**
+ * Comments from anyone in the room, viewers included (`comments.ts`). Sent to the server, the
+ * payload is the comment as Kalka wrote it; from the server, it is `[id][user id][name][comment]`,
+ * stamped with who sent it. Editors answer with `srv-comment-ack`, the ids they wrote into the
+ * document, one per line. Older Kalka ignores both.
+ */
+export const SERVER_COMMENT = 'srv-comment'
+export const SERVER_COMMENT_ACK = 'srv-comment-ack'
 export const YJS_UPDATE = 'yjs-update'
 export const SYNC_REPLY = 'sync-reply'
 

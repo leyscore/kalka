@@ -1,5 +1,6 @@
 import { DurableObject } from 'cloudflare:workers'
 
+import { COMMENT_SCHEMA, CommentQueue, decodeAcks, encodeQueuedComment, type QueuedComment } from './comments'
 import { randomId } from './crypto'
 import type { Env, Role } from './env'
 import {
@@ -11,6 +12,8 @@ import {
   encodeWelcome,
   FRAME_JOIN,
   FRAME_LEAVE,
+  SERVER_COMMENT,
+  SERVER_COMMENT_ACK,
   SERVER_COMPACT,
   SERVER_LOAD,
   SERVER_PEER,
@@ -95,6 +98,7 @@ function joinParts(parts: ArrayBuffer[]): Uint8Array {
  */
 export class DocumentRoom extends DurableObject<Env> {
   private sql: SqlStorage
+  private comments: CommentQueue
   private compactRequestedAt = 0
   private lastTouch = 0
 
@@ -102,6 +106,7 @@ export class DocumentRoom extends DurableObject<Env> {
     super(ctx, env)
     this.sql = ctx.storage.sql
     this.sql.exec(SCHEMA)
+    this.comments = new CommentQueue(this.sql)
   }
 
   private meta(key: string): string | undefined {
@@ -170,6 +175,20 @@ export class DocumentRoom extends DurableObject<Env> {
     const pending = this.pendingVersion()
     if (pending) ws.send(this.pendingFrame(pending))
     send(LOAD_DONE, new Uint8Array())
+    // Comments no editor has written into the document yet: editors merge them, viewers show them.
+    for (const comment of this.comments.list()) ws.send(this.commentFrame(comment))
+  }
+
+  private commentFrame(comment: QueuedComment): Uint8Array {
+    return encodeAction(SERVER_COMMENT, SERVER_PEER, encodeQueuedComment(comment))
+  }
+
+  /** A comment from anyone in the room, kept with who sent it and passed to everyone else. */
+  private receiveComment(ws: WebSocket, info: Attachment, payload: Uint8Array): void {
+    const comment = this.comments.add(info.userId, info.name, payload)
+    if (!comment) return
+    const frame = this.commentFrame(comment)
+    for (const other of this.sockets()) if (other.ws !== ws) other.ws.send(frame)
   }
 
   /** The id of the version waiting to be applied, or null. */
@@ -193,8 +212,13 @@ export class DocumentRoom extends DurableObject<Env> {
 
     if (target === SERVER_PEER) {
       if (namespace === SERVER_SNAPSHOT && canEdit) this.takeSnapshot(payload)
+      // Viewers comment too; only editors, who write comments into the document, acknowledge.
+      else if (namespace === SERVER_COMMENT) this.receiveComment(ws, info, payload)
+      else if (namespace === SERVER_COMMENT_ACK && canEdit) this.comments.acknowledge(decodeAcks(payload))
       return
     }
+    // What the server sends in its own name is never relayed from someone else.
+    if (namespace.startsWith('srv-')) return
     // Viewers follow along; what they would change never reaches anyone.
     if (!canEdit && (namespace === YJS_UPDATE || namespace === SYNC_REPLY)) return
 
@@ -488,5 +512,6 @@ export class DocumentRoom extends DurableObject<Env> {
     this.closeAll()
     await this.ctx.storage.deleteAll()
     this.sql.exec(SCHEMA)
+    this.sql.exec(COMMENT_SCHEMA)
   }
 }
