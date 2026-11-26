@@ -9,7 +9,12 @@ import {
   type CanvasNodeEditMethods
 } from '#vue/canvas/vector-input/bend'
 import type { DragState } from '#vue/shared/input/types'
-import { hitTestEditHandle, isEndpoint, NODE_HIT_THRESHOLD } from '#vue/shared/input/vector'
+import {
+  hitTestEditHandle,
+  hitTestEditVertex,
+  isEndpoint,
+  NODE_HIT_THRESHOLD
+} from '#vue/shared/input/vector'
 
 export function updateNodeEditHover(editor: Editor, cx: number, cy: number): boolean {
   const state = getCanvasNodeEditState(editor)
@@ -33,6 +38,21 @@ export function updateNodeEditHover(editor: Editor, cx: number, cy: number): boo
 }
 
 export { handleBendHandleMove, resolveBendTargetHandle }
+
+/**
+ * A double-click on a point of the path being edited toggles it between sharp and smooth, as in
+ * Figma; returns whether the double-click was on a point.
+ */
+export function toggleNodeEditVertexAt(editor: Editor, cx: number, cy: number): boolean {
+  if (!getCanvasNodeEditState(editor)) return false
+  const vertexIndex = hitTestEditVertex(editor, cx, cy)
+  if (vertexIndex === null) return false
+  const methods = editor as Editor & CanvasNodeEditMethods
+  methods.nodeEditSelectVertex?.(vertexIndex, false)
+  methods.nodeEditToggleVertexSmooth?.(vertexIndex)
+  methods.commitNodeEditChanges?.()
+  return true
+}
 
 export function handleNodeEditPointerUp(drag: Ref<DragState | null>, editor: Editor): boolean {
   const methods = editor as Editor & CanvasNodeEditMethods

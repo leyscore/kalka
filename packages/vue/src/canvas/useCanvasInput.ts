@@ -16,6 +16,7 @@ import { finishMarquee } from '#vue/canvas/transform/marquee'
 import {
   handleBendHandleMove,
   handleNodeEditPointerUp,
+  toggleNodeEditVertexAt,
   updateNodeEditHover
 } from '#vue/canvas/vector-input/input'
 import { resolveAutoLayoutHover } from '#vue/shared/input/auto-layout-hover'
@@ -180,6 +181,7 @@ export function useCanvasInput(
 
   function onMouseDown(e: MouseEvent) {
     onActivate?.()
+    if (toggleNodeEditVertexAt(editor, cx, cy)) return
     if (!isEnabled()) return
     // Preview: controls live in islands above the canvas; the canvas itself only pans.
     if (editor.state.play && e.button === 0 && editor.state.activeTool !== 'HAND') {

@@ -10,6 +10,7 @@ import { applyNodeEditSnap } from '#vue/shared/input/vector/snap'
 export {
   getNodeEditState,
   hitTestEditHandle,
+  hitTestEditVertex,
   isEndpoint,
   NODE_HIT_THRESHOLD
 } from '#vue/shared/input/vector/hit-test'

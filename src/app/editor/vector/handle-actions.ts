@@ -2,7 +2,7 @@ import type { Editor } from '@kalka/core/editor'
 import { findAllHandles, findOppositeHandle, mirrorHandle } from '@kalka/core/vector'
 import type { Vector } from '@kalka/scene-graph/primitives'
 
-import { constrainContinuousTangent } from './handles'
+import { constrainContinuousTangent, smoothVertexTangents } from './handles'
 import { pushNodeEditHistory } from './history'
 import { getLiveNetwork } from './network'
 import type { NodeEditState } from './types'
@@ -138,5 +138,37 @@ export function createVectorEditHandleActions(editor: Editor, getNodeEditState: 
     editor.requestRepaint()
   }
 
-  return { nodeEditSetHandle, nodeEditBendHandle, nodeEditZeroVertexHandles }
+  /**
+   * Double-clicking a point in Figma toggles it: a sharp point grows mirrored handles, a point with
+   * handles turns sharp. One undo step, committed to the layer.
+   */
+  function nodeEditToggleVertexSmooth(vertexIndex: number) {
+    const es = getNodeEditState()
+    if (!es?.vertices[vertexIndex]) return
+    const handles = findAllHandles(getLiveNetwork(es), vertexIndex)
+    if (handles.length === 0) return
+    pushNodeEditHistory(es)
+    const curved = handles.some(({ segmentIndex, tangentField }) => {
+      const tangent = es.segments[segmentIndex][tangentField]
+      return tangent.x !== 0 || tangent.y !== 0
+    })
+    if (curved) {
+      for (const h of handles) es.segments[h.segmentIndex][h.tangentField] = { x: 0, y: 0 }
+      es.vertices[vertexIndex].handleMirroring = 'NONE'
+    } else {
+      const { tangents, mirroring } = smoothVertexTangents(es.vertices, vertexIndex, handles)
+      handles.forEach((h, i) => {
+        es.segments[h.segmentIndex][h.tangentField] = tangents[i]
+      })
+      es.vertices[vertexIndex].handleMirroring = mirroring
+    }
+    editor.requestRepaint()
+  }
+
+  return {
+    nodeEditSetHandle,
+    nodeEditBendHandle,
+    nodeEditZeroVertexHandles,
+    nodeEditToggleVertexSmooth
+  }
 }

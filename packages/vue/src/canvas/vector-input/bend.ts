@@ -25,6 +25,8 @@ export type CanvasNodeEditMethods = Partial<{
   nodeEditCancelDrag: () => void
   commitNodeEditChanges: () => void
   nodeEditZeroVertexHandles: (vertexIndex: number) => void
+  nodeEditToggleVertexSmooth: (vertexIndex: number) => void
+  nodeEditSelectVertex: (vertexIndex: number, addToSelection: boolean) => void
   nodeEditConnectEndpoints: (a: number, b: number) => void
   enterNodeEditMode: (nodeId: string) => void
 }>

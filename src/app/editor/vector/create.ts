@@ -17,8 +17,12 @@ export function createVectorEditActions(editor: Editor, state: VectorEditState) 
     nodeEditBreakAtVertex
   } = createVectorEditSelectionActions(editor, state)
 
-  const { nodeEditSetHandle, nodeEditBendHandle, nodeEditZeroVertexHandles } =
-    createVectorEditHandleActions(editor, getNodeEditState)
+  const {
+    nodeEditSetHandle,
+    nodeEditBendHandle,
+    nodeEditZeroVertexHandles,
+    nodeEditToggleVertexSmooth
+  } = createVectorEditHandleActions(editor, getNodeEditState)
   const { nodeEditPushHistory, nodeEditUndo, nodeEditRedo } = createVectorEditHistoryActions(
     editor,
     state
@@ -54,6 +58,7 @@ export function createVectorEditActions(editor: Editor, state: VectorEditState) 
     nodeEditSetHandle,
     nodeEditBendHandle,
     nodeEditZeroVertexHandles,
+    nodeEditToggleVertexSmooth,
     nodeEditConnectEndpoints,
     nodeEditAddVertex,
     nodeEditRemoveVertex,
