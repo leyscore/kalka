@@ -20,6 +20,9 @@ export const documentEntry = tv({
     body: 'min-w-0 flex-1',
     name: 'block truncate text-[13px] font-medium text-surface transition-colors group-hover:text-accent',
     metadata: 'block shrink-0 truncate font-mono text-[11px] text-muted',
+    /** Says what kind of file it is when that is not a saved one, such as a draft. */
+    badge:
+      'inline-flex h-[18px] shrink-0 items-center rounded-[5px] bg-card px-1.5 text-[11px] font-medium text-muted ring-1 ring-hairline ring-inset',
     trailingMetadata: 'hidden shrink-0 text-xs text-muted sm:inline',
     continueBar:
       'absolute inset-x-3.5 bottom-3.5 flex items-center gap-3 rounded-[14px] bg-white/90 py-2.5 ps-3.5 pe-2.5 text-[#121214] backdrop-blur-[10px]',

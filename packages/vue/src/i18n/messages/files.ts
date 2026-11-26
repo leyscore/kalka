@@ -61,6 +61,11 @@ export const filesMessageDefaults = {
   recentFilesDescription: 'Continue working on a design or start a new one.',
   noRecentFiles: 'No recent files yet',
   noRecentFilesDescription: 'Files you open in the desktop app will appear here.',
+  draftBadge: 'Draft',
+  draftsNotKeptRecoveryOff:
+    'Drafts stay only while their tab is open. Turn on recovery in Settings to keep them after a reload.',
+  draftsNotKeptStorage:
+    'Drafts stay only while their tab is open: this browser does not let Kalka keep them after a reload.',
   searchFiles: 'Search files…',
   searchRecentAndStorageFiles: 'Search recent and storage files…',
   newDesign: 'New design',

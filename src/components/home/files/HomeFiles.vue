@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core'
-import { computed, ref, useTemplateRef, watch } from 'vue'
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 
 import { useDocumentWorkspace, useI18n, useViewportKind } from '@kalka/vue'
 
 import { serverAccount } from '@/app/collab/server/account'
 import { openServerDocumentById } from '@/app/collab/server/documents'
+import { recoveryEnabled } from '@/app/document/recovery/preferences'
+import { draftsPersist, listDrafts, openDraft, type DraftDocument } from '@/app/home/drafts'
 import { homeFilesTab } from '@/app/home/files-tab'
 import {
   activeStorageProviderID,
@@ -24,7 +26,7 @@ import {
 import { openSettings } from '@/app/settings/open'
 import { openFileFromPath } from '@/app/shell/menu/use'
 import { createStorageWorkspaceSource } from '@/app/storage/workspace/source'
-import { openStorageDocumentInNewTab } from '@/app/tabs'
+import { activeTab, openStorageDocumentInNewTab } from '@/app/tabs'
 import DocumentEntry from '@/components/home/document/DocumentEntry.vue'
 import HomeSampleTile from '@/components/home/learn/HomeSampleTile.vue'
 import HomeSearchField from '@/components/home/search/HomeSearchField.vue'
@@ -136,12 +138,47 @@ const heading = computed(() => {
   return files.value.localFiles
 })
 const hasRecentFiles = computed(() => documents.value.length > 0)
+
+/** Documents never saved anywhere, listed on Home as Figma lists its drafts. */
+const drafts = ref<DraftDocument[]>([])
+async function refreshDrafts(): Promise<void> {
+  drafts.value = place === 'home' ? await listDrafts() : []
+}
+onMounted(() => void refreshDrafts())
+// Coming back to Home from a document picks up what changed there.
+watch(activeTab, () => void refreshDrafts())
+const filteredDrafts = computed(() =>
+  normalizedQuery.value
+    ? drafts.value.filter((draft) =>
+        draft.name.toLocaleLowerCase(locale.value).includes(normalizedQuery.value)
+      )
+    : drafts.value
+)
+/** Said once there are drafts that a reload would lose. */
+const draftsNotice = computed(() => {
+  if (drafts.value.length === 0 || draftsPersist.value) return null
+  return recoveryEnabled.value
+    ? files.value.draftsNotKeptStorage
+    : files.value.draftsNotKeptRecoveryOff
+})
+
+async function openDraftDocument(draft: DraftDocument): Promise<void> {
+  openError.value = null
+  try {
+    await openDraft(draft)
+  } catch (error) {
+    openError.value = error instanceof Error ? error.message : String(error)
+    void refreshDrafts()
+  }
+}
 const noSearchMatches = computed(
   () =>
     Boolean(normalizedQuery.value) &&
     !inServer.value &&
     !inTrash.value &&
-    (inStorage.value ? filteredStorageDocuments.value : filteredRecentFiles.value).length === 0
+    (inStorage.value
+      ? filteredStorageDocuments.value.length
+      : filteredRecentFiles.value.length + filteredDrafts.value.length) === 0
 )
 /** The file that leads the grid: the last one opened, while nothing is being searched. */
 const leadID = computed(() => (normalizedQuery.value ? null : (documents.value[0]?.id ?? null)))
@@ -290,7 +327,20 @@ function formattedDate(updatedAt: string): string {
 
       <template v-else-if="!inStorage">
         <!-- With nothing opened yet, the sample file stands in for the recent files. -->
-        <div v-if="view === 'grid' || !filteredRecentFiles.length" :class="GRID">
+        <AppAlert v-if="draftsNotice" tone="info" :heading="draftsNotice" />
+        <div
+          v-if="view === 'grid' || !(filteredRecentFiles.length || filteredDrafts.length)"
+          :class="GRID"
+        >
+          <DocumentEntry
+            v-for="draft in filteredDrafts"
+            :key="draft.id"
+            :name="draft.name"
+            :badge="files.draftBadge"
+            :metadata="formattedDate(draft.updatedAt)"
+            data-test-id="home-draft"
+            @open="openDraftDocument(draft)"
+          />
           <DocumentEntry
             v-for="document in filteredRecentFiles"
             :key="document.id"
@@ -304,13 +354,26 @@ function formattedDate(updatedAt: string): string {
           />
           <template v-if="!normalizedQuery">
             <HomeSampleTile />
-            <div v-if="!hasRecentFiles" class="flex flex-col justify-center gap-1 px-1 sm:px-3">
+            <div
+              v-if="!hasRecentFiles && !drafts.length"
+              class="flex flex-col justify-center gap-1 px-1 sm:px-3"
+            >
               <p class="text-[13px] font-medium text-label">{{ files.noRecentFiles }}</p>
               <p class="text-xs text-muted">{{ files.noRecentFilesDescription }}</p>
             </div>
           </template>
         </div>
         <div v-else :class="LIST">
+          <DocumentEntry
+            v-for="draft in filteredDrafts"
+            :key="draft.id"
+            view="list"
+            :name="draft.name"
+            :badge="files.draftBadge"
+            :metadata="formattedDate(draft.updatedAt)"
+            data-test-id="home-draft"
+            @open="openDraftDocument(draft)"
+          />
           <DocumentEntry
             v-for="document in filteredRecentFiles"
             :key="document.id"

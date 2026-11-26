@@ -12,7 +12,13 @@ const meta = {
     template:
       '<div class="max-w-sm bg-panel p-4 text-surface"><DocumentEntry v-bind="args" /></div>'
   })
-} satisfies Meta<{ name: string; metadata: string; view: 'grid' | 'list'; disabled?: boolean }>
+} satisfies Meta<{
+  name: string
+  metadata: string
+  view: 'grid' | 'list'
+  disabled?: boolean
+  badge?: string
+}>
 
 export default meta
 type Story = StoryObj<typeof meta>
@@ -22,3 +28,5 @@ export const LongName: Story = {
   args: { name: 'A deliberately long document name that must stay inside the document card' }
 }
 export const Disabled: Story = { args: { disabled: true } }
+export const Draft: Story = { args: { name: 'Untitled', badge: 'Draft' } }
+export const DraftList: Story = { args: { name: 'Untitled', badge: 'Draft', view: 'list' } }

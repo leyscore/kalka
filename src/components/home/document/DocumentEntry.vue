@@ -9,6 +9,7 @@ const {
   name,
   metadata,
   previewURL,
+  badge,
   view = 'grid',
   lead = false,
   disabled = false,
@@ -17,6 +18,8 @@ const {
   name: string
   metadata: string
   previewURL?: string | null
+  /** A short word beside the name, such as Draft for a file never saved. */
+  badge?: string
   view?: 'grid' | 'list'
   /** The last file opened, shown larger with a button to continue it. */
   lead?: boolean
@@ -46,6 +49,7 @@ const HANDLES = [
       <template v-if="view === 'grid'">
         <span data-slot="body" :class="styles.body()">
           <span data-slot="name" :class="styles.name()">{{ name }}</span>
+          <span v-if="badge" data-slot="badge" :class="styles.badge()">{{ badge }}</span>
           <span data-slot="metadata" :class="styles.metadata()">{{ metadata }}</span>
         </span>
         <span data-slot="preview" :class="styles.preview()">
@@ -69,6 +73,7 @@ const HANDLES = [
         <icon-hugeicons-file-image :class="styles.icon()" />
         <span data-slot="body" :class="styles.body()">
           <span data-slot="name" :class="styles.name()">{{ name }}</span>
+          <span v-if="badge" data-slot="badge" :class="styles.badge()">{{ badge }}</span>
           <span data-slot="metadata" :class="styles.metadata()">{{ metadata }}</span>
         </span>
         <span :class="styles.trailingMetadata()">{{ metadata }}</span>
