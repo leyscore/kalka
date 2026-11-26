@@ -33,7 +33,9 @@ describe('.fig effects', () => {
         refractionRadius: 2,
         specularAngle: 45,
         specularIntensity: 0.5,
-        chromaticAberration: 0.2
+        chromaticAberration: 0.2,
+        bevelSize: 12,
+        reflectionDistance: 4
       },
       {
         type: 'FOREGROUND_BLUR',
@@ -68,7 +70,9 @@ describe('.fig effects', () => {
       depth: 2,
       lightAngle: 45,
       lightIntensity: 0.5,
-      dispersion: 0.2
+      dispersion: 0.2,
+      bevelSize: 12,
+      reflectionDistance: 4
     })
     expect(blur).toMatchObject({
       type: 'FOREGROUND_BLUR',
@@ -83,7 +87,14 @@ describe('.fig effects', () => {
     const [noise, texture, glass, blur] = convertEffects([
       { type: 'NOISE', noiseType: 'MULTITONE', opacity: 0.7, noiseSize: { x: 1, y: 1 } },
       { type: 'GRAIN', radius: 4, noiseSize: { x: 1, y: 1 } },
-      { type: 'GLASS', radius: 6, refractionIntensity: 0.8, specularAngle: -45 },
+      {
+        type: 'GLASS',
+        radius: 6,
+        refractionIntensity: 0.8,
+        specularAngle: -45,
+        bevelSize: 10,
+        reflectionDistance: 3
+      },
       { type: 'BACKGROUND_BLUR', radius: 10, blurOpType: 'PROGRESSIVE', startRadius: 0 }
     ])
     expect(kiwiEffectType(texture.type)).toBe('GRAIN')
@@ -95,7 +106,9 @@ describe('.fig effects', () => {
     expect(kiwiEffectKindFields(texture)).toMatchObject({ clipToShape: true })
     expect(kiwiEffectKindFields(glass)).toMatchObject({
       refractionIntensity: 0.8,
-      specularAngle: -45
+      specularAngle: -45,
+      bevelSize: 10,
+      reflectionDistance: 3
     })
     expect(kiwiEffectKindFields(blur)).toMatchObject({
       blurOpType: 'PROGRESSIVE',

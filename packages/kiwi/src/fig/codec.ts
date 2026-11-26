@@ -222,6 +222,8 @@ export interface Effect {
   specularAngle?: number
   specularIntensity?: number
   chromaticAberration?: number
+  bevelSize?: number
+  reflectionDistance?: number
   refractionIntensity?: number
   colorVar?: VariableAliasData
   radiusVar?: VariableAliasData

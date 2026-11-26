@@ -362,6 +362,12 @@ export interface Effect {
   lightAngle?: number
   lightIntensity?: number
   dispersion?: number
+  /**
+   * A glass's bevel and reflection distance as `.fig` files keep them, which Figma's plugin API
+   * does not expose; kept so a file round-trips.
+   */
+  bevelSize?: number
+  reflectionDistance?: number
 }
 
 export type ConstraintType = 'MIN' | 'CENTER' | 'MAX' | 'STRETCH' | 'SCALE'

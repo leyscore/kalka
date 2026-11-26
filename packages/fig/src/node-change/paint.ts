@@ -287,6 +287,8 @@ function glassFields(e: KiwiEffect): Partial<Effect> {
   if (e.specularAngle !== undefined) fields.lightAngle = e.specularAngle
   if (e.specularIntensity !== undefined) fields.lightIntensity = e.specularIntensity
   if (e.chromaticAberration !== undefined) fields.dispersion = e.chromaticAberration
+  if (e.bevelSize !== undefined) fields.bevelSize = e.bevelSize
+  if (e.reflectionDistance !== undefined) fields.reflectionDistance = e.reflectionDistance
   return fields
 }
 
@@ -321,6 +323,19 @@ export function convertEffects(effects?: KiwiEffect[]): Effect[] {
   })
 }
 
+/** A glass's settings as `.fig` files name them. */
+function kiwiGlassFields(effect: Effect): Partial<KiwiEffect> {
+  const fields: Partial<KiwiEffect> = {}
+  if (effect.refraction !== undefined) fields.refractionIntensity = effect.refraction
+  if (effect.depth !== undefined) fields.refractionRadius = effect.depth
+  if (effect.lightAngle !== undefined) fields.specularAngle = effect.lightAngle
+  if (effect.lightIntensity !== undefined) fields.specularIntensity = effect.lightIntensity
+  if (effect.dispersion !== undefined) fields.chromaticAberration = effect.dispersion
+  if (effect.bevelSize !== undefined) fields.bevelSize = effect.bevelSize
+  if (effect.reflectionDistance !== undefined) fields.reflectionDistance = effect.reflectionDistance
+  return fields
+}
+
 /** A scene effect's kind-specific fields as `.fig` files keep them. */
 export function kiwiEffectKindFields(effect: Effect): Partial<KiwiEffect> {
   const fields: Partial<KiwiEffect> = {}
@@ -339,13 +354,7 @@ export function kiwiEffectKindFields(effect: Effect): Partial<KiwiEffect> {
     if (effect.opacity !== undefined) fields.opacity = effect.opacity
   }
   if (effect.type === 'TEXTURE') fields.clipToShape = effect.clipToShape ?? true
-  if (effect.type === 'GLASS') {
-    if (effect.refraction !== undefined) fields.refractionIntensity = effect.refraction
-    if (effect.depth !== undefined) fields.refractionRadius = effect.depth
-    if (effect.lightAngle !== undefined) fields.specularAngle = effect.lightAngle
-    if (effect.lightIntensity !== undefined) fields.specularIntensity = effect.lightIntensity
-    if (effect.dispersion !== undefined) fields.chromaticAberration = effect.dispersion
-  }
+  if (effect.type === 'GLASS') Object.assign(fields, kiwiGlassFields(effect))
   return fields
 }
 
