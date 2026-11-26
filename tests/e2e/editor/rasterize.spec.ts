@@ -7,7 +7,12 @@ test('⌘E rasterizes the selection into one image layer, and undo brings the la
   const ids = await page.evaluate(() => {
     const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
-    const fill = { type: 'SOLID', color: { r: 1, g: 0, b: 0, a: 1 }, opacity: 1, visible: true }
+    const fill = {
+      type: 'SOLID' as const,
+      color: { r: 1, g: 0, b: 0, a: 1 },
+      opacity: 1,
+      visible: true
+    }
     const a = store.createShape('RECTANGLE', 200, 200, 80, 60, undefined, undefined, {
       fills: [fill]
     })

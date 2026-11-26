@@ -3,11 +3,22 @@ import { describe, expect, test } from 'bun:test'
 import { FigmaAPI } from '@kalka/core/figma-api'
 import { SceneGraph } from '@kalka/scene-graph'
 
+/** A colour Kalka and the Plugin API both read: an RGB with its alpha. */
+const BLACK = { r: 0, g: 0, b: 0, a: 1 }
+const BLACK_STROKE = {
+  type: 'SOLID' as const,
+  color: BLACK,
+  opacity: 1,
+  visible: true,
+  weight: 1,
+  align: 'CENTER' as const
+}
+
 function setup() {
   const graph = new SceneGraph()
   const figma = new FigmaAPI(graph)
   const line = figma.createLine()
-  line.strokes = [{ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }]
+  line.strokes = [BLACK_STROKE]
   const node = () => {
     const found = graph.getNode(line.id)
     if (!found) throw new Error('No line')

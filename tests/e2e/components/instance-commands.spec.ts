@@ -161,6 +161,6 @@ test('the playground tries a variant without changing the file', async () => {
   await page.keyboard.press('Escape')
   expect(await page.evaluate(() => window.kalka?.getStore?.()?.graph.nodes.size ?? 0)).toBe(before)
   expect(
-    await page.evaluate((id) => [...(window.kalka?.getStore?.()?.state.selectedIds ?? [])], setId)
+    await page.evaluate(() => [...(window.kalka?.getStore?.()?.state.selectedIds ?? [])])
   ).toEqual([setId])
 })
