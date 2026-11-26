@@ -778,10 +778,12 @@ export class DomSceneProjector {
 
   /** Re-renders one layer's element and reconciles its children. False when it is not drawn. */
   private patchLayer(id: string, node: SceneNode, artboardId: string, doc: Document): boolean {
-    if (this.locked.has(id)) return true
-
     const current = this.elements.get(id)
     const isRoot = id === artboardId
+    if (this.locked.has(id)) {
+      if (current) this.restyleLocked(id, node, current, isRoot)
+      return true
+    }
     if (!current && !isRoot) {
       // A layer not drawn yet: its parent creates it when it reconciles.
       if (node.parentId) this.dirty.add(node.parentId)
@@ -811,6 +813,18 @@ export class DomSceneProjector {
       this.reconcileChildren(doc, node, current)
     }
     return true
+  }
+
+  /**
+   * A layer edited in place keeps the content and attributes its editor gives it, but takes its
+   * layer's style, as when its font size changes while its text is being typed.
+   */
+  private restyleLocked(id: string, node: SceneNode, element: Element, isRoot: boolean): void {
+    const projected = this.project(id, true)
+    if (projected?.type !== 'element') return
+    const style = this.attributesFor(node, projected, isRoot).get('style')
+    if (style === undefined) element.removeAttribute('style')
+    else if (element.getAttribute('style') !== style) element.setAttribute('style', style)
   }
 
   /** An element's attributes; an artboard's own element hugs its content as in its iframe. */

@@ -97,3 +97,27 @@ test('Escape right after a click with the text tool leaves no empty text', async
   await expect.poll(() => pageTexts(page)).toEqual([])
   canvas.assertNoErrors()
 })
+
+// A panel change, such as the font size typed while the text is still being edited, shows at once.
+test('the text being edited takes a new font size', async ({ page }) => {
+  const canvas = new CanvasHelper(page)
+  await page.goto('/?test&no-chrome&no-rulers')
+  await canvas.waitForInit()
+
+  await canvas.selectTool('text')
+  await canvas.click(300, 300)
+  await canvas.waitForTextEditor()
+  await page.keyboard.type('Hello')
+  await expect.poll(async () => (await pageTexts(page))[0]?.width ?? 0).toBeGreaterThan(1)
+  const before = (await pageTexts(page))[0]?.width ?? 0
+
+  await page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    const id = store?.state.editingTextId
+    if (store && id) store.updateNodeWithUndo(id, { fontSize: 48 })
+  })
+
+  await expect.poll(async () => (await pageTexts(page))[0]?.width ?? 0).toBeGreaterThan(before * 2)
+  expect(await editedText(page)).toBe('Hello')
+  canvas.assertNoErrors()
+})
