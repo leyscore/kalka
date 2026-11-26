@@ -6,6 +6,15 @@ import { enterpriseHost, serverUrl } from './enterprise'
 import { challengeOf, hashPassword, hashToken, randomId, randomToken, sameSecret, verifyPassword } from './crypto'
 import { withStoredSettings, type DocumentInfo, type Env, type LinkRole, type Role, type TrashedDocument, type User } from './env'
 import { roomName } from './names'
+import {
+  addNotifications,
+  listNotifications,
+  NOTIFICATION_SCHEMA,
+  readNotifications,
+  unreadNotifications,
+  type CommentNotice,
+  type Notification
+} from './notifications'
 
 const DAY = 24 * 60 * 60 * 1000
 /** How long a deleted document waits in the trash before it is erased for good. */
@@ -178,6 +187,7 @@ export class Directory extends DurableObject<Env> {
     super(ctx, env)
     this.sql = ctx.storage.sql
     this.sql.exec(SCHEMA)
+    this.sql.exec(NOTIFICATION_SCHEMA)
     // Columns added after the first release; existing servers gain them here.
     for (const column of [
       'ALTER TABLE documents ADD COLUMN live INTEGER NOT NULL DEFAULT 0',
@@ -1037,6 +1047,19 @@ export class Directory extends DurableObject<Env> {
     this.sql.exec('INSERT OR REPLACE INTO flags (key, value) VALUES (?, ?)', key, value)
   }
 
+  /** Notes for the members a comment is for (`notifications.ts`); how many were kept. */
+  notifyComment(sender: { id: string; name: string }, notice: CommentNotice): number {
+    return addNotifications(this.sql, sender, notice)
+  }
+
+  notifications(userId: string): { notifications: Notification[]; unread: number } {
+    return { notifications: listNotifications(this.sql, userId), unread: unreadNotifications(this.sql, userId) }
+  }
+
+  readNotifications(userId: string, which: { ids?: string[]; documentId?: string }): void {
+    readNotifications(this.sql, userId, which)
+  }
+
   /** Every document ID, deleted ones included, so a host can erase their rooms. */
   allDocumentIds(): string[] {
     return this.all<{ id: string }>('SELECT id FROM documents').map((row) => row.id)
@@ -1047,6 +1070,7 @@ export class Directory extends DurableObject<Env> {
     await this.ctx.storage.deleteAlarm()
     await this.ctx.storage.deleteAll()
     this.sql.exec(SCHEMA)
+    this.sql.exec(NOTIFICATION_SCHEMA)
     this.eeSchemas.clear()
   }
 
@@ -1112,6 +1136,7 @@ export class Directory extends DurableObject<Env> {
     }
     this.sql.exec('DELETE FROM sessions WHERE user_id = ?', id)
     this.sql.exec('DELETE FROM app_passwords WHERE user_id = ?', id)
+    this.sql.exec('DELETE FROM notifications WHERE user_id = ?', id)
     this.sql.exec('DELETE FROM users WHERE id = ?', id)
     await this.revokeInRooms(id, null)
     return { deleted: true }

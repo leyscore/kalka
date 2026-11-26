@@ -45,6 +45,7 @@ import { canSendMail, sendMail, tryMail } from './mail'
 import { FONTS } from './assets/fonts'
 import { consolePage } from './page'
 import { directoryName } from './names'
+import { MAX_NAMES } from './notifications'
 import { PROTOCOL_VERSION } from './protocol'
 import { enterpriseRoute } from './signin'
 
@@ -97,6 +98,17 @@ const MergeRequest = v.object({ force: v.optional(v.boolean()) })
 const VersionRequest = v.object({ label: v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(200)) })
 const RestoreRequest = v.object({ before: v.optional(v.pipe(v.string(), v.maxLength(200))) })
 const AppPasswordRequest = v.object({ name: v.pipe(v.string(), v.maxLength(80)) })
+const NotifyNames = v.pipe(v.array(v.pipe(v.string(), v.maxLength(100))), v.maxLength(MAX_NAMES))
+const NotifyRequest = v.object({
+  threadId: v.pipe(v.string(), v.minLength(1), v.maxLength(64)),
+  mentions: v.optional(NotifyNames, []),
+  participants: v.optional(NotifyNames, []),
+  excerpt: v.pipe(v.string(), v.maxLength(4000))
+})
+const ReadNotificationsRequest = v.object({
+  ids: v.optional(v.pipe(v.array(v.pipe(v.string(), v.maxLength(64))), v.maxLength(200))),
+  documentId: v.optional(v.pipe(v.string(), v.maxLength(64)))
+})
 
 function bearer(request: Request): string | null {
   const header = request.headers.get('Authorization') ?? ''
@@ -276,6 +288,14 @@ async function documentRoute(
     const document = await directory.getDocument(documentId)
     if (!document) throw new HttpError(404, 'No such document.')
     return json(document)
+  }
+  // A comment was posted: the people it mentions or answers are notified, viewers' comments too.
+  if (rest === '/notify' && method === 'POST') {
+    const user = await requireUser(env, request)
+    if (!(await directory.getDocument(documentId))) throw new HttpError(404, 'No such document.')
+    const notice = await body(request, NotifyRequest)
+    const notified = await directory.notifyComment({ id: user.id, name: user.name }, { documentId, ...notice })
+    return json({ notified })
   }
   if (rest === '/ticket' && method === 'POST') {
     const user = await requireUser(env, request)
@@ -521,6 +541,15 @@ async function api(env: Env, request: Request, path: string): Promise<Response> 
     const user = await requireUser(env, request)
     const { name } = await body(request, Profile)
     return json(unwrap(await directory.updateProfile(user.id, name)))
+  }
+  if (path === '/api/me/notifications' && method === 'GET') {
+    const user = await requireUser(env, request)
+    return json(await directoryOf(env).notifications(user.id))
+  }
+  if (path === '/api/me/notifications/read' && method === 'POST') {
+    const user = await requireUser(env, request)
+    await directoryOf(env).readNotifications(user.id, await body(request, ReadNotificationsRequest))
+    return json(await directoryOf(env).notifications(user.id))
   }
   if (path === '/api/me/password' && method === 'POST') {
     const user = await requireUser(env, request)
