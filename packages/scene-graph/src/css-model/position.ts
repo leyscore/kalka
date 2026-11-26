@@ -83,8 +83,8 @@ function writePinned(style: CSSDeclarations, node: SceneNode, parent: SceneNode)
     const end = frame - start - node[axis.size]
     const constraint = hugsAxis(parent, axis.size) ? 'MIN' : node[axis.constraint]
     if (constraint === 'MAX') style[axis.end] = px(round(end))
-    else if (constraint === 'CENTER')
-      style[axis.start] = centred(start + node[axis.size] / 2 - frame / 2)
+    // The start edge's offset from the frame's centre, so `left` keeps the layer where it is.
+    else if (constraint === 'CENTER') style[axis.start] = centred(start - frame / 2)
     else if (constraint === 'SCALE' && frame > 0) style[axis.start] = percent(start / frame)
     else {
       style[axis.start] = px(start)
@@ -122,7 +122,7 @@ function readPinnedAxis(
   } else if (centre) {
     node[axis.constraint] = 'CENTER'
     const offset = Number(centre[2]) * (centre[1] === '-' ? -1 : 1)
-    if (frame !== undefined) node[axis.position] = frame / 2 + offset - node[axis.size] / 2
+    if (frame !== undefined) node[axis.position] = frame / 2 + offset
   } else if (share) {
     node[axis.constraint] = 'SCALE'
     const sizeShare = PERCENT.exec(pickStyle(style, axis.size)?.trim() ?? '')

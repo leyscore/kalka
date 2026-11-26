@@ -28,6 +28,23 @@ describe('absolute position in auto layout', () => {
     expect(css.left).toBeUndefined()
   })
 
+  test('centres the layer from the frame centre without moving its start edge', () => {
+    const { node, parent } = badgeIn(
+      { layoutMode: 'HORIZONTAL', primaryAxisSizing: 'FIXED', counterAxisSizing: 'FIXED' },
+      {
+        layoutPositioning: 'ABSOLUTE',
+        horizontalConstraint: 'CENTER',
+        verticalConstraint: 'CENTER'
+      }
+    )
+    // 230px from the left of a 300px frame is 80px right of its centre; 10px from the top of a
+    // 200px frame is 90px above it.
+    expect(layerCSS(node, parent)).toMatchObject({
+      left: 'calc(50% + 80px)',
+      top: 'calc(50% - 90px)'
+    })
+  })
+
   test('keeps the start inset along an axis the frame hugs, where its size is not known yet', () => {
     const { node, parent } = badgeIn(
       { layoutMode: 'HORIZONTAL', primaryAxisSizing: 'HUG', counterAxisSizing: 'FIXED' },
