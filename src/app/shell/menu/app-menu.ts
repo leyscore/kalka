@@ -121,6 +121,7 @@ export function useAppMenu() {
     'export-frames-pdf': 'exportFramesToPDF',
     'revert-to-saved': 'revertToSaved',
     'duplicate-file': 'duplicateFile',
+    'save-to-version-history': 'saveToVersionHistory',
     autosave: 'autosave',
     close: 'closeTab',
     copy: 'copy',

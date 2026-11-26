@@ -149,6 +149,7 @@
   "exportFramesToPDF": "将框架导出为 PDF…",
   "revertToSaved": "恢复到已保存版本",
   "duplicateFile": "创建副本",
+  "saveToVersionHistory": "保存到版本历史…",
   "vector": "矢量",
   "joinSelection": "连接所选",
   "smoothJoinSelection": "平滑连接所选",

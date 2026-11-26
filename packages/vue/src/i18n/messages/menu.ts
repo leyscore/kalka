@@ -157,6 +157,7 @@ export const menuMessageDefaults = {
   exportFramesToPDF: 'Export frames to PDF…',
   revertToSaved: 'Revert to saved',
   duplicateFile: 'Duplicate',
+  saveToVersionHistory: 'Save to version history…',
   vector: 'Vector',
   joinSelection: 'Join selection',
   smoothJoinSelection: 'Smooth join selection',

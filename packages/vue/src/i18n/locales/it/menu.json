@@ -149,6 +149,7 @@
   "exportFramesToPDF": "Esporta i frame in PDF…",
   "revertToSaved": "Ripristina versione salvata",
   "duplicateFile": "Duplica",
+  "saveToVersionHistory": "Salva nella cronologia delle versioni…",
   "vector": "Vettore",
   "joinSelection": "Unisci selezione",
   "smoothJoinSelection": "Unisci selezione in modo uniforme",

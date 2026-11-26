@@ -149,6 +149,7 @@
   "exportFramesToPDF": "Exportar marcos a PDF…",
   "revertToSaved": "Volver a la versión guardada",
   "duplicateFile": "Duplicar",
+  "saveToVersionHistory": "Guardar en el historial de versiones…",
   "vector": "Vector",
   "joinSelection": "Unir selección",
   "smoothJoinSelection": "Unir selección suavemente",

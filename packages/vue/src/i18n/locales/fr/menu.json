@@ -149,6 +149,7 @@
   "exportFramesToPDF": "Exporter les cadres en PDF…",
   "revertToSaved": "Rétablir la version enregistrée",
   "duplicateFile": "Dupliquer",
+  "saveToVersionHistory": "Enregistrer dans l’historique des versions…",
   "vector": "Vecteur",
   "joinSelection": "Joindre la sélection",
   "smoothJoinSelection": "Joindre la sélection en lissant",

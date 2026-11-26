@@ -3,6 +3,7 @@ import type { SceneNode } from '@kalka/scene-graph'
 import { exportFramesToPDF } from '@/app/document/export/frames-pdf'
 import { duplicateDocument } from '@/app/document/io/duplicate'
 import { revertToSaved } from '@/app/document/io/revert'
+import { requestNamedVersion } from '@/app/document/versions/save-request'
 import { useEditorStore } from '@/app/editor/active-store'
 import { placeImage } from '@/app/editor/clipboard/place-image'
 import { rasterizeSelection } from '@/app/editor/selection/rasterize'
@@ -118,6 +119,7 @@ export function createSharedEditorMenuActions(
     'export-frames-pdf': () => void exportFramesToPDF(store),
     'revert-to-saved': () => void revertToSaved(store),
     'duplicate-file': () => void duplicateDocument(store),
+    'save-to-version-history': requestNamedVersion,
     'color-profile-srgb': () => store.setDocumentColorSpace('srgb'),
     'color-profile-p3': () => store.setDocumentColorSpace('display-p3'),
     'color-profile-convert-srgb': () => store.setDocumentColorSpace('srgb', 'convert'),

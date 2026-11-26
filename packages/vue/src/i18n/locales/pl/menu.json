@@ -149,6 +149,7 @@
   "exportFramesToPDF": "Eksportuj ramki do PDF…",
   "revertToSaved": "Przywróć zapisaną wersję",
   "duplicateFile": "Duplikuj",
+  "saveToVersionHistory": "Zapisz w historii wersji…",
   "vector": "Wektor",
   "joinSelection": "Połącz zaznaczenie",
   "smoothJoinSelection": "Połącz zaznaczenie gładko",

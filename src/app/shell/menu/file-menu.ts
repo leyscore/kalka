@@ -19,6 +19,7 @@ export const FILE_MENU = {
     { id: 'save-as-folder', label: 'Save As Folder…', target: 'native' },
     { id: 'save-to-storage', label: 'Save to Storage…' },
     { id: 'duplicate-file', label: 'Duplicate' },
+    { id: 'save-to-version-history', label: 'Save to Version History…', shortcut: 'MOD+ALT+S' },
     { id: 'revert-to-saved', label: 'Revert to Saved' },
     { type: 'separator' },
     {

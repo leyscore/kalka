@@ -149,6 +149,7 @@
   "exportFramesToPDF": "Rahmen als PDF exportieren…",
   "revertToSaved": "Auf gespeicherte Version zurücksetzen",
   "duplicateFile": "Duplizieren",
+  "saveToVersionHistory": "Im Versionsverlauf speichern…",
   "vector": "Vektor",
   "joinSelection": "Auswahl verbinden",
   "smoothJoinSelection": "Auswahl glatt verbinden",

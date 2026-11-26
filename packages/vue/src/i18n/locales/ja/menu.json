@@ -149,6 +149,7 @@
   "exportFramesToPDF": "フレームを PDF に書き出す…",
   "revertToSaved": "保存した状態に戻す",
   "duplicateFile": "複製",
+  "saveToVersionHistory": "バージョン履歴に保存…",
   "vector": "ベクター",
   "joinSelection": "選択範囲を結合",
   "smoothJoinSelection": "選択範囲をスムーズに結合",

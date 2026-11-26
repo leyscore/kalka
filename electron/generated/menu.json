@@ -58,6 +58,11 @@
         "label": "Duplicate"
       },
       {
+        "id": "save-to-version-history",
+        "label": "Save to Version History…",
+        "accelerator": "CmdOrCtrl+Alt+S"
+      },
+      {
         "id": "revert-to-saved",
         "label": "Revert to Saved"
       },

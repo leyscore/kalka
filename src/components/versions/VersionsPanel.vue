@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, useTemplateRef } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
 import { useHistorySource } from '@/app/document/versions/checkpoints/use'
 import { changeKind, type GitCommit } from '@/app/document/versions/git'
+import { useNamedVersionFocus } from '@/app/document/versions/save-request'
 import { useDocumentVersions, type DocumentVersions } from '@/app/document/versions/use'
 import { useEditorStore } from '@/app/editor/active-store'
 import AppButton from '@/components/ui/button/AppButton.vue'
@@ -50,6 +51,7 @@ function restore(commit: GitCommit): void {
 const { serverRoomId, checkpoints } = useHistorySource(store)
 
 const timeline = versionTimeline()
+useNamedVersionFocus(useTemplateRef<HTMLElement>('commitForm'))
 const remoteURL = ref('')
 const identityName = ref('')
 const identityEmail = ref('')
@@ -179,7 +181,11 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', tim
           </AppButton>
         </form>
 
-        <form class="flex flex-col gap-2 px-4 pt-3 pb-4" @submit.prevent="versions.commit">
+        <form
+          ref="commitForm"
+          class="flex flex-col gap-2 px-4 pt-3 pb-4"
+          @submit.prevent="versions.commit"
+        >
           <AppInput
             v-model="message"
             tone="panel"

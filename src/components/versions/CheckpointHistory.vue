@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, useTemplateRef } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
@@ -11,6 +11,7 @@ import {
   restoreCheckpoint,
   useCheckpoints
 } from '@/app/document/versions/checkpoints/use'
+import { useNamedVersionFocus } from '@/app/document/versions/save-request'
 import { useEditorStore } from '@/app/editor/active-store'
 import { toast } from '@/app/shell/ui'
 import AppButton from '@/components/ui/button/AppButton.vue'
@@ -29,6 +30,7 @@ const timeline = versionTimeline()
 const name = ref('')
 const busy = ref<string | null>(null)
 const error = ref('')
+useNamedVersionFocus(useTemplateRef<HTMLElement>('nameForm'))
 
 async function act(id: string, action: () => Promise<unknown>) {
   if (busy.value) return
@@ -82,7 +84,7 @@ function restore(checkpoint: CheckpointMeta) {
   <section class="flex min-h-0 flex-1 flex-col" data-test-id="checkpoint-history">
     <h3 class="px-4 pt-2 pb-1 text-[11px] font-semibold text-muted">{{ panels.versionsAuto }}</h3>
     <p class="px-4 pb-2 text-[11px] leading-relaxed text-muted">{{ panels.versionsAutoHint }}</p>
-    <form class="flex gap-2 px-4 pb-3" @submit.prevent="saveNamed">
+    <form ref="nameForm" class="flex gap-2 px-4 pb-3" @submit.prevent="saveNamed">
       <AppInput
         v-model="name"
         tone="panel"

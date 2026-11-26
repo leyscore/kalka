@@ -149,6 +149,7 @@
   "exportFramesToPDF": "Экспорт фреймов в PDF…",
   "revertToSaved": "Вернуться к сохранённой версии",
   "duplicateFile": "Дублировать",
+  "saveToVersionHistory": "Сохранить в историю версий…",
   "vector": "Вектор",
   "joinSelection": "Соединить выделенное",
   "smoothJoinSelection": "Плавно соединить выделенное",

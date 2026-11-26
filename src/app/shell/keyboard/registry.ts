@@ -13,6 +13,7 @@ import {
   toggleCommentPins,
   toggleCommentPlacing
 } from '@/app/comments/service'
+import { requestNamedVersion } from '@/app/document/versions/save-request'
 import {
   copySelectionProperties,
   pasteClipboardProperties
@@ -199,6 +200,11 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
       keys: appMenuTinykeysShortcut('export-selection') ?? '$mod+Shift+KeyE',
       run: ({ actions }) => actions.exportSelectionPNG(),
       whileEditingText: true
+    },
+    {
+      id: 'save-to-version-history',
+      keys: appMenuTinykeysShortcut('save-to-version-history') ?? '$mod+Alt+KeyS',
+      run: () => requestNamedVersion()
     },
     {
       id: 'save-as',
