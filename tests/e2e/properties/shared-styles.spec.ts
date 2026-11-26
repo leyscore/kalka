@@ -168,7 +168,13 @@ test('applies text styles and batches mixed selection binding', async () => {
     return text.id
   })
   await canvas.waitForRender()
-  await chooseStyle('Typography', 'Text style', 'Type/Display')
+  // Typography picks text styles from Figma's Style button rather than a select.
+  await page.getByTestId('text-style-picker').click()
+  await page
+    .getByTestId('text-style-picker-content')
+    .locator('[data-text-style="Type/Display"]')
+    .click()
+  await canvas.waitForRender()
   expect(await targetStyles(textId)).toMatchObject({
     textStyleId: '1:101',
     fontSize: 30
