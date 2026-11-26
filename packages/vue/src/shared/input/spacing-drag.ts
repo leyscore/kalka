@@ -3,6 +3,7 @@ import type { SceneNode } from '@kalka/scene-graph'
 
 import {
   autoLayoutValueField,
+  isOnLayoutChild,
   resolveAutoLayoutHover,
   type AutoLayoutValueField
 } from '#vue/shared/input/auto-layout-hover'
@@ -65,6 +66,7 @@ export function tryStartAutoLayoutValueDrag(
   const field = hover ? autoLayoutValueField(hover) : null
   const node = hover ? editor.graph.getNode(hover.nodeId) : undefined
   if (!hover || !field || !node || node.locked) return null
+  if (hover.kind === 'spacing' && isOnLayoutChild(cx, cy, node, editor)) return null
   const opposite = altKey ? OPPOSITE[field] : undefined
   const fields = opposite ? [field, opposite] : [field]
   const { axis, direction } = dragAxis(node, field)

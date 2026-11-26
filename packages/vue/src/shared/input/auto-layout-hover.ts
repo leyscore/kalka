@@ -157,6 +157,16 @@ export function resolveAutoLayoutHover(
   )
 }
 
+/**
+ * Whether a canvas point lies on one of the frame's laid-out children. The gap's hover band
+ * reaches over its neighbours, which a press there should still move rather than resize.
+ */
+export function isOnLayoutChild(cx: number, cy: number, node: SceneNode, editor: Editor): boolean {
+  const abs = editor.graph.getAbsolutePosition(node.id)
+  const children = visibleLayoutChildren(node, editor)
+  return resolveChildrenHover(node, children, cx - abs.x, cy - abs.y) !== null
+}
+
 /** An auto layout frame's value the canvas edits in place: a padding or the gap. */
 export type AutoLayoutValueField =
   | 'paddingTop'

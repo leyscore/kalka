@@ -46,6 +46,12 @@ describe('dragging auto layout values on the canvas', () => {
     expect(autoLayoutDragValue({ start: 50, startValue: 8, direction: -1 }, 40)).toBe(18)
   })
 
+  test('a press on a layer beside the gap leaves the frame to move', () => {
+    const { ed } = setup()
+    // 4px above the gap and away from its centred handle: in its hover band, on the first layer.
+    expect(tryStartAutoLayoutValueDrag(ed, 140, 156, false)).toBeNull()
+  })
+
   test('drags the gap of a column downwards and records one undo step', () => {
     const { ed, frame } = setup()
     const drag = tryStartAutoLayoutValueDrag(ed, 180, 164, false)
