@@ -19,7 +19,8 @@ export {
   TEXT_SHAPING_FIELDS,
   TEXT_LAYOUT_FIELDS,
   TEXT_DECORATION_FIELDS,
-  TEXT_STYLE_FIELDS
+  TEXT_STYLE_FIELDS,
+  SHARED_TEXT_STYLE_FIELDS
 } from './fields/text'
 export * from './transfer'
 export * from './instance-overrides'

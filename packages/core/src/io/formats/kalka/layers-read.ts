@@ -178,6 +178,8 @@ class LayerReader {
     node.visible = !('hidden' in attrs)
     node.locked = ATTR.locked in attrs
     node.internalOnly = ATTR.internal in attrs
+    const styleId = attrs[ATTR.styleId]
+    if (styleId) node.source.id = styleId
 
     const design = designNode(element)
     if (design?.type !== 'element') return

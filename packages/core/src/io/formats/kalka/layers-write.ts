@@ -80,6 +80,7 @@ function layerAttributes(node: SceneNode, element: DesignElement): Record<string
   attrs[ATTR.name] = node.name
   if (node.locked) attrs[ATTR.locked] = ''
   if (node.internalOnly) attrs[ATTR.internal] = ''
+  if (node.sharedStyleType && node.source.id) attrs[ATTR.styleId] = node.source.id
   if (!node.visible) attrs.hidden = ''
   for (const [name, value] of Object.entries(element.attrs))
     if (name !== 'data-kalka-node-id' && !(name in attrs)) attrs[name] = value

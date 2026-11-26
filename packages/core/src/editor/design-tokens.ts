@@ -11,42 +11,25 @@ import {
 import type { TokenImportPlan } from '#core/io/formats/design-tokens/plan'
 
 import type { createNodeActions } from './nodes'
+import type { createSharedStyleActions } from './shared-styles'
 import type { EditorContext } from './types'
 import type { createVariableActions } from './variables'
 
 type VariableActions = ReturnType<typeof createVariableActions>
 type NodeActions = ReturnType<typeof createNodeActions>
+type SharedStyleActions = ReturnType<typeof createSharedStyleActions>
 
 export function createDesignTokenActions(
   ctx: EditorContext,
   variables: VariableActions,
-  nodes: NodeActions
+  nodes: NodeActions,
+  styles: SharedStyleActions
 ) {
-  /** A new style node, which redo makes again with the same ids so layers stay attached. */
   function addStyle(
     style: Parameters<TokenImportTarget['addStyle']>[0],
     fields: Partial<SceneNode>
   ) {
-    const node = ctx.graph.createNode(
-      styleNodeType(style),
-      ctx.state.currentPageId,
-      styleNodeProps(style, fields)
-    )
-    node.source.id = crypto.randomUUID()
-    const snapshot = structuredClone(node)
-    const parentId = node.parentId
-    ctx.undo.push({
-      label: 'Add style',
-      forward: () => {
-        ctx.graph.createNodeWithId(snapshot.id, snapshot.type, parentId, structuredClone(snapshot))
-        ctx.requestRender()
-      },
-      inverse: () => {
-        ctx.graph.deleteNode(snapshot.id)
-        ctx.requestRender()
-      }
-    })
-    return node
+    return styles.addStyleNode(styleNodeType(style), styleNodeProps(style, fields))
   }
 
   /** The import's changes made through the editor's actions, each one undoable. */

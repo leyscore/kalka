@@ -20,6 +20,8 @@ export const ATTR = {
   name: 'data-kalka-name',
   locked: 'data-kalka-locked',
   internal: 'data-kalka-internal',
+  /** On a shared style's definition: the id layers that use the style link it by. */
+  styleId: 'data-kalka-style-id',
   /** Fields CSS cannot hold, as JSON; they win over what the CSS says. */
   props: 'data-kalka-props',
   /** On a `<template>`: the layer whose children it holds, for a layer drawn as one SVG. */

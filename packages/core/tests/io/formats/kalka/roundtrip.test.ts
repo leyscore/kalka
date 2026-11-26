@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import {
   breakpointsOf,
   createBreakpoint,
+  getSharedStyles,
   responsiveOverrides,
   SceneGraph,
   type SceneNode
@@ -50,6 +51,33 @@ describe('Kalka folder', () => {
     expect(nodeNamed(read, 'Nav').htmlClasses).toEqual(['site-nav', 'md:px-4'])
     expect(nodeNamed(read, 'Headline').htmlTag).toBe('h1')
     expect(read.getNode(read.rootId)?.cssClasses).toEqual(graph.getNode(graph.rootId)?.cssClasses)
+  })
+
+  test('keeps shared styles and the layers linked to them', async () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]?.id ?? ''
+    const style = graph.createNode('TEXT', page, {
+      name: 'Heading/H1',
+      text: 'Ag',
+      fontSize: 48,
+      paragraphSpacing: 12,
+      sharedStyleType: 'TEXT',
+      internalOnly: true
+    })
+    style.source.id = 'style:heading'
+    const title = graph.createNode('TEXT', page, {
+      name: 'Title',
+      text: 'Title',
+      fontSize: 48,
+      paragraphSpacing: 12,
+      textStyleId: 'style:heading'
+    })
+    const read = readKalkaFolder(asMap(await writeKalkaFolder(graph)))
+    expect(getSharedStyles(read, 'text')).toEqual([
+      { id: 'style:heading', nodeId: style.id, name: 'Heading/H1', type: 'TEXT' }
+    ])
+    expect(read.getNode(style.id)).toMatchObject({ internalOnly: true, paragraphSpacing: 12 })
+    expect(read.getNode(title.id)?.textStyleId).toBe('style:heading')
   })
 
   test('keeps the CSS a layer’s fields cannot hold', async () => {
@@ -173,7 +201,10 @@ describe('Kalka folder', () => {
   test('refuses a folder from a newer version', async () => {
     const files = asMap(await writeKalkaFolder(new SceneGraph()))
     const project = new TextDecoder().decode(files.get('project.json'))
-    files.set('project.json', new TextEncoder().encode(project.replace('"version": 1', '"version": 2')))
+    files.set(
+      'project.json',
+      new TextEncoder().encode(project.replace('"version": 1', '"version": 2'))
+    )
     expect(() => readKalkaFolder(files)).toThrow('newer version')
   })
 
@@ -195,7 +226,9 @@ describe('Kalka folder', () => {
     const styles = new TextDecoder().decode(files.get('styles.css'))
     files.set(
       'styles.css',
-      new TextEncoder().encode(styles.replace('background-color: #1A33CC;', 'background-color: #FF0000;'))
+      new TextEncoder().encode(
+        styles.replace('background-color: #1A33CC;', 'background-color: #FF0000;')
+      )
     )
     const read = readKalkaFolder(files)
     const red = { r: 1, g: 0, b: 0, a: 1 }
@@ -209,7 +242,11 @@ describe('Kalka folder', () => {
   test('keeps breakpoint artboards linked to their primary', async () => {
     const graph = new SceneGraph()
     const page = graph.getPages()[0]
-    const desktop = graph.createNode('FRAME', page.id, { name: 'Desktop', width: 1440, height: 900 })
+    const desktop = graph.createNode('FRAME', page.id, {
+      name: 'Desktop',
+      width: 1440,
+      height: 900
+    })
     graph.createNode('TEXT', desktop.id, { name: 'Title', text: 'Hi', fontSize: 76 })
     const phone = createBreakpoint(graph, desktop.id, 390, 'Phone')
     const phoneTitle = phone && graph.getChildren(phone.id)[0]

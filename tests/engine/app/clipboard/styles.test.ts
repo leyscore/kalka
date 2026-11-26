@@ -52,3 +52,22 @@ test.each(['selection', 'component dependency'] as const)(
     ).toBe(true)
   }
 )
+
+test('paste in the same document keeps a text layer linked to its style', async () => {
+  const store = createEditorStore()
+  const text = store.graph.createNode('TEXT', store.state.currentPageId, {
+    text: 'Title',
+    fontSize: 48
+  })
+  const style = store.createTextStyle('Heading/H1', [text.id])
+  if (!style) throw new Error('No style')
+  store.select([text.id])
+  const payload = await store.prepareCopy()
+  if (!payload.snapshot) throw new Error('Missing snapshot')
+  await store.pasteSnapshot(payload.snapshot)
+  const pastedId = [...store.state.selectedIds][0]
+  expect(pastedId).not.toBe(text.id)
+  expect(store.graph.getNode(pastedId)?.textStyleId).toBe(style.id)
+  const definitions = [...store.graph.getAllNodes()].filter((node) => node.sharedStyleType)
+  expect(definitions).toHaveLength(1)
+})

@@ -49,6 +49,7 @@ import { createPlayActions } from './play/actions'
 import { createResponsiveSync } from './responsive-sync'
 import { createSelectionActions } from './selection'
 import { createShapeActions } from './shapes'
+import { createSharedStyleActions } from './shared-styles'
 import { createDefaultEditorState } from './state'
 import { createStructureActions } from './structure'
 import { createTextActions } from './text'
@@ -298,7 +299,8 @@ export function createEditor(options?: EditorOptions) {
     clipboard.loadFontsForNodes
   )
   const variables = createVariableActions(ctx)
-  const designTokens = createDesignTokenActions(ctx, variables, nodes)
+  const sharedStyles = createSharedStyleActions(ctx, nodes)
+  const designTokens = createDesignTokenActions(ctx, variables, nodes, sharedStyles)
   const vectorize = createVectorizeActions(ctx)
   const icons = createIconActions(ctx)
   const alignment = createAlignmentActions(ctx)
@@ -452,6 +454,9 @@ export function createEditor(options?: EditorOptions) {
     // Variables
     ...variables,
     ...designTokens,
+
+    // Shared styles: create, edit, rename, order and delete local styles
+    ...sharedStyles,
 
     // Text editing
     ...text,
