@@ -14,6 +14,7 @@ export const INSTANCE_SYNC_TEXT_PROPS = [
   'lineHeightUnit',
   'paragraphSpacing',
   'paragraphIndent',
+  'listSpacing',
   'listLines',
   'textCase',
   'textDecoration',

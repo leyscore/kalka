@@ -590,6 +590,7 @@
   "lineHeightPercent": "Проценты (%)",
   "paragraphSpacing": "Интервал между абзацами",
   "paragraphIndent": "Отступ абзаца",
+  "listSpacing": "Интервал списка",
   "textList": "Список",
   "listNone": "Без списка",
   "bulletedList": "Маркированный список",

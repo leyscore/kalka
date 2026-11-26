@@ -581,6 +581,7 @@
   "lineHeightPercent": "Porcentaje (%)",
   "paragraphSpacing": "Espaciado de párrafo",
   "paragraphIndent": "Sangría de párrafo",
+  "listSpacing": "Espaciado de lista",
   "textList": "Lista",
   "listNone": "Sin lista",
   "bulletedList": "Lista con viñetas",

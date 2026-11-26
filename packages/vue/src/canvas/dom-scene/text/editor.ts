@@ -256,7 +256,10 @@ export class DomTextEditor implements ExternalTextEditor {
     this.view.dom.addEventListener('keydown', this.forwardShortcut)
     // Spacing set in the panel while typing redraws the paragraphs.
     this.stopWatchingParagraphs = this.editor.onEditorEvent('node:updated', (id, changes) => {
-      if (id !== nodeId || !('paragraphSpacing' in changes || 'paragraphIndent' in changes)) return
+      const spacing = ['paragraphSpacing', 'paragraphIndent', 'listSpacing'].some(
+        (field) => field in changes
+      )
+      if (id !== nodeId || !spacing) return
       this.view?.updateState(this.view.state)
     })
     this.selectAll()

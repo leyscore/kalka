@@ -61,6 +61,7 @@ describe('Kalka folder', () => {
       text: 'Ag',
       fontSize: 48,
       paragraphSpacing: 12,
+      listSpacing: 6,
       sharedStyleType: 'TEXT',
       internalOnly: true
     })
@@ -76,7 +77,11 @@ describe('Kalka folder', () => {
     expect(getSharedStyles(read, 'text')).toEqual([
       { id: 'style:heading', nodeId: style.id, name: 'Heading/H1', type: 'TEXT' }
     ])
-    expect(read.getNode(style.id)).toMatchObject({ internalOnly: true, paragraphSpacing: 12 })
+    expect(read.getNode(style.id)).toMatchObject({
+      internalOnly: true,
+      paragraphSpacing: 12,
+      listSpacing: 6
+    })
     expect(read.getNode(title.id)?.textStyleId).toBe('style:heading')
   })
 

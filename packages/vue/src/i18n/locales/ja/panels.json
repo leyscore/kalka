@@ -572,6 +572,7 @@
   "lineHeightPercent": "パーセント (%)",
   "paragraphSpacing": "段落の間隔",
   "paragraphIndent": "段落のインデント",
+  "listSpacing": "リストの間隔",
   "textList": "リスト",
   "listNone": "リストなし",
   "bulletedList": "箇条書き",

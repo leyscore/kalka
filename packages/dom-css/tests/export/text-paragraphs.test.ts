@@ -41,3 +41,24 @@ test('text without paragraph settings stays one run of characters', () => {
 test('paragraph spacing on a single paragraph keeps the text inline', () => {
   expect(html({ text: 'Only one', paragraphSpacing: 24 })).toMatch(/^<span[^>]*>Only one<\/span>$/)
 })
+
+test('list spacing sets each item of a list apart, nested ones too', () => {
+  const output = html({
+    text: 'One\nNested\nTwo\nAfter',
+    listSpacing: 6,
+    paragraphSpacing: 12,
+    listLines: [
+      { type: 'UNORDERED', level: 0 },
+      { type: 'UNORDERED', level: 1 },
+      { type: 'UNORDERED', level: 0 },
+      { type: 'NONE', level: 0 }
+    ]
+  })
+  expect(output).toMatch(
+    /<ul style="margin: 0 0 12px;[^"]*"><li style="[^"]*margin-bottom: 6px">One/
+  )
+  expect(output).toMatch(
+    /<ul style="margin: 6px 0 0;[^"]*"><li style="list-style-type: circle">Nested/
+  )
+  expect(output).toMatch(/<li style="list-style-type: disc">Two<\/li>/)
+})

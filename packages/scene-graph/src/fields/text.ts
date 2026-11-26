@@ -13,6 +13,7 @@ export const TEXT_METRIC_FIELDS = [
   'fontFeatures',
   'paragraphSpacing',
   'paragraphIndent',
+  'listSpacing',
   'listLines'
 ] as const satisfies readonly (keyof SceneNode)[]
 
@@ -53,6 +54,7 @@ export const TEXT_STYLE_FIELDS = [
   'letterSpacingUnit',
   'paragraphSpacing',
   'paragraphIndent',
+  'listSpacing',
   'textAlignHorizontal',
   'textAlignVertical',
   'textCase',
@@ -63,7 +65,7 @@ export const TEXT_STYLE_FIELDS = [
 
 /**
  * What a shared text style holds and gives the layers that use it, as Figma's text styles do: the
- * font, its size and spacing, paragraph spacing and indent, decoration, case and OpenType features.
+ * font, its size and spacing, paragraph spacing and indent, list spacing, decoration, case and OpenType features.
  * Alignment and how the box sizes stay with each layer.
  */
 export const SHARED_TEXT_STYLE_FIELDS = [
@@ -77,6 +79,7 @@ export const SHARED_TEXT_STYLE_FIELDS = [
   'letterSpacingUnit',
   'paragraphSpacing',
   'paragraphIndent',
+  'listSpacing',
   'textDecoration',
   'textCase',
   'fontFeatures'

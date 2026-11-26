@@ -38,6 +38,7 @@ export const RESPONSIVE_FIELDS: readonly (keyof SceneNode)[] = uniq<keyof SceneN
   'letterSpacingUnit',
   'paragraphSpacing',
   'paragraphIndent',
+  'listSpacing',
   'textAlignHorizontal',
   'textAlignVertical',
   'textAutoResize',

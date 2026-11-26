@@ -33,6 +33,7 @@ test('paragraph spacing, indent and lists come through', () => {
       ...text,
       paragraphSpacing: 12,
       paragraphIndent: 8,
+      listSpacing: 6,
       textData: {
         characters: 'Intro\nFirst\nNested\nOutro',
         lines: [
@@ -47,6 +48,7 @@ test('paragraph spacing, indent and lists come through', () => {
   )
   expect(props.paragraphSpacing).toBe(12)
   expect(props.paragraphIndent).toBe(8)
+  expect(props.listSpacing).toBe(6)
   expect(props.listLines).toEqual([
     { type: 'NONE', level: 0 },
     { type: 'ORDERED', level: 0 },
@@ -66,6 +68,7 @@ test('export writes them back as Figma saves them', () => {
     letterSpacing: -0.4,
     letterSpacingUnit: 'PERCENT',
     paragraphSpacing: 12,
+    listSpacing: 6,
     listLines: [
       { type: 'NONE', level: 0 },
       { type: 'UNORDERED', level: 0 }
@@ -75,6 +78,7 @@ test('export writes them back as Figma saves them', () => {
   expect(change?.lineHeight).toEqual({ value: 1.5, units: 'RAW' })
   expect(change?.letterSpacing).toEqual({ value: -2, units: 'PERCENT' })
   expect(change?.paragraphSpacing).toBe(12)
+  expect(change?.listSpacing).toBe(6)
   expect(change?.textData?.lines).toEqual([
     { lineType: 'PLAIN' },
     { lineType: 'UNORDERED_LIST', indentationLevel: 1 }

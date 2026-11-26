@@ -144,3 +144,34 @@ test('typing "- " starts a bulleted item, and Enter on an empty item leaves the 
   await expect(artboard.locator('ul > li')).toHaveCount(2)
   canvas.assertNoErrors()
 })
+
+test('list spacing sets the items of a list apart, and undoes in one step', async () => {
+  const height = () =>
+    page.evaluate((id) => window.kalka?.getStore?.().graph.getNode(id)?.height ?? 0, textId)
+  const before = await height()
+  const typography = page.getByRole('region', { name: 'Typography' })
+  const spacing = typography.getByRole('spinbutton', { name: 'List spacing' })
+  await spacing.click()
+  await page.keyboard.press('ControlOrMeta+A')
+  await page.keyboard.type('8')
+  await page.keyboard.press('Enter')
+  await expect
+    .poll(() =>
+      page.evaluate((id) => window.kalka?.getStore?.().graph.getNode(id)?.listSpacing, textId)
+    )
+    .toBe(8)
+  await canvas.waitForRender()
+  const artboard = page.locator('iframe[data-kalka-artboard]').contentFrame()
+  await expect(artboard.locator('ul > li').first()).toHaveCSS('margin-bottom', '8px')
+  await expect(artboard.locator('ul > li').last()).toHaveCSS('margin-bottom', '0px')
+  // The text hugs its height, so the space between the two items grows it.
+  await expect.poll(height).toBeCloseTo(before + 8, 0)
+
+  await page.keyboard.press('ControlOrMeta+Z')
+  await expect
+    .poll(() =>
+      page.evaluate((id) => window.kalka?.getStore?.().graph.getNode(id)?.listSpacing, textId)
+    )
+    .toBe(0)
+  canvas.assertNoErrors()
+})

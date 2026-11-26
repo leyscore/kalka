@@ -147,6 +147,7 @@ export function createDefaultNode(
     letterSpacingUnit: 'PIXELS',
     paragraphSpacing: 0,
     paragraphIndent: 0,
+    listSpacing: 0,
     listLines: [],
     styleRuns: [],
     fontVariations: [],

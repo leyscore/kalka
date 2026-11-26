@@ -353,6 +353,7 @@ type TextProps = Pick<
   | 'letterSpacingUnit'
   | 'paragraphSpacing'
   | 'paragraphIndent'
+  | 'listSpacing'
   | 'listLines'
   | 'maxLines'
   | 'styleRuns'
@@ -390,7 +391,12 @@ function convertTextParagraphs(
   nc: NodeChange
 ): Pick<
   SceneNode,
-  'lineHeightUnit' | 'letterSpacingUnit' | 'paragraphSpacing' | 'paragraphIndent' | 'listLines'
+  | 'lineHeightUnit'
+  | 'letterSpacingUnit'
+  | 'paragraphSpacing'
+  | 'paragraphIndent'
+  | 'listSpacing'
+  | 'listLines'
 > {
   const letterSpacingPercent = nc.letterSpacing?.units === 'PERCENT' && nc.letterSpacing.value !== 0
   return {
@@ -399,6 +405,7 @@ function convertTextParagraphs(
     letterSpacingUnit: letterSpacingPercent ? 'PERCENT' : 'PIXELS',
     paragraphSpacing: nc.paragraphSpacing ?? 0,
     paragraphIndent: nc.paragraphIndent ?? 0,
+    listSpacing: nc.listSpacing ?? 0,
     listLines: importListLines(nc)
   }
 }

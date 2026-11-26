@@ -373,6 +373,7 @@ export interface NodeChange {
   letterSpacing?: { value: number; units: string }
   paragraphSpacing?: number
   paragraphIndent?: number
+  listSpacing?: number
   // Symbol/Instance
   symbolData?: { symbolID: GUID }
   // ComponentSet

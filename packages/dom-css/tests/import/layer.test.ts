@@ -134,6 +134,7 @@ describe('applyLayerStyle', () => {
       text: 'Intro\nOne\nNested\n\nOutro',
       paragraphSpacing: 12,
       paragraphIndent: 8,
+      listSpacing: 4,
       listLines: [
         { type: 'NONE', level: 0 },
         { type: 'ORDERED', level: 0 },
@@ -149,6 +150,7 @@ describe('applyLayerStyle', () => {
     expect(read.listLines).toEqual(text.listLines)
     expect(read.paragraphSpacing).toBe(12)
     expect(read.paragraphIndent).toBe(8)
+    expect(read.listSpacing).toBe(4)
   })
 
   test('takes images from a resolver and shaders from their attribute', () => {

@@ -276,6 +276,7 @@ export const panelMessageDefaults = {
   lineHeightPercent: 'Percent (%)',
   paragraphSpacing: 'Paragraph spacing',
   paragraphIndent: 'Paragraph indent',
+  listSpacing: 'List spacing',
   textList: 'List',
   listNone: 'No list',
   bulletedList: 'Bulleted list',

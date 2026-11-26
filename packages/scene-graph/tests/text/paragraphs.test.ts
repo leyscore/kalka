@@ -2,6 +2,8 @@ import { describe, expect, it } from 'bun:test'
 
 import {
   SceneGraph,
+  blockEndParagraphs,
+  listSpacedParagraphs,
   paragraphsInRange,
   textBlocks,
   textListItems,
@@ -117,5 +119,11 @@ describe('list paragraphs', () => {
 
   it('nests an item at most one level below the one before', () => {
     expect(textListItems([bullet(2)])).toEqual([{ type: 'UNORDERED', level: 0, ordinal: 1 }])
+  })
+
+  it('spaces list items apart within a list and paragraphs between blocks', () => {
+    const lines = [plain, number(), number(1), number(), plain, bullet(), bullet()]
+    expect([...listSpacedParagraphs(lines)]).toEqual([1, 2, 5])
+    expect([...blockEndParagraphs(lines)]).toEqual([0, 3, 4])
   })
 })

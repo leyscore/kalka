@@ -70,6 +70,7 @@ function serializeTextSpacing(node: SceneNode, nc: KiwiNodeChange): void {
       : { value: node.letterSpacing, units: 'PIXELS' }
   if (node.paragraphSpacing !== 0) nc.paragraphSpacing = node.paragraphSpacing
   if (node.paragraphIndent !== 0) nc.paragraphIndent = node.paragraphIndent
+  if (node.listSpacing !== 0) nc.listSpacing = node.listSpacing
 }
 
 function serializeCornerRadii(node: SceneNode, nc: KiwiNodeChange): void {

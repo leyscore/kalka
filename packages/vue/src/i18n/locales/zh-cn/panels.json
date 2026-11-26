@@ -572,6 +572,7 @@
   "lineHeightPercent": "百分比 (%)",
   "paragraphSpacing": "段落间距",
   "paragraphIndent": "段落缩进",
+  "listSpacing": "列表间距",
   "textList": "列表",
   "listNone": "无列表",
   "bulletedList": "项目符号列表",

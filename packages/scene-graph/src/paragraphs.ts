@@ -212,3 +212,41 @@ export function textListItems(lines: readonly TextListLine[]): (TextListItem | n
   for (const block of textBlocks(lines)) if (block.kind === 'list') visit(block)
   return items
 }
+
+/** The first paragraph of a block. */
+function blockStart(block: TextBlock): number {
+  return block.kind === 'list' ? (block.items[0]?.paragraph ?? 0) : block.paragraph
+}
+
+/**
+ * The paragraphs that end a block but the last, which the paragraph spacing follows: the last
+ * paragraph before each block that comes after another.
+ */
+export function blockEndParagraphs(lines: readonly TextListLine[]): Set<number> {
+  return new Set(
+    textBlocks(lines)
+      .slice(1)
+      .map((block) => blockStart(block) - 1)
+  )
+}
+
+/**
+ * The list items the list spacing follows, as Figma sets it between the items of a list: every
+ * item but the last of its outermost list, nested items included, while the paragraph spacing
+ * stays between blocks.
+ */
+export function listSpacedParagraphs(lines: readonly TextListLine[]): Set<number> {
+  const spaced = new Set<number>()
+  for (const block of textBlocks(lines)) {
+    if (block.kind !== 'list') continue
+    const paragraphs: number[] = []
+    const visit = (list: TextListBlock) =>
+      list.items.forEach((item) => {
+        paragraphs.push(item.paragraph)
+        item.lists.forEach(visit)
+      })
+    visit(block)
+    for (const paragraph of paragraphs.slice(0, -1)) spaced.add(paragraph)
+  }
+  return spaced
+}

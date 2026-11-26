@@ -46,7 +46,7 @@ export interface TextContent {
   text: string
   styleRuns: StyleRun[]
   /** Set when the text is written as paragraph blocks, as the projection writes them. */
-  paragraphs?: Pick<SceneNode, 'listLines' | 'paragraphSpacing' | 'paragraphIndent'>
+  paragraphs?: Pick<SceneNode, 'listLines' | 'paragraphSpacing' | 'paragraphIndent' | 'listSpacing'>
 }
 
 const BLOCK_TAGS = new Set(['p', 'div', 'ul', 'ol', 'li'])
@@ -97,13 +97,53 @@ function blockParagraphs(children: readonly DesignNode[], level: number): BlockP
   return paragraphs
 }
 
-/** The spacing and indent the first paragraph blocks set, as the projection writes them. */
+/** The top margin a block's CSS sets, from `margin-top` or the `margin` shorthand. */
+function topMargin(style: DesignStyleDeclaration | undefined): number | null {
+  const longhand = parseCSSNumber(style?.['margin-top'] ?? style?.['margin-block-start'])
+  if (longhand !== null) return longhand
+  const shorthand: string | undefined = style?.margin
+  return parseCSSNumber(shorthand?.trim().split(/\s+/)[0])
+}
+
+function isList(node: DesignNode): node is DesignElement {
+  return node.type === 'element' && ['ul', 'ol'].includes(node.tagName.toLowerCase())
+}
+
+/**
+ * The list spacing as the projection writes it: the space below an item that has another after
+ * it, or above a list nested in an item.
+ */
+function itemSpacing(lists: readonly DesignElement[], nested: boolean): number | null {
+  for (const list of lists) {
+    if (nested) {
+      const above = topMargin(list.inlineStyle)
+      if (above) return above
+    }
+    const items = list.children.filter(
+      (item): item is DesignElement =>
+        item.type === 'element' && item.tagName.toLowerCase() === 'li'
+    )
+    for (const [index, item] of items.entries()) {
+      const below = index < items.length - 1 ? bottomMargin(item.inlineStyle) : null
+      if (below) return below
+      const inner = itemSpacing(item.children.filter(isList), true)
+      if (inner !== null) return inner
+    }
+  }
+  return null
+}
+
+/** The spacings and indent the first paragraph blocks set, as the projection writes them. */
 function blockSpacing(children: readonly DesignNode[]) {
   const blocks = children.filter(isBlock)
   const spaced = blocks.length > 1 ? bottomMargin(blocks[0]?.inlineStyle) : null
   const first = blocks.find((block) => block.tagName.toLowerCase() === 'p')
   const indent = parseCSSNumber(first?.inlineStyle?.['text-indent'])
-  return { paragraphSpacing: spaced ?? 0, paragraphIndent: indent ?? 0 }
+  return {
+    paragraphSpacing: spaced ?? 0,
+    paragraphIndent: indent ?? 0,
+    listSpacing: itemSpacing(blocks.filter(isList), false) ?? 0
+  }
 }
 
 /**

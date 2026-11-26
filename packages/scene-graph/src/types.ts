@@ -568,6 +568,8 @@ export interface SceneNode {
   paragraphSpacing: number
   /** Indent of each paragraph's first line, in pixels. */
   paragraphIndent: number
+  /** Space between the items of a list, in pixels, as Figma's list spacing; 0 sets none. */
+  listSpacing: number
   /**
    * Each paragraph's list, one entry per line of `text`; empty when no paragraph is in a list.
    * Read it through `textListLines`, which fits it to the text's lines.

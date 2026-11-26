@@ -72,7 +72,7 @@ function runChildren(text: string, runs: readonly StyleRun[], from: number, to: 
 
 type TextBlockNode = Pick<
   SceneNode,
-  'text' | 'styleRuns' | 'paragraphSpacing' | 'paragraphIndent' | 'listLines'
+  'text' | 'styleRuns' | 'paragraphSpacing' | 'paragraphIndent' | 'listSpacing' | 'listLines'
 >
 
 /** How deep each nested list sits, past the marker of the list around it. */
@@ -81,7 +81,9 @@ export const LIST_INDENT = '1.5em'
 /**
  * A text with paragraphs set apart, as blocks: a `<p>` per paragraph outside a list, `<ul>` and
  * `<ol>` for lists, a deeper list inside the item before it. Paragraph spacing is the space
- * below each block but the last; an empty paragraph keeps its line with a `<br>`.
+ * below each block but the last; list spacing the space below each item but the last of its list
+ * and above a nested list, so every item of a list is that far from the next. An empty paragraph
+ * keeps its line with a `<br>`.
  */
 function textBlockChildren(node: TextBlockNode, runs: readonly StyleRun[]): DesignNode[] {
   const paragraphs = node.text.split('\n')
@@ -98,31 +100,42 @@ function textBlockChildren(node: TextBlockNode, runs: readonly StyleRun[]): Desi
     return runChildren(node.text, runs, start, end)
   }
   const margin = (spacing: number) => (spacing === 0 ? '0' : `0 0 ${px(spacing)}`)
-  const list = (block: TextListBlock, spacing: number): DesignNode => {
+  const itemSpacing = node.listSpacing
+  // A nested list sits the list spacing below the line of the item it is in.
+  const nestedMargin = itemSpacing === 0 ? '0' : `${px(itemSpacing)} 0 0`
+  const list = (block: TextListBlock, outerMargin: string): DesignNode => {
     const marker = listStyleType(block.type, block.level)
     return {
       type: 'element',
       tagName: block.type === 'ORDERED' ? 'ol' : 'ul',
       attrs: {},
       inlineStyle: {
-        margin: margin(spacing),
+        margin: outerMargin,
         'padding-inline-start': LIST_INDENT,
         'list-style-type': marker
       },
-      // Each item names its marker too: a page's reset often takes list styles off items.
-      children: block.items.map((item) => ({
-        type: 'element',
-        tagName: 'li',
-        attrs: {},
-        inlineStyle: { 'list-style-type': marker },
-        children: [...content(item.paragraph), ...item.lists.map((inner) => list(inner, 0))]
-      }))
+      children: block.items.map((item, index) => {
+        // Each item names its marker too: a page's reset often takes list styles off items.
+        const inlineStyle: DesignStyleDeclaration = { 'list-style-type': marker }
+        if (itemSpacing !== 0 && index < block.items.length - 1)
+          inlineStyle['margin-bottom'] = px(itemSpacing)
+        return {
+          type: 'element',
+          tagName: 'li',
+          attrs: {},
+          inlineStyle,
+          children: [
+            ...content(item.paragraph),
+            ...item.lists.map((inner) => list(inner, nestedMargin))
+          ]
+        }
+      })
     }
   }
   const blocks = textBlocks(textListLines(node))
   return blocks.map((block, index) => {
     const spacing = index < blocks.length - 1 ? node.paragraphSpacing : 0
-    if (block.kind === 'list') return list(block, spacing)
+    if (block.kind === 'list') return list(block, margin(spacing))
     const inlineStyle: DesignStyleDeclaration = { margin: margin(spacing) }
     if (node.paragraphIndent !== 0) inlineStyle['text-indent'] = px(node.paragraphIndent)
     return {

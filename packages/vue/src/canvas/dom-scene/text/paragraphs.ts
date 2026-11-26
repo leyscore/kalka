@@ -6,8 +6,9 @@ import { Decoration, DecorationSet, type EditorView } from 'prosemirror-view'
 import { LIST_INDENT } from '@kalka/dom-css/export'
 import {
   MAX_LIST_LEVEL,
+  blockEndParagraphs,
+  listSpacedParagraphs,
   listStyleType,
-  textBlocks,
   textListItems,
   type SceneNode,
   type TextListItem,
@@ -79,29 +80,25 @@ export function listMarker(item: TextListItem): string {
 
 /**
  * Each paragraph drawn as the projection draws the text: space below the last paragraph of each
- * block but the last, the first-line indent outside lists, and list items with their markers
- * and nesting.
+ * block but the last, the list spacing between the items of a list, the first-line indent
+ * outside lists, and list items with their markers and nesting.
  */
 export function paragraphDecorations(
   doc: ProseMirrorNode,
-  node: Pick<SceneNode, 'paragraphSpacing' | 'paragraphIndent'>
+  node: Pick<SceneNode, 'paragraphSpacing' | 'paragraphIndent' | 'listSpacing'>
 ): DecorationSet {
   const lines: TextListLine[] = []
   doc.forEach((paragraph) => lines.push(paragraphList(paragraph)))
   const items = textListItems(lines)
-  const blocks = textBlocks(lines)
-  // The paragraph each block but the last ends with, which the paragraph spacing follows.
-  const blockEnds = new Set(
-    blocks.slice(1).map((block) => {
-      const first = block.kind === 'list' ? (block.items[0]?.paragraph ?? 0) : block.paragraph
-      return first - 1
-    })
-  )
+  const blockEnds = blockEndParagraphs(lines)
+  const listSpaced = listSpacedParagraphs(lines)
   const decorations: Decoration[] = []
   doc.forEach((paragraph, offset, index) => {
     const style: Record<string, string> = {}
     if (blockEnds.has(index) && node.paragraphSpacing !== 0)
       style['margin-bottom'] = `${node.paragraphSpacing}px`
+    else if (listSpaced.has(index) && node.listSpacing !== 0)
+      style['margin-bottom'] = `${node.listSpacing}px`
     const item = items[index]
     if (item) {
       style.display = 'list-item'

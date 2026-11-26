@@ -9,7 +9,7 @@ import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'
 import PanelGrid from '@/components/ui/panel/PanelGrid.vue'
 import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
 
-type ParagraphField = 'paragraphSpacing' | 'paragraphIndent'
+type ParagraphField = 'paragraphSpacing' | 'paragraphIndent' | 'listSpacing'
 
 const { node, listType } = defineProps<{ node: SceneNode; listType: TextListType | null }>()
 const emit = defineEmits<{
@@ -58,24 +58,39 @@ function chooseList(value: string) {
     </PanelFieldGroup>
   </PanelGrid>
 
-  <PanelFieldGroup :label="panels.textList" class="mb-3">
-    <SegmentedControl
-      :model-value="listType ?? ''"
-      :options="listOptions"
-      :label="panels.textList"
-      @change="chooseList"
-    >
-      <template #option="{ option }">
-        <icon-hugeicons-left-to-right-list-bullet
-          v-if="option.value === 'UNORDERED'"
-          class="size-3.5"
-        />
-        <icon-hugeicons-left-to-right-list-number
-          v-else-if="option.value === 'ORDERED'"
-          class="size-3.5"
-        />
-        <icon-hugeicons-paragraph v-else class="size-3.5" />
-      </template>
-    </SegmentedControl>
-  </PanelFieldGroup>
+  <PanelGrid :columns="2" class="mb-3">
+    <PanelFieldGroup :label="panels.textList">
+      <SegmentedControl
+        :model-value="listType ?? ''"
+        :options="listOptions"
+        :label="panels.textList"
+        @change="chooseList"
+      >
+        <template #option="{ option }">
+          <icon-hugeicons-left-to-right-list-bullet
+            v-if="option.value === 'UNORDERED'"
+            class="size-3.5"
+          />
+          <icon-hugeicons-left-to-right-list-number
+            v-else-if="option.value === 'ORDERED'"
+            class="size-3.5"
+          />
+          <icon-hugeicons-paragraph v-else class="size-3.5" />
+        </template>
+      </SegmentedControl>
+    </PanelFieldGroup>
+    <PanelFieldGroup :label="panels.listSpacing">
+      <NumberField
+        :model-value="node.listSpacing"
+        :aria-label="panels.listSpacing"
+        suffix="px"
+        :min="0"
+        data-property="list-spacing"
+        @update:model-value="emit('update', 'listSpacing', $event)"
+        @commit="(value, previous) => emit('commit', 'listSpacing', value, previous)"
+      >
+        <template #icon><icon-hugeicons-left-to-right-list-dash class="size-3" /></template>
+      </NumberField>
+    </PanelFieldGroup>
+  </PanelGrid>
 </template>
