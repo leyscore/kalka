@@ -20,6 +20,9 @@ import { usePopoverUI } from '@/components/ui/overlay/popover'
 import { useSelectUI } from '@/components/ui/select/select'
 
 const { panels, fonts: fontMessages } = useI18n()
+// The catalogue dialog is a second root, so the layout classes a caller sets go to the picker.
+defineOptions({ inheritAttrs: false })
+
 const { label: labelProp, preview } = defineProps<{
   label?: string
   /** Shows a hovered family on the canvas; `null` when the list closes or a family is chosen. */
@@ -127,6 +130,7 @@ async function addFiles(files: File[], { install }: { install: boolean }) {
 
 <template>
   <FontPickerRoot
+    v-bind="$attrs"
     v-model="modelValue"
     data-test-id="font-picker-root"
     :list-families="listWithDocumentFonts"
