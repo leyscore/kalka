@@ -46,6 +46,7 @@ import { APP_MENU_SCHEMA } from '@/app/shell/menu/schema'
 import { createSelectionMenuActions } from '@/app/shell/menu/selection-actions'
 import { appMenuShortcutLabel } from '@/app/shell/menu/shortcut'
 import { importClaudeDesignDialog, openFileDialog } from '@/app/shell/menu/use'
+import { viewOptionSetter } from '@/app/shell/menu/view-actions'
 import { useAppTheme } from '@/app/shell/theme'
 import { openExternalLink } from '@/app/shell/ui'
 import { saveDocumentToStorage } from '@/app/storage/workspace/save'
@@ -154,6 +155,13 @@ export function useAppMenu() {
     'view-layout-grids': 'layoutGrids',
     'view-multiplayer-cursors': 'multiplayerCursors',
     'view-design-issues': 'designIssues',
+    'view-outlines': 'outlines',
+    'view-outlines-all': 'showOutlines',
+    'view-outlines-selection': 'showOutlinesForSelection',
+    'view-outlines-hidden': 'includeHiddenLayers',
+    'view-outlines-bounds': 'showObjectBounds',
+    'view-mask-outlines': 'maskOutlines',
+    'view-frame-outlines': 'frameOutlines',
     'snap-geometry': 'snapToGeometry',
     'snap-objects': 'snapToObjects',
     'snap-pixel-grid': 'snapToPixelGrid',
@@ -322,7 +330,7 @@ export function useAppMenu() {
           if (value) itemAction(item)?.()
         }
       default:
-        return undefined
+        return viewOptionSetter(item.id, store)
     }
   }
 

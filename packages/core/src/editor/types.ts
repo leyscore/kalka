@@ -22,6 +22,7 @@ import type {
   CornerRadiusHandleState,
   GradientEditState,
   MeasurementMode,
+  OutlineMode,
   PresenceCursor,
   RenderOverlays
 } from '#core/canvas/renderer/types'
@@ -58,6 +59,16 @@ export interface EditorSharedState {
   showPixelGrid?: boolean
   /** Draw frames' layout grids, as Figma's View › Layout grids; shown unless false. */
   showLayoutGrids?: boolean
+  /** Figma's View › Outlines: layers drawn as thin outlines, all of them or the selection. */
+  outlineMode?: OutlineMode | null
+  /** Outline mode outlines hidden layers too. */
+  outlineHiddenLayers?: boolean
+  /** Outline mode outlines the boxes of text too, not only its glyphs. */
+  outlineObjectBounds?: boolean
+  /** Figma's View › Mask outlines. */
+  showMaskOutlines?: boolean
+  /** Figma's View › Frame outlines. */
+  showFrameOutlines?: boolean
   presenceCursors: PresenceCursor[]
   documentName: string
   /** Design check markers and highlight, shared by every canvas pane. */

@@ -42,6 +42,7 @@ import { createGlyphSilhouetteCache } from './text/derived'
 import { TextPreparationCache } from './text/preparation-cache'
 export type {
   MeasurementMode,
+  OutlineMode,
   OverlayLayerId,
   PresenceCursor,
   RenderOverlays,

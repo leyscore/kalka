@@ -48,6 +48,11 @@ import {
 } from '#vue/canvas/svg-overlay/layers/selection'
 import { shapeBuilderLayer } from '#vue/canvas/svg-overlay/layers/shape-builder'
 import { nodeEditLayer, penLayer, pencilLayer } from '#vue/canvas/svg-overlay/layers/vector-edit'
+import {
+  frameOutlinesLayer,
+  hiddenLayerOutlinesLayer,
+  maskOutlinesLayer
+} from '#vue/canvas/svg-overlay/layers/view-outlines'
 import type { OverlayShape } from '#vue/canvas/svg-overlay/shapes'
 
 /**
@@ -154,6 +159,9 @@ export function composeOverlay(input: ComposeInput): ComposedOverlay {
       ? []
       : layoutGridsLayer(input, input.pageId, input.gridFrames)),
     ...pixelGridLayer(input, { ...input.viewportSize, dpr: input.dpr, pageColor: input.pageColor }),
+    ...frameOutlinesLayer(input, input.pageId),
+    ...maskOutlinesLayer(input, input.pageId),
+    ...hiddenLayerOutlinesLayer(input, input.pageId),
     ...componentSetBordersLayer(input, input.labels),
     ...codeFocusLayer(input),
     ...(isMeasuring ? [] : slotOutlinesLayer(input, hovered)),

@@ -14,6 +14,7 @@ import { appPreferences } from '@/app/settings/preferences/store'
 import { resetPanelWidths } from '@/app/shell/layout-storage'
 import { createTextMenuActions } from '@/app/shell/menu/text-actions'
 import { createVectorMenuActions } from '@/app/shell/menu/vector-actions'
+import { createViewMenuActions } from '@/app/shell/menu/view-actions'
 
 type TextFormatUpdates = {
   fontWeight?: number
@@ -110,6 +111,7 @@ export function createSharedEditorMenuActions(
       setEditingPreference('keepToolSelected', !appPreferences.value.editing.keepToolSelected),
     'rename-duplicated-layers': () =>
       setEditingPreference('renameDuplicates', !appPreferences.value.editing.renameDuplicates),
+    ...createViewMenuActions(store),
     'reset-panel-widths': resetPanelWidths,
     'export-frames-pdf': () => void exportFramesToPDF(store),
     'revert-to-saved': () => void revertToSaved(store),

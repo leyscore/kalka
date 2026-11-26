@@ -30,6 +30,7 @@ export { canvasLabelForeground } from './labels/color'
 export type { ImagePreview, ImagePreviewDecoder } from './images/previews'
 export {
   SkiaRenderer,
+  type OutlineMode,
   type OverlayLayerId,
   type PresenceCursor,
   type RenderOverlays,

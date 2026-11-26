@@ -16,6 +16,9 @@ export interface RulerTheme {
 
 export type MeasurementMode = 'off' | 'shallow' | 'deep'
 
+/** Figma's View › Outlines: every layer drawn as outlines, or only the selection. */
+export type OutlineMode = 'all' | 'selection'
+
 /** Where a collaborator or an agent is working, in world coordinates. */
 export interface PresenceCursor {
   /** Who it is, kept between updates; editors use it to glide a cursor rather than jump it. */
@@ -42,6 +45,12 @@ export interface RenderOverlays {
   showPixelGrid?: boolean
   /** Draw frames' layout grids; drawn unless false. */
   showLayoutGrids?: boolean
+  /** Outline mode, and whether it outlines hidden layers too. */
+  outlines?: { mode: OutlineMode; hiddenLayers: boolean } | null
+  /** Outline every mask, as Figma's View › Mask outlines. */
+  showMaskOutlines?: boolean
+  /** Outline every frame, as Figma's View › Frame outlines. */
+  showFrameOutlines?: boolean
   transforming?: boolean
   measurementMode?: MeasurementMode
   enteredContainerId?: string | null

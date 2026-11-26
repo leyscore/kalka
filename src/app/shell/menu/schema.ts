@@ -211,6 +211,20 @@ export const APP_MENU_SCHEMA = [
         checkbox: true,
         shortcut: 'CTRL+SHIFT+4'
       },
+      // Figma's Cmd+Y shows outlines; Kalka keeps Cmd+Y for Redo, so the items have no key.
+      {
+        id: 'view-outlines',
+        label: 'Outlines',
+        sub: [
+          { id: 'view-outlines-all', label: 'Show Outlines', checkbox: true },
+          { id: 'view-outlines-selection', label: 'Show Outlines for Selection', checkbox: true },
+          { type: 'separator' },
+          { id: 'view-outlines-hidden', label: 'Include Hidden Layers', checkbox: true },
+          { id: 'view-outlines-bounds', label: 'Show Object Bounds', checkbox: true }
+        ]
+      },
+      { id: 'view-mask-outlines', label: 'Mask Outlines', checkbox: true },
+      { id: 'view-frame-outlines', label: 'Frame Outlines', checkbox: true },
       {
         id: 'view-multiplayer-cursors',
         label: 'Multiplayer Cursors',

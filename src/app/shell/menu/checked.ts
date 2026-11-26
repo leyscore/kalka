@@ -1,10 +1,11 @@
 import type { SnappingPreferences } from '@kalka/core/editor'
 
 import { APP_MENU_SCHEMA, type AppMenuEntry } from '@/app/shell/menu/schema'
+import { viewOptionChecked, type ViewOptionsState } from '@/app/shell/menu/view-actions'
 
 /** What the menu's check items show. */
 export interface MenuCheckSource {
-  state: {
+  state: ViewOptionsState & {
     autosaveEnabled: boolean
     showRulers: boolean
     showPixelGrid?: boolean
@@ -59,7 +60,7 @@ export function appMenuChecked(id: string, source: MenuCheckSource): boolean | u
     case 'theme-auto':
       return source.theme === 'auto'
     default:
-      return undefined
+      return viewOptionChecked(id, state)
   }
 }
 

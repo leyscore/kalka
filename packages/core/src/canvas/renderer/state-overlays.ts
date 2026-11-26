@@ -21,6 +21,12 @@ export function overlaysFromEditorState(
     hoveredNodeId: previewing ? null : state.hoveredNodeId,
     showPixelGrid: !previewing && state.showPixelGrid !== false,
     showLayoutGrids: state.showLayoutGrids !== false,
+    outlines:
+      !previewing && state.outlineMode
+        ? { mode: state.outlineMode, hiddenLayers: state.outlineHiddenLayers === true }
+        : null,
+    showMaskOutlines: !previewing && state.showMaskOutlines === true,
+    showFrameOutlines: !previewing && state.showFrameOutlines === true,
     transforming: state.transforming,
     measurementMode: state.measurementMode,
     enteredContainerId: state.enteredContainerId,

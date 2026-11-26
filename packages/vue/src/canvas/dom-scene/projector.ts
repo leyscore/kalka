@@ -23,6 +23,7 @@ import {
 } from './frame'
 import { maskedParentsAround } from './masks'
 import { measureScopes } from './measure-scope'
+import { setArtboardOutlines } from './outlines'
 import { PatternUsers } from './patterns'
 import { ArtboardSlot } from './slot'
 import { ArtboardSlots, type ArtboardSlotsHost, type ProjectorView } from './slots'
@@ -350,6 +351,15 @@ export class DomSceneProjector {
     }
     // Values moved, so layouts can too.
     for (const slot of this.artboards.values()) if (slot.live) this.options.onReflow?.(slot.id)
+  }
+
+  #outlines: ((artboardId: string) => string) | null = null
+
+  /** The outline stylesheet of each artboard, now and when it opens; null turns outlines off. */
+  setOutlines(css: ((artboardId: string) => string) | null): void {
+    this.#outlines = css
+    for (const slot of this.artboards.values())
+      if (slot.doc) setArtboardOutlines(slot.doc, css?.(slot.id) ?? '')
   }
 
   /** A font loaded after the artboards opened: every artboard gets it, and text set in it reflows. */
@@ -698,6 +708,7 @@ export class DomSceneProjector {
       setDeviceScale(doc, this.#deviceScale)
       for (const face of this.options.fonts?.() ?? []) void addArtboardFont(doc, face)
       setArtboardTokens(doc, this.#tokensCSS)
+      if (this.#outlines) setArtboardOutlines(doc, this.#outlines(slot.id))
       doc.fonts.addEventListener('loadingdone', () => this.fontArrived(slot, doc))
       slot.observer = new ResizeObserver(() => this.reflowed(slot, doc))
       slot.observer.observe(doc.body)

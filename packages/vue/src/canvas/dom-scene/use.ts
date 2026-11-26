@@ -11,6 +11,7 @@ import { bindSceneEvents, redrawAfter } from './events'
 import { GhostLayer, type DomScenePreview } from './ghosts'
 import { DomLayoutEngine } from './layout'
 import { LiveEdits } from './live'
+import { outlineCSS, outlineKey, outlineView } from './outlines'
 import { DomSceneProjector } from './projector'
 import type { RevealStep } from './reveal/plan'
 import { RevealPlayer } from './reveal/play'
@@ -56,6 +57,8 @@ export function useDomScene(
   let tiers: ArtboardTierWork | null = null
   const reflowed = new Set<string>()
   let presentedScene = -1
+  /** What the artboards' outline stylesheets were last written for. */
+  let outlinedFor = ''
   /** The page agent work was last drawn on; held layers show once the view leaves it. */
   let workPage: string | null = null
 
@@ -91,6 +94,7 @@ export function useDomScene(
     // Artboards wake near the screen and sleep far from it.
     const tiersLeft = tiers?.apply() ?? false
     const state = view()
+    syncOutlines(state)
     drawAgentWork(state.currentPageId)
     shaders?.sync(state.sceneVersion)
     if (state.sceneVersion !== presentedScene) void tokens?.sync()
@@ -102,6 +106,20 @@ export function useDomScene(
       })
     }
     return projector.needsFlush || reflowed.size > 0 || (reveals?.busy ?? false) || tiersLeft
+  }
+
+  /** Outline mode restyles the artboards when it, the selection it shows, or the scene changes. */
+  function syncOutlines(state: EditorState) {
+    const p = projector
+    if (!p) return
+    const outlines = outlineView(
+      state,
+      host.value?.ownerDocument.defaultView?.devicePixelRatio ?? 1
+    )
+    const key = outlineKey(outlines, state.sceneVersion)
+    if (key === outlinedFor) return
+    outlinedFor = key
+    p.setOutlines(outlines ? (id) => outlineCSS(p.graph, id, outlines) : null)
   }
 
   const frames = createFrameRequest(tick)
@@ -121,6 +139,9 @@ export function useDomScene(
         state.renderVersion,
         state.nodeEditState,
         state.rotationPreview,
+        state.outlineMode,
+        state.outlineObjectBounds,
+        state.outlineMode === 'selection' ? [...state.selectedIds].join(',') : '',
         options.previews?.()
       ]
     },
@@ -204,6 +225,7 @@ export function useDomScene(
     engine = null
     reflowed.clear()
     presentedScene = -1
+    outlinedFor = ''
     workPage = null
   }
 
