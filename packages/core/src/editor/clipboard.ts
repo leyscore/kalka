@@ -1,5 +1,5 @@
-import { CommittedGraphEventError, cycleSafeParent } from '@kalka/scene-graph'
-import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { CommittedGraphEventError, cycleSafeParent, handoffThreadsOn } from '@kalka/scene-graph'
+import type { CommentThread, SceneGraph, SceneNode } from '@kalka/scene-graph'
 import { getAxisAlignedBoundsInParent, getNodeLocalMatrix } from '@kalka/scene-graph/coordinate'
 import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
@@ -13,6 +13,7 @@ import { createClipboardCopyActions } from './clipboard/copy'
 import { importClipboardDependenciesWithUndo } from './clipboard/dependencies'
 import { createClipboardExportActions } from './clipboard/export'
 import { createClipboardFontActions } from './clipboard/fonts'
+import { copyLayerHandoff, pairCopiedTree, pasteLayerHandoff } from './clipboard/handoff'
 import { deleteIds, recreateSnapshots, restoreDeletedEntries } from './clipboard/history'
 import type { PasteHistoryOperation } from './clipboard/paste/replace'
 import { replaceTargetsWithCreated, selectedReplacementTargets } from './clipboard/paste/replace'
@@ -107,6 +108,7 @@ export function createClipboardActions(ctx: EditorContext) {
     const repeated = repeatedDuplicateOffset(topLevel)
 
     const placed: Rect[] = []
+    const copies = new Map<string, string>()
     for (const node of topLevel) {
       const parentId = node.parentId ?? ctx.state.currentPageId
       let position: Vector = { x: node.x, y: node.y }
@@ -118,11 +120,13 @@ export function createClipboardActions(ctx: EditorContext) {
         ctx.graph.updateNode(clone.id, { name: duplicateName(ctx.graph, parentId, node.name) })
       placed.push(getAxisAlignedBoundsInParent([clone], parentId, ctx.graph))
       newRootIds.push(clone.id)
+      pairCopiedTree(ctx.graph, node.id, clone.id, copies)
       record.push({ sourceId: node.id, copyId: clone.id, parentId, at: { x: clone.x, y: clone.y } })
       const subtree = snapshotSubtree(ctx.graph, clone.id)
       for (const [id, snap] of subtree) allSnapshots.set(id, snap)
     }
     lastDuplicate = { copies: record, repeated: repeated !== null }
+    const handoff = copyLayerHandoff(ctx.graph, handoffThreadsOn(ctx.graph, copies.keys()), copies)
 
     if (newRootIds.length > 0) {
       ctx.setSelectedIds(new Set(newRootIds))
@@ -135,9 +139,11 @@ export function createClipboardActions(ctx: EditorContext) {
             const parentId = snapshot.parentId ?? ctx.state.currentPageId
             restoreSubtree(ctx.graph, snapshot, parentId, allSnapshots)
           }
+          handoff?.forward()
           ctx.setSelectedIds(new Set(newRootIds))
         },
         inverse: () => {
+          handoff?.inverse()
           for (const id of newRootIds.slice().reverse()) ctx.graph.deleteNode(id)
           ctx.setSelectedIds(prevSelection)
         }
@@ -186,7 +192,8 @@ export function createClipboardActions(ctx: EditorContext) {
         snapshot.images,
         dependencies.componentDependencies,
         cursorPos,
-        options
+        options,
+        snapshot.handoff
       )
     })
     await fontActions.loadFontsForNodes(created)
@@ -272,7 +279,8 @@ export function createClipboardActions(ctx: EditorContext) {
     images: Map<string, Uint8Array>,
     dependencies: Array<SceneNode & { children?: SceneNode[] }> = [],
     cursorPos?: Vector,
-    options: PasteOptions = {}
+    options: PasteOptions = {},
+    handoff?: readonly CommentThread[]
   ) {
     const prevSelection = new Set(ctx.state.selectedIds)
     const replacementTargets = options.replaceSelection ? selectedReplacementTargets(ctx) : []
@@ -331,6 +339,8 @@ export function createClipboardActions(ctx: EditorContext) {
       })
     }
     if (created.length === 0) return created
+    // Undone before the layers it is on, in the same step as the paste.
+    pasteLayerHandoff(ctx.graph, ctx.undo, handoff, copiedIds)
 
     if (replacementTargets.length > 0) {
       replaceTargetsWithCreated(ctx, created, replacementTargets, prevSelection)

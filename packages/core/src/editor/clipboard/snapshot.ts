@@ -1,4 +1,9 @@
-import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import {
+  handoffThreadsOn,
+  type CommentThread,
+  type SceneGraph,
+  type SceneNode
+} from '@kalka/scene-graph'
 
 import { captureClipboardVariables, type ClipboardVariables } from './variables'
 
@@ -13,6 +18,8 @@ export interface ClipboardSnapshot {
   images: Map<string, Uint8Array>
   /** Written by Copy properties: Paste skips it and Paste properties reads it, as in Figma. */
   properties?: boolean
+  /** The copied layers' annotations and measurements, which their pasted copies take. */
+  handoff?: CommentThread[]
 }
 
 function referencedStyleIds(nodes: SceneNode[]): Set<string> {
@@ -74,6 +81,12 @@ export function captureClipboardSnapshot(
     styleDefinitions,
     variableDependencies: captureClipboardVariables(graph, capturedNodes),
     nodes,
-    images
+    images,
+    handoff: structuredClone(
+      handoffThreadsOn(
+        graph,
+        capturedNodes.map((node) => node.id)
+      )
+    )
   }
 }

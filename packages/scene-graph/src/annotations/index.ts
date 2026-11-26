@@ -172,3 +172,65 @@ export function measurementSpan(
     distance: Math.abs(end - start)
   }
 }
+
+/** The annotations and measurements on any of these layers, as copy and paste carry them. */
+export function handoffThreadsOn(graph: SceneGraph, nodeIds: Iterable<string>): CommentThread[] {
+  const ids = new Set(nodeIds)
+  return (graph.getNode(graph.rootId)?.comments ?? []).filter(
+    (thread) =>
+      thread.anchor.nodeId !== null && ids.has(thread.anchor.nodeId) && isHandoffThread(thread)
+  )
+}
+
+/**
+ * Gives copies of layers the annotations and measurements of the layers they copy, as Figma's
+ * copy, paste and duplicate do: `copies` maps each copied layer to its copy. A measurement to a
+ * layer copied with it measures to that copy; to another layer, still to that one. Returns the
+ * threads added, so an undo can take them back.
+ */
+export function copyHandoffThreads(
+  graph: SceneGraph,
+  threads: readonly CommentThread[],
+  copies: ReadonlyMap<string, string>
+): CommentThread[] {
+  const added: CommentThread[] = []
+  for (const thread of threads) {
+    const nodeId = thread.anchor.nodeId ? copies.get(thread.anchor.nodeId) : undefined
+    const pageId = nodeId ? pageOf(graph, nodeId) : null
+    if (!nodeId || !pageId || !isHandoffThread(thread)) continue
+    const copy: CommentThread = {
+      ...structuredClone(thread),
+      id: randomHex(8),
+      anchor: { ...thread.anchor, pageId, nodeId },
+      messages: thread.messages.map((message) => ({
+        ...structuredClone(message),
+        id: randomHex(8)
+      }))
+    }
+    if (thread.measurement) {
+      const toNodeId = copies.get(thread.measurement.toNodeId) ?? thread.measurement.toNodeId
+      if (!graph.getNode(toNodeId)) continue
+      copy.measurement = { ...thread.measurement, toNodeId }
+    }
+    added.push(copy)
+  }
+  if (added.length > 0) {
+    const current = graph.getNode(graph.rootId)?.comments ?? []
+    graph.updateNode(graph.rootId, { comments: [...current, ...added] })
+  }
+  return added
+}
+
+/** Takes back threads `copyHandoffThreads` added, as undoing the paste that added them does. */
+export function removeCommentThreads(graph: SceneGraph, ids: ReadonlySet<string>): void {
+  const current = graph.getNode(graph.rootId)?.comments ?? []
+  if (!current.some((thread) => ids.has(thread.id))) return
+  graph.updateNode(graph.rootId, { comments: current.filter((thread) => !ids.has(thread.id)) })
+}
+
+/** Puts back threads an undo took away, unless they are there already. */
+export function restoreCommentThreads(graph: SceneGraph, threads: readonly CommentThread[]): void {
+  const current = graph.getNode(graph.rootId)?.comments ?? []
+  const missing = threads.filter((thread) => !current.some((known) => known.id === thread.id))
+  if (missing.length > 0) graph.updateNode(graph.rootId, { comments: [...current, ...missing] })
+}
