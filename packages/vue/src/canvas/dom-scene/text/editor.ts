@@ -13,6 +13,26 @@ import { docToText, textSchema, textToDoc } from '#vue/canvas/dom-scene/text/sch
 
 type StyleKey = keyof CharacterStyleOverride
 
+/** Keys held before the editor has focus that its keymap runs; any other is a character. */
+const EDITING_KEYS = new Set(['Enter', 'Backspace'])
+
+/** What held keys type into an empty text: characters, line breaks and deletions. */
+function typedText(keys: readonly string[]): string {
+  let text = ''
+  for (const key of keys) {
+    if (key === 'Backspace') text = text.slice(0, -1)
+    else text += key === 'Enter' ? '\n' : key
+  }
+  return text
+}
+
+/** Whether a key event was meant for a field of the app, such as a panel input. */
+function targetsField(event: KeyboardEvent): boolean {
+  const target = event.target
+  if (!(target instanceof HTMLElement)) return false
+  return target.isContentEditable || target.localName === 'input' || target.localName === 'textarea'
+}
+
 /** The style the characters in a range share for `key`, the layer's own where no run sets it. */
 function effective(
   doc: ProseMirrorNode,
@@ -79,6 +99,11 @@ export class DomTextEditor implements ExternalTextEditor {
   private nodeId: string | null = null
   private focusFrame = 0
   private openFrame = 0
+  /**
+   * Keys pressed between the start of the edit and the editor's focus, which reach the app's
+   * window instead: a new layer's artboard may still be loading. Null once the editor has focus.
+   */
+  private early: string[] | null = null
 
   constructor(
     private readonly editor: Editor,
@@ -87,7 +112,59 @@ export class DomTextEditor implements ExternalTextEditor {
 
   start(nodeId: string): void {
     this.stop()
+    this.early = []
+    window.addEventListener('keydown', this.holdEarlyKey, { capture: true })
     this.open(nodeId)
+  }
+
+  /**
+   * As in Figma, typing right after the click lands in the new text: keys that reach the app
+   * before the editor has focus are kept, so neither are they lost nor do they run shortcuts,
+   * and replayed into the editor once it has focus. Escape ends the edit.
+   */
+  private readonly holdEarlyKey = (event: KeyboardEvent): void => {
+    const early = this.early
+    if (!early || event.isComposing || targetsField(event)) return
+    if (event.metaKey || event.ctrlKey || event.altKey) return
+    const { key } = event
+    // One character, as a key's value is unless it names the key, such as `ArrowLeft`.
+    const character = key.length === 1 || (key.length === 2 && (key.codePointAt(0) ?? 0) > 0xffff)
+    const held = EDITING_KEYS.has(key) || character
+    if (!held && key !== 'Escape') return
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    if (held) {
+      early.push(key)
+      return
+    }
+    const id = this.editor.state.editingTextId
+    if (this.view) {
+      this.replayEarlyKeys()
+    } else if (id && typedText(early)) {
+      // The editor has not opened yet: what was typed is the text, as the editor would have made it.
+      this.editor.updateTextEditNode(id, { text: typedText(early), styleRuns: [] })
+    }
+    this.editor.commitTextEdit()
+  }
+
+  /** Types the keys held before the editor had focus, and stops holding keys. */
+  private replayEarlyKeys(): void {
+    const early = this.early
+    this.stopHoldingKeys()
+    const view = this.view
+    if (!view || !early) return
+    for (const key of early) {
+      if (EDITING_KEYS.has(key)) {
+        baseKeymap[key]?.(view.state, (tr) => this.dispatch(tr), view)
+      } else {
+        this.dispatch(view.state.tr.insertText(key))
+      }
+    }
+  }
+
+  private stopHoldingKeys(): void {
+    this.early = null
+    window.removeEventListener('keydown', this.holdEarlyKey, { capture: true })
   }
 
   private open(nodeId: string): void {
@@ -185,6 +262,7 @@ export class DomTextEditor implements ExternalTextEditor {
   }
 
   stop(): void {
+    this.stopHoldingKeys()
     cancelAnimationFrame(this.openFrame)
     cancelAnimationFrame(this.focusFrame)
     const id = this.nodeId
@@ -262,7 +340,10 @@ export class DomTextEditor implements ExternalTextEditor {
   /** The page takes focus back after the pointer event that placed the caret. */
   private focus(): void {
     cancelAnimationFrame(this.focusFrame)
-    this.focusFrame = requestAnimationFrame(() => this.view?.focus())
+    this.focusFrame = requestAnimationFrame(() => {
+      this.view?.focus()
+      if (this.early) this.replayEarlyKeys()
+    })
   }
 
   private dispatch(tr: Parameters<EditorView['dispatch']>[0]): void {

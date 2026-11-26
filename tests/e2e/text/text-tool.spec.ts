@@ -39,6 +39,26 @@ function pageTexts(page: Page) {
   })
 }
 
+function activeTool(page: Page) {
+  return page.evaluate(() => window.kalka?.getStore?.().state.activeTool ?? null)
+}
+
+// The new text's artboard loads after the click; keys pressed meanwhile must reach the text, and
+// none may pick a tool ("o" is the ellipse, "h" the hand).
+test('keys typed right after the click land in the new text', async ({ page }) => {
+  const canvas = new CanvasHelper(page)
+  await page.goto('/?test&no-chrome&no-rulers')
+  await canvas.waitForInit()
+
+  await canvas.selectTool('text')
+  await canvas.click(300, 300)
+  await page.keyboard.type('Hello')
+
+  await expect.poll(() => editedText(page)).toBe('Hello')
+  expect(await activeTool(page)).toBe('SELECT')
+  canvas.assertNoErrors()
+})
+
 test('text made on the page outside any frame is measured as it is typed', async ({ page }) => {
   const canvas = new CanvasHelper(page)
   await page.goto('/?test&no-chrome&no-rulers')
@@ -55,5 +75,25 @@ test('text made on the page outside any frame is measured as it is typed', async
   const [text] = await pageTexts(page)
   expect(text?.text).toBe('Hello')
   expect(text?.width).toBeGreaterThan(1)
+  canvas.assertNoErrors()
+})
+
+test('Escape right after a click with the text tool leaves no empty text', async ({ page }) => {
+  const canvas = new CanvasHelper(page)
+  await page.goto('/?test&no-chrome&no-rulers')
+  await canvas.waitForInit()
+
+  await canvas.selectTool('text')
+  await canvas.click(300, 300)
+  await page.keyboard.press('Escape')
+  await expect.poll(() => editedText(page)).toBeNull()
+  await expect.poll(() => pageTexts(page)).toEqual([])
+
+  await canvas.selectTool('text')
+  await canvas.click(400, 300)
+  await canvas.waitForTextEditor()
+  await page.keyboard.press('Escape')
+  await expect.poll(() => editedText(page)).toBeNull()
+  await expect.poll(() => pageTexts(page)).toEqual([])
   canvas.assertNoErrors()
 })
