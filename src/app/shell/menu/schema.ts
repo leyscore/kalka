@@ -251,6 +251,13 @@ export const APP_MENU_SCHEMA = [
           }
         ]
       },
+      {
+        id: 'keyboard-shortcuts',
+        label: 'Keyboard Shortcuts',
+        shortcut: 'CTRL+SHIFT+?',
+        accelerator: 'Ctrl+Shift+/',
+        handler: 'shell'
+      },
       { id: 'documentation', label: 'Documentation', handler: 'shell' },
       { type: 'separator' },
       { id: 'toggle-ui', label: 'Toggle UI', shortcut: 'MOD+\\' },

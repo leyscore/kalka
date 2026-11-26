@@ -22,6 +22,7 @@ import { TOOL_SHORTCUTS } from '@/app/editor/session'
 import { openSettings } from '@/app/settings/open'
 import { setSnappingPreference } from '@/app/settings/preferences/apply'
 import { isButtonActivation, isCanvasKey, isEditing } from '@/app/shell/keyboard/focus'
+import { markShortcutUsed, toggleShortcutsHelp } from '@/app/shell/keyboard/help'
 import { bindSpaceHandTool } from '@/app/shell/keyboard/space-tool'
 import type {
   KeyboardShortcutOptions,
@@ -31,7 +32,7 @@ import { appMenuTinykeysShortcut } from '@/app/shell/menu/shortcut'
 
 type ShortcutAction = (options: KeyboardShortcutRunOptions) => void
 
-type ShortcutDefinition = {
+export type ShortcutDefinition = {
   id: string
   keys: string | string[]
   run: ShortcutAction
@@ -127,19 +128,17 @@ function bindToolShortcuts(bindings: KeyBindingMap, options: KeyboardShortcutRun
       options.spaceTool.resetToolBeforeSpace()
       stopCommentPlacing(options.store)
       options.store.setTool(tool)
+      markShortcutUsed(`tool:${code}`)
     }
   }
 }
 
-export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
-  const spaceTool = bindSpaceHandTool(options.inputFocused, options.store)
-  const runOptions = (event: KeyboardEvent): KeyboardShortcutRunOptions => ({
-    ...options,
-    keyEvent: event,
-    spaceTool
-  })
-
-  const shortcuts: ShortcutDefinition[] = [
+/**
+ * Every key the editor binds outside the tools, nudging and the clipboard. The keyboard shortcuts
+ * panel lists these, so a key added here shows there too.
+ */
+export function editorShortcutDefinitions(): ShortcutDefinition[] {
+  return [
     ...commandShortcuts(
       'selection.createComponent',
       'selection.detachInstance',
@@ -178,6 +177,13 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
       keys: appMenuTinykeysShortcut('toggle-preview') ?? '$mod+Alt+Enter',
       run: ({ actions }) => actions.togglePlay(),
       preview: true
+    },
+    {
+      id: 'keyboard-shortcuts',
+      // Figma's ⌃⇧?, and ⌘/ which people try first.
+      keys: ['Control+Shift+Slash', '$mod+Slash'],
+      run: () => toggleShortcutsHelp(),
+      global: true
     },
     {
       id: 'ask-about-selection',
@@ -380,6 +386,17 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
     },
     ...opacityBindings()
   ]
+}
+
+export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
+  const spaceTool = bindSpaceHandTool(options.inputFocused, options.store)
+  const runOptions = (event: KeyboardEvent): KeyboardShortcutRunOptions => ({
+    ...options,
+    keyEvent: event,
+    spaceTool
+  })
+
+  const shortcuts = editorShortcutDefinitions()
 
   const bindings: KeyBindingMap = {}
   const globalBindings: KeyBindingMap = {}
@@ -397,6 +414,7 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
   for (const shortcut of shortcuts) {
     bindShortcut(shortcut.global ? globalBindings : bindings, shortcut.keys, (event) => {
       shortcut.run(runOptions(event))
+      markShortcutUsed(shortcut.id)
       if (shortcut.shouldPreventDefault?.(event) ?? true) event.preventDefault()
     })
   }

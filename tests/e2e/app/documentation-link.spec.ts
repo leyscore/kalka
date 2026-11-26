@@ -46,6 +46,7 @@ test('the editor rail opens the documentation in a new tab and keeps the documen
     route.fulfill({ status: 200, contentType: 'text/html', body: '<title>Docs</title>' })
   )
   await page.goto('/?test')
+  await page.getByTestId('panel-rail-help').click()
   const opened = context.waitForEvent('page')
   await page.getByTestId('panel-rail-documentation').click()
   const tab = await opened

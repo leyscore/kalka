@@ -1,7 +1,19 @@
 <script setup lang="ts">
-import { computed, useTemplateRef } from 'vue'
+import {
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuRoot,
+  DropdownMenuTrigger
+} from 'reka-ui'
+import { computed, ref, useTemplateRef } from 'vue'
 
-import { useCommentsMessages, useDesignCheckMessages, useI18n } from '@kalka/vue'
+import {
+  useCommentsMessages,
+  useDesignCheckMessages,
+  useI18n,
+  useShortcutsMessages
+} from '@kalka/vue'
 
 import { useComments } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
@@ -9,8 +21,11 @@ import { countIssues } from '@/app/editor/design-check/issues'
 import { toggleVariablesPage } from '@/app/editor/tokens/dialog'
 import { openSettings } from '@/app/settings/open'
 import { aiHidden } from '@/app/settings/preferences/store'
+import { openShortcutsHelp } from '@/app/shell/keyboard/help'
 import { useLeftPanel, type RailPanel } from '@/app/shell/left-panel/use'
+import { appMenuShortcutLabel } from '@/app/shell/menu/shortcut'
 import { openExternalLink } from '@/app/shell/ui'
+import { useMenuUI } from '@/components/ui/menu/menu'
 import { useGlide } from '@/components/ui/motion/useGlide'
 import Tip from '@/components/ui/overlay/Tip.vue'
 import { docsURL } from '@/constants'
@@ -70,6 +85,11 @@ const checkLabel = computed(() =>
 )
 
 const rail = panelRail()
+
+const shortcuts = useShortcutsMessages()
+const helpOpen = ref(false)
+const helpMenu = useMenuUI({ content: 'min-w-52' })
+const helpShortcut = appMenuShortcutLabel('keyboard-shortcuts')
 
 function openDocs() {
   void openExternalLink(docsURL(locale.value))
@@ -252,17 +272,37 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
       </button>
     </Tip>
     <div class="flex-1" />
-    <Tip :label="menu.documentation" side="right">
-      <button
-        type="button"
-        data-test-id="panel-rail-documentation"
-        :aria-label="menu.documentation"
-        :class="rail.item()"
-        @click="openDocs"
-      >
-        <icon-hugeicons-help-circle :class="rail.icon()" />
-      </button>
-    </Tip>
+    <!-- Figma's help menu: the keyboard shortcuts in the app, the documentation in a new tab. -->
+    <DropdownMenuRoot v-model:open="helpOpen">
+      <Tip :label="shortcuts.help" side="right">
+        <DropdownMenuTrigger as-child>
+          <button
+            type="button"
+            data-test-id="panel-rail-help"
+            :aria-label="shortcuts.help"
+            :class="rail.item()"
+          >
+            <icon-hugeicons-help-circle :class="rail.icon()" />
+          </button>
+        </DropdownMenuTrigger>
+      </Tip>
+      <DropdownMenuPortal>
+        <DropdownMenuContent side="right" align="end" :side-offset="8" :class="helpMenu.content">
+          <DropdownMenuItem :class="helpMenu.item" @select="openShortcutsHelp">
+            <span>{{ menu.keyboardShortcuts }}</span>
+            <span :class="helpMenu.shortcut">{{ helpShortcut }}</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            data-test-id="panel-rail-documentation"
+            :class="helpMenu.item"
+            @select="openDocs"
+          >
+            <span>{{ menu.documentation }}</span>
+            <icon-hugeicons-square-arrow-out-up-right :class="helpMenu.icon" />
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenuPortal>
+    </DropdownMenuRoot>
     <Tip :label="settings.title" side="right">
       <button
         type="button"

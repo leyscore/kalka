@@ -73,6 +73,8 @@ de:panels.shader
 de:panels.slots
 de:panels.textCaseOriginal
 de:settings.mcp
+de:shortcuts.categoryText
+de:shortcuts.categoryZoom
 de:storage.bucket
 de:storage.providerAmazonS3
 de:storage.providerBackblaze
@@ -141,6 +143,7 @@ es:panels.variables
 es:rendering.experimental
 es:settings.general
 es:settings.mcp
+es:shortcuts.categoryZoom
 es:storage.bucket
 es:storage.providerAmazonS3
 es:storage.providerBackblaze
@@ -251,6 +254,7 @@ fr:settings.animations
 fr:settings.diagnostics
 fr:settings.mcp
 fr:settings.notifications
+fr:shortcuts.categoryZoom
 fr:storage.bucket
 fr:storage.providerAmazonS3
 fr:storage.providerBackblaze
@@ -327,6 +331,8 @@ it:rendering.settingsTitle
 it:settings.account
 it:settings.mcp
 it:settings.media
+it:shortcuts.categoryFile
+it:shortcuts.categoryZoom
 it:storage.bucket
 it:storage.endpoint
 it:storage.providerAmazonS3
@@ -365,6 +371,7 @@ ja:panels.htmlClassesPlaceholder
 ja:settings.groupAI
 ja:settings.mcp
 ja:settings.navKalkaAI
+ja:shortcuts.categoryAI
 ja:storage.providerAmazonS3
 ja:storage.providerBackblaze
 ja:storage.providerR2
@@ -413,6 +420,7 @@ pl:panels.shader
 pl:settings.groupAI
 pl:settings.mcp
 pl:settings.media
+pl:shortcuts.categoryAI
 pl:storage.providerAmazonS3
 pl:storage.providerBackblaze
 pl:storage.providerR2
@@ -479,6 +487,7 @@ zh-cn:panels.maskTypeAlpha
 zh-cn:settings.groupAI
 zh-cn:settings.mcp
 zh-cn:settings.navKalkaAI
+zh-cn:shortcuts.categoryAI
 zh-cn:storage.providerAmazonS3
 zh-cn:storage.providerBackblaze
 zh-cn:storage.providerR2

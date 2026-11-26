@@ -23,6 +23,7 @@ import { recoveryMessageDefaults, recoveryMessages } from '#vue/i18n/messages/re
 import { renameMessageDefaults, renameMessages } from '#vue/i18n/messages/rename'
 import { renderingMessageDefaults, renderingMessages } from '#vue/i18n/messages/rendering'
 import { settingsMessageDefaults, settingsMessages } from '#vue/i18n/messages/settings'
+import { shortcutsMessageDefaults, shortcutsMessages } from '#vue/i18n/messages/shortcuts'
 import { storageMessageDefaults, storageMessages } from '#vue/i18n/messages/storage'
 import { toolMessageDefaults, toolMessages } from '#vue/i18n/messages/tools'
 import { updatesMessageDefaults, updatesMessages } from '#vue/i18n/messages/updates'
@@ -57,6 +58,7 @@ export {
   renameMessages,
   commentsMessages,
   settingsMessages,
+  shortcutsMessages,
   storageMessages,
   toolMessages,
   updatesMessages,
@@ -87,6 +89,7 @@ export const messageDefaults = {
   rename: renameMessageDefaults,
   comments: commentsMessageDefaults,
   settings: settingsMessageDefaults,
+  shortcuts: shortcutsMessageDefaults,
   storage: storageMessageDefaults,
   tools: toolMessageDefaults,
   updates: updatesMessageDefaults,

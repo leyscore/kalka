@@ -301,6 +301,11 @@
         ]
       },
       {
+        "id": "keyboard-shortcuts",
+        "label": "Keyboard Shortcuts",
+        "accelerator": "Ctrl+Shift+/"
+      },
+      {
         "id": "documentation",
         "label": "Documentation"
       },

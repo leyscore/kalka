@@ -66,6 +66,7 @@ import { isTauri } from '@/app/tauri/env'
 import { teamPageFromPath } from '@/app/team/route'
 import CommandPalette from '@/components/commands/CommandPalette.vue'
 import HomeWorkspace from '@/components/home/HomeWorkspace.vue'
+import KeyboardShortcutsDialog from '@/components/keyboard-shortcuts/KeyboardShortcutsDialog.vue'
 import RenameSelectionDialog from '@/components/selection/RenameSelectionDialog.vue'
 import AppBanners from '@/components/shell/AppBanners.vue'
 import TabBar from '@/components/TabBar.vue'
@@ -428,6 +429,7 @@ onUnmounted(() => {
     <AppBanners v-if="!(IS_TAURI && tabsInTopBar)" />
     <RenameSelectionDialog />
     <CommandPalette />
+    <KeyboardShortcutsDialog />
     <!-- A canvas shown bare, as an embed or a capture, has no bar at all. -->
     <TabBar v-if="!tabsInTopBar && appRuntimeConfig.showChrome" />
     <HomeWorkspace v-show="activeTab?.kind === 'home'" />

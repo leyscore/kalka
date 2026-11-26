@@ -36,6 +36,7 @@ export const menuMessageDefaults = {
   language: 'Language',
   settings: 'Settings…',
   documentation: 'Documentation',
+  keyboardShortcuts: 'Keyboard Shortcuts',
   variables: 'Variables…',
   insertIcon: 'Insert Icon…',
   rulers: 'Rulers',

@@ -27,6 +27,7 @@ import { openVariablesDialog } from '@/app/editor/tokens/dialog'
 import { openSettings } from '@/app/settings/open'
 import { setDesignIssuesOnCanvas, setSnappingPreference } from '@/app/settings/preferences/apply'
 import { appPreferences } from '@/app/settings/preferences/store'
+import { openShortcutsHelp } from '@/app/shell/keyboard/help'
 import { appMenuChecked } from '@/app/shell/menu/checked'
 import { createSharedEditorMenuActions } from '@/app/shell/menu/editor-actions'
 import { openStorageWorkspace } from '@/app/shell/menu/navigation'
@@ -126,6 +127,7 @@ export function useAppMenu() {
     preferences: 'preferences',
     settings: 'settings',
     documentation: 'documentation',
+    'keyboard-shortcuts': 'keyboardShortcuts',
     variables: 'variables',
     'insert-icon': 'insertIcon',
     'view-rulers': 'rulers',
@@ -189,6 +191,7 @@ export function useAppMenu() {
     },
     settings: openSettings,
     documentation: () => void openExternalLink(docsURL(locale.value)),
+    'keyboard-shortcuts': openShortcutsHelp,
     variables: () => openVariablesDialog(store),
     'insert-icon': () => {
       store.state.iconPickerOpen = true

@@ -255,6 +255,8 @@ ja:settings.usageDescription
 ja:settings.workflowFocusAI
 ja:settings.workflowFocusDesign
 ja:settings.workflowFocusDesignDescription
+ja:shortcuts.askAI
+ja:shortcuts.toggleAI
 ja:storage.accessKeyID
 ja:storage.copyCors
 ja:storage.providerS3
@@ -566,6 +568,8 @@ zh-cn:settings.usageDescription
 zh-cn:settings.workflowFocusAI
 zh-cn:settings.workflowFocusDesign
 zh-cn:settings.workflowFocusDesignDescription
+zh-cn:shortcuts.askAI
+zh-cn:shortcuts.toggleAI
 zh-cn:storage.accessKeyID
 zh-cn:storage.copyCors
 zh-cn:storage.providerS3

@@ -23,6 +23,7 @@ export {
   useRenameMessages,
   useCommentsMessages,
   useSettingsMessages,
+  useShortcutsMessages,
   useStorageMessages,
   useToolMessages,
   useUpdateMessages,
