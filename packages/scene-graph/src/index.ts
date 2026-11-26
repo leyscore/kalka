@@ -125,7 +125,7 @@ import { normalizeVectorNetwork } from './vector-network'
 
 export type { GUID, Color, Size, Vector } from './primitives'
 export * from './types'
-export * from './text-links'
+export * from './hyperlinks'
 
 import {
   getAbsolutePosition,
