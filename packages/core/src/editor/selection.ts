@@ -1,5 +1,6 @@
 import { createSelectionContainerActions } from './selection/container'
 import { createSelectionHitTestActions } from './selection/hit-test'
+import { createSelectionMatchingActions } from './selection/matching'
 import { createSelectionNavigationActions } from './selection/navigation'
 import { createSelectionOverlayActions } from './selection/overlays'
 import { createSelectionReadActions } from './selection/read'
@@ -63,6 +64,7 @@ export function createSelectionActions(ctx: EditorContext) {
   const overlayActions = createSelectionOverlayActions(ctx)
   const readActions = createSelectionReadActions(ctx)
   const navigationActions = createSelectionNavigationActions(ctx, select)
+  const matchingActions = createSelectionMatchingActions(ctx, select)
 
   return {
     select,
@@ -73,6 +75,7 @@ export function createSelectionActions(ctx: EditorContext) {
     ...containerActions,
     ...readActions,
     ...navigationActions,
+    ...matchingActions,
     ...hitTestActions
   }
 }
