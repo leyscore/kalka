@@ -47,7 +47,9 @@ test('dragging a nested card uses repaint-only position previews', async ({ page
   })
   await canvas.waitForRender()
 
-  const counters = await measureInteraction(page, () => canvas.drag(110, 110, 210, 150, 20))
+  // Press on the first label: the padding band of a selected auto layout frame drags its
+  // padding instead of moving the frame.
+  const counters = await measureInteraction(page, () => canvas.drag(200, 125, 300, 165, 20))
 
   expect(counters?.storeUpdateCount).toBeLessThanOrEqual(1)
   expect(counters?.graphUpdateCount).toBeLessThanOrEqual(25)
