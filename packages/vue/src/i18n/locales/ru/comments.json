@@ -94,6 +94,8 @@
   "resourceName": "Название (необязательно)",
   "invalidURL": "Введите ссылку, начинающуюся с http:// или https://.",
   "removeResource": "Удалить ссылку",
+  "editResource": "Изменить ссылку",
+  "saveResource": "Сохранить ссылку",
   "inheritedFrom": "Из {name}",
   "handoff": "Передача в разработку"
 }

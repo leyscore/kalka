@@ -94,6 +94,8 @@
   "resourceName": "Nome (facoltativo)",
   "invalidURL": "Inserisci un link web che inizi con http:// o https://.",
   "removeResource": "Rimuovi link",
+  "editResource": "Modifica link",
+  "saveResource": "Salva link",
   "inheritedFrom": "Da {name}",
   "handoff": "Consegna"
 }

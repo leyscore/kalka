@@ -82,6 +82,31 @@ test('annotate a layer, mark its frame ready and keep a measurement and a link',
     'https://tracker.example.com/42'
   )
 
+  // A link is edited in place, in the form it was added with.
+  await handoff.locator('[data-slot="dev-resource"]').hover()
+  await handoff.getByTestId('dev-resource-edit').click()
+  await expect(handoff.getByTestId('dev-resource-url')).toHaveValue(
+    'https://tracker.example.com/42'
+  )
+  await handoff.getByTestId('dev-resource-name').fill('Spec')
+  await handoff.getByTestId('dev-resource-add').click()
+  await expect(handoff.getByRole('link', { name: 'Spec' })).toBeVisible()
+  await expect(handoff.locator('[data-slot="dev-resource"]')).toHaveCount(1)
+
+  // The dev status undoes like any edit.
+  await page.getByTestId('canvas-element').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await page.keyboard.press('ControlOrMeta+z')
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('[data-slot="frame-review-badge"]')).toHaveCount(0)
+  await page.keyboard.press('ControlOrMeta+Shift+z')
+  await page.keyboard.press('ControlOrMeta+Shift+z')
+  await page.keyboard.press('ControlOrMeta+Shift+z')
+  await expect(page.locator('[data-slot="frame-review-badge"]')).toHaveAttribute(
+    'data-status',
+    'ready'
+  )
+
   await select(page, [pay, cancel])
   await handoff.getByTestId('handoff-measure').click()
   await expect(page.locator('[data-slot="measurement-label"]')).toHaveText('16')

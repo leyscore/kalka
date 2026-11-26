@@ -94,6 +94,8 @@
   "resourceName": "Nazwa (opcjonalnie)",
   "invalidURL": "Wpisz link zaczynający się od http:// lub https://.",
   "removeResource": "Usuń link",
+  "editResource": "Edytuj link",
+  "saveResource": "Zapisz link",
   "inheritedFrom": "Z {name}",
   "handoff": "Przekazanie"
 }

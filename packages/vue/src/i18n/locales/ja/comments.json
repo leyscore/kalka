@@ -94,6 +94,8 @@
   "resourceName": "名前（任意）",
   "invalidURL": "http:// または https:// で始まるリンクを入力してください。",
   "removeResource": "リンクを削除",
+  "editResource": "リンクを編集",
+  "saveResource": "リンクを保存",
   "inheritedFrom": "{name} から",
   "handoff": "ハンドオフ"
 }

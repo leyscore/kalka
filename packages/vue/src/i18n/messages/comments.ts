@@ -99,6 +99,8 @@ export const commentsMessageDefaults = {
   resourceName: 'Name (optional)',
   invalidURL: 'Enter a web link that starts with http:// or https://.',
   removeResource: 'Remove link',
+  editResource: 'Edit link',
+  saveResource: 'Save link',
   inheritedFrom: params('From {name}'),
   handoff: 'Handoff'
 } as const

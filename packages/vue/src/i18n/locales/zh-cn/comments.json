@@ -94,6 +94,8 @@
   "resourceName": "名称（可选）",
   "invalidURL": "请输入以 http:// 或 https:// 开头的链接。",
   "removeResource": "移除链接",
+  "editResource": "编辑链接",
+  "saveResource": "保存链接",
   "inheritedFrom": "来自 {name}",
   "handoff": "交付"
 }
