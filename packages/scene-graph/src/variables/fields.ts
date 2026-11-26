@@ -41,3 +41,31 @@ export const STRING_BINDING_FIELDS: ReadonlySet<string> = new Set(['text', 'font
 
 /** Visibility is the only boolean-valued binding a node accepts. */
 export const BOOLEAN_BINDING_FIELDS: ReadonlySet<string> = new Set(['visible'])
+
+/** The parts of an effect a variable can be bound to, as Figma's `setBoundVariableForEffect`. */
+export const EFFECT_BINDING_PROPERTIES = [
+  'color',
+  'radius',
+  'spread',
+  'offsetX',
+  'offsetY'
+] as const
+
+export type EffectBindingProperty = (typeof EFFECT_BINDING_PROPERTIES)[number]
+
+const EFFECT_BINDING = /^effects\/(\d+)\/(color|radius|spread|offsetX|offsetY)$/
+
+/** The binding field of an effect's part, such as `effects/0/radius`. */
+export function effectBindingField(index: number, property: EffectBindingProperty): string {
+  return `effects/${index}/${property}`
+}
+
+/** The effect and part a binding field names, or null when it names no effect. */
+export function parseEffectBindingField(
+  field: string
+): { index: number; property: EffectBindingProperty } | null {
+  const match = EFFECT_BINDING.exec(field)
+  if (!match) return null
+  const property = EFFECT_BINDING_PROPERTIES.find((name) => name === match[2])
+  return property ? { index: Number(match[1]), property } : null
+}

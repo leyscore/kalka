@@ -20,6 +20,8 @@ export const unbindVariable = defineTool({
           '"topLeftRadius", "topRightRadius", "bottomLeftRadius", "bottomRightRadius", ' +
           '"borderTopWeight", "borderBottomWeight", "borderLeftWeight", "borderRightWeight", ' +
           '"gridRowGap", "gridColumnGap". ' +
+          'For effects use indexed format: "effects/0/color" (COLOR), "effects/0/radius", ' +
+          '"effects/0/spread", "effects/0/offsetX", "effects/0/offsetY" (FLOAT). ' +
           'For STRING: "fontFamily". For BOOLEAN: "visible".'
       )
     )

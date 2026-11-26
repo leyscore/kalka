@@ -9,11 +9,17 @@ import {
   type ProxyThis
 } from '#core/figma-api/accessor-utils'
 import {
+  applyEffectBindings,
   applyPaintBindings,
   paintsWithBindings,
   withoutPaintBindings
 } from '#core/figma-api/accessors/variables'
-import { parseFigmaEffects, toFigmaEffect, type FigmaEffect } from '#core/figma-api/effects'
+import {
+  effectBindings,
+  parseFigmaEffects,
+  toFigmaEffect,
+  type FigmaEffect
+} from '#core/figma-api/effects'
 
 function styleReference(
   internals: NodeProxyInternals,
@@ -102,10 +108,16 @@ export function installVisualNodeProxyAccessors(
     },
     effects: {
       get(this: ProxyThis): readonly FigmaEffect[] {
-        return Object.freeze(raw(this, internals).effects.map(toFigmaEffect))
+        const node = raw(this, internals)
+        return Object.freeze(
+          node.effects.map((effect, index) =>
+            toFigmaEffect(effect, effectBindings(node.boundVariables, index))
+          )
+        )
       },
       set(this: ProxyThis, value: readonly FigmaEffect[]) {
         updateNode(this, internals, { effects: parseFigmaEffects(value) })
+        applyEffectBindings(this, internals, value)
       }
     },
     // Applied shared styles, as Figma exposes them; an assignment inside an instance is an override.

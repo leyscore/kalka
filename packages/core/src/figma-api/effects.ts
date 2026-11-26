@@ -1,6 +1,12 @@
 import * as v from 'valibot'
 
-import type { BlendMode, Effect } from '@kalka/scene-graph'
+import {
+  EFFECT_BINDING_PROPERTIES,
+  effectBindingField,
+  type BlendMode,
+  type Effect,
+  type EffectBindingProperty
+} from '@kalka/scene-graph'
 
 import { TRANSPARENT } from '#core/constants'
 
@@ -36,8 +42,17 @@ const nonNegative = v.pipe(finite, v.minValue(0))
 
 const color = v.strictObject({ r: unit, g: unit, b: unit, a: unit })
 const vector = v.strictObject({ x: finite, y: finite })
-// Variable bindings on effects are not supported; Figma reports an empty object.
-const boundVariables = v.optional(v.strictObject({}))
+const alias = v.object({ type: v.literal('VARIABLE_ALIAS'), id: v.string() })
+// A shadow binds its colour, blur, spread and offsets; a blur only its radius.
+const boundVariables = v.optional(
+  v.strictObject({
+    color: v.optional(alias),
+    radius: v.optional(alias),
+    spread: v.optional(alias),
+    offsetX: v.optional(alias),
+    offsetY: v.optional(alias)
+  })
+)
 
 const shadowEntries = {
   color,
@@ -140,8 +155,36 @@ function toSceneEffect(effect: FigmaEffect): Effect {
   }
 }
 
+/** The variables an effect's parts are bound to, as Figma's `Effect.boundVariables` names them. */
+export type FigmaEffectBindings = NonNullable<FigmaEffect['boundVariables']>
+
+/** The bindings of the layer's effect at `index`, read from the layer's `boundVariables`. */
+export function effectBindings(
+  bindings: Readonly<Record<string, string>>,
+  index: number
+): FigmaEffectBindings {
+  const result: FigmaEffectBindings = {}
+  for (const property of EFFECT_BINDING_PROPERTIES) {
+    const id = bindings[effectBindingField(index, property)]
+    if (id) result[property] = { type: 'VARIABLE_ALIAS', id }
+  }
+  return result
+}
+
+/** The variable ids an effect read from a script binds, by part. */
+export function effectBindingIds(effect: unknown): Partial<Record<EffectBindingProperty, string>> {
+  const result = v.safeParse(v.object({ boundVariables }), effect)
+  if (!result.success || !result.output.boundVariables) return {}
+  const ids: Partial<Record<EffectBindingProperty, string>> = {}
+  for (const property of EFFECT_BINDING_PROPERTIES) {
+    const id = result.output.boundVariables[property]?.id
+    if (id) ids[property] = id
+  }
+  return ids
+}
+
 /** A scene effect in the shape Figma's `effects` getter returns. */
-export function toFigmaEffect(effect: Effect): FigmaEffect {
+export function toFigmaEffect(effect: Effect, bindings: FigmaEffectBindings = {}): FigmaEffect {
   if (
     effect.type === 'LAYER_BLUR' ||
     effect.type === 'FOREGROUND_BLUR' ||
@@ -152,14 +195,14 @@ export function toFigmaEffect(effect: Effect): FigmaEffect {
       type: effect.type === 'BACKGROUND_BLUR' ? 'BACKGROUND_BLUR' : 'LAYER_BLUR',
       visible: effect.visible,
       radius: effect.radius,
-      boundVariables: {},
+      boundVariables: bindings.radius ? { radius: bindings.radius } : {},
       blurType: 'NORMAL'
     }
   }
   const shadow = {
     visible: effect.visible,
     radius: effect.radius,
-    boundVariables: {},
+    boundVariables: bindings,
     color: { ...effect.color },
     offset: { ...effect.offset },
     spread: effect.spread,

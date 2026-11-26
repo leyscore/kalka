@@ -117,7 +117,11 @@ function shadowToken(node: SceneNode): DesignToken | undefined {
     $value,
     ...(exact
       ? {}
-      : { $extensions: { [KALKA_EXTENSION]: { effects: node.effects.map(toFigmaEffect) } } })
+      : {
+          $extensions: {
+            [KALKA_EXTENSION]: { effects: node.effects.map((effect) => toFigmaEffect(effect)) }
+          }
+        })
   }
 }
 

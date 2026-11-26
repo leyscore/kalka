@@ -8,6 +8,7 @@ import { findInstanceAncestor } from './instances'
 import { siblingOrderKeys } from './order-keys'
 import type { Color } from './primitives'
 import type {
+  SceneNode,
   Variable,
   VariableCollection,
   VariableCollectionMode,
@@ -19,7 +20,11 @@ import {
   variableBindingOwner,
   assignVariableBindingUnits
 } from './variables/bindings'
-import { BOOLEAN_BINDING_FIELDS, STRING_BINDING_FIELDS } from './variables/fields'
+import {
+  BOOLEAN_BINDING_FIELDS,
+  STRING_BINDING_FIELDS,
+  parseEffectBindingField
+} from './variables/fields'
 import { isUnsupportedVariableValue } from './variables/unsupported'
 
 export function addVariable(graph: SceneGraph, variable: Variable): void {
@@ -359,6 +364,26 @@ export function getVariablesByType(graph: SceneGraph, type: VariableType): Varia
   return [...graph.variables.values()].filter((v) => v.type === type)
 }
 
+/**
+ * Whether `field` names part of one of the node's effects, which takes a colour variable for its
+ * colour and a number for its blur, spread and offsets; throws when the variable or effect does
+ * not fit.
+ */
+function checkEffectBinding(node: SceneNode, field: string, variable: Variable): boolean {
+  const effectField = parseEffectBindingField(field)
+  if (!effectField) return false
+  const expected = effectField.property === 'color' ? 'COLOR' : 'FLOAT'
+  if (variable.type !== expected) {
+    throw new Error(`Cannot bind ${variable.type} variable to effect field "${field}"`)
+  }
+  if (effectField.index >= node.effects.length) {
+    throw new Error(
+      `Index ${effectField.index} out of range for effects (length ${node.effects.length})`
+    )
+  }
+  return true
+}
+
 export function bindVariable(
   graph: SceneGraph,
   nodeId: string,
@@ -394,6 +419,8 @@ export function bindVariable(
     }
   }
 
+  const effectField = checkEffectBinding(node, field, variable)
+
   if (isNumericVariableBindingField(field) && variable.type !== 'FLOAT') {
     throw new Error(`Cannot bind ${variable.type} variable to scalar field "${field}"`)
   }
@@ -410,7 +437,8 @@ export function bindVariable(
     isNumericVariableBindingField(field) ||
     STRING_BINDING_FIELDS.has(field) ||
     BOOLEAN_BINDING_FIELDS.has(field) ||
-    colorFieldMatch
+    colorFieldMatch ||
+    effectField
 
   if (!isKnownField) {
     throw new Error(`Unknown binding field "${field}"`)

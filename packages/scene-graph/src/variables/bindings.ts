@@ -1,13 +1,19 @@
 import { isEqual } from 'es-toolkit/predicate'
 
-import { copyFills, copyStrokes } from '../copy'
+import { copyEffects, copyFills, copyStrokes } from '../copy'
 import type { SceneGraph } from '../index'
 import { hasInstanceOverride } from '../instances'
 import type { Color } from '../primitives'
 import type { Fill, SceneNode, Stroke, VariableValue } from '../types'
 import type { VariableModeFallback } from '../variables'
-import { NUMERIC_FIELDS, isNumericVariableBindingField } from './fields'
-export { isNumericVariableBindingField } from './fields'
+import { NUMERIC_FIELDS, isNumericVariableBindingField, parseEffectBindingField } from './fields'
+export {
+  EFFECT_BINDING_PROPERTIES,
+  effectBindingField,
+  isNumericVariableBindingField,
+  parseEffectBindingField,
+  type EffectBindingProperty
+} from './fields'
 
 /** New declarations belong to the outermost occurrence, bounded by a component definition. */
 export function variableBindingOwner(graph: SceneGraph, node: SceneNode): SceneNode {
@@ -172,6 +178,41 @@ export function resolvedPaintBindings(
 }
 
 /**
+ * The effects a node's effect bindings resolve to in its mode, when it has any: a colour variable
+ * gives a shadow its whole colour, alpha included, and a number its blur, spread or offset, as
+ * Figma's bound effects do.
+ */
+export function resolvedEffectBindings(
+  graph: SceneGraph,
+  node: SceneNode,
+  fallback: VariableModeFallback = 'active'
+): Pick<Partial<SceneNode>, 'effects'> {
+  let effects: SceneNode['effects'] | undefined
+  for (const field in node.boundVariables) {
+    if (!field.startsWith('effects/')) continue
+    const binding = parseEffectBindingField(field)
+    if (!binding || !node.effects[binding.index]) continue
+    const variableId = node.boundVariables[field]
+    if (binding.property === 'color') {
+      const color = graph.resolveColorVariableForNode(node.id, variableId, fallback)
+      if (!color) continue
+      effects ??= copyEffects(node.effects)
+      effects[binding.index].color = { ...color }
+      continue
+    }
+    const value = graph.resolveNumberVariableForNode(node.id, variableId, fallback)
+    if (value === undefined || !Number.isFinite(value)) continue
+    effects ??= copyEffects(node.effects)
+    const effect = effects[binding.index]
+    if (binding.property === 'radius') effect.radius = Math.max(0, value)
+    else if (binding.property === 'spread') effect.spread = value
+    else if (binding.property === 'offsetX') effect.offset = { ...effect.offset, x: value }
+    else effect.offset = { ...effect.offset, y: value }
+  }
+  return effects ? { effects } : {}
+}
+
+/**
  * The layers a reconcile looks at: those bound to these variables, directly or through a variable
  * aliasing them, or the layers in these subtrees. Without a scope, every layer.
  */
@@ -243,6 +284,8 @@ export function reconcileVariableBindings(graph: SceneGraph, scope?: BindingScop
     const paints = resolvedPaintBindings(graph, node)
     if (paints.fills && !isEqual(paints.fills, node.fills)) updates.fills = paints.fills
     if (paints.strokes && !isEqual(paints.strokes, node.strokes)) updates.strokes = paints.strokes
+    const { effects } = resolvedEffectBindings(graph, node)
+    if (effects && !isEqual(effects, node.effects)) updates.effects = effects
     if (Object.keys(updates).length === 0) continue
     graph.updateNode(node.id, updates)
     changed.push(node.id)

@@ -1,4 +1,9 @@
-import type { SceneGraph } from '@kalka/scene-graph'
+import {
+  EFFECT_BINDING_PROPERTIES,
+  effectBindingField,
+  parseEffectBindingField,
+  type SceneGraph
+} from '@kalka/scene-graph'
 
 import {
   nodeId,
@@ -7,6 +12,7 @@ import {
   type NodeProxyInternals,
   type ProxyThis
 } from '#core/figma-api/accessor-utils'
+import { effectBindingIds } from '#core/figma-api/effects'
 import {
   aliasedVariableId,
   variableAlias,
@@ -92,6 +98,38 @@ export function applyPaintBindings(
     if (!variableId || raw(target, internals).boundVariables[field] === variableId) return
     scene.bindVariable(id, field, variableId)
     changed = true
+  })
+  if (changed) reconcileVariableLayouts(scene, { subtrees: [id] })
+}
+
+/**
+ * Binds the layer's effects to the variables the assigned effects name in `boundVariables`, as
+ * Figma does on assigning effects made with `figma.variables.setBoundVariableForEffect`, and
+ * unbinds the rest.
+ */
+export function applyEffectBindings(
+  target: ProxyThis,
+  internals: NodeProxyInternals,
+  effects: readonly object[]
+): void {
+  const scene = graph(target, internals)
+  const id = nodeId(target, internals)
+  const wanted = effects.map(effectBindingIds)
+  let changed = false
+  for (const [field, variableId] of Object.entries(raw(target, internals).boundVariables)) {
+    const binding = parseEffectBindingField(field)
+    if (!binding || wanted[binding.index]?.[binding.property] === variableId) continue
+    scene.unbindVariable(id, field)
+    changed = true
+  }
+  wanted.forEach((ids, index) => {
+    for (const property of EFFECT_BINDING_PROPERTIES) {
+      const variableId = ids[property]
+      const field = effectBindingField(index, property)
+      if (!variableId || raw(target, internals).boundVariables[field] === variableId) continue
+      scene.bindVariable(id, field, variableId)
+      changed = true
+    }
   })
   if (changed) reconcileVariableLayouts(scene, { subtrees: [id] })
 }

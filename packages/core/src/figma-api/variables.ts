@@ -1,3 +1,5 @@
+import { omit } from 'es-toolkit/object'
+
 import type {
   CodeSyntaxPlatform,
   Color,
@@ -6,9 +8,10 @@ import type {
   VariableCollection as GraphVariableCollection,
   VariableScope,
   VariableType,
-  VariableValue as GraphVariableValue
+  VariableValue as GraphVariableValue,
+  Vector
 } from '@kalka/scene-graph'
-import { isUnsupportedVariableValue } from '@kalka/scene-graph'
+import { EFFECT_BINDING_PROPERTIES, isUnsupportedVariableValue } from '@kalka/scene-graph'
 
 import { reconcileVariableLayouts } from '#core/layout/variables'
 
@@ -37,6 +40,14 @@ export interface FigmaVariableExpression {
 export interface FigmaBindablePaint {
   type: string
   boundVariables?: { color?: FigmaVariableAlias }
+  [key: string]: unknown
+}
+
+/** Effects a variable can be bound to, as `setBoundVariableForEffect` takes. */
+export interface FigmaBindableEffect {
+  type: string
+  offset?: Vector
+  boundVariables?: Partial<Record<string, FigmaVariableAlias>>
   [key: string]: unknown
 }
 
@@ -370,6 +381,48 @@ export class FigmaVariablesAPI {
       throw new Error(`Variable "${variableId}" not found`)
     }
     return variableAlias(variableId)
+  }
+
+  /**
+   * A copy of an effect with one part bound to a variable, or unbound with null; assign it to a
+   * layer's `effects`. A shadow binds its colour to a colour variable and its blur (`radius`),
+   * `spread`, `offsetX` and `offsetY` to numbers; a blur binds only its radius.
+   */
+  setBoundVariableForEffect<Effect extends FigmaBindableEffect>(
+    effect: Effect,
+    field: string,
+    variable: { readonly id: string } | null
+  ): Effect {
+    const shadow = effect.type === 'DROP_SHADOW' || effect.type === 'INNER_SHADOW'
+    const fields = shadow ? EFFECT_BINDING_PROPERTIES : (['radius'] as const)
+    const property = fields.find((name) => name === field)
+    if (!property) throw new Error(`Cannot bind "${field}" on a ${effect.type} effect`)
+    const rest = omit(effect.boundVariables ?? {}, [property])
+    if (!variable) return { ...effect, boundVariables: rest }
+    const bound = this.graph.variables.get(variable.id)
+    if (!bound) throw new Error(`Variable "${variable.id}" not found`)
+    const expected = property === 'color' ? 'COLOR' : 'FLOAT'
+    if (bound.type !== expected)
+      throw new Error(`Cannot bind ${bound.type} variable to an effect's ${property}`)
+    const resolved: Record<string, unknown> = {}
+    if (property === 'color') {
+      const color = this.graph.resolveColorVariable(variable.id)
+      if (color) resolved.color = { ...color }
+    } else {
+      const value = this.graph.resolveNumberVariable(variable.id)
+      if (value !== undefined && Number.isFinite(value)) {
+        if (property === 'offsetX' || property === 'offsetY') {
+          const offset = effect.offset ?? { x: 0, y: 0 }
+          resolved.offset =
+            property === 'offsetX' ? { ...offset, x: value } : { ...offset, y: value }
+        } else resolved[property] = property === 'radius' ? Math.max(0, value) : value
+      }
+    }
+    return {
+      ...effect,
+      ...resolved,
+      boundVariables: { ...rest, [property]: variableAlias(variable.id) }
+    }
   }
 
   /** A copy of a solid paint bound to a color variable, or unbound with null; assign it to a layer. */

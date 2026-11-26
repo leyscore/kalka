@@ -35,6 +35,7 @@ import {
   mergePluginData,
   serializePluginRelaunchData
 } from '../plugin-data'
+import { effectWithVariableBindings } from '../variable/bindings'
 import {
   applyColorVariableBinding,
   createFillPaints,
@@ -911,16 +912,24 @@ function applyNodeVisualProps(
   context.serializeCornerRadii(node, nc)
 
   if (node.effects.length > 0 && !hasRawUnsupportedEffects(node)) {
-    nc.effects = node.effects.map((effect) => ({
-      type: effect.type === 'LAYER_BLUR' ? 'FOREGROUND_BLUR' : effect.type,
-      color: context.safeColor(effect.color),
-      offset: effect.offset,
-      radius: effect.radius,
-      spread: effect.spread,
-      visible: effect.visible,
-      blendMode: effect.blendMode ?? 'NORMAL',
-      showShadowBehindNode: effect.showShadowBehindNode
-    }))
+    nc.effects = node.effects.map((effect, index) =>
+      effectWithVariableBindings(
+        context.graph,
+        node,
+        index,
+        {
+          type: effect.type === 'LAYER_BLUR' ? 'FOREGROUND_BLUR' : effect.type,
+          color: context.safeColor(effect.color),
+          offset: effect.offset,
+          radius: effect.radius,
+          spread: effect.spread,
+          visible: effect.visible,
+          blendMode: effect.blendMode ?? 'NORMAL',
+          showShadowBehindNode: effect.showShadowBehindNode
+        },
+        context.varIdToGuid
+      )
+    )
   }
 
   if (node.type === 'TEXT') {

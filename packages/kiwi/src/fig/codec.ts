@@ -148,16 +148,19 @@ export interface Paint {
   density?: number
   noiseSize?: Vector
   customEffectId?: { guid?: GUID }
-  colorVar?: {
-    value?: {
-      alias?: {
-        guid?: GUID
-        assetRef?: { key: string; version?: string }
-      }
+  colorVar?: VariableAliasData
+}
+
+/** A paint's or effect's field bound to a variable, as `.fig` files keep it (`VariableData`). */
+export interface VariableAliasData {
+  value?: {
+    alias?: {
+      guid?: GUID
+      assetRef?: { key: string; version?: string }
     }
-    dataType?: string
-    resolvedDataType?: string
   }
+  dataType?: string
+  resolvedDataType?: string
 }
 
 export interface Effect {
@@ -169,6 +172,11 @@ export interface Effect {
   spread?: number
   blendMode?: string
   showShadowBehindNode?: boolean
+  colorVar?: VariableAliasData
+  radiusVar?: VariableAliasData
+  spreadVar?: VariableAliasData
+  xVar?: VariableAliasData
+  yVar?: VariableAliasData
 }
 
 export interface VariableAnyValue {

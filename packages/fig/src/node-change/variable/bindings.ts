@@ -1,8 +1,20 @@
 import { effectiveFigmaRawNodeFields } from '#fig/source-metadata'
 
-import type { VariableConsumptionEntry, GUID } from '@kalka/kiwi/fig/codec'
+import type {
+  Effect as KiwiEffect,
+  GUID,
+  VariableAliasData,
+  VariableConsumptionEntry
+} from '@kalka/kiwi/fig/codec'
 import { guidToString, stringToGuid } from '@kalka/kiwi/fig/guid'
-import { isNumericVariableBindingField, type SceneNode, type SceneGraph } from '@kalka/scene-graph'
+import {
+  EFFECT_BINDING_PROPERTIES,
+  effectBindingField,
+  isNumericVariableBindingField,
+  type EffectBindingProperty,
+  type SceneNode,
+  type SceneGraph
+} from '@kalka/scene-graph'
 
 import { cloneRecord } from '../clone'
 import { linearVariableExpression } from './expression'
@@ -47,6 +59,50 @@ export const VARIABLE_BINDING_FIELDS: Record<string, string> = {
 export const VARIABLE_BINDING_FIELDS_INVERSE: Record<string, string> = Object.fromEntries(
   Object.entries(VARIABLE_BINDING_FIELDS).map(([field, kiwiField]) => [kiwiField, field])
 )
+
+/** Where an effect keeps each bound part in a `.fig` file. */
+const EFFECT_VARIABLE_KEYS = {
+  color: 'colorVar',
+  radius: 'radiusVar',
+  spread: 'spreadVar',
+  offsetX: 'xVar',
+  offsetY: 'yVar'
+} as const satisfies Record<EffectBindingProperty, keyof KiwiEffect>
+
+/** An effect's parts with the variable data each carries in a `.fig` file, if any. */
+export function effectVariableFields(
+  effect: KiwiEffect
+): Array<[EffectBindingProperty, VariableAliasData | undefined]> {
+  return EFFECT_BINDING_PROPERTIES.map((property) => [
+    property,
+    effect[EFFECT_VARIABLE_KEYS[property]]
+  ])
+}
+
+/**
+ * A `.fig` effect with the variables the layer binds its parts to, as Figma writes a bound shadow:
+ * an alias in `colorVar`, `radiusVar`, `spreadVar`, `xVar` or `yVar`.
+ */
+export function effectWithVariableBindings(
+  graph: SceneGraph,
+  node: SceneNode,
+  index: number,
+  effect: KiwiEffect,
+  ids?: ReadonlyMap<string, GUID>
+): KiwiEffect {
+  const bound: KiwiEffect = { ...effect }
+  for (const property of EFFECT_BINDING_PROPERTIES) {
+    const variableId = node.boundVariables[effectBindingField(index, property)]
+    const variable = variableId ? graph.variables.get(variableId) : undefined
+    if (!variableId || !variable) continue
+    bound[EFFECT_VARIABLE_KEYS[property]] = {
+      dataType: 'ALIAS',
+      resolvedDataType: variable.type,
+      value: { alias: variableAlias(graph, variableId, ids) }
+    }
+  }
+  return bound
+}
 
 export interface VariableConsumptionSource extends Record<string, unknown> {
   variableConsumptionMap?: { entries?: VariableConsumptionEntry[] }

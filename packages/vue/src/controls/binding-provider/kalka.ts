@@ -4,6 +4,8 @@ import { useFilter } from 'reka-ui'
 import type { Editor, NodePreview } from '@kalka/core/editor'
 import {
   isNumericVariableBindingField,
+  parseEffectBindingField,
+  resolvedEffectBindings,
   type SceneNode,
   type Variable,
   type VariableType
@@ -107,6 +109,9 @@ export function createKalkaBindingProvider<V>(
       ) as SceneNode['fills'] & SceneNode['strokes']
     } else if (isNumericVariableBindingField(target.path) && typeof value === 'number') {
       Object.assign(changes, { [target.path]: value })
+    } else if (parseEffectBindingField(target.path)) {
+      const { effects } = resolvedEffectBindings(editor.graph, { ...node, ...changes })
+      if (effects) changes.effects = effects
     }
     return changes
   }

@@ -4,6 +4,7 @@ import type { NodeChange, PluginData, PluginRelaunchData } from '@kalka/kiwi/fig
 import { guidToString } from '@kalka/kiwi/fig/guid'
 import {
   clampExportScale,
+  effectBindingField,
   hasPluginData,
   KALKA_PLUGIN_DATA,
   canonicalPluginId,
@@ -20,6 +21,7 @@ import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { readEffectiveFigmaRawField } from '../source-metadata'
 import {
+  effectVariableFields,
   resolveVariableConsumptionEntry,
   variableConsumptionEntries,
   VARIABLE_BINDING_FIELDS_INVERSE,
@@ -97,6 +99,12 @@ export function extractBoundVariables(nc: NodeChange): Record<string, string> {
   nc.strokePaints?.forEach((paint, i) => {
     const variableGuid = paint.colorVar?.value?.alias?.guid
     if (variableGuid) bindings[`strokes/${i}/color`] = guidToString(variableGuid)
+  })
+  nc.effects?.forEach((effect, i) => {
+    for (const [property, data] of effectVariableFields(effect)) {
+      const variableGuid = data?.value?.alias?.guid
+      if (variableGuid) bindings[effectBindingField(i, property)] = guidToString(variableGuid)
+    }
   })
   return bindings
 }

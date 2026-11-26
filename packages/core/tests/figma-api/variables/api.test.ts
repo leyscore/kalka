@@ -45,6 +45,51 @@ describe('figma.variables', () => {
   })
 })
 
+describe('figma.variables.setBoundVariableForEffect', () => {
+  test('binds a shadow on the layer it is assigned to, and reads back as Figma does', () => {
+    const { graph, figma } = setup()
+    const collection = figma.variables.createVariableCollection('Elevation')
+    const blur = figma.variables.createVariable('blur', collection, 'FLOAT')
+    blur.setValueForMode(collection.defaultModeId, 20)
+    const rect = figma.createRectangle()
+    const [shadow] = (rect.effects = [
+      {
+        type: 'DROP_SHADOW',
+        color: { r: 0, g: 0, b: 0, a: 0.25 },
+        offset: { x: 0, y: 4 },
+        radius: 4,
+        spread: 0,
+        visible: true,
+        blendMode: 'NORMAL'
+      }
+    ])
+    const bound = figma.variables.setBoundVariableForEffect(shadow, 'radius', blur)
+    expect(bound.radius).toBe(20)
+    rect.effects = [bound]
+    expect(graph.getNode(rect.id)?.boundVariables['effects/0/radius']).toBe(blur.id)
+    expect(rect.effects[0]?.boundVariables).toEqual({
+      radius: { type: 'VARIABLE_ALIAS', id: blur.id }
+    })
+
+    rect.effects = [figma.variables.setBoundVariableForEffect(bound, 'radius', null)]
+    expect(graph.getNode(rect.id)?.boundVariables['effects/0/radius']).toBeUndefined()
+  })
+
+  test('a blur binds only its radius, and a colour only a colour variable', () => {
+    const { figma } = setup()
+    const collection = figma.variables.createVariableCollection('Theme')
+    const size = figma.variables.createVariable('size', collection, 'FLOAT')
+    const blur = { type: 'LAYER_BLUR', radius: 4, visible: true }
+    expect(() => figma.variables.setBoundVariableForEffect(blur, 'color', size)).toThrow(
+      'Cannot bind "color" on a LAYER_BLUR effect'
+    )
+    const shadow = { type: 'DROP_SHADOW', color: { r: 0, g: 0, b: 0, a: 1 } }
+    expect(() => figma.variables.setBoundVariableForEffect(shadow, 'color', size)).toThrow(
+      "Cannot bind FLOAT variable to an effect's color"
+    )
+  })
+})
+
 describe('unsupported Plugin API members', () => {
   test('are absent from the API, so scripts get the reason instead', () => {
     const { figma } = setup()
