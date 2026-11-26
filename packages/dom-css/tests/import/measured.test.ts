@@ -94,7 +94,7 @@ describe('measured HTML import', () => {
     ])
     const { graph, artboard } = graphOf(measured([paragraph]))
     const [text] = graph.getChildren(artboard?.id ?? '')
-    const hyperlink = { type: 'URL', value: 'https://kalka.design/guide' }
+    const hyperlink = { type: 'URL', value: 'https://kalka.design/guide' } as const
     expect(text?.styleRuns).toEqual([
       { start: 5, length: 9, style: { hyperlink } },
       { start: 5, length: 3, style: { fontWeight: 700, hyperlink } }
