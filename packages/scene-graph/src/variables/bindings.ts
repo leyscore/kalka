@@ -118,8 +118,8 @@ function numberText(value: number): string {
  * The text and visibility a node's string and boolean bindings resolve to in its mode, for the
  * fields whose stored value differs. Text or visibility an instance overrides, which typing in a
  * layer or toggling its eye records, keeps its own value, as an overridden width or height does.
- * A bound font family is left as stored: changing it needs the font loaded, which resolving a
- * binding cannot do.
+ * A bound font family follows its variable too; whoever resolves it loads the new family's
+ * faces, which the editor does after a variable or mode change.
  */
 export function resolvedValueBindings(
   graph: SceneGraph,
@@ -127,13 +127,16 @@ export function resolvedValueBindings(
   fallback: VariableModeFallback = 'active'
 ): Partial<SceneNode> {
   const updates: Partial<SceneNode> = {}
-  const resolve = (field: 'text' | 'visible') => {
+  const resolve = (field: 'text' | 'visible' | 'fontFamily') => {
     const variableId = node.boundVariables[field]
     if (!variableId || hasInstanceOverride(graph, node.id, field)) return undefined
     return graph.resolveVariableForNode(node.id, variableId, fallback)
   }
   const text = node.type === 'TEXT' ? variableText(resolve('text')) : undefined
   if (text !== undefined && text !== node.text) updates.text = text
+  const family = node.type === 'TEXT' ? resolve('fontFamily') : undefined
+  if (typeof family === 'string' && family.trim() && family !== node.fontFamily)
+    updates.fontFamily = family
   // Figma binds visibility to text too, and shows the layer when the text reads as true.
   const visible = variableTruthy(resolve('visible'))
   if (visible !== undefined && visible !== node.visible) updates.visible = visible

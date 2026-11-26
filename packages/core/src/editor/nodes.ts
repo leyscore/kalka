@@ -19,6 +19,7 @@ import { textAutoResizeChanges } from './text/auto-resize'
 import { pathTextEditChanges } from './text/path-edit'
 import type { EditorContext } from './types'
 import { createVariableBindingActions } from './variable-bindings'
+import { loadBoundFontFamilies } from './variable-fonts'
 
 export function opacityFromBuffer(buffer: string): number {
   if (buffer === '0') return 1
@@ -36,7 +37,8 @@ export function createNodeActions(ctx: EditorContext) {
 
   function runChangedLayout(id: string, changes: Partial<SceneNode>) {
     // A layer's modes reach the layers inside it.
-    if (changes.variableModes) reconcileVariableLayouts(ctx.graph, { subtrees: [id] })
+    if (changes.variableModes)
+      loadBoundFontFamilies(ctx, reconcileVariableLayouts(ctx.graph, { subtrees: [id] }))
     ctx.runLayoutForNode(id)
   }
 

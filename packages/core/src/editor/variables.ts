@@ -14,6 +14,7 @@ import {
 import { reconcileVariableLayouts } from '#core/layout/variables'
 
 import type { EditorContext } from './types'
+import { loadBoundFontFamilies } from './variable-fonts'
 
 /** What a variable means as a design token beyond its values: how CSS and code read it. */
 export type VariableTokenFields = Pick<
@@ -68,7 +69,7 @@ export function createVariableActions(ctx: EditorContext) {
    * without an editor action, such as a collaborator's, take effect through it.
    */
   function refreshVariables(scope: BindingScope) {
-    reconcileVariableLayouts(ctx.graph, scope)
+    loadBoundFontFamilies(ctx, reconcileVariableLayouts(ctx.graph, scope))
     ctx.requestRender()
   }
 

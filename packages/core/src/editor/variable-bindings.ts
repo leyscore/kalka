@@ -9,6 +9,7 @@ import {
 import { reconcileVariableLayouts } from '#core/layout/variables'
 
 import type { EditorContext } from './types'
+import { loadBoundFontFamilies } from './variable-fonts'
 
 /**
  * The values a binding at `path` writes into, which undo gives back: the field it resolves into,
@@ -25,7 +26,7 @@ function boundFieldValues(node: SceneNode, path: string): Partial<SceneNode> {
 export function createVariableBindingActions(ctx: EditorContext) {
   /** A binding change reaches only the layer it is on and the layers inside it. */
   function refreshBindings(nodeId: string) {
-    reconcileVariableLayouts(ctx.graph, { subtrees: [nodeId] })
+    loadBoundFontFamilies(ctx, reconcileVariableLayouts(ctx.graph, { subtrees: [nodeId] }))
     ctx.requestRender()
   }
 
