@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 
 import {
+  formatShortcut,
   ToolbarRoot,
   useEditorCommands,
   useI18n,
@@ -35,6 +36,7 @@ const toolLabels = computed<Record<Tool, string>>(() => ({
   RECTANGLE: toolTexts.value.rectangle,
   ELLIPSE: toolTexts.value.ellipse,
   LINE: toolTexts.value.line,
+  ARROW: toolTexts.value.arrow,
   POLYGON: toolTexts.value.polygon,
   STAR: toolTexts.value.star,
   PEN: toolTexts.value.pen,
@@ -49,6 +51,7 @@ const toolShortcuts: Record<Tool, string> = {
   RECTANGLE: 'R',
   ELLIPSE: 'O',
   LINE: 'L',
+  ARROW: formatShortcut('SHIFT+L') ?? '',
   POLYGON: '',
   STAR: '',
   PEN: 'P',

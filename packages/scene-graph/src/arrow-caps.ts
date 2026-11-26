@@ -134,13 +134,71 @@ export function arrowLinesSegments(
   return [makeWing(angle + Math.PI - WING_SWEEP), makeWing(angle + Math.PI + WING_SWEEP)]
 }
 
-/** Arrow endpoints for a LINE node, whose local geometry runs (0,0) → (width,height). */
-export function lineArrowEndpoints(width: number, height: number, cap: StrokeCap): ArrowEndpoint[] {
-  if (!isArrowCap(cap)) return []
+/**
+ * The two ends of a single open run, such as a line or an arrow: the vertices only one segment
+ * uses, first in vertex order. `null` when the network has any other shape.
+ */
+export function openPathEnds(network: VectorNetwork): [number, number] | null {
+  const degrees = Array.from({ length: network.vertices.length }, () => 0)
+  for (const segment of network.segments) {
+    degrees[segment.start]++
+    degrees[segment.end]++
+  }
+  const ends = degrees.flatMap((degree, index) => (degree === 1 ? [index] : []))
+  return ends.length === 2 ? [ends[0], ends[1]] : null
+}
+
+export interface LineEndCaps {
+  start: StrokeCap
+  end: StrokeCap
+}
+
+/**
+ * The caps a line starts and ends with. A line may carry a network of its two ends whose
+ * vertices each override `cap`, as an arrow drawn with Figma's Arrow tool keeps a head on its
+ * end only.
+ */
+export function lineEndCaps(cap: StrokeCap, network?: VectorNetwork | null): LineEndCaps {
+  const ends = network ? openPathEnds(network) : null
+  if (!network || !ends) return { start: cap, end: cap }
+  const vertexCap = (index: number) => network.vertices[index].strokeCap as StrokeCap | undefined
+  return { start: vertexCap(ends[0]) ?? cap, end: vertexCap(ends[1]) ?? cap }
+}
+
+/**
+ * Arrow endpoints for a LINE node, whose local geometry runs (0,0) → (width,height), with the
+ * per-end caps its network holds.
+ */
+export function lineArrowEndpoints(
+  width: number,
+  height: number,
+  cap: StrokeCap,
+  network?: VectorNetwork | null
+): ArrowEndpoint[] {
   if (width === 0 && height === 0) return []
-  const angle = Math.atan2(height, width)
-  return [
-    { x: 0, y: 0, angle: Math.atan2(-height, -width), cap },
-    { x: width, y: height, angle, cap }
-  ]
+  const { start, end } = lineEndCaps(cap, network)
+  const endpoints: ArrowEndpoint[] = []
+  if (isArrowCap(start))
+    endpoints.push({ x: 0, y: 0, angle: Math.atan2(-height, -width), cap: start })
+  if (isArrowCap(end))
+    endpoints.push({ x: width, y: height, angle: Math.atan2(height, width), cap: end })
+  return endpoints
+}
+
+/**
+ * The network of a line's two ends, (0,0) to (width,height), each carrying the cap given for it.
+ * A line keeps one only to end differently at each end.
+ */
+export function lineEndNetwork(
+  width: number,
+  height: number,
+  caps: Partial<LineEndCaps> = {}
+): VectorNetwork {
+  const vertex = (x: number, y: number, cap: StrokeCap | undefined) =>
+    cap ? { x, y, strokeCap: cap } : { x, y }
+  return {
+    vertices: [vertex(0, 0, caps.start), vertex(width, height, caps.end)],
+    segments: [{ start: 0, end: 1, tangentStart: { x: 0, y: 0 }, tangentEnd: { x: 0, y: 0 } }],
+    regions: []
+  }
 }

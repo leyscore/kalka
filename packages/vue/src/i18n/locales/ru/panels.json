@@ -295,6 +295,8 @@
   "strokeCapSquare": "Квадратный конец",
   "strokeCapArrowLines": "Линейная стрелка",
   "strokeCapArrowEquilateral": "Треугольная стрелка",
+  "strokeStartPoint": "Начальная точка",
+  "strokeEndPoint": "Конечная точка",
   "strokeJoin": "Соединение обводки",
   "strokeJoinMiter": "Острое соединение",
   "strokeJoinBevel": "Скошенное соединение",

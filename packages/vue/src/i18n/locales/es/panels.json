@@ -311,6 +311,8 @@
   "strokeCapSquare": "Extremo cuadrado",
   "strokeCapArrowLines": "Flecha de líneas",
   "strokeCapArrowEquilateral": "Flecha triangular",
+  "strokeStartPoint": "Punto inicial",
+  "strokeEndPoint": "Punto final",
   "strokeJoin": "Unión del trazo",
   "strokeJoinMiter": "Unión en inglete",
   "strokeJoinBevel": "Unión biselada",

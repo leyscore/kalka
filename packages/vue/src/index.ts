@@ -155,6 +155,8 @@ export { useEffectsControls } from '#vue/controls/effects/use'
 export { useSharedStyleBinding } from '#vue/controls/shared-style/use'
 export { useStrokeControls } from '#vue/controls/stroke/use'
 export { isStrokeCapValue } from '#vue/controls/stroke/helpers'
+export { isEndPointCap } from '#vue/controls/stroke/end-caps'
+export type { EndPointCap, EndPointSide } from '#vue/controls/stroke/end-caps'
 export {
   applySolidFillColor,
   applySolidStrokeColor,

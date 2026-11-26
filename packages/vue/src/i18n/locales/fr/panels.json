@@ -293,6 +293,8 @@
   "strokeCapSquare": "Extrémité carrée",
   "strokeCapArrowLines": "Flèche en lignes",
   "strokeCapArrowEquilateral": "Flèche triangulaire",
+  "strokeStartPoint": "Point de départ",
+  "strokeEndPoint": "Point d’arrivée",
   "strokeJoin": "Jonction du trait",
   "strokeJoinMiter": "Jonction en onglet",
   "strokeJoinBevel": "Jonction biseautée",

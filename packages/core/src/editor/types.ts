@@ -33,6 +33,7 @@ export type Tool =
   | 'RECTANGLE'
   | 'ELLIPSE'
   | 'LINE'
+  | 'ARROW'
   | 'POLYGON'
   | 'STAR'
   | 'TEXT'

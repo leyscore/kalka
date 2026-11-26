@@ -7,6 +7,7 @@ export const toolMessageDefaults = {
   rectangle: 'Rectangle',
   ellipse: 'Ellipse',
   line: 'Line',
+  arrow: 'Arrow',
   polygon: 'Polygon',
   star: 'Star',
   pen: 'Pen',

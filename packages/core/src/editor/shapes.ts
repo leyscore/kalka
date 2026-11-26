@@ -1,4 +1,5 @@
 import type { NodeType, SceneNode } from '@kalka/scene-graph'
+import { lineEndNetwork } from '@kalka/scene-graph/arrow-caps'
 
 import { prepareSlotEdits } from './components/slots'
 import { adoptCoveredLayers } from './shapes/adopt'
@@ -33,7 +34,8 @@ export function createShapeActions(ctx: EditorContext) {
     w: number,
     h: number,
     parentId?: string,
-    name?: string
+    name?: string,
+    extra: Partial<SceneNode> = {}
   ): string {
     const pid = parentId ?? ctx.state.currentPageId
     // Inside an instance only a slot takes new layers, and the instance claims it first.
@@ -46,7 +48,8 @@ export function createShapeActions(ctx: EditorContext) {
       y,
       width: w,
       height: h,
-      name: name ?? drawnLayerName(type, pid)
+      name: name ?? drawnLayerName(type, pid),
+      ...extra
     }
     const node = ctx.graph.createNode(type, pid, overrides)
     const id = node.id
@@ -66,6 +69,17 @@ export function createShapeActions(ctx: EditorContext) {
     return id
   }
 
+  /**
+   * An arrow as Figma's Arrow tool draws it, "Arrow 1": a line whose end alone carries a line
+   * arrowhead, kept on the network of its two ends.
+   */
+  function createArrow(x: number, y: number, w: number, h: number, parentId?: string): string {
+    const pid = parentId ?? ctx.state.currentPageId
+    return createShape('LINE', x, y, w, h, pid, nextNumberedName(ctx.graph, pid, 'Arrow'), {
+      vectorNetwork: lineEndNetwork(w, h, { end: 'ARROW_LINES' })
+    })
+  }
+
   const penActions = createPenActions(ctx, createShape)
   const framePresetActions = createFramePresetActions(ctx, createShape)
 
@@ -75,6 +89,7 @@ export function createShapeActions(ctx: EditorContext) {
 
   return {
     createShape,
+    createArrow,
     ...penActions,
     ...framePresetActions,
     adoptCoveredLayers: (containerId: string) => adoptCoveredLayers(ctx, containerId),

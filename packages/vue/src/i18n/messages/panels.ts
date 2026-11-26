@@ -505,6 +505,8 @@ export const panelMessageDefaults = {
   strokeCapSquare: 'Square cap',
   strokeCapArrowLines: 'Line arrow',
   strokeCapArrowEquilateral: 'Triangle arrow',
+  strokeStartPoint: 'Start point',
+  strokeEndPoint: 'End point',
   strokeJoin: 'Stroke join',
   strokeJoinMiter: 'Miter join',
   strokeJoinBevel: 'Bevel join',

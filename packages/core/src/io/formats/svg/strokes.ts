@@ -69,7 +69,8 @@ export function buildSVGStrokeAttrs(
 
 function arrowEndpoints(node: SceneNode, stroke: Stroke): ArrowEndpoint[] {
   const cap = strokeCap(node, stroke)
-  if (node.type === 'LINE') return lineArrowEndpoints(node.width, node.height, cap)
+  if (node.type === 'LINE')
+    return lineArrowEndpoints(node.width, node.height, cap, node.vectorNetwork)
   if (node.type === 'VECTOR' && node.vectorNetwork)
     return collectArrowEndpoints(node.vectorNetwork, cap)
   return []

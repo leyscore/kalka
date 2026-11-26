@@ -295,6 +295,8 @@
   "strokeCapSquare": "Kwadratowe zakończenie",
   "strokeCapArrowLines": "Strzałka liniowa",
   "strokeCapArrowEquilateral": "Strzałka trójkątna",
+  "strokeStartPoint": "Punkt początkowy",
+  "strokeEndPoint": "Punkt końcowy",
   "strokeJoin": "Łączenie obrysu",
   "strokeJoinMiter": "Łączenie ostre",
   "strokeJoinBevel": "Łączenie ścięte",

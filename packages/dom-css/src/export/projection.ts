@@ -2,6 +2,7 @@ import { uniq } from 'es-toolkit/array'
 import { isEmptyObject } from 'es-toolkit/predicate'
 
 import { drawsImage, readIcon, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { lineEndCaps } from '@kalka/scene-graph/arrow-caps'
 import { writeLayerStyle, type FieldCSS, type WriteContext } from '@kalka/scene-graph/css-model'
 
 import { DesignTokens, type CSSModes } from '../tokens/references'
@@ -92,8 +93,9 @@ function strokeNeedsVector(node: SceneNode): boolean {
   const stroke = node.strokes.find((paint) => paint.visible)
   if (!stroke) return false
   if (stroke.type !== 'SOLID') return true
-  const cap = stroke.cap ?? node.strokeCap
-  return node.type === 'LINE' && cap !== 'NONE' && cap !== 'SQUARE'
+  if (node.type !== 'LINE') return false
+  const { start, end } = lineEndCaps(stroke.cap ?? node.strokeCap, node.vectorNetwork)
+  return [start, end].some((cap) => cap !== 'NONE' && cap !== 'SQUARE')
 }
 
 /** What a box draws itself, which the SVG of a vector layer draws instead. */

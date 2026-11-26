@@ -804,7 +804,7 @@ function drawNodeArrowHeads(
   const cap = stroke.cap ?? node.strokeCap
   let endpoints: ArrowEndpoint[] = []
   if (node.type === 'LINE') {
-    endpoints = lineArrowEndpoints(node.width, node.height, cap)
+    endpoints = lineArrowEndpoints(node.width, node.height, cap, node.vectorNetwork)
   } else if (node.type === 'VECTOR' && node.vectorNetwork) {
     endpoints = collectArrowEndpoints(node.vectorNetwork, cap)
   }

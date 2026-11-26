@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
 import { SceneGraph, type SceneNode, type Stroke } from '@kalka/scene-graph'
+import { lineEndNetwork } from '@kalka/scene-graph/arrow-caps'
 
 import { renderNodeSVGElement } from '#core/io/formats/svg/export'
 import type { SVGNode } from '#core/io/formats/svg/node'
@@ -129,6 +130,18 @@ describe('SVG export strokes', () => {
       strokes: [{ ...gradientStroke('SOLID'), color: { r: 0, g: 0.5, b: 0, a: 1 } }]
     })
     expect(doc.all('line')).toHaveLength(5)
+  })
+
+  test('an arrow drawn with the Arrow tool has a head on its end only', () => {
+    const doc = exportLayer('LINE', {
+      width: 100,
+      height: 0,
+      strokeCap: 'NONE',
+      vectorNetwork: lineEndNetwork(100, 0, { end: 'ARROW_EQUILATERAL' }),
+      strokes: [{ ...gradientStroke('SOLID'), color: { r: 0, g: 0.5, b: 0, a: 1 } }]
+    })
+    const head = doc.one('polygon')
+    expect(head.attrs.points).toStartWith('100,0')
   })
 
   test('an inside stroke is clipped to the shape and an outside one masked away from it', () => {

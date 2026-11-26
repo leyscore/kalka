@@ -1,4 +1,5 @@
 import type { Component } from 'vue'
+import IconArrow from '~icons/hugeicons/arrow-up-right-01'
 import IconCircle from '~icons/hugeicons/circle'
 import IconComponentSet from '~icons/hugeicons/component'
 import IconComponent from '~icons/hugeicons/diamond'
@@ -30,6 +31,7 @@ export const toolIcons: Record<Tool, Component> = {
   RECTANGLE: IconSquare,
   ELLIPSE: IconCircle,
   LINE: IconMinus,
+  ARROW: IconArrow,
   POLYGON: IconTriangle,
   STAR: IconStar,
   PEN: IconPenTool,

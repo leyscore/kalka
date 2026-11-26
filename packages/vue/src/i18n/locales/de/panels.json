@@ -293,6 +293,8 @@
   "strokeCapSquare": "Quadratisches Ende",
   "strokeCapArrowLines": "Linienpfeil",
   "strokeCapArrowEquilateral": "Dreieckspfeil",
+  "strokeStartPoint": "Startpunkt",
+  "strokeEndPoint": "Endpunkt",
   "strokeJoin": "Linienverbindung",
   "strokeJoinMiter": "Gehrungsverbindung",
   "strokeJoinBevel": "Abgeschrägte Verbindung",

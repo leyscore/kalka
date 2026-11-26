@@ -293,6 +293,8 @@
   "strokeCapSquare": "Estremità quadrata",
   "strokeCapArrowLines": "Freccia a linee",
   "strokeCapArrowEquilateral": "Freccia triangolare",
+  "strokeStartPoint": "Punto iniziale",
+  "strokeEndPoint": "Punto finale",
   "strokeJoin": "Giunzione del tratto",
   "strokeJoinMiter": "Giunzione a mitra",
   "strokeJoinBevel": "Giunzione smussata",

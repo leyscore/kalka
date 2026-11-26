@@ -5,6 +5,7 @@
   "rectangle": "Rectangle",
   "ellipse": "Ellipse",
   "line": "Ligne",
+  "arrow": "Flèche",
   "polygon": "Polygone",
   "star": "Étoile",
   "pen": "Plume",

@@ -5,6 +5,7 @@ import type { VectorElementRenderer } from '#dom-css/export/projection'
 import type { DesignElement } from '#dom-css/types'
 
 import { SceneGraph, type SceneNode, type Stroke } from '@kalka/scene-graph'
+import { lineEndNetwork } from '@kalka/scene-graph/arrow-caps'
 
 const renderer: VectorElementRenderer = (_graph, node) => ({
   type: 'element',
@@ -55,6 +56,12 @@ describe('strokes CSS cannot draw', () => {
   test('a line ending in arrows draws as SVG; a plain solid line stays a box', () => {
     expect(project('LINE', { strokes: [solid], strokeCap: 'ARROW_LINES' }).tagName).toBe('svg')
     expect(project('LINE', { strokes: [solid], strokeCap: 'NONE' }).tagName).not.toBe('svg')
+  })
+
+  test('an arrow with a head on its end only draws as SVG', () => {
+    const vectorNetwork = lineEndNetwork(100, 0, { end: 'ARROW_LINES' })
+    const arrow = project('LINE', { strokes: [solid], strokeCap: 'NONE', vectorNetwork })
+    expect(arrow.tagName).toBe('svg')
   })
 
   test('a frame with a gradient stroke outlines in its middle color, not the unused solid one', () => {

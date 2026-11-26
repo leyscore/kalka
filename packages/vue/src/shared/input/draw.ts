@@ -27,7 +27,9 @@ function startDraw(
   cx: number,
   cy: number,
   editor: Editor,
-  setDrag: (d: DragState) => void
+  setDrag: (d: DragState) => void,
+  create: (x: number, y: number, parentId: string) => string = (x, y, parentId) =>
+    editor.createShape(type, x, y, 0, 0, parentId)
 ) {
   editor.undo.beginBatch(label)
   const parentId = findDrawParent(cx, cy, type, editor)
@@ -36,7 +38,7 @@ function startDraw(
   const snap = editor.state.snappingPreferences.pixelGrid ? Math.round : (value: number) => value
   const local = toLocal(cx, cy)
   const start = { x: snap(local.x), y: snap(local.y) }
-  const nodeId = editor.createShape(type, start.x, start.y, 0, 0, parentId)
+  const nodeId = create(start.x, start.y, parentId)
   if (type === 'TEXT') editor.graph.updateNode(nodeId, { text: '' })
   editor.select([nodeId])
   setDrag(
@@ -59,9 +61,16 @@ export function startShapeDraw(
   editor: Editor,
   setDrag: (d: DragState) => void
 ) {
-  const nodeType = TOOL_TO_NODE[editor.state.activeTool]
+  const tool = editor.state.activeTool
+  const nodeType = TOOL_TO_NODE[tool]
   if (!nodeType) return
 
+  if (tool === 'ARROW') {
+    startDraw(nodeType, 'Create arrow', cx, cy, editor, setDrag, (x, y, parentId) =>
+      editor.createArrow(x, y, 0, 0, parentId)
+    )
+    return
+  }
   startDraw(nodeType, 'Create shape', cx, cy, editor, setDrag)
 }
 

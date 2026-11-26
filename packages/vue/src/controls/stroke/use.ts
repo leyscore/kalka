@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { newStrokeGeometry, type Stroke } from '@kalka/scene-graph'
 
 import { useNodeProps } from '#vue/controls/node-props/use'
+import { createEndPointControls } from '#vue/controls/stroke/end-caps'
 import {
   BORDER_SIDES,
   DEFAULT_STROKE,
@@ -26,7 +27,8 @@ import { useI18n } from '#vue/i18n'
  * Returns stroke-related helpers for property panels.
  *
  * This composable provides alignment and side helpers plus mixed-selection
- * state and undo-aware actions for caps, joins, and miter limits.
+ * state and undo-aware actions for caps, start and end points, joins, and
+ * miter limits.
  */
 export function useStrokeControls() {
   const store = useEditor()
@@ -45,6 +47,13 @@ export function useStrokeControls() {
     { value: 'ARROW_LINES' as const, label: panels.value.strokeCapArrowLines },
     { value: 'ARROW_EQUILATERAL' as const, label: panels.value.strokeCapArrowEquilateral }
   ]
+  const endPointOptions = [
+    { value: 'NONE' as const, label: panels.value.none },
+    { value: 'ARROW_LINES' as const, label: panels.value.strokeCapArrowLines },
+    { value: 'ARROW_EQUILATERAL' as const, label: panels.value.strokeCapArrowEquilateral }
+  ]
+  /** The ends of a shaft where no arrow sits, for lines and open paths. */
+  const shaftCapOptions = capOptions.filter((option) => !option.value.startsWith('ARROW'))
   const joinOptions = [
     { value: 'MITER' as const, label: panels.value.strokeJoinMiter },
     { value: 'BEVEL' as const, label: panels.value.strokeJoinBevel },
@@ -52,14 +61,18 @@ export function useStrokeControls() {
   ]
   const geometryState = createStrokeGeometryState({ nodes, merged })
   const geometryActions = createStrokeGeometryActions(store, nodes)
+  const endPoints = createEndPointControls(store, nodes)
   const { selectSide, updateBorderWeight } = createStrokeSideActions(store, sideMenuOpen)
 
   return {
     alignOptions,
     capOptions,
+    endPointOptions,
+    shaftCapOptions,
     joinOptions,
     ...geometryState,
     ...geometryActions,
+    ...endPoints,
     sideOptions: SIDE_OPTIONS,
     borderSides: BORDER_SIDES,
     sideMenuOpen,

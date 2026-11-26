@@ -309,6 +309,8 @@
   "strokeCapSquare": "角型線端",
   "strokeCapArrowLines": "ライン矢印",
   "strokeCapArrowEquilateral": "三角矢印",
+  "strokeStartPoint": "始点",
+  "strokeEndPoint": "終点",
   "strokeJoin": "線の結合",
   "strokeJoinMiter": "マイター結合",
   "strokeJoinBevel": "ベベル結合",
