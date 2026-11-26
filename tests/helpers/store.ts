@@ -128,6 +128,7 @@ export function getNodeById(page: Page, id: string) {
       counterAxisSizing: n.counterAxisSizing,
       layoutGrow: n.layoutGrow,
       layoutAlignSelf: n.layoutAlignSelf,
+      layoutPositioning: n.layoutPositioning,
       primaryAxisAlign: n.primaryAxisAlign,
       counterAxisAlign: n.counterAxisAlign,
       itemSpacing: n.itemSpacing,

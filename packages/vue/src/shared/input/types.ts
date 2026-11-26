@@ -1,4 +1,4 @@
-import type { MoveOriginal, Tool } from '@kalka/core/editor'
+import type { Editor, MoveOriginal, Tool } from '@kalka/core/editor'
 import type {
   CSSDeclarations,
   DerivedTextGlyph,
@@ -12,6 +12,8 @@ import type {
 import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 import type { ResizeSnapshot } from '@kalka/scene-graph/resize'
 
+import type { AutoLayoutValueField } from '#vue/shared/input/auto-layout-hover'
+
 export type HandlePosition = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
 
 export type CornerPosition = 'nw' | 'ne' | 'se' | 'sw'
@@ -23,6 +25,22 @@ export type CornerKey =
   | 'bottomLeftRadius'
 
 export type CornerRadii = Pick<SceneNode, CornerKey | 'cornerRadius' | 'independentCorners'>
+
+/** A padding or the gap of an auto layout frame dragged on the canvas, as Figma's handles are. */
+export interface DragAutoLayoutValue {
+  type: 'auto-layout-value'
+  nodeId: string
+  /** The fields the drag sets: one padding, a pair with Option/Alt, or the gap. */
+  fields: readonly AutoLayoutValueField[]
+  /** The hover the drag keeps drawn, with its value. */
+  hover: NonNullable<Editor['state']['autoLayoutHover']>
+  /** The canvas axis that changes the value, and which way grows it. */
+  axis: 'x' | 'y'
+  direction: 1 | -1
+  start: number
+  startValue: number
+  original: Partial<Pick<SceneNode, AutoLayoutValueField>>
+}
 
 /** A corner radius handle being dragged. */
 export interface DragCornerRadius {
@@ -216,6 +234,7 @@ export type DragState =
   | DragGuide
   | DragCornerRadius
   | DragGradientHandle
+  | DragAutoLayoutValue
 
 export const TOOL_TO_NODE: Partial<Record<Tool, NodeType>> = {
   FRAME: 'FRAME',

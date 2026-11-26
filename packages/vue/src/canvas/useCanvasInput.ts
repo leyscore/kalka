@@ -19,6 +19,12 @@ import {
   toggleNodeEditVertexAt,
   updateNodeEditHover
 } from '#vue/canvas/vector-input/input'
+import {
+  autoLayoutValueCursor,
+  cancelAutoLayoutValueDrag,
+  commitAutoLayoutValueDrag,
+  handleAutoLayoutValueMove
+} from '#vue/shared/input/auto-layout-drag'
 import { resolveAutoLayoutHover } from '#vue/shared/input/auto-layout-hover'
 import { createClickCounter } from '#vue/shared/input/click-count'
 import {
@@ -253,6 +259,8 @@ export function useCanvasInput(
     if (!drag.value && editor.state.activeTool === 'SELECT') {
       const { sx, sy, cx, cy } = coords
       const guideCursor = guideInput.updateHover(sx, sy)
+      const layoutHover =
+        editor.state.measurementMode === 'off' ? resolveAutoLayoutHover(cx, cy, editor) : null
       cursorOverride.value =
         guideCursor ??
         updateHoverCursor(
@@ -261,10 +269,9 @@ export function useCanvasInput(
           editor,
           hitFns,
           editor.state.measurementMode === 'deep' || hoverDeep(e)
-        )
-      editor.setAutoLayoutHover(
-        editor.state.measurementMode === 'off' ? resolveAutoLayoutHover(cx, cy, editor) : null
-      )
+        ) ??
+        autoLayoutValueCursor(layoutHover, editor)
+      editor.setAutoLayoutHover(layoutHover)
     }
 
     if (!drag.value) return
@@ -337,6 +344,11 @@ export function useCanvasInput(
       return
     }
 
+    if (d.type === 'auto-layout-value') {
+      handleAutoLayoutValueMove(d, cx, cy, editor)
+      return
+    }
+
     handleMarqueeMove(d, cx, cy)
   }
 
@@ -374,6 +386,7 @@ export function useCanvasInput(
     } else if (d.type === 'draw') d.commit()
     else if (d.type === 'corner-radius') commitCornerRadius(d, editor)
     else if (d.type === 'gradient-handle') commitGradientHandle(d, editor)
+    else if (d.type === 'auto-layout-value') commitAutoLayoutValueDrag(d, editor)
     else if (d.type === 'marquee') finishMarquee(editor, d)
 
     drag.value = null
@@ -401,6 +414,7 @@ export function useCanvasInput(
     }
     if (drag.value?.type === 'corner-radius') cancelCornerRadius(drag.value, editor)
     if (drag.value?.type === 'gradient-handle') cancelGradientHandle(drag.value, editor)
+    if (drag.value?.type === 'auto-layout-value') cancelAutoLayoutValueDrag(drag.value, editor)
     if (
       drag.value?.type === 'edit-node' ||
       drag.value?.type === 'edit-handle' ||

@@ -5,6 +5,7 @@ export { updateHoverCursor } from '#vue/shared/input/select/hover'
 import type { Editor } from '@kalka/core/editor'
 import type { SceneNode } from '@kalka/scene-graph'
 
+import { tryStartAutoLayoutValueDrag } from '#vue/shared/input/auto-layout-drag'
 import { tryStartCornerRadius } from '#vue/shared/input/corner-radius'
 import { tryStartGradientHandle } from '#vue/shared/input/gradient'
 import { tryStartResize } from '#vue/shared/input/resize'
@@ -32,8 +33,8 @@ function startMarquee(cx: number, cy: number, editor: Editor, setDrag: (d: DragS
 }
 
 /**
- * Starts dragging a handle of the selection: a gradient's, a corner radius, the rotation, or a
- * resize.
+ * Starts dragging a handle of the selection: a gradient's, a corner radius, the rotation, a
+ * resize, or a padding or the gap of an auto layout frame.
  */
 function startHandleDrag(
   e: MouseEvent,
@@ -55,8 +56,13 @@ function startHandleDrag(
   }
   if (tryStartRotation(cx, cy)) return true
   const resizeDrag = tryStartResize(cx, cy, editor)
-  if (resizeDrag) setDrag(resizeDrag)
-  return resizeDrag !== null
+  if (resizeDrag) {
+    setDrag(resizeDrag)
+    return true
+  }
+  const valueDrag = tryStartAutoLayoutValueDrag(editor, cx, cy, e.altKey)
+  if (valueDrag) setDrag(valueDrag)
+  return valueDrag !== null
 }
 
 export function handleSelectDown(
