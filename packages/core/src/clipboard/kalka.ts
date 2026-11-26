@@ -3,8 +3,10 @@ import { fromUint8Array, isValid, toUint8Array } from 'js-base64'
 import * as v from 'valibot'
 
 import {
+  commentThreadsSchema,
   createInstanceOverrideState,
   deserializeInstanceOverrideState,
+  handoffThreadsOn,
   serializeInstanceOverrideState,
   setInstanceOverride,
   type InstanceOverrideState,
@@ -97,13 +99,15 @@ const KalkaClipboardJSON = v.pipe(
     // `openpencil/v1` is the same format, copied before the app was renamed Kalka.
     format: v.picklist(['kalka/v1', 'openpencil/v1']),
     nodes: v.array(SerializedClipboardNodeSchema),
-    images: v.optional(v.record(v.string(), v.unknown()))
+    images: v.optional(v.record(v.string(), v.unknown())),
+    // The copied layers' annotations and measurements; a malformed list is dropped, not the paste.
+    handoff: v.optional(v.fallback(commentThreadsSchema, []))
   })
 )
 
 type ClipboardNode = SceneNode & { children?: ClipboardNode[] }
 
-export type KalkaClipboardData = Pick<ClipboardSnapshot, 'nodes' | 'images'>
+export type KalkaClipboardData = Pick<ClipboardSnapshot, 'nodes' | 'images' | 'handoff'>
 
 export function parseKalkaClipboard(html: string): KalkaClipboardData | null {
   const match = html.match(/<!--\((kalka|openpencil)\)(.*?)\(\/\1\)-->/s)
@@ -127,7 +131,8 @@ export function parseKalkaClipboard(html: string): KalkaClipboardData | null {
     for (const [hash, b64] of Object.entries(decoded.output.images ?? {})) {
       if (typeof b64 === 'string') images.set(hash, clipboardBytes(b64))
     }
-    return { nodes, images }
+    const handoff = decoded.output.handoff
+    return handoff?.length ? { nodes, images, handoff } : { nodes, images }
   } catch (e) {
     console.warn('Failed to parse Kalka clipboard data:', e)
   }
@@ -201,8 +206,11 @@ export function buildKalkaClipboardHTML(
   graph: SceneGraph,
   textPictureBuilder?: TextPictureBuilder
 ): string {
-  const nodeTree = collectNodeTree(nodes, graph, textPictureBuilder)
+  const copiedIds = new Set<string>()
+  const nodeTree = collectNodeTree(nodes, graph, textPictureBuilder, copiedIds)
   const hashes = collectImageHashes(nodes, graph)
+  // Annotations and measurements travel with their layers, as Figma's copy and paste keep them.
+  const handoff = handoffThreadsOn(graph, copiedIds)
   const images: Record<string, string> = {}
   for (const hash of hashes) {
     const bytes = graph.images.get(hash)
@@ -211,7 +219,8 @@ export function buildKalkaClipboardHTML(
   const data = {
     format: 'kalka/v1',
     nodes: nodeTree,
-    images
+    images,
+    ...(handoff.length > 0 ? { handoff } : {})
   }
   const compressed = deflateSync(new TextEncoder().encode(JSON.stringify(data)))
   return `<!--(kalka)${fromUint8Array(compressed)}(/kalka)-->`
@@ -220,9 +229,11 @@ export function buildKalkaClipboardHTML(
 function collectNodeTree(
   nodes: SceneNode[],
   graph: SceneGraph,
-  textPictureBuilder?: TextPictureBuilder
+  textPictureBuilder: TextPictureBuilder | undefined,
+  copiedIds: Set<string>
 ): JSONObject[] {
   return nodes.map((node) => {
+    copiedIds.add(node.id)
     const children = graph.getChildren(node.id)
     const serialized: Record<string, unknown> = {
       ...node,
@@ -237,7 +248,7 @@ function collectNodeTree(
     }
 
     if (children.length > 0) {
-      serialized.children = collectNodeTree(children, graph, textPictureBuilder)
+      serialized.children = collectNodeTree(children, graph, textPictureBuilder, copiedIds)
     }
     return serialized
   })

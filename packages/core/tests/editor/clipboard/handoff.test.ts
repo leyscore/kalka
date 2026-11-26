@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { expectDefined } from '#core-tests/helpers/assert'
 
+import { buildKalkaClipboardHTML } from '@kalka/core/clipboard'
 import { createEditor } from '@kalka/core/editor'
 import { addAnnotation, addMeasurement, layerHandoffThreads } from '@kalka/scene-graph'
 
@@ -68,5 +69,24 @@ describe('annotations travel with copied layers', () => {
       'again'
     )
     expect(layerHandoffThreads(editor.graph, again.id)[1]?.measurement?.toNodeId).toBeDefined()
+  })
+
+  test('the clipboard HTML another window reads carries them too', async () => {
+    const { editor, card } = annotatedCard()
+    const html = buildKalkaClipboardHTML([card], editor.graph)
+
+    const other = createEditor()
+    await other.pasteFromHTML(html)
+    const pastedCard = expectDefined(
+      other.graph.getNode([...other.state.selectedIds][0] ?? ''),
+      'pasted card'
+    )
+    const pastedTitle = expectDefined(other.graph.getChildren(pastedCard.id)[0], 'pasted title')
+    const threads = layerHandoffThreads(other.graph, pastedTitle.id)
+    expect(threads.map((thread) => thread.messages[0]?.text)).toEqual(['Use the brand font', ''])
+    // The card was copied with its title, so the measurement is to the pasted card.
+    expect(threads[1]?.measurement?.toNodeId).toBe(pastedCard.id)
+    other.undo.undo()
+    expect(layerHandoffThreads(other.graph, pastedTitle.id)).toHaveLength(0)
   })
 })

@@ -204,7 +204,7 @@ export function createClipboardActions(ctx: EditorContext) {
     if (kalka) {
       // One undo step for the paste and any slot it claims.
       const created = ctx.undo.runBatch('Paste', () =>
-        pasteKalkaNodes(kalka.nodes, kalka.images, [], cursorPos, options)
+        pasteKalkaNodes(kalka.nodes, kalka.images, [], cursorPos, options, kalka.handoff)
       )
       await fontActions.loadFontsForNodes(created)
       return
