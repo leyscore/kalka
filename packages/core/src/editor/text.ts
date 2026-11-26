@@ -17,6 +17,7 @@ import { applyBoundTextEdit } from './components/authoring/text-edit'
 import { pathTextEditChanges } from './text/path-edit'
 import {
   createTextEditSession,
+  followedTextName,
   resizeTextNodeForEdit,
   snapshotTextNode,
   textSnapshotChanged,
@@ -127,6 +128,19 @@ export function createTextActions(ctx: EditorContext, options: TextActionOptions
     if (created && ctx.undo.peekUndo(1) === created) ctx.undo.mergeWithPrevious(created.label)
   }
 
+  /**
+   * Renames a layer still named after its text to its new text, as Figma does; the names before
+   * and after for the edit's undo step, or null when the name stays.
+   */
+  function renameAfterText(nodeId: string, beforeText: string, afterText: string) {
+    const node = ctx.graph.getNode(nodeId)
+    const name = followedTextName(node, beforeText, afterText)
+    if (!node || name === null) return null
+    const names = { before: { name: node.name }, after: { name } }
+    ctx.graph.updateNode(nodeId, names.after)
+    return names
+  }
+
   function updateTextEditNode(nodeId: string, changes: Partial<SceneNode>) {
     const node = ctx.graph.getNode(nodeId)
     if (!node) return
@@ -174,6 +188,7 @@ export function createTextActions(ctx: EditorContext, options: TextActionOptions
     }
     const containingInstances = containingInstanceIds(ctx, node.id)
     const instanceOverridesBefore = snapshotInstanceOverrides(ctx, containingInstances)
+    const names = renameAfterText(node.id, before.text, after.text)
     if (before.text !== after.text)
       applyTextInstanceOverride(ctx, containingInstances, node.id, after.text)
     const instanceOverridesAfter = snapshotInstanceOverrides(ctx, containingInstances)
@@ -184,7 +199,8 @@ export function createTextActions(ctx: EditorContext, options: TextActionOptions
           ctx.graph.updateNode(node.id, {
             text: after.text,
             styleRuns: after.styleRuns,
-            listLines: after.listLines ?? []
+            listLines: after.listLines ?? [],
+            ...names?.after
           })
           restoreInstanceOverrides(ctx, instanceOverridesAfter)
           ctx.runLayoutForNode(node.id)
@@ -193,7 +209,8 @@ export function createTextActions(ctx: EditorContext, options: TextActionOptions
           ctx.graph.updateNode(node.id, {
             text: before.text,
             styleRuns: before.styleRuns,
-            listLines: before.listLines ?? []
+            listLines: before.listLines ?? [],
+            ...names?.before
           })
           restoreInstanceOverrides(ctx, instanceOverridesBefore)
           ctx.runLayoutForNode(node.id)
@@ -286,6 +303,7 @@ export function createTextActions(ctx: EditorContext, options: TextActionOptions
       ctx.graph.getNode(result.nodeId),
       beforePathText !== null
     )
+    const names = renameAfterText(result.nodeId, before.text, after.text)
     if (before.text !== after.text) {
       applyTextInstanceOverride(ctx, containingInstances, result.nodeId, after.text)
     }
@@ -302,7 +320,8 @@ export function createTextActions(ctx: EditorContext, options: TextActionOptions
             text: after.text,
             styleRuns: after.styleRuns,
             ...after.size,
-            ...afterPathText
+            ...afterPathText,
+            ...names?.after
           })
           restoreInstanceOverrides(ctx, instanceOverridesAfter)
         },
@@ -311,7 +330,8 @@ export function createTextActions(ctx: EditorContext, options: TextActionOptions
             text: before.text,
             styleRuns: before.styleRuns,
             ...before.size,
-            ...beforePathText
+            ...beforePathText,
+            ...names?.before
           })
           restoreInstanceOverrides(ctx, instanceOverridesBefore)
         }

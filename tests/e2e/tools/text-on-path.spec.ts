@@ -51,6 +51,7 @@ function layers(frame: string) {
     const store = window.kalka?.getStore?.()
     return (store?.graph.getChildren(frame) ?? []).map((node) => ({
       type: node.type,
+      name: node.name,
       text: node.text,
       onPath: node.textPathData !== null,
       glyphs: node.derivedTextGlyphs?.length ?? 0
@@ -85,14 +86,46 @@ test('the Text tool pressed on a path writes along it', async () => {
   await page.keyboard.press('ControlOrMeta+a')
   await page.keyboard.type('Hello')
   await page.keyboard.press('Escape')
-  await expect.poll(async () => (await layers(frame))[0]).toMatchObject({
-    text: 'Hello',
-    onPath: true,
-    glyphs: 5
-  })
+  await expect
+    .poll(async () => (await layers(frame))[0])
+    .toMatchObject({
+      text: 'Hello',
+      onPath: true,
+      glyphs: 5
+    })
 
   await editor.canvas.undo()
   await editor.canvas.undo()
-  await expect.poll(async () => (await layers(frame)).map((layer) => layer.type)).toEqual(['VECTOR'])
+  await expect
+    .poll(async () => (await layers(frame)).map((layer) => layer.type))
+    .toEqual(['VECTOR'])
+  editor.canvas.assertNoErrors()
+})
+
+test('the Text tool shows its path cursor over a path and the text names its layer', async () => {
+  const { page } = editor
+  const { frame } = await setup()
+  await page.keyboard.press('t')
+  const cursor = () =>
+    page.getByTestId('canvas-element').evaluate((element) => element.style.cursor)
+  const point = await toScreen(230, 140)
+  await page.mouse.move(point.x, point.y)
+  await expect.poll(cursor).toContain('data:image/svg+xml')
+  const empty = await toScreen(60, 260)
+  await page.mouse.move(empty.x, empty.y)
+  await expect.poll(cursor).not.toContain('data:image/svg+xml')
+
+  await page.mouse.click(point.x, point.y)
+  await expect
+    .poll(async () => (await layers(frame))[0])
+    .toMatchObject({
+      name: 'Type something',
+      onPath: true
+    })
+  await page.keyboard.press('ControlOrMeta+a')
+  await page.keyboard.type('W')
+  await expect.poll(async () => (await layers(frame))[0]?.text).toBe('W')
+  await page.keyboard.press('Escape')
+  await expect.poll(async () => (await layers(frame))[0]?.name).toBe('W')
   editor.canvas.assertNoErrors()
 })

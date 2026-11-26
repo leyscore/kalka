@@ -111,3 +111,28 @@ function fillsEqual(
   if (a.length !== b.length) return false
   return a.every((fill, index) => isEqual(fill, b[index]))
 }
+
+/** The longest name a text layer takes from its text. */
+const MAX_TEXT_NAME = 80
+
+/** The name a text layer takes from its text, as Figma names it: its first line, trimmed. */
+export function textLayerName(text: string): string {
+  const [line = ''] = text.split(/\r?\n|\u2028/)
+  return line.replace(/\s+/g, ' ').trim().slice(0, MAX_TEXT_NAME)
+}
+
+/**
+ * The name a text layer takes after an edit: a layer still named after its text, as Figma's
+ * auto-renamed layers and a new text on a path are, follows it; one renamed by hand keeps its
+ * name. Null when the name stays.
+ */
+export function followedTextName(
+  node: SceneNode | undefined,
+  beforeText: string,
+  afterText: string
+): string | null {
+  if (!node || node.type !== 'TEXT' || !node.autoRename) return null
+  const next = textLayerName(afterText)
+  if (!next || next === node.name || node.name !== textLayerName(beforeText)) return null
+  return next
+}
