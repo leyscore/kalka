@@ -28,8 +28,9 @@ export function tryStartTextOnPath(
   const hit = hitFns.hitTestInScope(cx, cy, true)
   if (!hit || !writesAlong(hit)) return false
   editor.select([hit.id])
-  void editor.placeTextOnPathSelected().then((id) => {
+  void (async () => {
+    const id = await editor.placeTextOnPathSelected()
     if (id) editor.startTextEditing(id)
-  })
+  })()
   return true
 }

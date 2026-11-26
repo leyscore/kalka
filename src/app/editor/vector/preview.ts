@@ -16,6 +16,16 @@ export function createCommandPreview<Settings>(
   // Previews run one after another: each waits for the command before it.
   let queue: Promise<void> = Promise.resolve()
 
+  /** Runs a step after every step before it. */
+  function enqueue(step: () => Promise<void> | void): Promise<void> {
+    const previous = queue
+    queue = (async () => {
+      await previous
+      await step()
+    })()
+    return queue
+  }
+
   function takeBack(store: EditorStore) {
     if (shown !== null) store.undoAction()
     shown = null
@@ -23,24 +33,22 @@ export function createCommandPreview<Settings>(
 
   /** Shows the command with these settings, replacing the previous preview. */
   function preview(store: EditorStore, settings: Settings): Promise<void> {
-    queue = queue.then(async () => {
+    return enqueue(async () => {
       if (!open.value) return
       takeBack(store)
       if (await run(store, settings)) shown = settings
     })
-    return queue
   }
 
   /** Takes the preview back, as Cancel and closing the dialog do. */
   function cancel(store: EditorStore): Promise<void> {
-    queue = queue.then(() => takeBack(store))
-    return queue
+    return enqueue(() => takeBack(store))
   }
 
   /** Keeps the command with these settings: the preview if it shows them. */
-  function apply(store: EditorStore, settings: Settings): Promise<boolean> {
+  async function apply(store: EditorStore, settings: Settings): Promise<boolean> {
     let applied = false
-    queue = queue.then(async () => {
+    await enqueue(async () => {
       if (shown !== null && isEqual(shown, settings)) {
         shown = null
         applied = true
@@ -49,7 +57,7 @@ export function createCommandPreview<Settings>(
       takeBack(store)
       applied = await run(store, settings)
     })
-    return queue.then(() => applied)
+    return applied
   }
 
   return { preview, cancel, apply }
