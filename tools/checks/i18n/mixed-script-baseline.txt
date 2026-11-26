@@ -190,6 +190,7 @@ ja:files.browserFileAPINotSupported
 ja:files.clipboardImageFetchFailed
 ja:files.clipboardImagesFetchFailed
 ja:files.draftsNotKeptStorage
+ja:files.duplicateFolderUnsupported
 ja:files.importFailed
 ja:files.importHTMLCSS
 ja:files.importHTMLCSSDescription
@@ -517,6 +518,7 @@ zh-cn:files.browserFileAPINotSupported
 zh-cn:files.clipboardImageFetchFailed
 zh-cn:files.clipboardImagesFetchFailed
 zh-cn:files.draftsNotKeptStorage
+zh-cn:files.duplicateFolderUnsupported
 zh-cn:files.importFailed
 zh-cn:files.importHTMLCSS
 zh-cn:files.importHTMLCSSDescription

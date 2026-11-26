@@ -69,5 +69,11 @@ test('a kept draft is deleted from its menu, and Undo brings it back', async ({
 
   await page.getByRole('button', { name: 'Undo', exact: true }).click()
   await expect(draft).toHaveCount(1)
+
+  // Duplicate, as on Figma's file cards, lists a second draft named after the first.
+  await draft.getByRole('button', { name: /^Actions for / }).click()
+  await page.getByRole('menuitem', { name: 'Duplicate', exact: true }).click()
+  await expect(draft).toHaveCount(2)
+  await expect(draft.filter({ hasText: 'Untitled copy' })).toHaveCount(1)
   await context.close()
 })

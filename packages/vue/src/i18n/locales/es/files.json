@@ -52,6 +52,8 @@
   "noRecentFilesDescription": "Los archivos que abras en la aplicación de escritorio aparecerán aquí.",
   "draftBadge": "Borrador",
   "deleteDraft": "Eliminar borrador",
+  "duplicateFile": "Duplicar",
+  "duplicateFolderUnsupported": "Una carpeta de Kalka se duplica con Archivo › Duplicar una vez abierta.",
   "draftDeleted": "Borrador «{name}» eliminado.",
   "draftsNotKeptRecoveryOff": "Los borradores solo se conservan mientras su pestaña está abierta. Activa la recuperación en Ajustes para conservarlos tras recargar.",
   "draftsNotKeptStorage": "Los borradores solo se conservan mientras su pestaña está abierta: este navegador no deja que Kalka los conserve tras recargar.",

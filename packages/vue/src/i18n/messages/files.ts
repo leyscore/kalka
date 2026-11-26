@@ -63,6 +63,8 @@ export const filesMessageDefaults = {
   noRecentFilesDescription: 'Files you open in the desktop app will appear here.',
   draftBadge: 'Draft',
   deleteDraft: 'Delete draft',
+  duplicateFile: 'Duplicate',
+  duplicateFolderUnsupported: 'A Kalka folder is duplicated with File › Duplicate once it is open.',
   draftDeleted: params('Draft “{name}” deleted.'),
   draftsNotKeptRecoveryOff:
     'Drafts stay only while their tab is open. Turn on recovery in Settings to keep them after a reload.',

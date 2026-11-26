@@ -52,6 +52,8 @@
   "noRecentFilesDescription": "在桌面应用中打开的文件会显示在这里。",
   "draftBadge": "草稿",
   "deleteDraft": "删除草稿",
+  "duplicateFile": "创建副本",
+  "duplicateFolderUnsupported": "Kalka 文件夹需打开后用“文件 › 创建副本”复制。",
   "draftDeleted": "已删除草稿“{name}”。",
   "draftsNotKeptRecoveryOff": "草稿仅在其标签页打开时保留。在设置中开启恢复，即可在重新加载后保留它们。",
   "draftsNotKeptStorage": "草稿仅在其标签页打开时保留：此浏览器不允许 Kalka 在重新加载后保留它们。",

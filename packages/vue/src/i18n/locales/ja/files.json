@@ -52,6 +52,8 @@
   "noRecentFilesDescription": "デスクトップアプリで開いたファイルがここに表示されます。",
   "draftBadge": "下書き",
   "deleteDraft": "下書きを削除",
+  "duplicateFile": "複製",
+  "duplicateFolderUnsupported": "Kalka フォルダーは開いてから「ファイル › 複製」で複製します。",
   "draftDeleted": "下書き「{name}」を削除しました。",
   "draftsNotKeptRecoveryOff": "下書きはタブを開いている間だけ残ります。再読み込み後も残すには、設定で復元をオンにしてください。",
   "draftsNotKeptStorage": "下書きはタブを開いている間だけ残ります。このブラウザーでは、再読み込み後に Kalka が下書きを保持できません。",

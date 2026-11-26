@@ -52,6 +52,8 @@
   "noRecentFilesDescription": "I file aperti nell’app desktop appariranno qui.",
   "draftBadge": "Bozza",
   "deleteDraft": "Elimina bozza",
+  "duplicateFile": "Duplica",
+  "duplicateFolderUnsupported": "Una cartella Kalka si duplica con File › Duplica una volta aperta.",
   "draftDeleted": "Bozza «{name}» eliminata.",
   "draftsNotKeptRecoveryOff": "Le bozze restano solo finché la loro scheda è aperta. Attiva il ripristino nelle Impostazioni per conservarle dopo un ricaricamento.",
   "draftsNotKeptStorage": "Le bozze restano solo finché la loro scheda è aperta: questo browser non permette a Kalka di conservarle dopo un ricaricamento.",

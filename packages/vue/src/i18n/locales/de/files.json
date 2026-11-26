@@ -52,6 +52,8 @@
   "noRecentFilesDescription": "Dateien, die du in der Desktop-App öffnest, werden hier angezeigt.",
   "draftBadge": "Entwurf",
   "deleteDraft": "Entwurf löschen",
+  "duplicateFile": "Duplizieren",
+  "duplicateFolderUnsupported": "Einen Kalka-Ordner duplizierst du geöffnet mit Datei › Duplizieren.",
   "draftDeleted": "Entwurf „{name}“ gelöscht.",
   "draftsNotKeptRecoveryOff": "Entwürfe bleiben nur, solange ihr Tab geöffnet ist. Aktivieren Sie die Wiederherstellung in den Einstellungen, um sie nach einem Neuladen zu behalten.",
   "draftsNotKeptStorage": "Entwürfe bleiben nur, solange ihr Tab geöffnet ist: Dieser Browser lässt Kalka sie nach einem Neuladen nicht behalten.",

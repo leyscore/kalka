@@ -52,6 +52,8 @@
   "noRecentFilesDescription": "Pliki otwarte w aplikacji komputerowej pojawią się tutaj.",
   "draftBadge": "Szkic",
   "deleteDraft": "Usuń szkic",
+  "duplicateFile": "Duplikuj",
+  "duplicateFolderUnsupported": "Folder Kalka powielisz po otwarciu poleceniem Plik › Duplikuj.",
   "draftDeleted": "Usunięto szkic „{name}”.",
   "draftsNotKeptRecoveryOff": "Szkice zostają tylko, dopóki ich karta jest otwarta. Włącz odzyskiwanie w Ustawieniach, aby zachować je po przeładowaniu.",
   "draftsNotKeptStorage": "Szkice zostają tylko, dopóki ich karta jest otwarta: ta przeglądarka nie pozwala Kalce zachować ich po przeładowaniu.",

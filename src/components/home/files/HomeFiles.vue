@@ -15,6 +15,7 @@ import {
   restoreDeletedDraft,
   type DraftDocument
 } from '@/app/home/drafts'
+import { duplicateDraft, duplicateLocalFile } from '@/app/home/duplicate'
 import { homeFilesTab } from '@/app/home/files-tab'
 import {
   activeStorageProviderID,
@@ -36,7 +37,7 @@ import { toast } from '@/app/shell/ui'
 import { createStorageWorkspaceSource } from '@/app/storage/workspace/source'
 import { activeTab, openStorageDocumentInNewTab } from '@/app/tabs'
 import DocumentEntry from '@/components/home/document/DocumentEntry.vue'
-import DraftActions from '@/components/home/files/DraftActions.vue'
+import FileActions from '@/components/home/files/FileActions.vue'
 import HomeSampleTile from '@/components/home/learn/HomeSampleTile.vue'
 import HomeSearchField from '@/components/home/search/HomeSearchField.vue'
 import HomeServerDocuments from '@/components/home/server/HomeServerDocuments.vue'
@@ -197,6 +198,25 @@ async function deleteDraftDocument(draft: DraftDocument): Promise<void> {
   } catch (error) {
     openError.value = error instanceof Error ? error.message : String(error)
     void refreshDrafts()
+  }
+}
+/** Figma's Duplicate on a draft: a second draft, "<name> copy", listed with the others. */
+async function duplicateDraftDocument(draft: DraftDocument): Promise<void> {
+  openError.value = null
+  try {
+    await duplicateDraft(draft)
+    await refreshDrafts()
+  } catch (error) {
+    openError.value = error instanceof Error ? error.message : String(error)
+  }
+}
+/** Figma's Duplicate on a file of this computer: a copy beside it, which then leads Recent. */
+async function duplicateRecentFile(path: string): Promise<void> {
+  openError.value = null
+  try {
+    if (!(await duplicateLocalFile(path))) toast.error(files.value.duplicateFolderUnsupported)
+  } catch (error) {
+    openError.value = error instanceof Error ? error.message : String(error)
   }
 }
 const noSearchMatches = computed(
@@ -370,7 +390,12 @@ function formattedDate(updatedAt: string): string {
             @open="openDraftDocument(draft)"
           >
             <template v-if="draft.snapshotId && !draft.tabId" #actions>
-              <DraftActions :name="draft.name" @delete="deleteDraftDocument(draft)" />
+              <FileActions
+                :name="draft.name"
+                deletable
+                @duplicate="duplicateDraftDocument(draft)"
+                @delete="deleteDraftDocument(draft)"
+              />
             </template>
           </DocumentEntry>
           <DocumentEntry
@@ -383,7 +408,11 @@ function formattedDate(updatedAt: string): string {
             :lead="document.id === leadID"
             :class="document.id === leadID ? 'sm:col-span-2 lg:row-span-2' : undefined"
             @open="openRecent(document)"
-          />
+          >
+            <template v-if="document.kind === 'local'" #actions>
+              <FileActions :name="document.name" @duplicate="duplicateRecentFile(document.path)" />
+            </template>
+          </DocumentEntry>
           <template v-if="!normalizedQuery">
             <HomeSampleTile />
             <div
@@ -407,7 +436,12 @@ function formattedDate(updatedAt: string): string {
             @open="openDraftDocument(draft)"
           >
             <template v-if="draft.snapshotId && !draft.tabId" #actions>
-              <DraftActions :name="draft.name" @delete="deleteDraftDocument(draft)" />
+              <FileActions
+                :name="draft.name"
+                deletable
+                @duplicate="duplicateDraftDocument(draft)"
+                @delete="deleteDraftDocument(draft)"
+              />
             </template>
           </DocumentEntry>
           <DocumentEntry
@@ -417,7 +451,11 @@ function formattedDate(updatedAt: string): string {
             :name="document.name"
             :metadata="formattedDate(document.updatedAt)"
             @open="openRecent(document)"
-          />
+          >
+            <template v-if="document.kind === 'local'" #actions>
+              <FileActions :name="document.name" @duplicate="duplicateRecentFile(document.path)" />
+            </template>
+          </DocumentEntry>
         </div>
       </template>
 
