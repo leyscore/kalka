@@ -221,6 +221,7 @@
   "firstOnTop": "Первый сверху",
   "lastOnTop": "Последний сверху",
   "alignTextBaseline": "Выравнивать по базовой линии текста",
+  "alignmentInCell": "Выравнивание в ячейке",
   "colorFormatRgb": "RGB",
   "colorFormatHsl": "HSL",
   "colorFormatHsb": "HSB",

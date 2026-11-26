@@ -221,6 +221,7 @@
   "firstOnTop": "Pierwszy na wierzchu",
   "lastOnTop": "Ostatni na wierzchu",
   "alignTextBaseline": "Wyrównaj do linii bazowej tekstu",
+  "alignmentInCell": "Wyrównanie w komórce",
   "colorFormatRgb": "RGB",
   "colorFormatHsl": "HSL",
   "colorFormatHsb": "HSB",

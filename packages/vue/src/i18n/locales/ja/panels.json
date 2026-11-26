@@ -233,6 +233,7 @@
   "firstOnTop": "最初を上に",
   "lastOnTop": "最後を上に",
   "alignTextBaseline": "テキストのベースラインに揃える",
+  "alignmentInCell": "セル内の配置",
   "colorFormatRgb": "RGB",
   "colorFormatHsl": "HSL",
   "colorFormatHsb": "HSB",

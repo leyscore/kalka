@@ -44,6 +44,7 @@ describe('LAYOUT_AFFECTING_KEYS membership', () => {
       'gridColumnGap',
       'gridRowGap',
       'gridPosition',
+      'gridChildHorizontalAlign',
       'minWidth',
       'maxWidth',
       'minHeight',
@@ -69,8 +70,9 @@ describe('LAYOUT_AFFECTING_KEYS membership', () => {
     // layoutPositioning,layoutGrow,layoutAlignSelf,strokesIncludedInLayout = 4
     // horizontalConstraint,verticalConstraint = 2
     // gridTemplateColumns,gridTemplateRows,gridColumnGap,gridRowGap,gridPosition = 5
+    // gridChildHorizontalAlign = 1
     // minWidth,maxWidth,minHeight,maxHeight = 4
-    // Total: 36
-    expect(SceneGraph.LAYOUT_AFFECTING_KEYS.size).toBe(36)
+    // Total: 37
+    expect(SceneGraph.LAYOUT_AFFECTING_KEYS.size).toBe(37)
   })
 })

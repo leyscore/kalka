@@ -235,6 +235,7 @@
   "firstOnTop": "Primero encima",
   "lastOnTop": "Último encima",
   "alignTextBaseline": "Alinear a la línea base del texto",
+  "alignmentInCell": "Alineación en la celda",
   "colorFormatRgb": "RGB",
   "colorFormatHsl": "HSL",
   "colorFormatHsb": "HSB",

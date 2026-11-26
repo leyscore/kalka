@@ -593,6 +593,7 @@ export const panelMessageDefaults = {
   firstOnTop: 'First on top',
   lastOnTop: 'Last on top',
   alignTextBaseline: 'Align text baseline',
+  alignmentInCell: 'Alignment in cell',
   colorFormatRgb: 'RGB',
   colorFormatHsl: 'HSL',
   colorFormatHsb: 'HSB',

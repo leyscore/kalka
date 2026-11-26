@@ -354,6 +354,8 @@ export type LayoutAlign = 'MIN' | 'CENTER' | 'MAX' | 'SPACE_BETWEEN'
 export type LayoutCounterAlign = 'MIN' | 'CENTER' | 'MAX' | 'STRETCH' | 'BASELINE'
 export type LayoutAlignSelf = 'AUTO' | 'MIN' | 'CENTER' | 'MAX' | 'STRETCH' | 'BASELINE'
 export type LayoutWrap = 'NO_WRAP' | 'WRAP'
+/** Where a grid child sits across its cell, as Figma's `gridChildHorizontalAlign`. */
+export type GridChildAlign = 'AUTO' | 'MIN' | 'CENTER' | 'MAX'
 
 export interface PluginDataEntry {
   pluginId: string
@@ -644,6 +646,11 @@ export interface SceneNode {
   gridColumnGap: number
   gridRowGap: number
   gridPosition: GridPosition | null
+  /**
+   * A grid child's horizontal place in its cell; its vertical place is `layoutAlignSelf`, as
+   * `align-self` is in CSS grid.
+   */
+  gridChildHorizontalAlign: GridChildAlign
 
   counterAxisAlignContent: 'AUTO' | 'SPACE_BETWEEN'
   itemReverseZIndex: boolean

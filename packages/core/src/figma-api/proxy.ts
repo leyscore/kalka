@@ -131,6 +131,8 @@ export class FigmaNodeProxy {
   declare counterAxisAlignContent: string
   declare itemReverseZIndex: boolean
   declare strokesIncludedInLayout: boolean
+  declare gridChildHorizontalAlign: string
+  declare gridChildVerticalAlign: string
   declare layoutPositioning: string
   declare layoutGrow: number
   declare layoutAlign: string

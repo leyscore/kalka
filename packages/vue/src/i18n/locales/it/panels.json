@@ -219,6 +219,7 @@
   "firstOnTop": "Primo sopra",
   "lastOnTop": "Ultimo sopra",
   "alignTextBaseline": "Allinea alla linea di base del testo",
+  "alignmentInCell": "Allineamento nella cella",
   "colorFormatRgb": "RGB",
   "colorFormatHsl": "HSL",
   "colorFormatHsb": "HSB",

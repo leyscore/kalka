@@ -70,3 +70,49 @@ test("Figma's advanced auto layout settings set strokes, stacking and baseline",
   await editor.page.keyboard.press('ControlOrMeta+z')
   await expect.poll(() => childStacking(ids.row, ids.children)).toEqual(['auto', 'auto', 'auto'])
 })
+
+test('a grid child takes its place in its cell', async () => {
+  const ids = await editor.page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const grid = store.graph.createNode('FRAME', store.state.currentPageId, {
+      name: 'Gallery',
+      x: 40,
+      y: 40,
+      width: 300,
+      height: 200,
+      layoutMode: 'GRID',
+      gridTemplateColumns: [
+        { sizing: 'FR', value: 1 },
+        { sizing: 'FR', value: 1 }
+      ],
+      gridTemplateRows: [{ sizing: 'FR', value: 1 }]
+    })
+    const tile = store.graph.createNode('RECTANGLE', grid.id, {
+      name: 'Tile',
+      width: 40,
+      height: 40
+    })
+    store.select([tile.id])
+    store.requestRender()
+    return { grid: grid.id, tile: tile.id }
+  })
+  await editor.page.evaluate(() => window.kalka?.test?.navigation?.waitForSettlement(10_000))
+
+  await editor.page
+    .getByRole('group', { name: 'Alignment in cell' })
+    .getByRole('button', { name: 'Align bottom, Align right' })
+    .click()
+  await expect
+    .poll(() =>
+      editor.page.evaluate(({ grid, tile }) => {
+        const doc = document.querySelector<HTMLIFrameElement>(
+          `iframe[data-kalka-artboard="${grid}"]`
+        )?.contentDocument
+        const element = doc?.querySelector(`[data-kalka-id="${tile}"]`)
+        const style = element ? doc?.defaultView?.getComputedStyle(element) : undefined
+        return style && { justify: style.justifySelf, align: style.alignSelf }
+      }, ids)
+    )
+    .toEqual({ justify: 'end', align: 'flex-end' })
+})

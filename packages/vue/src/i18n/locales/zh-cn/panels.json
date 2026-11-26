@@ -217,6 +217,7 @@
   "firstOnTop": "第一个在上",
   "lastOnTop": "最后一个在上",
   "alignTextBaseline": "对齐文本基线",
+  "alignmentInCell": "单元格内对齐",
   "colorFormatRgb": "RGB",
   "colorFormatHsl": "HSL",
   "colorFormatHsb": "HSB",

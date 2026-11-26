@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { LayoutControlsRoot, useI18n } from '@kalka/vue'
+import { LayoutControlsRoot, useEditor, useI18n } from '@kalka/vue'
 
 import ClipContentControl from '@/components/properties/layout/ClipContentControl.vue'
 import FlexControls from '@/components/properties/layout/flex/FlexControls.vue'
+import GridCellAlignControl from '@/components/properties/layout/grid/GridCellAlignControl.vue'
 import GridControls from '@/components/properties/layout/grid/GridControls.vue'
 import LayoutFlowControl from '@/components/properties/layout/LayoutFlowControl.vue'
 import PaddingControls from '@/components/properties/layout/padding/PaddingControls.vue'
@@ -14,6 +15,13 @@ import PanelSection from '@/components/ui/panel/PanelSection.vue'
 const { panels } = useI18n()
 
 const CONTAINER_TYPES = ['FRAME', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE']
+
+const editor = useEditor()
+
+/** Whether a layer's parent lays it out in a grid, where it takes a place in its cell. */
+function inGrid(parentId: string | null): boolean {
+  return parentId ? editor.getNode(parentId)?.layoutMode === 'GRID' : false
+}
 </script>
 
 <template>
@@ -43,6 +51,7 @@ const CONTAINER_TYPES = ['FRAME', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE']
         </div>
         <TextResizingControl v-if="ctx.node.type === 'TEXT'" />
         <SizeControls />
+        <GridCellAlignControl v-if="inGrid(ctx.node.parentId)" />
         <ClipContentControl
           v-if="CONTAINER_TYPES.includes(ctx.node.type) && ctx.node.layoutMode === 'NONE'"
         />

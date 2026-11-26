@@ -74,6 +74,7 @@ const GROUP_FIELDS: Record<Exclude<InstanceOverrideGroup, 'other'>, readonly str
     'layoutGrow',
     'layoutAlignSelf',
     'gridPosition',
+    'gridChildHorizontalAlign',
     'clipsContent',
     'itemReverseZIndex',
     'layoutGrids',

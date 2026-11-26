@@ -124,6 +124,17 @@ export function installLayoutNodeProxyAccessors(
         updateNode(this, internals, { layoutAlignSelf: mapped as SceneNode['layoutAlignSelf'] })
       }
     },
+    gridChildHorizontalAlign: simpleAccessor(internals, 'gridChildHorizontalAlign'),
+    // A grid child's vertical place in its cell is its `align-self`.
+    gridChildVerticalAlign: {
+      get(this: ProxyThis): SceneNode['gridChildHorizontalAlign'] {
+        const align = raw(this, internals).layoutAlignSelf
+        return align === 'MIN' || align === 'CENTER' || align === 'MAX' ? align : 'AUTO'
+      },
+      set(this: ProxyThis, value: SceneNode['gridChildHorizontalAlign']) {
+        updateNode(this, internals, { layoutAlignSelf: value })
+      }
+    },
     layoutSizingHorizontal: layoutSizingAccessor(internals, 'HORIZONTAL'),
     layoutSizingVertical: layoutSizingAccessor(internals, 'VERTICAL'),
     constraints: {

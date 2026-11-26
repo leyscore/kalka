@@ -42,6 +42,21 @@ function layoutAlignSelfFromCSS(value: string | undefined): SceneNode['layoutAli
   return 'AUTO'
 }
 
+/** A grid child's place across its cell. */
+function justifySelfToCSS(value: SceneNode['gridChildHorizontalAlign']): string | undefined {
+  if (value === 'MIN') return 'start'
+  if (value === 'CENTER') return 'center'
+  if (value === 'MAX') return 'end'
+  return undefined
+}
+
+function gridChildAlignFromCSS(value: string | undefined): SceneNode['gridChildHorizontalAlign'] {
+  if (value === 'start' || value === 'flex-start' || value === 'left') return 'MIN'
+  if (value === 'center') return 'CENTER'
+  if (value === 'end' || value === 'flex-end' || value === 'right') return 'MAX'
+  return 'AUTO'
+}
+
 function justifyContentToCSS(value: SceneNode['primaryAxisAlign']): string | undefined {
   if (value === 'CENTER') return 'center'
   if (value === 'MAX') return 'flex-end'
@@ -106,6 +121,7 @@ export const layoutChild: PropertyFamily = {
     'layoutPositioning',
     'layoutGrow',
     'gridPosition',
+    'gridChildHorizontalAlign',
     'rotation',
     'flipX',
     'flipY',
@@ -123,14 +139,18 @@ export const layoutChild: PropertyFamily = {
     'grid-column-start',
     'grid-row',
     'grid-row-start',
+    'justify-self',
     'transform',
     'transform-origin'
   ],
   write(style, node, { parent }) {
     const alignSelf = alignToCSS(node.layoutAlignSelf)
     if (alignSelf) style['align-self'] = alignSelf
-    if (parent?.layoutMode === 'GRID') addGridPlacement(style, node)
-    else if (parent && parent.layoutMode !== 'NONE' && node.layoutPositioning !== 'ABSOLUTE') {
+    if (parent?.layoutMode === 'GRID') {
+      addGridPlacement(style, node)
+      const justifySelf = justifySelfToCSS(node.gridChildHorizontalAlign)
+      if (justifySelf) style['justify-self'] = justifySelf
+    } else if (parent && parent.layoutMode !== 'NONE' && node.layoutPositioning !== 'ABSOLUTE') {
       const minimum = parent.layoutMode === 'HORIZONTAL' ? 'min-width' : 'min-height'
       if (!growsAlongParent(node, parent)) style['flex-shrink'] = '0'
       else if (hugsAlongItsAxis(parent)) {
@@ -165,6 +185,8 @@ export const layoutChild: PropertyFamily = {
   read(style, node, { projected }) {
     const alignSelf = layoutAlignSelfFromCSS(pickStyle(style, 'align-self'))
     if (alignSelf !== 'AUTO') node.layoutAlignSelf = alignSelf
+
+    node.gridChildHorizontalAlign = gridChildAlignFromCSS(pickStyle(style, 'justify-self'))
 
     const grow = parseCSSNumber(pickStyle(style, 'flex-grow'))
     if (grow !== null && grow > 0) node.layoutGrow = grow

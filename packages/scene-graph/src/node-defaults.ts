@@ -177,6 +177,7 @@ export function createDefaultNode(
     gridColumnGap: 0,
     gridRowGap: 0,
     gridPosition: null,
+    gridChildHorizontalAlign: 'AUTO',
     counterAxisAlignContent: 'AUTO',
     itemReverseZIndex: false,
     strokesIncludedInLayout: false,

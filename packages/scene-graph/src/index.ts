@@ -599,6 +599,7 @@ export class SceneGraph {
     'horizontalConstraint',
     'verticalConstraint',
     'gridPosition',
+    'gridChildHorizontalAlign',
     ...SIZE_CONSTRAINT_FIELDS
   ])
 
