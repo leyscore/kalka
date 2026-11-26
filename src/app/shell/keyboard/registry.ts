@@ -31,6 +31,7 @@ import type {
   KeyboardShortcutOptions,
   KeyboardShortcutRunOptions
 } from '@/app/shell/keyboard/types'
+import { joinOrToggleAI, vectorShortcutDefinitions } from '@/app/shell/keyboard/vector-shortcuts'
 import { showAdjacentPage } from '@/app/shell/menu/editor-actions'
 import { appMenuTinykeysShortcut } from '@/app/shell/menu/shortcut'
 
@@ -256,7 +257,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
       run: ({ actions }) => actions.toggleUI(),
       whileEditingText: true
     },
-    { id: 'toggle-ai', keys: '$mod+KeyJ', run: ({ actions }) => actions.toggleAI() },
+    { id: 'toggle-ai', keys: '$mod+KeyJ', run: joinOrToggleAI },
     {
       id: 'open-settings',
       keys: appMenuTinykeysShortcut('settings') ?? '$mod+Comma',
@@ -370,6 +371,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
       run: ({ store }) => store.alignNodes([...store.state.selectedIds], axis, align)
     })),
     ...textShortcutDefinitions(),
+    ...vectorShortcutDefinitions(),
     {
       id: 'toggle-auto-layout',
       keys: 'Shift+KeyA',

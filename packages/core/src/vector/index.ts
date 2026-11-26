@@ -1,5 +1,6 @@
 export * from './vectorize'
 export * from './handle-selection'
+export * from './path-ops'
 
 export {
   breakAtVertex,

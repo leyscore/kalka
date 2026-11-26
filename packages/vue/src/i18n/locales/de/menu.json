@@ -132,5 +132,18 @@
   "convertColorsToDisplayP3": "Farben in Display P3 umwandeln",
   "exportFramesToPDF": "Rahmen als PDF exportieren…",
   "revertToSaved": "Auf gespeicherte Version zurücksetzen",
-  "duplicateFile": "Duplizieren"
+  "duplicateFile": "Duplizieren",
+  "vector": "Vektor",
+  "joinSelection": "Auswahl verbinden",
+  "smoothJoinSelection": "Auswahl glatt verbinden",
+  "deleteAndHealSelection": "Auswahl löschen und reparieren",
+  "simplifyVector": "Vektor vereinfachen",
+  "reversePathDirection": "Pfadrichtung umkehren",
+  "offsetPath": "Pfad versetzen…",
+  "offsetPathHeading": "Pfad versetzen",
+  "offsetPathDistance": "Versatz",
+  "offsetPathCorners": "Ecken",
+  "offsetPathJoinMiter": "Gehrung",
+  "offsetPathJoinRound": "Rund",
+  "offsetPathJoinBevel": "Abgeflacht"
 }

@@ -132,5 +132,18 @@
   "convertColorsToDisplayP3": "Преобразовать цвета в Display P3",
   "exportFramesToPDF": "Экспорт фреймов в PDF…",
   "revertToSaved": "Вернуться к сохранённой версии",
-  "duplicateFile": "Дублировать"
+  "duplicateFile": "Дублировать",
+  "vector": "Вектор",
+  "joinSelection": "Соединить выделенное",
+  "smoothJoinSelection": "Плавно соединить выделенное",
+  "deleteAndHealSelection": "Удалить и восстановить выделенное",
+  "simplifyVector": "Упростить вектор",
+  "reversePathDirection": "Изменить направление контура",
+  "offsetPath": "Сместить контур…",
+  "offsetPathHeading": "Сместить контур",
+  "offsetPathDistance": "Смещение",
+  "offsetPathCorners": "Углы",
+  "offsetPathJoinMiter": "Острые",
+  "offsetPathJoinRound": "Скруглённые",
+  "offsetPathJoinBevel": "Срезанные"
 }

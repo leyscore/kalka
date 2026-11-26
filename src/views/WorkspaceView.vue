@@ -72,6 +72,7 @@ import RenameSelectionDialog from '@/components/selection/RenameSelectionDialog.
 import AppBanners from '@/components/shell/AppBanners.vue'
 import TabBar from '@/components/TabBar.vue'
 import { AppConfirmationDialog } from '@/components/ui/dialog'
+import OffsetPathDialog from '@/components/vector/OffsetPathDialog.vue'
 import { IS_BROWSER, IS_TAURI } from '@/constants'
 
 // The editor's code loads apart from the home screen's, so the home screen shows sooner; it is
@@ -429,6 +430,7 @@ onUnmounted(() => {
     <!-- In the desktop editor the top bar is the window's title bar; the banners come under it there. -->
     <AppBanners v-if="!(IS_TAURI && tabsInTopBar)" />
     <RenameSelectionDialog />
+    <OffsetPathDialog />
     <CommandPalette />
     <KeyboardShortcutsDialog />
     <AboutDialog v-if="!IS_TAURI" />

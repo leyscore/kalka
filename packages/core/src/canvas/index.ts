@@ -11,6 +11,13 @@ export {
   type VectorFlattenProps
 } from './flatten'
 export {
+  canOffsetNode,
+  offsetNodeToVectorProps,
+  type OffsetPathJoin,
+  type OffsetPathOptions,
+  type OffsetPathProps
+} from './offset'
+export {
   distanceToGuideSegment,
   getGuideScreenSegment,
   type GuideScreenSegment,

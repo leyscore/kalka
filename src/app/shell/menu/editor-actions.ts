@@ -13,6 +13,7 @@ import {
 import { appPreferences } from '@/app/settings/preferences/store'
 import { resetPanelWidths } from '@/app/shell/layout-storage'
 import { createTextMenuActions } from '@/app/shell/menu/text-actions'
+import { createVectorMenuActions } from '@/app/shell/menu/vector-actions'
 
 type TextFormatUpdates = {
   fontWeight?: number
@@ -129,6 +130,7 @@ export function createSharedEditorMenuActions(
     'text.italic': toggleSelectedTextItalic,
     'text.underline': toggleSelectedTextUnderline,
     ...createTextMenuActions(store),
+    ...createVectorMenuActions(store),
     'arrange.align-left': () => alignSelected('horizontal', 'min'),
     'arrange.align-center': () => alignSelected('horizontal', 'center'),
     'arrange.align-right': () => alignSelected('horizontal', 'max'),

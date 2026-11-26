@@ -2,6 +2,7 @@ import type { EditorCommandId } from '@kalka/vue'
 
 import { FILE_MENU } from '@/app/shell/menu/file-menu'
 import { TEXT_MENU } from '@/app/shell/menu/text-menu'
+import { VECTOR_MENU } from '@/app/shell/menu/vector-menu'
 
 export type AppMenuTarget = 'all' | 'browser' | 'native'
 
@@ -491,6 +492,7 @@ export const APP_MENU_SCHEMA = [
       }
     ]
   },
+  VECTOR_MENU,
   TEXT_MENU,
   {
     label: 'Arrange',

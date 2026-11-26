@@ -78,7 +78,8 @@ function lineStrokePath(r: SkiaRenderer, node: SceneNode): Path | null {
   return outline
 }
 
-function baseShapePath(r: SkiaRenderer, node: SceneNode): Path | null {
+/** The layer's own shape, before strokes and children: what offsetting and flattening start from. */
+export function baseShapePath(r: SkiaRenderer, node: SceneNode): Path | null {
   if (node.type === 'TEXT') return textNodeToOutlinePath(r, node)
   if (node.type === 'LINE') return lineStrokePath(r, node)
   if (node.type === 'ELLIPSE' && node.arcData) return makeArcPath(r, node)

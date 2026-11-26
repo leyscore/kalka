@@ -1,0 +1,5 @@
+export { findChains, stepCurve, vertexDegrees, type ChainStep, type PathChain } from './chains'
+export { dedupePoints, fitCubics, type FitCubicsOptions } from './fit'
+export { healVertices, joinVertices, type JoinResult } from './join'
+export { reversePathDirection } from './reverse'
+export { defaultSimplifyTolerance, simplifyVectorNetwork } from './simplify'

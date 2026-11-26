@@ -13,10 +13,11 @@ function isNativeVisible(entry: { target?: string }): boolean {
   return entry.target !== 'browser'
 }
 
+/** The native key for an item; an empty `accelerator` keeps a shortcut the canvas handles off it. */
 function entryAccelerator(entry: AppMenuActionItem): string | undefined {
   const shortcut =
     entry.shortcut ?? (entry.command ? editorCommandMetadata(entry.command).shortcut : undefined)
-  return entry.accelerator ?? shortcutTokenToAccelerator(shortcut)
+  return (entry.accelerator ?? shortcutTokenToAccelerator(shortcut)) || undefined
 }
 
 function cleanEntry(entry: AppMenuEntry): unknown | null {

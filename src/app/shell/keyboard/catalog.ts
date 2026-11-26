@@ -62,6 +62,7 @@ const MENU_GROUP_CATEGORY: Partial<Record<string, ShortcutCategory>> = {
   Edit: 'edit',
   View: 'view',
   Object: 'shape',
+  Vector: 'shape',
   Text: 'text',
   Arrange: 'arrange'
 }

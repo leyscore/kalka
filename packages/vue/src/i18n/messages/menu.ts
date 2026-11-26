@@ -140,7 +140,20 @@ export const menuMessageDefaults = {
   convertColorsToDisplayP3: 'Convert colors to Display P3',
   exportFramesToPDF: 'Export frames to PDF…',
   revertToSaved: 'Revert to saved',
-  duplicateFile: 'Duplicate'
+  duplicateFile: 'Duplicate',
+  vector: 'Vector',
+  joinSelection: 'Join selection',
+  smoothJoinSelection: 'Smooth join selection',
+  deleteAndHealSelection: 'Delete and heal selection',
+  simplifyVector: 'Simplify vector',
+  reversePathDirection: 'Reverse path direction',
+  offsetPath: 'Offset path…',
+  offsetPathHeading: 'Offset path',
+  offsetPathDistance: 'Offset',
+  offsetPathCorners: 'Corners',
+  offsetPathJoinMiter: 'Miter',
+  offsetPathJoinRound: 'Round',
+  offsetPathJoinBevel: 'Bevel'
 } as const
 
 export const menuMessages = i18n('menu', menuMessageDefaults)

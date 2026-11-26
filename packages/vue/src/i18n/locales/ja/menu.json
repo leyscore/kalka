@@ -132,5 +132,18 @@
   "convertColorsToDisplayP3": "色を Display P3 に変換",
   "exportFramesToPDF": "フレームを PDF に書き出す…",
   "revertToSaved": "保存した状態に戻す",
-  "duplicateFile": "複製"
+  "duplicateFile": "複製",
+  "vector": "ベクター",
+  "joinSelection": "選択範囲を結合",
+  "smoothJoinSelection": "選択範囲をスムーズに結合",
+  "deleteAndHealSelection": "選択範囲を削除して修復",
+  "simplifyVector": "ベクターを簡略化",
+  "reversePathDirection": "パスの方向を反転",
+  "offsetPath": "パスのオフセット…",
+  "offsetPathHeading": "パスのオフセット",
+  "offsetPathDistance": "オフセット",
+  "offsetPathCorners": "角",
+  "offsetPathJoinMiter": "マイター",
+  "offsetPathJoinRound": "ラウンド",
+  "offsetPathJoinBevel": "ベベル"
 }

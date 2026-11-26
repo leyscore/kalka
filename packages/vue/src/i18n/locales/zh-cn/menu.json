@@ -132,5 +132,18 @@
   "convertColorsToDisplayP3": "将颜色转换为 Display P3",
   "exportFramesToPDF": "将框架导出为 PDF…",
   "revertToSaved": "恢复到已保存版本",
-  "duplicateFile": "创建副本"
+  "duplicateFile": "创建副本",
+  "vector": "矢量",
+  "joinSelection": "连接所选",
+  "smoothJoinSelection": "平滑连接所选",
+  "deleteAndHealSelection": "删除并修复所选",
+  "simplifyVector": "简化矢量",
+  "reversePathDirection": "反转路径方向",
+  "offsetPath": "偏移路径…",
+  "offsetPathHeading": "偏移路径",
+  "offsetPathDistance": "偏移",
+  "offsetPathCorners": "拐角",
+  "offsetPathJoinMiter": "斜接",
+  "offsetPathJoinRound": "圆角",
+  "offsetPathJoinBevel": "斜角"
 }

@@ -203,7 +203,13 @@ export function useAppMenu() {
     'arrange.align-right': 'arrangeAlignRight',
     'arrange.align-top': 'arrangeAlignTop',
     'arrange.align-middle': 'arrangeAlignMiddle',
-    'arrange.align-bottom': 'arrangeAlignBottom'
+    'arrange.align-bottom': 'arrangeAlignBottom',
+    'vector.join': 'joinSelection',
+    'vector.smooth-join': 'smoothJoinSelection',
+    'vector.delete-and-heal': 'deleteAndHealSelection',
+    'vector.simplify': 'simplifyVector',
+    'vector.reverse': 'reversePathDirection',
+    'vector.offset': 'offsetPath'
   }
 
   const languageMenu = computed<MenuEntry[]>(() =>

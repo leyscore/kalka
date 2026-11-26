@@ -708,6 +708,38 @@
     ]
   },
   {
+    "label": "Vector",
+    "items": [
+      {
+        "id": "vector.join",
+        "label": "Join Selection"
+      },
+      {
+        "id": "vector.smooth-join",
+        "label": "Smooth Join Selection"
+      },
+      {
+        "id": "vector.delete-and-heal",
+        "label": "Delete and Heal Selection"
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "id": "vector.simplify",
+        "label": "Simplify Vector"
+      },
+      {
+        "id": "vector.reverse",
+        "label": "Reverse Path Direction"
+      },
+      {
+        "id": "vector.offset",
+        "label": "Offset Path…"
+      }
+    ]
+  },
+  {
     "label": "Text",
     "items": [
       {

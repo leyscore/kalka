@@ -4,6 +4,7 @@ import { createVectorEditHandleActions } from './handle-actions'
 import { createVectorEditHistoryActions } from './history'
 import { createVectorEditLifecycle } from './lifecycle'
 import { createVectorEditNetworkActions, getLiveNetwork, setNodeEditNetwork } from './network'
+import { createVectorEditPathActions } from './path-actions'
 import { createVectorEditSelectionActions } from './selection'
 import type { VectorEditState } from './types'
 
@@ -29,6 +30,7 @@ export function createVectorEditActions(editor: Editor, state: VectorEditState) 
   )
   const { nodeEditConnectEndpoints, nodeEditAddVertex, nodeEditRemoveVertex } =
     createVectorEditNetworkActions(editor, state, getNodeEditState)
+  const pathActions = createVectorEditPathActions(editor, state)
 
   function cancelNodeEditDrag() {
     const editState = getNodeEditState()
@@ -67,6 +69,7 @@ export function createVectorEditActions(editor: Editor, state: VectorEditState) 
     nodeEditBreakAtVertex,
     nodeEditPushHistory,
     nodeEditUndo,
-    nodeEditRedo
+    nodeEditRedo,
+    ...pathActions
   }
 }

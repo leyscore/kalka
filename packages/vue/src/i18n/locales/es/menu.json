@@ -132,5 +132,18 @@
   "convertColorsToDisplayP3": "Convertir los colores a Display P3",
   "exportFramesToPDF": "Exportar marcos a PDF…",
   "revertToSaved": "Volver a la versión guardada",
-  "duplicateFile": "Duplicar"
+  "duplicateFile": "Duplicar",
+  "vector": "Vector",
+  "joinSelection": "Unir selección",
+  "smoothJoinSelection": "Unir selección suavemente",
+  "deleteAndHealSelection": "Eliminar y reparar selección",
+  "simplifyVector": "Simplificar vector",
+  "reversePathDirection": "Invertir dirección del trazado",
+  "offsetPath": "Desplazar trazado…",
+  "offsetPathHeading": "Desplazar trazado",
+  "offsetPathDistance": "Desplazamiento",
+  "offsetPathCorners": "Esquinas",
+  "offsetPathJoinMiter": "Inglete",
+  "offsetPathJoinRound": "Redondeada",
+  "offsetPathJoinBevel": "Biselada"
 }
