@@ -13,10 +13,11 @@ import {
 import { useEffectMessages } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
-import NumberField from '@/components/inputs/NumberField.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
+
+import ImageAdjustmentSlider from './ImageAdjustmentSlider.vue'
 
 const IMAGE_SCALE_MODES: { value: ImageScaleMode; label: string }[] = [
   { value: 'FILL', label: 'Fill' },
@@ -120,16 +121,14 @@ const scaleMode = computed({
           <icon-hugeicons-refresh-cw class="size-3" />
         </IconButton>
       </div>
-      <NumberField
+      <ImageAdjustmentSlider
         v-for="key in IMAGE_FILTER_KEYS"
         :key="key"
         :label="labels[key]"
-        :aria-label="labels[key]"
         :model-value="adjustment(key)"
-        :min="-100"
-        :max="100"
         :data-property="`image-${key}`"
         @update:model-value="adjust(key, $event)"
+        @commit="adjust(key, $event)"
       />
     </div>
   </div>

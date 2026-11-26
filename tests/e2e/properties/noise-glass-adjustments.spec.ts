@@ -119,15 +119,20 @@ test('noise, glass and progressive blur are set from the effects panel and drawn
 test('image adjustments filter the picture on the canvas', async ({ page }) => {
   const { frame, node } = await setup(page, true)
   await page.getByTestId('fill-picker-swatch').first().click()
-  const exposure = page.getByRole('spinbutton', { name: 'Exposure', exact: true })
+  const exposure = page.getByRole('slider', { name: 'Exposure', exact: true })
   await exposure.focus()
-  await exposure.fill('50')
-  await exposure.press('Enter')
+  await exposure.press('End')
   await expect
     .poll(() =>
       page.evaluate((id) => window.kalka?.getStore?.().graph.getNode(id)?.fills[0].filters, node)
     )
-    .toEqual({ exposure: 0.5 })
+    .toEqual({ exposure: 1 })
+  await exposure.press('ArrowLeft')
+  await expect
+    .poll(() =>
+      page.evaluate((id) => window.kalka?.getStore?.().graph.getNode(id)?.fills[0].filters, node)
+    )
+    .toEqual({ exposure: 0.99 })
   await expect.poll(async () => (await canvasStyle(page, frame)).filter).toContain('url(')
 
   await page.getByTestId('image-adjustments-reset').click()
