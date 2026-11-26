@@ -220,6 +220,7 @@ export const panelMessageDefaults = {
   xAxis: 'X Axis',
   yAxis: 'Y Axis',
   rotation: 'Rotation',
+  absolutePosition: 'Absolute position',
   width: 'Width',
   height: 'Height',
   opacity: 'Opacity',

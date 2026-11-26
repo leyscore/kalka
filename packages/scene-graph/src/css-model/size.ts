@@ -1,6 +1,7 @@
 import { layoutSizingInParent } from '../layout-sizing'
 import type { SceneNode } from '../types'
 import { pickStyle } from './from-css'
+import { constrainedSize } from './position'
 import {
   type CSSDeclarations,
   type PropertyFamily,
@@ -93,14 +94,21 @@ export const size: PropertyFamily = {
     'counterAxisSizing',
     'layoutPositioning',
     'layoutGrow',
-    'layoutAlignSelf'
+    'layoutAlignSelf',
+    'horizontalConstraint',
+    'verticalConstraint'
   ],
   properties: ['width', 'height', 'aspect-ratio'],
   write(style, node, { parent, css }) {
     const sized = (axis: Axis) =>
       node[axis] > 0 && !hugs(node, axis) && !stretches(node, parent, axis)
-    if (sized('width')) style.width = css('width', px(node.width))
-    if (sized('height')) style.height = css('height', px(node.height))
+    for (const axis of ['width', 'height'] as const) {
+      // Absolutely positioned in auto layout, Left and right or Scale size the layer.
+      const constrained = constrainedSize(node, parent, axis)
+      if (constrained !== undefined) {
+        if (constrained !== null) style[axis] = constrained
+      } else if (sized(axis)) style[axis] = css(axis, px(node[axis]))
+    }
   },
   read(style, node) {
     const width = firstCSSNumber(style, 'width')

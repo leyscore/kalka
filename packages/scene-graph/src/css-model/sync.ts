@@ -26,13 +26,24 @@ const MEASURED_FIELDS = [
   'height'
 ] as const satisfies readonly (keyof SceneNode)[]
 const MEASURED_BY: Record<(typeof MEASURED_FIELDS)[number], readonly string[]> = {
-  x: ['left'],
-  y: ['top'],
-  width: ['width', 'aspect-ratio'],
-  height: ['height', 'aspect-ratio']
+  x: ['left', 'right'],
+  y: ['top', 'bottom'],
+  // Insets on both sides size a layer stretched in auto layout (`readPinnedAxis`).
+  width: ['width', 'aspect-ratio', 'right'],
+  height: ['height', 'aspect-ratio', 'bottom']
 }
-/** Fields CSS never sets: what the layer is and holds rather than how it looks. */
-const KEPT_FIELDS = new Set<string>(['type', 'childIds', 'text'])
+/**
+ * Fields CSS never sets, what the layer is and holds rather than how it looks, and constraints,
+ * which only the insets of a layer absolutely positioned in auto layout give: a free layer keeps
+ * its own.
+ */
+const KEPT_FIELDS = new Set<string>([
+  'type',
+  'childIds',
+  'text',
+  'horizontalConstraint',
+  'verticalConstraint'
+])
 
 /** The CSS properties the families written from `fields` own. */
 function propertiesWrittenFrom(fields: ReadonlySet<string>): Set<string> {

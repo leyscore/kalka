@@ -42,6 +42,45 @@ export const SAMPLES: Sample[] = [
     parent: row
   },
   {
+    name: 'absolute in auto layout, pinned right and bottom',
+    fields: {
+      x: 220,
+      y: 150,
+      width: 60,
+      height: 30,
+      layoutPositioning: 'ABSOLUTE',
+      horizontalConstraint: 'MAX',
+      verticalConstraint: 'MAX'
+    },
+    parent: { ...row, width: 300, height: 200 }
+  },
+  {
+    name: 'absolute in auto layout, centred and stretched',
+    fields: {
+      x: 110,
+      y: 20,
+      width: 60,
+      height: 150,
+      layoutPositioning: 'ABSOLUTE',
+      horizontalConstraint: 'CENTER',
+      verticalConstraint: 'STRETCH'
+    },
+    parent: { ...row, width: 300, height: 200 }
+  },
+  {
+    name: 'absolute in auto layout, scaled',
+    fields: {
+      x: 30,
+      y: 50,
+      width: 150,
+      height: 40,
+      layoutPositioning: 'ABSOLUTE',
+      horizontalConstraint: 'SCALE',
+      verticalConstraint: 'SCALE'
+    },
+    parent: { ...row, width: 300, height: 200 }
+  },
+  {
     name: 'size constraints',
     fields: { minWidth: 50, maxWidth: 300, minHeight: 10, maxHeight: 90 }
   },

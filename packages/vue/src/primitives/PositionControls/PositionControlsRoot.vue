@@ -18,7 +18,10 @@ const {
   panelProp,
   x,
   y,
-  rotation
+  rotation,
+  canPositionAbsolutely,
+  absolute,
+  toggleAbsolute
 } = usePosition()
 
 const multiX = panelProp('x')
@@ -35,7 +38,8 @@ const actions = {
   cancelProp,
   align,
   flip,
-  rotate
+  rotate,
+  toggleAbsolute
 }
 </script>
 
@@ -49,6 +53,8 @@ const actions = {
     :w-value="wValue"
     :h-value="hValue"
     :rotation-value="rotationValue"
+    :can-position-absolutely="canPositionAbsolutely"
+    :absolute="absolute"
     :mixed="MIXED"
     :actions="actions"
   />

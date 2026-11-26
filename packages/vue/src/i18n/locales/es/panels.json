@@ -122,6 +122,7 @@
   "xAxis": "Eje X",
   "yAxis": "Eje Y",
   "rotation": "Rotación",
+  "absolutePosition": "Posición absoluta",
   "width": "Anchura",
   "height": "Altura",
   "opacity": "Opacidad",

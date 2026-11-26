@@ -499,6 +499,7 @@
   "xAxis": "Oś X",
   "yAxis": "Oś Y",
   "rotation": "Obrót",
+  "absolutePosition": "Pozycja bezwzględna",
   "width": "Szerokość",
   "height": "Wysokość",
   "opacity": "Krycie",

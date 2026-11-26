@@ -491,6 +491,7 @@
   "xAxis": "X-Achse",
   "yAxis": "Y-Achse",
   "rotation": "Drehung",
+  "absolutePosition": "Absolute Position",
   "width": "Breite",
   "height": "Höhe",
   "opacity": "Deckkraft",

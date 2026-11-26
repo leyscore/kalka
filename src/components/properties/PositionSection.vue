@@ -4,6 +4,7 @@ import { PositionControlsRoot, useI18n } from '@kalka/vue'
 import NumberField from '@/components/inputs/NumberField.vue'
 import AlignToolbar from '@/components/properties/position/AlignToolbar.vue'
 import TransformButtons from '@/components/properties/position/TransformButtons.vue'
+import IconButton from '@/components/ui/button/IconButton.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'
 import PanelGrid from '@/components/ui/panel/PanelGrid.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'
@@ -13,7 +14,18 @@ const { panels } = useI18n()
 
 <template>
   <PositionControlsRoot
-    v-slot="{ active, isMulti, xValue, yValue, wValue, hValue, rotationValue, actions }"
+    v-slot="{
+      active,
+      isMulti,
+      xValue,
+      yValue,
+      wValue,
+      hValue,
+      rotationValue,
+      canPositionAbsolutely,
+      absolute,
+      actions
+    }"
   >
     <PanelSection v-if="active" :label="panels.position">
       <AlignToolbar :align="actions.align" />
@@ -41,6 +53,16 @@ const { panels } = useI18n()
             @cancel="actions.cancelProp('y')"
           />
         </Tip>
+        <template v-if="canPositionAbsolutely" #actions>
+          <IconButton
+            :label="panels.absolutePosition"
+            :active="absolute"
+            data-property="layoutPositioning"
+            @click="actions.toggleAbsolute()"
+          >
+            <icon-hugeicons-square-dashed class="size-3.5" />
+          </IconButton>
+        </template>
       </PanelGrid>
 
       <PanelGrid v-if="isMulti" :columns="2" class="mt-1.5">

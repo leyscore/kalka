@@ -120,6 +120,7 @@
   "xAxis": "X軸",
   "yAxis": "Y軸",
   "rotation": "回転",
+  "absolutePosition": "絶対位置",
   "width": "幅",
   "height": "高さ",
   "opacity": "不透明度",

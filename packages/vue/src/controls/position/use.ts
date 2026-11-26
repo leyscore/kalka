@@ -87,6 +87,40 @@ export function usePosition() {
     editor.rotateNodes(ids.value, degrees)
   }
 
+  // Figma's Absolute position: a layer in an auto layout frame can leave its flow and be
+  // placed freely, pinned by its constraints.
+  const canPositionAbsolutely = computed(
+    () =>
+      nodes.value.length > 0 &&
+      nodes.value.every((target) => {
+        const parent = target.parentId ? editor.graph.getNode(target.parentId) : undefined
+        return parent !== undefined && parent.type !== 'CANVAS' && parent.layoutMode !== 'NONE'
+      })
+  )
+  const absolute = computed(
+    () =>
+      nodes.value.length > 0 &&
+      nodes.value.every((target) => target.layoutPositioning === 'ABSOLUTE')
+  )
+
+  /**
+   * Takes the layers out of their auto layout flow where they are on the canvas, or puts them
+   * back at their place in it; the others reflow. One undo step.
+   */
+  function toggleAbsolute() {
+    if (!canPositionAbsolutely.value) return
+    const layoutPositioning = absolute.value ? 'AUTO' : 'ABSOLUTE'
+    const label = layoutPositioning === 'ABSOLUTE' ? 'Absolute position' : 'Auto layout position'
+    editor.undo.runBatch(label, () => {
+      for (const target of nodes.value) {
+        if (target.layoutPositioning === layoutPositioning) continue
+        // Its laid-out place is where it stays once out of the flow.
+        const place = layoutPositioning === 'ABSOLUTE' ? { x: target.x, y: target.y } : {}
+        editor.updateNodeWithUndo(target.id, { layoutPositioning, ...place }, label)
+      }
+    })
+  }
+
   return {
     editor,
     nodes,
@@ -106,6 +140,9 @@ export function usePosition() {
     cancelProp,
     align,
     flip,
-    rotate
+    rotate,
+    canPositionAbsolutely,
+    absolute,
+    toggleAbsolute
   }
 }

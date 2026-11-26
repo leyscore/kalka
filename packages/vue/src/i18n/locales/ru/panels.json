@@ -499,6 +499,7 @@
   "xAxis": "Ось X",
   "yAxis": "Ось Y",
   "rotation": "Поворот",
+  "absolutePosition": "Абсолютное положение",
   "width": "Ширина",
   "height": "Высота",
   "opacity": "Непрозрачность",
