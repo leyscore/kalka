@@ -41,6 +41,7 @@ export type { AgentEdit, RevealStep } from '#vue/canvas/dom-scene/reveal/plan'
 export { SVG_OVERLAY_LAYERS, useSVGOverlay } from '#vue/canvas/svg-overlay/use'
 export type { AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
 export { useCanvasInput } from '#vue/canvas/useCanvasInput'
+export { deletePickedWidthPoint } from '#vue/canvas/variable-width/input'
 export {
   autoLayoutValueAnchor,
   type AutoLayoutValueField
@@ -155,11 +156,7 @@ export { useEffectsControls } from '#vue/controls/effects/use'
 export { useSharedStyleBinding, useSharedStyles } from '#vue/controls/shared-style/use'
 export { groupSharedStyles, type SharedStyleGroup } from '#vue/controls/shared-style/model'
 export { useStrokeControls } from '#vue/controls/stroke/use'
-export {
-  SCALE_ANCHORS,
-  useScaleToolControls,
-  type ScaleAnchor
-} from '#vue/controls/scale/use'
+export { SCALE_ANCHORS, useScaleToolControls, type ScaleAnchor } from '#vue/controls/scale/use'
 export {
   brushChoice,
   useStrokeDrawControls,

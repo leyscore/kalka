@@ -90,7 +90,12 @@ function handlesOf(frame: Frame) {
   )
 }
 
-function show(editor: Editor, frame: Frame | null, hover: WidthHandle | null, active: number | null) {
+function show(
+  editor: Editor,
+  frame: Frame | null,
+  hover: WidthHandle | null,
+  active: number | null
+) {
   const next = frame
     ? {
         nodeId: frame.node.id,
@@ -102,6 +107,30 @@ function show(editor: Editor, frame: Frame | null, hover: WidthHandle | null, ac
   if (next === null && editor.state.widthEdit === null) return
   editor.state.widthEdit = next
   editor.requestRepaint()
+}
+
+/** The width point picked last on the path, which Delete removes; null when none is. */
+function pickedPoint(editor: Editor, node: SceneNode): number | null {
+  const edit = editor.state.widthEdit
+  return edit?.nodeId === node.id ? edit.active : null
+}
+
+/**
+ * Removes the picked width point, as Delete does in Figma, in one undo step. A profile left
+ * with a uniform stroke is cleared, so the stroke is plain again. Returns whether one was removed.
+ */
+export function deletePickedWidthPoint(editor: Editor): boolean {
+  const node = widthTarget(editor)
+  const index = node ? pickedPoint(editor, node) : null
+  if (!node || index === null) return false
+  const original = node.strokeWidthProfile.map((point) => ({ ...point }))
+  const profile = sortedWidthProfile(original).filter((_, at) => at !== index)
+  const uniform = profile.every((point) => point.ascent === 0.5 && point.descent === 0.5)
+  editor.updateNode(node.id, { strokeWidthProfile: uniform ? [] : profile })
+  editor.commitNodeUpdate(node.id, { strokeWidthProfile: original }, 'Delete width point')
+  const updated = widthTarget(editor)
+  show(editor, updated ? frameOf(editor, updated) : null, null, null)
+  return true
 }
 
 /** Shows the tool's handles while it is on and a path is selected, and hides them otherwise. */
@@ -144,7 +173,8 @@ export function updateVariableWidthHover(cx: number, cy: number, editor: Editor)
   const frame = frameOf(editor, node)
   if (!frame) return
   const under = pathUnder(frame, cx, cy, editor.state.zoom)
-  show(editor, frame, under ? localHandle(frame, under.line, under.at) : null, null)
+  const hover = under ? localHandle(frame, under.line, under.at) : null
+  show(editor, frame, hover, pickedPoint(editor, node))
 }
 
 /** The profile a drag starts from: a uniform stroke gets points at its ends first, as in Figma. */
@@ -180,14 +210,24 @@ export function startVariableWidthDrag(
     const lineIndex = frame.lines.indexOf(line)
     if (near(page.left) || near(page.right)) {
       const side = near(page.left) ? 'left' : 'right'
-      return { type: 'width', nodeId: node.id, index, line: lineIndex, mode: altKey ? side : 'both', original }
+      return {
+        type: 'width',
+        nodeId: node.id,
+        index,
+        line: lineIndex,
+        mode: altKey ? side : 'both',
+        original
+      }
     }
     if (near(page.center)) {
       return { type: 'width', nodeId: node.id, index, line: lineIndex, mode: 'move', original }
     }
   }
   const under = pathUnder(frame, cx, cy, editor.state.zoom)
-  if (!under) return null
+  if (!under) {
+    show(editor, frame, null, null)
+    return null
+  }
   const position = under.at / under.line.length
   const widths = widthProfileFunction(original)(position)
   const profile = [...startingProfile(node), { position, ...widths }].sort(
@@ -196,7 +236,14 @@ export function startVariableWidthDrag(
   editor.updateNode(node.id, { strokeWidthProfile: profile })
   const index = profile.findIndex((point) => point.position === position)
   const mode = altKey ? (under.side === 1 ? 'left' : 'right') : 'both'
-  return { type: 'width', nodeId: node.id, index, line: frame.lines.indexOf(under.line), mode, original }
+  return {
+    type: 'width',
+    nodeId: node.id,
+    index,
+    line: frame.lines.indexOf(under.line),
+    mode,
+    original
+  }
 }
 
 export function moveVariableWidthDrag(drag: DragWidth, cx: number, cy: number, editor: Editor) {
@@ -226,7 +273,7 @@ export function moveVariableWidthDrag(drag: DragWidth, cx: number, cy: number, e
   show(editor, frameOf(editor, { ...node, strokeWidthProfile: profile }), null, drag.index)
 }
 
-/** Keeps the drag as one undo step, or puts the profile back. */
+/** Keeps the drag as one undo step, or puts the profile back; the point stays picked. */
 export function finishVariableWidthDrag(drag: DragWidth, editor: Editor, commit: boolean) {
   // Drag state is reactive; its profile must reach the graph as plain data.
   const original = toRaw(drag.original).map((point) => ({ ...toRaw(point) }))
@@ -236,5 +283,5 @@ export function finishVariableWidthDrag(drag: DragWidth, editor: Editor, commit:
     editor.updateNode(drag.nodeId, { strokeWidthProfile: original })
   }
   const node = widthTarget(editor)
-  show(editor, node ? frameOf(editor, node) : null, null, null)
+  show(editor, node ? frameOf(editor, node) : null, null, commit ? drag.index : null)
 }

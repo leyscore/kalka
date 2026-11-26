@@ -1,7 +1,7 @@
 import type { Ref } from 'vue'
 
 import { opacityFromBuffer } from '@kalka/core/editor'
-import type { useEditorCommands, useViewportKind } from '@kalka/vue'
+import { deletePickedWidthPoint, type useEditorCommands, type useViewportKind } from '@kalka/vue'
 
 import type { PropertiesTab } from '@/app/ai/chat/use'
 import type { EditorStore } from '@/app/editor/active-store'
@@ -31,6 +31,8 @@ export function createKeyboardActions({
   }
 
   function smartDelete(altKey: boolean) {
+    // The Variable width tool's picked width point goes first, as in Figma.
+    if (deletePickedWidthPoint(store)) return
     if (hasNodeEditSelection()) {
       if (altKey) store.nodeEditBreakAtVertex()
       else store.nodeEditDeleteSelected()

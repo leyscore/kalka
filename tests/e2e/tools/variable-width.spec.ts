@@ -37,7 +37,9 @@ async function setup() {
           { x: 0, y: 40 },
           { x: 300, y: 0 }
         ],
-        segments: [{ start: 0, end: 1, tangentStart: { x: 120, y: 0 }, tangentEnd: { x: -120, y: 0 } }],
+        segments: [
+          { start: 0, end: 1, tangentStart: { x: 120, y: 0 }, tangentEnd: { x: -120, y: 0 } }
+        ],
         regions: []
       }
     })
@@ -74,11 +76,13 @@ test('a width profile and a brush are set from the stroke settings and drawn as 
   await page.getByRole('combobox', { name: 'Width profile' }).click()
   await page.getByRole('option', { name: 'Eye', exact: true }).click()
   await expect.poll(async () => (await layer(path))?.profile.length).toBe(3)
-  await expect.poll(async () => (await layer(path))?.profile[1]).toEqual({
-    position: 0.5,
-    ascent: 0.5,
-    descent: 0.5
-  })
+  await expect
+    .poll(async () => (await layer(path))?.profile[1])
+    .toEqual({
+      position: 0.5,
+      ascent: 0.5,
+      descent: 0.5
+    })
   // The stroke is a filled shape in the stroke's colour, not an SVG stroke.
   await expect
     .poll(async () => (await drawnPaths(frame)).some((p) => p.fill === '#000000' && !p.stroke))
@@ -146,5 +150,29 @@ test('the Variable width tool adds a width point by dragging out from the path',
 
   await editor.canvas.undo()
   await expect.poll(async () => (await layer(path))?.profile).toEqual([])
+  editor.canvas.assertNoErrors()
+})
+
+test('Delete removes the width point picked last, not the layer', async () => {
+  const { page } = editor
+  const { path } = await setup()
+  await page.keyboard.press('Shift+W')
+  const start = await toScreen(230, 160)
+  await page.mouse.move(start.x, start.y)
+  await page.mouse.down()
+  await page.mouse.move(start.x, start.y - 20, { steps: 4 })
+  await page.mouse.up()
+  await expect.poll(async () => (await layer(path))?.profile.length).toBe(3)
+  await expect
+    .poll(() => page.evaluate(() => window.kalka?.getStore?.().state.widthEdit?.active))
+    .toBe(1)
+
+  await page.keyboard.press('Backspace')
+  // Only the uniform end points were left, so the stroke is plain again.
+  await expect.poll(async () => (await layer(path))?.profile).toEqual([])
+  expect(await layer(path)).not.toBeNull()
+
+  await editor.canvas.undo()
+  await expect.poll(async () => (await layer(path))?.profile.length).toBe(3)
   editor.canvas.assertNoErrors()
 })
