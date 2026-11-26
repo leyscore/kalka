@@ -35,6 +35,8 @@ export function usePresentTriggers(options: {
   later: (seconds: number, go: () => void) => void
   /** A click ran nothing. */
   onMiss: () => void
+  /** How much the presented screen is scaled to fit the window. */
+  scale: () => number
 }) {
   const editor = useEditor()
   const { screens, apply } = options
@@ -106,6 +108,55 @@ export function usePresentTriggers(options: {
   let hovered: string[] = []
   let dragStart: { x: number; y: number; hit: Hit } | null = null
 
+  /**
+   * On drag with Smart animate, as in Figma: the dragged layer follows the pointer, and letting
+   * go plays the interaction from where it was dragged to.
+   */
+  let following: {
+    x: number
+    y: number
+    element: HTMLElement
+    reaction: PrototypeReaction
+    context: ActionContext
+  } | null = null
+  /** A drag ran, so the click that ends it does not run On click too. */
+  let dragged = false
+
+  function followsPointer(reaction: PrototypeReaction): boolean {
+    const [first] = reaction.actions
+    return first?.type === 'NODE' && first.transition?.type === 'SMART_ANIMATE'
+  }
+
+  function startDrag(start: { x: number; y: number; hit: Hit }) {
+    dragged = true
+    const found = reactionFor(start.hit.instance.graph(), start.hit.nodeIds, 'ON_DRAG')
+    if (!found) return
+    const element = start.hit.instance.elementOf(found.nodeId)
+    const context = contextOf(start.hit, found.nodeId)
+    if (element && followsPointer(found.reaction))
+      following = { x: start.x, y: start.y, element, reaction: found.reaction, context }
+    else runReaction(found.reaction, context)
+  }
+
+  function follow(event: PointerEvent) {
+    if (!following) return
+    const scale = options.scale() || 1
+    const dx = (event.clientX - following.x) / scale
+    const dy = (event.clientY - following.y) / scale
+    following.element.style.translate = `${dx}px ${dy}px`
+  }
+
+  /** Letting go of a followed drag plays its interaction from the dragged position. */
+  function endFollow() {
+    const ended = following
+    following = null
+    if (!ended) return
+    runReaction(ended.reaction, ended.context)
+    options.queue(() => {
+      ended.element.style.translate = ''
+    })
+  }
+
   function onPointerMove(event: PointerEvent) {
     const hit = hitOf(event)
     const ids = hit?.nodeIds ?? []
@@ -130,9 +181,10 @@ export function usePresentTriggers(options: {
       dragStart &&
       Math.hypot(event.clientX - dragStart.x, event.clientY - dragStart.y) > DRAG_DISTANCE
     ) {
-      fire(dragStart.hit, 'ON_DRAG')
+      startDrag(dragStart)
       dragStart = null
     }
+    follow(event)
   }
 
   /** The pointer left the prototype: hovering ends and mouse leave fires. */
@@ -146,15 +198,22 @@ export function usePresentTriggers(options: {
     fire(hit, 'MOUSE_DOWN')
     hold(hit, 'ON_PRESS')
     dragStart = hit ? { x: event.clientX, y: event.clientY, hit } : null
+    dragged = false
   }
 
   function onPointerUp(event: PointerEvent) {
+    dragStart = null
+    endFollow()
     fire(hitOf(event), 'MOUSE_UP')
     release('ON_PRESS')
   }
 
   function onClick(event: MouseEvent) {
     dragStart = null
+    if (dragged) {
+      dragged = false
+      return
+    }
     if (!fire(hitOf(event), 'ON_CLICK')) options.onMiss()
   }
 
@@ -221,6 +280,8 @@ export function usePresentTriggers(options: {
   /** Forgets a held hover or press, as the presentation restarts. */
   function reset() {
     held = null
+    following = null
+    dragged = false
   }
 
   return {

@@ -70,7 +70,8 @@ const triggers = usePresentTriggers({
   apply,
   queue,
   later: timers.later,
-  onMiss: () => flash(screens.shownFrameViews())
+  onMiss: () => flash(screens.shownFrameViews()),
+  scale: () => scale.value
 })
 const { onPointerMove, onPointerLeave, onPointerDown, onClick, onOutside, onMedia } = triggers
 
