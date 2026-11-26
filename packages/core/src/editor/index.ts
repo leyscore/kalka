@@ -29,6 +29,12 @@ export type { VariableTokenFields } from './variables'
 export type { TokenImportResult } from '#core/io/formats/design-tokens'
 export { reapplyInstanceComponentProperties } from './components/properties'
 export { INSTANCE_OVERRIDE_GROUPS, type InstanceOverrideGroup } from './components/overrides'
+export {
+  componentPlaygroundProperties,
+  createComponentPlayground,
+  type ComponentPlayground,
+  type PlaygroundValues
+} from './components/playground'
 export { SELECT_SAME_KINDS, type SelectSameKind } from './selection/matching'
 export { createGuideActions } from './guides'
 export { createTextActions } from './text'

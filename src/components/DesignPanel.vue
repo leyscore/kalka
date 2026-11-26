@@ -3,7 +3,7 @@ import { computed } from 'vue'
 
 import { getNodeEditCapability } from '@kalka/core/editor'
 import { readIcon } from '@kalka/scene-graph'
-import { useI18n, useSceneComputed, useSelectionState, useEditorCommands } from '@kalka/vue'
+import { useI18n, useSceneComputed, useSelectionState } from '@kalka/vue'
 
 import { useDocumentViewOnly } from '@/app/collab/view-only'
 import { useEditorStore } from '@/app/editor/active-store'
@@ -19,7 +19,10 @@ import BreakpointsSection from './properties/BreakpointsSection.vue'
 import BehaviourPanel from './properties/component-properties/behaviour/BehaviourPanel.vue'
 import ComponentPropertiesSection from './properties/component-properties/ComponentPropertiesSection.vue'
 import ComponentPropertyListSection from './properties/component-properties/ComponentPropertyListSection.vue'
+import ComponentCreateMenu from './properties/component-properties/create/ComponentCreateMenu.vue'
+import InstanceActions from './properties/component-properties/instance-actions/InstanceActions.vue'
 import InstanceUpdateAction from './properties/component-properties/instance-update/InstanceUpdateAction.vue'
+import PlaygroundButton from './properties/component-properties/playground/PlaygroundButton.vue'
 import PropertyBindButton from './properties/component-properties/PropertyBindButton.vue'
 import PropertyBoundField from './properties/component-properties/PropertyBoundField.vue'
 import SlotAuthoringSection from './properties/component-properties/slot/SlotAuthoringSection.vue'
@@ -54,9 +57,6 @@ const { selectedNode: node, selectedCount: multiCount } = useSelectionState()
 const swapBinding = usePropertyBinding('INSTANCE_SWAP')
 const swapLinked = computed(() => !!swapBinding.definition.value)
 const showBooleanOperations = computed(() => multiCount.value >= 2)
-const { getCommand } = useEditorCommands()
-const goToMainComponent = getCommand('selection.goToMainComponent')
-const detachInstance = getCommand('selection.detachInstance')
 const isComponentType = computed(() => {
   const type = node.value?.type
   return type ? COMPONENT_TYPES.has(type) : false
@@ -116,6 +116,7 @@ const viewOnly = useDocumentViewOnly()
         </span>
         <template #actions>
           <SelectionActionsControl :show-boolean-operations="showBooleanOperations" />
+          <ComponentCreateMenu />
         </template>
       </PanelHeader>
       <ComponentPropertiesSection />
@@ -173,22 +174,15 @@ const viewOnly = useDocumentViewOnly()
               @review="openSelectedInstanceReview"
             />
             <SelectionActionsControl />
-            <template v-if="node.type === 'INSTANCE'">
-              <IconButton
-                :label="goToMainComponent.label"
-                data-test-id="instance-go-to-main"
-                @click="goToMainComponent.run()"
-              >
-                <icon-hugeicons-crosshair class="size-3.5" />
-              </IconButton>
-              <IconButton
-                :label="detachInstance.label"
-                data-test-id="instance-detach"
-                @click="detachInstance.run()"
-              >
-                <icon-hugeicons-unlink-01 class="size-3.5" />
-              </IconButton>
-            </template>
+            <PlaygroundButton
+              v-if="
+                node.type === 'COMPONENT' ||
+                node.type === 'COMPONENT_SET' ||
+                node.type === 'INSTANCE'
+              "
+              :node="node"
+            />
+            <InstanceActions v-if="node.type === 'INSTANCE'" :node="node" />
           </template>
         </PanelHeader>
 
