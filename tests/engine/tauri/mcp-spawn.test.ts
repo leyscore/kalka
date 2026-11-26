@@ -22,11 +22,19 @@ const DISCOVERY_JSON = JSON.stringify({
   startedAt: new Date().toISOString()
 })
 
+// Bun gives every test file one `navigator`; the tests replace it and put it back.
+const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator')
+
+function restoreNavigator() {
+  if (originalNavigator) Object.defineProperty(globalThis, 'navigator', originalNavigator)
+  else Reflect.deleteProperty(globalThis, 'navigator')
+}
+
 afterEach(async () => {
   await clearTauriMocks()
   vi.restoreAllMocks()
   Reflect.deleteProperty(globalThis, 'window')
-  Reflect.deleteProperty(globalThis, 'navigator')
+  restoreNavigator()
   Reflect.deleteProperty(globalThis, 'location')
 })
 
