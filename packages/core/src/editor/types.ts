@@ -47,6 +47,7 @@ export type Tool =
   | 'TEXT'
   | 'PEN'
   | 'PENCIL'
+  | 'SCALE'
   | 'HAND'
 
 export interface EditorSharedState {

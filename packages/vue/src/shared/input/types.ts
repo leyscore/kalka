@@ -1,4 +1,4 @@
-import type { Editor, MoveOriginal, Tool } from '@kalka/core/editor'
+import type { Editor, MoveOriginal, ScaleSession, Tool } from '@kalka/core/editor'
 import type {
   CSSDeclarations,
   DerivedTextGlyph,
@@ -156,6 +156,15 @@ export interface DragRotate {
   rotationDirection: 1 | -1
 }
 
+/** A handle dragged with the Scale tool (K): the selection scales about the opposite handle. */
+export interface DragScale {
+  type: 'scale'
+  session: ScaleSession
+  /** The opposite handle, which stays put, and the grabbed one, on the page. */
+  anchor: Vector
+  handle: Vector
+}
+
 /** A freehand stroke the pencil is drawing; the points live in the editor state. */
 export interface DragPencil {
   type: 'pencil'
@@ -233,6 +242,7 @@ export type DragState =
   | DragRotate
   | DragPen
   | DragPencil
+  | DragScale
   | DragTextSelect
   | DragEditNode
   | DragEditHandle

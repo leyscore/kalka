@@ -1,3 +1,5 @@
+import { BLACK } from '@kalka/core/constants'
+
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 import { openAppMenu } from '#tests/helpers/menu'
 
@@ -8,7 +10,7 @@ const editor = useEditorSetupWithClear()
 
 /** An open path with a sharp top: (200, 400) → (300, 200) → (400, 400) on the canvas. */
 async function addPeak() {
-  await editor.page.evaluate(() => {
+  await editor.page.evaluate((black) => {
     const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const straight = { tangentStart: { x: 0, y: 0 }, tangentEnd: { x: 0, y: 0 } }
@@ -21,7 +23,7 @@ async function addPeak() {
       strokes: [
         {
           type: 'SOLID',
-          color: { r: 0, g: 0, b: 0, a: 1 },
+          color: black,
           opacity: 1,
           visible: true,
           weight: 2,
@@ -42,7 +44,7 @@ async function addPeak() {
       }
     })
     store.select([node.id])
-  })
+  }, BLACK)
   await editor.canvas.waitForRender()
 }
 

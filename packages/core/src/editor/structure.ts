@@ -22,6 +22,7 @@ import {
   type RenameSelectionOptions
 } from './structure/rename'
 import { createStructureReorderActions } from './structure/reorder'
+import { createScaleActions } from './structure/scale'
 import { createStructureStateActions } from './structure/state'
 import { createVectorPathActions } from './structure/vector-paths'
 import type { EditorContext } from './types'
@@ -201,6 +202,7 @@ export function createStructureActions(ctx: EditorContext) {
     ...stateActions,
     ...createObjectCommandActions(ctx),
     ...createVectorPathActions(ctx),
+    ...createScaleActions(ctx),
     moveToPage,
     previewRenameSelected,
     renameSelected,

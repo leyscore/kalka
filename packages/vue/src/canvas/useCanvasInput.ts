@@ -8,9 +8,9 @@ import { createAutoLayoutValueEdit } from '#vue/canvas/auto-layout/value-edit'
 import { createGuideInput, selectedTopLevelGuideFrameId } from '#vue/canvas/guides/input'
 import { createCanvasLabelEdit } from '#vue/canvas/labels/edit'
 import { handlePenDragMove, updatePenHover } from '#vue/canvas/pen/input'
-import { finishPencilDrag, handlePathPointerUp } from '#vue/canvas/pencil/input'
 import { createCanvasPointer } from '#vue/canvas/pointer/use'
 import { createTextEditInput } from '#vue/canvas/text-edit/input'
+import { endToolDrag, handleToolPointerUp, moveToolDrag } from '#vue/canvas/tools/drags'
 import { handleToolMouseDown } from '#vue/canvas/tools/input'
 import { createCanvasTransformInput } from '#vue/canvas/transform/input'
 import { finishMarquee } from '#vue/canvas/transform/marquee'
@@ -314,10 +314,7 @@ export function useCanvasInput(
       return
     }
 
-    if (d.type === 'pencil') {
-      editor.pencilExtend(cx, cy)
-      return
-    }
+    if (moveToolDrag(d, cx, cy, editor)) return
 
     if (d.type === 'pen-drag') {
       handlePenDragMove(d, cx, cy, spaceHeld.value, e, editor)
@@ -361,7 +358,7 @@ export function useCanvasInput(
     if (!drag.value) return
     const d = drag.value
 
-    if (handlePathPointerUp(drag, editor)) return
+    if (handleToolPointerUp(drag, editor)) return
 
     if (d.type === 'guide') {
       guideInput.finish(d)
@@ -417,7 +414,7 @@ export function useCanvasInput(
       drag.value = null
       drawing.cancel()
     }
-    finishPencilDrag(drag, editor, false)
+    endToolDrag(drag, editor, false)
     if (drag.value?.type === 'corner-radius') cancelCornerRadius(drag.value, editor)
     if (drag.value?.type === 'gradient-handle') cancelGradientHandle(drag.value, editor)
     if (drag.value?.type === 'auto-layout-value') cancelAutoLayoutValueDrag(drag.value, editor)
@@ -474,7 +471,7 @@ export function useCanvasInput(
     (event) => {
       if (event.code !== 'Escape' || event.isComposing || !isEnabled()) return
       const type = drag.value?.type
-      if (type !== 'draw' && type !== 'rotate' && type !== 'pencil') return
+      if (type !== 'draw' && type !== 'rotate' && type !== 'pencil' && type !== 'scale') return
       event.preventDefault()
       event.stopImmediatePropagation()
       cancelPointerInteraction()

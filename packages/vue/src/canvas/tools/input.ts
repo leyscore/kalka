@@ -3,6 +3,7 @@ import type { Ref } from 'vue'
 import type { Editor } from '@kalka/core/editor'
 
 import { startPenInput } from '#vue/canvas/pen/input'
+import { tryStartScale } from '#vue/canvas/scale/input'
 import { startShapeDraw, startTextDraw } from '#vue/shared/input/draw'
 import { startPanDrag } from '#vue/shared/input/pan'
 import { handleSelectDown } from '#vue/shared/input/select'
@@ -45,7 +46,15 @@ export function handleToolMouseDown({
     return
   }
 
-  if (tool === 'SELECT') {
+  if (tool === 'SCALE') {
+    const scale = tryStartScale(cx, cy, editor)
+    if (scale) {
+      setDrag(scale)
+      return
+    }
+  }
+
+  if (tool === 'SELECT' || tool === 'SCALE') {
     handleSelectDown(
       event,
       cx,

@@ -8,7 +8,13 @@ export * from './variables/token'
 export * from './variables/fingerprint'
 export * from './plugin-data/field'
 export * from './plugin-data/fields'
-export { rescaleNodeTree, scaleNodeChanges } from './scaling'
+export {
+  canRescaleNode,
+  collectScaleTree,
+  rescaleNodeTree,
+  rescaleNodeTreeFrom,
+  scaleNodeChanges
+} from './scaling'
 import { TRANSFORM_FIELDS, SIZE_FIELDS } from './fields/geometry'
 export { TRANSFORM_FIELDS, SIZE_FIELDS } from './fields/geometry'
 import { AUTO_LAYOUT_FIELDS, SIZE_CONSTRAINT_FIELDS } from './fields/layout'
