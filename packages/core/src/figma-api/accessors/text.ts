@@ -8,6 +8,7 @@ import {
   type ProxyThis
 } from '#core/figma-api/accessor-utils'
 import type { FigmaFontName } from '#core/figma-api/fonts'
+import { styleLinkChanges } from '#core/figma-api/styles'
 import { getFontName, setFontName } from '#core/figma-api/text'
 
 function graph(target: ProxyThis, internals: NodeProxyInternals): SceneGraph {
@@ -71,6 +72,12 @@ function metric(internals: NodeProxyInternals, name: 'lineHeight' | 'letterSpaci
   }
 }
 
+/** Links a text style; one in the document gives the text its type settings, as in Figma. */
+function linkTextStyle(target: ProxyThis, internals: NodeProxyInternals, styleId: string): void {
+  const node = raw(target, internals)
+  updateNode(target, internals, styleLinkChanges(graph(target, internals), node, 'text', styleId))
+}
+
 export function installTextNodeProxyAccessors(
   prototype: object,
   internals: NodeProxyInternals
@@ -98,7 +105,12 @@ export function installTextNodeProxyAccessors(
         return raw(this, internals).textStyleId ?? ''
       },
       set(this: ProxyThis, value: string) {
-        updateNode(this, internals, { textStyleId: value || null })
+        linkTextStyle(this, internals, value)
+      }
+    },
+    setTextStyleIdAsync: {
+      value: async function (this: ProxyThis, styleId: string): Promise<void> {
+        linkTextStyle(this, internals, styleId)
       }
     },
     fontWeight: field(internals, 'fontWeight'),

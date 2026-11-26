@@ -207,7 +207,7 @@ The implementation notes predate the DOM canvas. Where they name CanvasKit, the 
 | Feature | Status | Notes |
 |---------|--------|-------|
 | Eval command with Figma Plugin API | ✅ | Headless JavaScript execution with figma global object matching Figma's plugin surface |
-| `use_figma` MCP tool | 🟡 | Runs scripts written for Figma's remote `use_figma` on the open document, with `figma.variables` and variable bindings; no style authoring, `createNodeFromJSXAsync`, or library imports ([details](/programmable/mcp-server#use-figma)) |
+| `use_figma` MCP tool | 🟡 | Runs scripts written for Figma's remote `use_figma` on the open document, with `figma.variables`, variable bindings and local styles; no `createNodeFromJSXAsync`, or library imports ([details](/programmable/mcp-server#use-figma)) |
 
 ## Collaboration & Dev Mode
 

@@ -6,8 +6,8 @@ import type { FigmaAPI } from './index'
 export type UnsupportedPluginAPIMember = Exclude<keyof PluginAPI, keyof FigmaAPI>
 
 const NO_PLUGIN_RUNTIME = 'Kalka scripts run without a plugin UI, session, or editor events'
-const NO_STYLE_AUTHORING =
-  'Kalka reads shared styles from imported files, but scripts cannot create or list them yet; use variables'
+const NO_STYLE_FOLDERS =
+  'Kalka scripts can move a style but not a style folder yet; move its styles one by one'
 const NOT_DESIGN = 'Kalka edits design files; FigJam, Slides, Buzz, and Dev Mode APIs are absent'
 const NO_LIBRARY = "Kalka has no Figma team library to import from; use the document's components"
 const NOT_YET = 'Kalka does not implement this Plugin API member yet'
@@ -32,15 +32,12 @@ export const UNSUPPORTED_PLUGIN_API = {
   createCodeBlock: NOT_DESIGN,
   createConnector: NOT_DESIGN,
   createCustomAnimationStyle: NOT_YET,
-  createEffectStyle: NO_STYLE_AUTHORING,
   createGif: 'Kalka cannot create GIF layers',
-  createGridStyle: NO_STYLE_AUTHORING,
   createImageAsync: 'Use figma.createImage with the image bytes',
   createLinkPreviewAsync: NOT_DESIGN,
   createNodeFromJSXAsync:
     "Widget JSX is not available: build layers with figma.create* calls, or use Kalka's render tool, which takes Kalka design JSX",
   createPageDivider: NOT_YET,
-  createPaintStyle: NO_STYLE_AUTHORING,
   createShapeWithText: NOT_DESIGN,
   createSlice: NOT_YET,
   createSlide: NOT_DESIGN,
@@ -48,7 +45,6 @@ export const UNSUPPORTED_PLUGIN_API = {
   createSticky: NOT_DESIGN,
   createTable: NOT_DESIGN,
   createTextPath: 'Kalka has no text on a path yet',
-  createTextStyle: NO_STYLE_AUTHORING,
   createVideoAsync: 'Kalka cannot create video layers',
   currentUser: NO_PLUGIN_RUNTIME,
   devResources: NOT_DESIGN,
@@ -61,18 +57,8 @@ export const UNSUPPORTED_PLUGIN_API = {
   getImageByHash: NOT_YET,
   getLocalCustomAnimationStyles: NOT_YET,
   getLocalCustomAnimationStylesAsync: NOT_YET,
-  getLocalEffectStyles: NO_STYLE_AUTHORING,
-  getLocalEffectStylesAsync: NO_STYLE_AUTHORING,
-  getLocalGridStyles: NO_STYLE_AUTHORING,
-  getLocalGridStylesAsync: NO_STYLE_AUTHORING,
-  getLocalPaintStyles: NO_STYLE_AUTHORING,
-  getLocalPaintStylesAsync: NO_STYLE_AUTHORING,
-  getLocalTextStyles: NO_STYLE_AUTHORING,
-  getLocalTextStylesAsync: NO_STYLE_AUTHORING,
   getSelectionColors: NOT_YET,
   getSlideGrid: NOT_DESIGN,
-  getStyleById: NO_STYLE_AUTHORING,
-  getStyleByIdAsync: NO_STYLE_AUTHORING,
   hasMissingFont: 'Kalka loads the fonts a document uses after each script',
   importComponentByKeyAsync: NO_LIBRARY,
   importComponentSetByKeyAsync: NO_LIBRARY,
@@ -84,14 +70,10 @@ export const UNSUPPORTED_PLUGIN_API = {
   motion: NOT_YET,
   moveLocalCustomAnimationFolderAfter: NOT_YET,
   moveLocalCustomAnimationStyleAfter: NOT_YET,
-  moveLocalEffectFolderAfter: NO_STYLE_AUTHORING,
-  moveLocalEffectStyleAfter: NO_STYLE_AUTHORING,
-  moveLocalGridFolderAfter: NO_STYLE_AUTHORING,
-  moveLocalGridStyleAfter: NO_STYLE_AUTHORING,
-  moveLocalPaintFolderAfter: NO_STYLE_AUTHORING,
-  moveLocalPaintStyleAfter: NO_STYLE_AUTHORING,
-  moveLocalTextFolderAfter: NO_STYLE_AUTHORING,
-  moveLocalTextStyleAfter: NO_STYLE_AUTHORING,
+  moveLocalEffectFolderAfter: NO_STYLE_FOLDERS,
+  moveLocalGridFolderAfter: NO_STYLE_FOLDERS,
+  moveLocalPaintFolderAfter: NO_STYLE_FOLDERS,
+  moveLocalTextFolderAfter: NO_STYLE_FOLDERS,
   moveNodesToCoord: NOT_YET,
   off: NO_PLUGIN_RUNTIME,
   on: NO_PLUGIN_RUNTIME,

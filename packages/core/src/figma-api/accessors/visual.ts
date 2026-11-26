@@ -1,8 +1,15 @@
-import { newStrokeGeometry, type Fill, type SceneNode, type Stroke } from '@kalka/scene-graph'
+import {
+  newStrokeGeometry,
+  type Fill,
+  type SceneNode,
+  type SharedStyleKind,
+  type Stroke
+} from '@kalka/scene-graph'
 import { normalizeColor } from '@kalka/scene-graph/color'
 import { copyFills, copyStrokes } from '@kalka/scene-graph/copy'
 
 import {
+  graph,
   raw,
   updateNode,
   type NodeProxyInternals,
@@ -20,17 +27,47 @@ import {
   toFigmaEffect,
   type FigmaEffect
 } from '#core/figma-api/effects'
+import { styleLinkChanges } from '#core/figma-api/styles'
 
-function styleReference(
-  internals: NodeProxyInternals,
-  field: 'fillStyleId' | 'strokeStyleId' | 'effectStyleId' | 'gridStyleId'
-): PropertyDescriptor {
+type VisualStyleKind = 'fill' | 'stroke' | 'effect' | 'grid'
+
+const STYLE_FIELDS = {
+  fill: 'fillStyleId',
+  stroke: 'strokeStyleId',
+  effect: 'effectStyleId',
+  grid: 'gridStyleId'
+} as const satisfies Record<VisualStyleKind, keyof SceneNode>
+
+/**
+ * A layer's link to a shared style; linking a style in the document gives the layer its values,
+ * as in Figma. An assignment inside an instance is an override.
+ */
+function styleReference(internals: NodeProxyInternals, kind: VisualStyleKind): PropertyDescriptor {
   return {
     get(this: ProxyThis): string {
-      return raw(this, internals)[field] ?? ''
+      return raw(this, internals)[STYLE_FIELDS[kind]] ?? ''
     },
     set(this: ProxyThis, value: string) {
-      updateNode(this, internals, { [field]: value || null })
+      linkStyle(this, internals, kind, value)
+    }
+  }
+}
+
+function linkStyle(
+  target: ProxyThis,
+  internals: NodeProxyInternals,
+  kind: SharedStyleKind,
+  styleId: string
+): void {
+  const node = raw(target, internals)
+  updateNode(target, internals, styleLinkChanges(graph(target, internals), node, kind, styleId))
+}
+
+/** Figma's `setFillStyleIdAsync` and its siblings, which dynamic-page plugins must use. */
+function asyncStyleSetter(internals: NodeProxyInternals, kind: SharedStyleKind) {
+  return {
+    value: async function (this: ProxyThis, styleId: string): Promise<void> {
+      linkStyle(this, internals, kind, styleId)
     }
   }
 }
@@ -120,11 +157,15 @@ export function installVisualNodeProxyAccessors(
         applyEffectBindings(this, internals, value)
       }
     },
-    // Applied shared styles, as Figma exposes them; an assignment inside an instance is an override.
-    fillStyleId: styleReference(internals, 'fillStyleId'),
-    strokeStyleId: styleReference(internals, 'strokeStyleId'),
-    effectStyleId: styleReference(internals, 'effectStyleId'),
-    gridStyleId: styleReference(internals, 'gridStyleId'),
+    // Applied shared styles, as Figma exposes them.
+    fillStyleId: styleReference(internals, 'fill'),
+    strokeStyleId: styleReference(internals, 'stroke'),
+    effectStyleId: styleReference(internals, 'effect'),
+    gridStyleId: styleReference(internals, 'grid'),
+    setFillStyleIdAsync: asyncStyleSetter(internals, 'fill'),
+    setStrokeStyleIdAsync: asyncStyleSetter(internals, 'stroke'),
+    setEffectStyleIdAsync: asyncStyleSetter(internals, 'effect'),
+    setGridStyleIdAsync: asyncStyleSetter(internals, 'grid'),
     opacity: {
       get(this: ProxyThis): number {
         return raw(this, internals).opacity

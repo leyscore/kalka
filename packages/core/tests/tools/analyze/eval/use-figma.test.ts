@@ -324,14 +324,14 @@ describe('use_figma', () => {
       const frame = figma.createFrame()
       frame.name = 'Half done'
       console.log('before the failure')
-      figma.createPaintStyle()
+      figma.createSticky()
       `
     )
     const created = error.changes.createdNodeIds
     expect(created).toHaveLength(1)
     expect(graph.getNode(created[0])?.name).toBe('Half done')
     expect(error.safeToRetryWithoutCanvasRead).toBe(false)
-    expect(error.message).toContain('figma.createPaintStyle is not supported in Kalka')
+    expect(error.message).toContain('figma.createSticky is not supported in Kalka')
     expect(error.message).toContain('safeToRetryWithoutCanvasRead: false')
     expect(error.message).toContain(`createdNodeIds: ["${created[0]}"]`)
     expect(error.message).toContain('[log] before the failure')

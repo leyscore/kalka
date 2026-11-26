@@ -56,6 +56,7 @@ import {
   type FigmaFontName,
   type NodeProxyHost
 } from './proxy'
+import { FigmaStylesAPI } from './styles'
 import type { ExportImageOptions } from './types'
 import { FigmaVariablesAPI } from './variables'
 
@@ -108,6 +109,7 @@ export class FigmaAPI implements NodeProxyHost {
 
   readonly mixed = MIXED
   readonly variables: FigmaVariablesAPI = new FigmaVariablesAPI(this)
+  private readonly _styles = new FigmaStylesAPI(this)
 
   constructor(graph: SceneGraph) {
     this.graph = graph
@@ -336,6 +338,31 @@ export class FigmaAPI implements NodeProxyHost {
     const host = exposeInstanceSwap(this.graph, slots, candidates, propertyName)
     return this.wrapNode(host.id)
   }
+
+  // --- Local styles, as Figma's PaintStyle, TextStyle, EffectStyle and GridStyle ---
+
+  createPaintStyle = () => this._styles.create('PAINT')
+  createTextStyle = () => this._styles.create('TEXT')
+  createEffectStyle = () => this._styles.create('EFFECT')
+  createGridStyle = () => this._styles.create('GRID')
+  getLocalPaintStyles = () => this._styles.local('PAINT')
+  getLocalTextStyles = () => this._styles.local('TEXT')
+  getLocalEffectStyles = () => this._styles.local('EFFECT')
+  getLocalGridStyles = () => this._styles.local('GRID')
+  getLocalPaintStylesAsync = async () => this._styles.local('PAINT')
+  getLocalTextStylesAsync = async () => this._styles.local('TEXT')
+  getLocalEffectStylesAsync = async () => this._styles.local('EFFECT')
+  getLocalGridStylesAsync = async () => this._styles.local('GRID')
+  getStyleById = (id: string) => this._styles.byId(id)
+  getStyleByIdAsync = async (id: string) => this._styles.byId(id)
+  moveLocalPaintStyleAfter = (target: unknown, reference: unknown) =>
+    this._styles.moveAfter('PAINT', target, reference)
+  moveLocalTextStyleAfter = (target: unknown, reference: unknown) =>
+    this._styles.moveAfter('TEXT', target, reference)
+  moveLocalEffectStyleAfter = (target: unknown, reference: unknown) =>
+    this._styles.moveAfter('EFFECT', target, reference)
+  moveLocalGridStyleAfter = (target: unknown, reference: unknown) =>
+    this._styles.moveAfter('GRID', target, reference)
 
   getVariableById(id: string): Variable | null {
     return this.graph.variables.get(id) ?? null
