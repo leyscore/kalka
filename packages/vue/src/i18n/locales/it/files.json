@@ -51,6 +51,8 @@
   "noRecentFiles": "Nessun file recente",
   "noRecentFilesDescription": "I file aperti nell’app desktop appariranno qui.",
   "draftBadge": "Bozza",
+  "deleteDraft": "Elimina bozza",
+  "draftDeleted": "Bozza «{name}» eliminata.",
   "draftsNotKeptRecoveryOff": "Le bozze restano solo finché la loro scheda è aperta. Attiva il ripristino nelle Impostazioni per conservarle dopo un ricaricamento.",
   "draftsNotKeptStorage": "Le bozze restano solo finché la loro scheda è aperta: questo browser non permette a Kalka di conservarle dopo un ricaricamento.",
   "searchFiles": "Cerca file…",

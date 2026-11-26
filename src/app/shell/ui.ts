@@ -115,8 +115,8 @@ function startProgress(
   }
 }
 
-function info(message: string) {
-  push(message, 'default')
+function info(message: string, action?: ToastAction) {
+  push(message, 'default', action)
 }
 
 function warning(message: string, action?: ToastAction) {

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from 'bun:test'
 
 import { getRecoveryStore } from '@/app/document/recovery/store'
 import { createEditorStore } from '@/app/editor/session'
-import { listDrafts } from '@/app/home/drafts'
+import { deleteDraft, listDrafts, restoreDeletedDraft } from '@/app/home/drafts'
 import { closeTab, createTab, getTabsSnapshot } from '@/app/tabs'
 
 afterEach(async () => {
@@ -50,5 +50,32 @@ describe('drafts on Home', () => {
     editor.setPlannedFilePath('/documents/poster.fig')
     editor.setPageColor({ r: 0.5, g: 0.5, b: 0.5, a: 1 })
     expect(await listDrafts()).toEqual([])
+  })
+
+  test('deleting a kept draft removes its recovery data, and undo puts it back', async () => {
+    await getRecoveryStore().write({ id: 'kept', documentName: 'Kept', figBytes: bytes })
+    const [draft] = await listDrafts()
+    if (!draft) throw new Error('No draft')
+
+    const deleted = await deleteDraft(draft)
+    expect(await listDrafts()).toEqual([])
+    expect(await getRecoveryStore().read('kept')).toBeNull()
+
+    if (!deleted) throw new Error('Nothing deleted')
+    await restoreDeletedDraft(deleted)
+    const restored = await getRecoveryStore().read('kept')
+    expect(restored?.documentName).toBe('Kept')
+    expect([...(restored?.figBytes ?? [])]).toEqual([...bytes])
+  })
+
+  test('leaves a draft open in a tab to its tab', async () => {
+    const editor = createEditorStore()
+    createTab(editor)
+    editor.setPageColor({ r: 0.5, g: 0.5, b: 0.5, a: 1 })
+    await editor.persistRecoveryNow()
+    const [draft] = await listDrafts()
+    if (!draft) throw new Error('No draft')
+    expect(await deleteDraft(draft)).toBeNull()
+    expect(await listDrafts()).toHaveLength(1)
   })
 })

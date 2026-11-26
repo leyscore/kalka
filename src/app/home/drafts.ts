@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import {
   getRecoveryStore,
   isRecoveryStoreMemoryFallback,
+  type RecoverySnapshot,
   type RecoverySnapshotMeta
 } from '@/app/document/recovery'
 import { isRecoveryKeptElsewhere } from '@/app/document/recovery/kept-elsewhere'
@@ -86,4 +87,27 @@ export async function listDrafts(): Promise<DraftDocument[]> {
 export async function openDraft(draft: DraftDocument): Promise<void> {
   if (draft.tabId && switchTab(draft.tabId)) return
   if (draft.snapshotId) await restoreRecoverySnapshot(draft.snapshotId)
+}
+
+/**
+ * Deletes a draft that no tab has open: its recovery data goes, and what it held comes back as
+ * the deleted snapshot, which `restoreDeletedDraft` puts back. An open draft is deleted by
+ * closing its tab without saving.
+ */
+export async function deleteDraft(draft: DraftDocument): Promise<RecoverySnapshot | null> {
+  if (!draft.snapshotId || draft.tabId) return null
+  const store = getRecoveryStore()
+  const snapshot = await store.read(draft.snapshotId)
+  await store.remove(draft.snapshotId)
+  return snapshot
+}
+
+/** Puts a deleted draft back where recovery keeps it. */
+export async function restoreDeletedDraft(snapshot: RecoverySnapshot): Promise<void> {
+  await getRecoveryStore().write({
+    id: snapshot.id,
+    documentName: snapshot.documentName,
+    figBytes: snapshot.figBytes,
+    sourcePath: snapshot.sourcePath
+  })
 }

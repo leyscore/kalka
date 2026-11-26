@@ -51,6 +51,8 @@
   "noRecentFiles": "Aucun fichier récent",
   "noRecentFilesDescription": "Les fichiers ouverts dans l’application de bureau apparaîtront ici.",
   "draftBadge": "Brouillon",
+  "deleteDraft": "Supprimer le brouillon",
+  "draftDeleted": "Brouillon « {name} » supprimé.",
   "draftsNotKeptRecoveryOff": "Les brouillons ne restent que tant que leur onglet est ouvert. Activez la récupération dans les réglages pour les garder après un rechargement.",
   "draftsNotKeptStorage": "Les brouillons ne restent que tant que leur onglet est ouvert : ce navigateur ne permet pas à Kalka de les garder après un rechargement.",
   "searchFiles": "Rechercher des fichiers…",

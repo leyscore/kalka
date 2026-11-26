@@ -7,7 +7,14 @@ import { useDocumentWorkspace, useI18n, useViewportKind } from '@kalka/vue'
 import { serverAccount } from '@/app/collab/server/account'
 import { openServerDocumentById } from '@/app/collab/server/documents'
 import { recoveryEnabled } from '@/app/document/recovery/preferences'
-import { draftsPersist, listDrafts, openDraft, type DraftDocument } from '@/app/home/drafts'
+import {
+  deleteDraft,
+  draftsPersist,
+  listDrafts,
+  openDraft,
+  restoreDeletedDraft,
+  type DraftDocument
+} from '@/app/home/drafts'
 import { homeFilesTab } from '@/app/home/files-tab'
 import {
   activeStorageProviderID,
@@ -25,9 +32,11 @@ import {
 } from '@/app/recent-files'
 import { openSettings } from '@/app/settings/open'
 import { openFileFromPath } from '@/app/shell/menu/use'
+import { toast } from '@/app/shell/ui'
 import { createStorageWorkspaceSource } from '@/app/storage/workspace/source'
 import { activeTab, openStorageDocumentInNewTab } from '@/app/tabs'
 import DocumentEntry from '@/components/home/document/DocumentEntry.vue'
+import DraftActions from '@/components/home/files/DraftActions.vue'
 import HomeSampleTile from '@/components/home/learn/HomeSampleTile.vue'
 import HomeSearchField from '@/components/home/search/HomeSearchField.vue'
 import HomeServerDocuments from '@/components/home/server/HomeServerDocuments.vue'
@@ -45,7 +54,7 @@ import { filesHeading, storageChip } from '@/theme/home/start'
  */
 const { place } = defineProps<{ place: 'home' | 'files' }>()
 
-const { panels, locale, storage, files, common, settings, collaboration } = useI18n()
+const { panels, locale, storage, files, common, settings, collaboration, commands } = useI18n()
 const { isMobile } = useViewportKind()
 const view = useLocalStorage<'grid' | 'list'>('kalka:home-files-view', 'grid')
 const query = ref('')
@@ -166,6 +175,25 @@ async function openDraftDocument(draft: DraftDocument): Promise<void> {
   openError.value = null
   try {
     await openDraft(draft)
+  } catch (error) {
+    openError.value = error instanceof Error ? error.message : String(error)
+    void refreshDrafts()
+  }
+}
+/**
+ * Deletes a draft no tab has open, with an Undo in the toast that says so, as Figma lets a
+ * deleted file come back.
+ */
+async function deleteDraftDocument(draft: DraftDocument): Promise<void> {
+  openError.value = null
+  try {
+    const deleted = await deleteDraft(draft)
+    await refreshDrafts()
+    if (!deleted) return
+    toast.info(files.value.draftDeleted({ name: draft.name }), {
+      label: commands.value.undo,
+      run: () => void restoreDeletedDraft(deleted).then(refreshDrafts)
+    })
   } catch (error) {
     openError.value = error instanceof Error ? error.message : String(error)
     void refreshDrafts()
@@ -340,7 +368,11 @@ function formattedDate(updatedAt: string): string {
             :metadata="formattedDate(draft.updatedAt)"
             data-test-id="home-draft"
             @open="openDraftDocument(draft)"
-          />
+          >
+            <template v-if="draft.snapshotId && !draft.tabId" #actions>
+              <DraftActions :name="draft.name" @delete="deleteDraftDocument(draft)" />
+            </template>
+          </DocumentEntry>
           <DocumentEntry
             v-for="document in filteredRecentFiles"
             :key="document.id"
@@ -373,7 +405,11 @@ function formattedDate(updatedAt: string): string {
             :metadata="formattedDate(draft.updatedAt)"
             data-test-id="home-draft"
             @open="openDraftDocument(draft)"
-          />
+          >
+            <template v-if="draft.snapshotId && !draft.tabId" #actions>
+              <DraftActions :name="draft.name" @delete="deleteDraftDocument(draft)" />
+            </template>
+          </DocumentEntry>
           <DocumentEntry
             v-for="document in filteredRecentFiles"
             :key="document.id"
