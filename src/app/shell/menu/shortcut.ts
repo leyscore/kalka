@@ -46,6 +46,7 @@ export function shortcutTokenToAccelerator(shortcut: string | undefined): string
   return shortcut
     ? normalizeShortcutToken(shortcut)
         .replaceAll('MOD', 'CmdOrCtrl')
+        .replaceAll('CTRL', 'Ctrl')
         .replaceAll('SHIFT', 'Shift')
         .replaceAll('ALT', 'Alt')
     : undefined

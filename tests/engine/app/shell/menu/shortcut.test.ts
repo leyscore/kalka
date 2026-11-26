@@ -22,6 +22,7 @@ describe('app menu shortcut conversion', () => {
   test('converts shortcut tokens to native accelerators', () => {
     expect(shortcutTokenToAccelerator('MOD+SHIFT+S')).toBe('CmdOrCtrl+Shift+S')
     expect(shortcutTokenToAccelerator('ALT+A')).toBe('Alt+A')
+    expect(shortcutTokenToAccelerator('CTRL+ALT+T')).toBe('Ctrl+Alt+T')
     expect(shortcutTokenToAccelerator('⌫')).toBe('Backspace')
   })
 

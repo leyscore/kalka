@@ -377,7 +377,7 @@
       {
         "id": "view-layout-grids",
         "label": "Layout Grids",
-        "accelerator": "CTRL+Shift+4",
+        "accelerator": "Ctrl+Shift+4",
         "checkbox": true
       },
       {
@@ -995,7 +995,7 @@
       {
         "id": "selection.tidyUp",
         "label": "Tidy Up",
-        "accelerator": "CTRL+Alt+T"
+        "accelerator": "Ctrl+Alt+T"
       }
     ]
   },
