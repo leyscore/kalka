@@ -1,4 +1,5 @@
 import type { createComponentActions } from '#core/editor/components'
+import type { InstanceOverrideGroup } from '#core/editor/components/overrides'
 import type { createPageActions } from '#core/editor/pages'
 import type { createSelectionActions } from '#core/editor/selection'
 import type { createStructureActions } from '#core/editor/structure'
@@ -20,6 +21,11 @@ export function createComponentBridge(
         selection.getSelectedNodes(),
         structure.wrapSelectionInContainer
       ),
+    createMultipleComponents: () =>
+      components.createMultipleComponents(
+        selection.getSelectedNodes(),
+        structure.wrapSelectionInContainer
+      ),
     createComponentSetFromComponents: () =>
       components.createComponentSetFromComponents(
         selection.getSelectedNodes(),
@@ -27,6 +33,14 @@ export function createComponentBridge(
       ),
     createInstanceFromComponent: components.createInstanceFromComponent,
     detachInstance: () => components.detachInstance(selection.getSelectedNode()),
+    getInstanceOverrideGroups: components.getInstanceOverrideGroups,
+    resetInstanceChanges: (group?: InstanceOverrideGroup) =>
+      components.resetInstanceChanges(selection.getSelectedNodes(), group),
+    canPushInstanceChanges: () => components.canPushInstanceChanges(selection.getSelectedNode()),
+    pushChangesToMainComponent: () =>
+      components.pushChangesToMainComponent(selection.getSelectedNode()),
+    canRestoreMainComponent: () => components.canRestoreMainComponent(selection.getSelectedNode()),
+    restoreMainComponent: () => components.restoreMainComponent(selection.getSelectedNode()),
     focusComponent: (componentId: string) =>
       components.focusComponent(componentId, pages.switchPage),
     goToMainComponent: () =>

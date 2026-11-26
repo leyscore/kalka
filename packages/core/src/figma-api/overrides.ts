@@ -3,12 +3,16 @@ import { isEqual } from 'es-toolkit/predicate'
 
 import {
   findInstanceAncestor,
-  type ComponentPropertyReferenceField,
-  type InstanceOverrideState,
   type SceneGraph,
   type SceneNode,
   type Stroke
 } from '@kalka/scene-graph'
+
+import {
+  componentLayer,
+  propertyDrivenFields,
+  resetInstanceOverrides
+} from '#core/editor/components/overrides'
 
 import type { NodeProxyInternals, ProxyThis } from './accessor-utils'
 import { assertProxyEditable, graph, raw } from './accessor-utils'
@@ -117,18 +121,6 @@ const FIGMA_OVERRIDE_FIELDS: Readonly<Partial<Record<string, readonly string[]>>
   gridStyleId: ['gridStyleId']
 }
 
-/** Fields a component property sets on a layer, which Figma reports as the property's, not an override. */
-const PROPERTY_FIELDS: Record<ComponentPropertyReferenceField, readonly string[]> = {
-  TEXT: ['text', 'styleRuns', 'textParagraphs'],
-  VISIBLE: ['visible'],
-  INSTANCE_SWAP: ['componentId', 'name'],
-  SLOT_CONTENT: []
-}
-
-function propertyFields(node: SceneNode): Set<string> {
-  return new Set(node.componentPropertyReferences.flatMap(({ field }) => PROPERTY_FIELDS[field]))
-}
-
 /** Figma sorts the names as spelled right, so its misspelled top weight sorts as `strokeTop…`. */
 const sortKey = (name: string) => (name === 'stokeTopWeight' ? 'strokeTopWeight' : name)
 
@@ -139,18 +131,6 @@ function figmaFields(fields: Iterable<string>, skipped: Set<string>): string[] {
     for (const name of FIGMA_OVERRIDE_FIELDS[field] ?? []) names.add(name)
   }
   return [...names].sort((a, b) => sortKey(a).localeCompare(sortKey(b)))
-}
-
-/**
- * The layer of the component a node copies, which its overrides are measured against. A nested
- * instance links to the component's instance it copies, until a swap points it at a component;
- * the enclosing instance then keeps the layer it copied.
- */
-function componentLayer(graph: SceneGraph, node: SceneNode, owner: SceneNode | undefined) {
-  const linked = node.componentId ? graph.getNode(node.componentId) : undefined
-  if (node.type !== 'INSTANCE' || linked?.type === 'INSTANCE') return linked
-  const source = owner?.instanceOverrides.descendants.get(node.id)?.get('sourceComponentId')
-  return typeof source === 'string' ? graph.getNode(source) : undefined
 }
 
 /** Figma keeps stroke weight and alignment on the layer, so a paint differs by its colour alone. */
@@ -190,7 +170,7 @@ function editedFields(graph: SceneGraph, node: SceneNode, root: SceneNode): stri
 export function instanceOverrides(graph: SceneGraph, root: SceneNode): FigmaInstanceOverride[] {
   const result: FigmaInstanceOverride[] = []
   const visit = (node: SceneNode) => {
-    const skipped = propertyFields(node)
+    const skipped = propertyDrivenFields(node)
     if (node.id !== root.id) skipped.add('width').add('height')
     const overriddenFields = figmaFields(editedFields(graph, node, root), skipped)
     if (overriddenFields.length > 0) result.push({ id: node.id, overriddenFields })
@@ -198,44 +178,6 @@ export function instanceOverrides(graph: SceneGraph, root: SceneNode): FigmaInst
   }
   visit(root)
   return result
-}
-
-/** Clears an override state but what component properties set, which Figma keeps on reset. */
-function withoutEdits(graph: SceneGraph, state: InstanceOverrideState): InstanceOverrideState {
-  const keep = (nodeId: string, fields: Map<string, unknown>) => {
-    const node = graph.getNode(nodeId)
-    const driven = node ? propertyFields(node) : new Set<string>()
-    return new Map([...fields].filter(([field]) => driven.has(field)))
-  }
-  const descendants = new Map(
-    [...state.descendants]
-      .map(([nodeId, fields]) => [nodeId, keep(nodeId, fields)] as const)
-      .filter(([, fields]) => fields.size > 0)
-  )
-  return { self: new Map(), descendants }
-}
-
-/**
- * Figma's `resetOverrides`: the instance and every instance inside it go back to their
- * components, keeping the values their component properties set.
- */
-function resetInstanceOverrides(graph: SceneGraph, root: SceneNode): void {
-  const visit = (node: SceneNode) => {
-    if (node.type === 'INSTANCE')
-      graph.updateNode(node.id, { instanceOverrides: withoutEdits(graph, node.instanceOverrides) })
-    for (const child of graph.getChildren(node.id)) visit(child)
-  }
-  visit(root)
-  // The outermost instance passes its component's content down to the ones inside it.
-  let outermost = root
-  for (
-    let parent = root.parentId ? findInstanceAncestor(graph, root.parentId) : undefined;
-    parent;
-  ) {
-    outermost = parent
-    parent = parent.parentId ? findInstanceAncestor(graph, parent.parentId) : undefined
-  }
-  graph.syncInstance(outermost.id)
 }
 
 export function installInstanceOverrideAccessors(
