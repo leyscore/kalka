@@ -8,7 +8,7 @@ import {
   commitAutoLayoutValueDrag,
   handleAutoLayoutValueMove,
   tryStartAutoLayoutValueDrag
-} from '#vue/shared/input/auto-layout-drag'
+} from '#vue/shared/input/spacing-drag'
 
 let editor: Editor | null = null
 

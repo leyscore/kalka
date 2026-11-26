@@ -1,7 +1,7 @@
 import valueParser from 'postcss-value-parser'
 
 import { parseCSSNumber } from '../css'
-import { pixelsFromPercent, spacingPercent } from '../text-paragraphs'
+import { pixelsFromPercent, spacingPercent } from '../paragraphs'
 import type { SceneNode } from '../types'
 import { pickStyle } from './from-css'
 import { px, type PropertyFamily } from './types'

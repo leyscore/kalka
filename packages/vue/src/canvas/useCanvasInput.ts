@@ -24,7 +24,7 @@ import {
   cancelAutoLayoutValueDrag,
   commitAutoLayoutValueDrag,
   handleAutoLayoutValueMove
-} from '#vue/shared/input/auto-layout-drag'
+} from '#vue/shared/input/spacing-drag'
 import { resolveAutoLayoutHover } from '#vue/shared/input/auto-layout-hover'
 import { createClickCounter } from '#vue/shared/input/click-count'
 import {
