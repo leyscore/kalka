@@ -218,6 +218,13 @@ export const collaborationMessageDefaults = {
   ),
   serverSeeFiles: 'See the files',
   serverLoadingFiles: 'Loading the files…',
+  serverNotifications: 'Notifications',
+  serverNotificationsUnread: params('Notifications, {count} unread'),
+  serverNotificationMention: params('{name} mentioned you in {file}'),
+  serverNotificationReply: params('{name} replied in {file}'),
+  serverNotificationsEmpty:
+    'Nothing yet. When someone mentions you or answers your comment, it shows here.',
+  serverNotificationsReadAll: 'Mark all as read',
   serverLaunchOpening: 'Opening your file from Kalka Cloud…',
   serverLaunchFailed:
     'Signing in to Kalka Cloud did not work. Open the editor again from your workspace.',

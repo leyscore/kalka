@@ -22,6 +22,7 @@ import { queueChatPrompt } from '@/app/ai/chat/queued-prompt'
 import { isConfigured } from '@/app/ai/chat/storage'
 import { useCollabIdentity } from '@/app/collab/identity'
 import { activeRoom, roomForStore } from '@/app/collab/rooms'
+import { notifyCommentPosted } from '@/app/collab/server/notifications'
 import { editHandoff } from '@/app/comments/handoff-undo'
 import { watchFrameReviews } from '@/app/comments/reviews'
 import type { EditorStore } from '@/app/editor/active-store'
@@ -322,6 +323,7 @@ export function useComments(store: EditorStore) {
       state.value = { ...state.value, draft: null, openThreadId: thread.id, placing: false }
       changed()
       dispatch(thread)
+      notifyCommentPosted(store, thread)
       return thread
     },
     reply(id: string, text: string, mentions: readonly string[] = []) {
@@ -330,6 +332,7 @@ export function useComments(store: EditorStore) {
       const thread = replyToComment(store.graph, id, author(), text, { agent, mentions })
       changed()
       dispatch(thread)
+      notifyCommentPosted(store, thread)
     },
     /** Gives an emoji reaction to a message, or takes it back. */
     react(threadId: string, messageId: string, emoji: string) {

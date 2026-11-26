@@ -209,6 +209,7 @@ fr:code.sourceHTMLCSS
 fr:code.sourceTailwindJSX
 fr:collaboration.planPro
 fr:collaboration.planTeam
+fr:collaboration.serverNotifications
 fr:comments.annotations
 fr:comments.categoryInteraction
 fr:common.ok

@@ -4,7 +4,7 @@ import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 
 import { useDocumentWorkspace, useI18n, useViewportKind } from '@kalka/vue'
 
-import { serverAccount } from '@/app/collab/server/account'
+import { serverAccount, serverSessionExpired } from '@/app/collab/server/account'
 import { openServerDocumentById } from '@/app/collab/server/documents'
 import { recoveryEnabled } from '@/app/document/recovery/preferences'
 import {
@@ -41,6 +41,7 @@ import FileActions from '@/components/home/files/FileActions.vue'
 import HomeSampleTile from '@/components/home/learn/HomeSampleTile.vue'
 import HomeSearchField from '@/components/home/search/HomeSearchField.vue'
 import HomeServerDocuments from '@/components/home/server/HomeServerDocuments.vue'
+import HomeServerNotifications from '@/components/home/server/HomeServerNotifications.vue'
 import HomeServerTrash from '@/components/home/server/HomeServerTrash.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
@@ -312,6 +313,7 @@ function formattedDate(updatedAt: string): string {
           </IconButton>
         </template>
         <template v-else-if="inServer">
+          <HomeServerNotifications v-if="serverAccount && !serverSessionExpired" />
           <IconButton
             :label="common.refresh"
             class="size-10 sm:size-8"
