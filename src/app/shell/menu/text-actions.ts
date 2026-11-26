@@ -8,11 +8,13 @@ import {
   toggleStrikethrough,
   toggleTextList
 } from '@/app/editor/text/format'
+import { requestTextLink } from '@/app/editor/text/links'
 
 /** Figma's Text menu beyond bold, italic and underline, keyed by menu item. */
 export function createTextMenuActions(store: EditorStore) {
   return {
     'text.strikethrough': () => toggleStrikethrough(store),
+    'text.link': () => requestTextLink(store),
     'text.list-bulleted': () => toggleTextList(store, 'UNORDERED'),
     'text.list-numbered': () => toggleTextList(store, 'ORDERED'),
     'text.align-left': () => alignText(store, 'LEFT'),

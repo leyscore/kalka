@@ -4,6 +4,7 @@ import {
   type CharacterStyleOverride,
   type InstanceOverrideState,
   type SceneNode,
+  type TextHyperlink,
   type TextListType,
   type UndoEntry
 } from '@kalka/scene-graph'
@@ -338,11 +339,27 @@ export function createTextActions(ctx: EditorContext, options: TextActionOptions
     return ctx.getExternalTextEditor()?.listSelection?.(type) ?? false
   }
 
+  /**
+   * The link the selection of the text being edited is in, the whole link selected when only the
+   * caret is in it; null outside a link or when `nodeId` is not being edited.
+   */
+  function selectTextLink(nodeId: string): TextHyperlink | null {
+    if (ctx.state.editingTextId !== nodeId) return null
+    return ctx.getExternalTextEditor()?.selectLink?.() ?? null
+  }
+
+  /** Gives the text being edited the keyboard again, after a dialog took it. */
+  function focusTextEdit(): void {
+    if (ctx.state.editingTextId) ctx.getExternalTextEditor()?.focus?.()
+  }
+
   return {
     startTextEditing,
     updateTextEditNode,
     commitTextEdit,
     styleTextSelection,
-    listTextSelection
+    listTextSelection,
+    selectTextLink,
+    focusTextEdit
   }
 }

@@ -6,6 +6,7 @@ import type {
   SceneGraph,
   SceneGraphEvents,
   SceneNode,
+  TextHyperlink,
   TextListType,
   VectorSegment,
   VectorVertex
@@ -264,6 +265,13 @@ export interface ExternalTextEditor extends TextCaretControl {
   styleSelection?(style: CharacterStyleOverride): boolean
   /** Sets the list of the paragraphs the selection touches, or takes them out of it. */
   listSelection?(type: TextListType): boolean
+  /**
+   * The link the selection starts in, null outside any link. A caret in a link selects the whole
+   * link, as Figma does before editing it.
+   */
+  selectLink?(): TextHyperlink | null
+  /** Gives the text being edited the keyboard again, as after a dialog opened over it. */
+  focus?(): void
 }
 
 export interface EditorContext {

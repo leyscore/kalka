@@ -9,6 +9,8 @@ export const TEXT_MENU = {
     { id: 'text.italic', label: 'Italic', shortcut: 'MOD+I' },
     { id: 'text.underline', label: 'Underline', shortcut: 'MOD+U' },
     { id: 'text.strikethrough', label: 'Strikethrough', shortcut: 'MOD+SHIFT+X' },
+    // ⌘K is the command palette's key outside text being edited, so no native accelerator.
+    { id: 'text.link', label: 'Create Link', shortcut: 'MOD+K', accelerator: '' },
     { type: 'separator' },
     { id: 'text.list-bulleted', label: 'Bulleted List', shortcut: 'MOD+SHIFT+8' },
     { id: 'text.list-numbered', label: 'Numbered List', shortcut: 'MOD+SHIFT+7' },

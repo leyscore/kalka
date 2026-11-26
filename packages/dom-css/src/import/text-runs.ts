@@ -1,8 +1,10 @@
 import {
   compactListLines,
+  urlHyperlink,
   type CharacterStyleOverride,
   type SceneNode,
   type StyleRun,
+  type TextHyperlink,
   type TextListLine
 } from '@kalka/scene-graph'
 import { parseCSSColor, parseCSSNumber } from '@kalka/scene-graph/css'
@@ -40,6 +42,13 @@ export function characterStyleFromCSS(style: DesignStyleDeclaration): CharacterS
   const color = parseCSSColor(style.color)
   if (color) override.fills = [{ type: 'SOLID', ...paintColor(color), visible: true }]
   return override
+}
+
+/** The link an `<a href>` opens, as a run's hyperlink; none for another element or address. */
+export function elementHyperlink(element: DesignElement): TextHyperlink | undefined {
+  if (element.tagName.toLowerCase() !== 'a') return undefined
+  const href = element.attrs.href
+  return href ? (urlHyperlink(href) ?? undefined) : undefined
 }
 
 export interface TextContent {
@@ -170,6 +179,8 @@ export function textContentFromChildren(children: readonly DesignNode[]): TextCo
       // Runs do not nest: an element inside a run takes the run's style.
       if (runStyle) continue
       const override = characterStyleFromCSS(style)
+      const hyperlink = elementHyperlink(node)
+      if (hyperlink) override.hyperlink = hyperlink
       const length = text.length - start
       if (length > 0 && Object.keys(override).length > 0)
         styleRuns.push({ start, length, style: override })

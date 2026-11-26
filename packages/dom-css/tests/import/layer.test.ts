@@ -27,6 +27,27 @@ function readBack(graph: SceneGraph, node: SceneNode): SceneNode {
   return read
 }
 
+describe('text links', () => {
+  test('a run with a link is an <a> that reads back as the same link', () => {
+    const graph = new SceneGraph()
+    const hyperlink = { type: 'URL', value: 'https://kalka.design' } as const
+    const text = graph.createNode('TEXT', graph.getPages()[0].id, {
+      text: 'Visit Kalka',
+      styleRuns: [{ start: 6, length: 5, style: { hyperlink, textDecoration: 'UNDERLINE' } }]
+    })
+    const [projected] = sceneNodeToDesignDocument(graph, text.id, {
+      includeSourceIds: false
+    }).children
+    const anchor = projected?.type === 'element' ? projected.children[1] : undefined
+    expect(anchor).toMatchObject({
+      tagName: 'a',
+      attrs: { href: 'https://kalka.design', target: '_blank', rel: 'noopener noreferrer' },
+      inlineStyle: { color: 'inherit', 'text-decoration-line': 'underline' }
+    })
+    expect(readBack(graph, text).styleRuns).toEqual(text.styleRuns)
+  })
+})
+
 describe('parseStyleDeclarations', () => {
   test('splits where CSS does', () => {
     expect(

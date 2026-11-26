@@ -282,14 +282,17 @@ function textDesignNode(
     const curved = vectorDesignNode(context, node, attrs, style)
     if (curved) return curved
   }
+  const tagName = nestedTag(context.graph, node, context)
+  // A link inside a link or a button is not allowed, so a run's link is then left out.
+  const links = !context.interactive && !INTERACTIVE_TAGS.has(tagName)
   return {
     type: 'element',
-    tagName: nestedTag(context.graph, node, context),
+    tagName,
     attrs,
     inlineStyle: withFontFallbacks(style, context.fontFallbacks),
     sourceSceneNodeId: node.id,
     sourceSceneNode: node,
-    children: textRunChildren(node).map((child) =>
+    children: textRunChildren(node, { links }).map((child) =>
       withChildFontFallbacks(child, context.fontFallbacks)
     )
   }

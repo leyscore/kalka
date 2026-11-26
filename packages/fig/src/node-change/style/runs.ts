@@ -1,6 +1,6 @@
 import type { NodeChange } from '@kalka/kiwi/fig/codec'
-import { styleToWeight } from '@kalka/scene-graph'
-import type { CharacterStyleOverride, StyleRun } from '@kalka/scene-graph'
+import { runsWithHyperlink, styleToWeight } from '@kalka/scene-graph'
+import type { CharacterStyleOverride, StyleRun, TextHyperlink } from '@kalka/scene-graph'
 
 import { convertFontFeatures } from '../font/features'
 import { convertFontVariations } from '../font/variations'
@@ -23,6 +23,12 @@ function applyTextDecorationOverride(style: CharacterStyleOverride, override: No
     const decorationFills = convertFills(override.textDecorationFillPaints)
     if (decorationFills.length > 0) style.textDecorationFills = decorationFills
   }
+}
+
+/** A web link Figma keeps on a text or a style override; links to layers are not kept. */
+function importHyperlink(change: NodeChange): TextHyperlink | undefined {
+  const url = change.hyperlink?.url
+  return url ? { type: 'URL', value: url } : undefined
 }
 
 function convertStyleOverride(
@@ -51,6 +57,8 @@ function convertStyleOverride(
     if (lh != null) style.lineHeight = lh
   }
   applyTextDecorationOverride(style, override)
+  const hyperlink = importHyperlink(override)
+  if (hyperlink) style.hyperlink = hyperlink
   if (override.fillPaints) {
     const fills = convertFills(override.fillPaints)
     if (fills.length > 0) style.fills = fills
@@ -95,7 +103,7 @@ function collectStyleRuns(
   return runs
 }
 
-export function importStyleRuns(nc: NodeChange): StyleRun[] {
+function importOverrideRuns(nc: NodeChange): StyleRun[] {
   const td = nc.textData
   if (!td?.characterStyleIDs || !td.styleOverrideTable) return []
 
@@ -106,4 +114,12 @@ export function importStyleRuns(nc: NodeChange): StyleRun[] {
   if (styleMap.size === 0) return []
 
   return collectStyleRuns(ids, styleMap)
+}
+
+export function importStyleRuns(nc: NodeChange): StyleRun[] {
+  const runs = importOverrideRuns(nc)
+  const link = importHyperlink(nc)
+  const length = nc.textData?.characters?.length ?? 0
+  // Figma's link on a whole text layer, which Kalka keeps on its characters.
+  return link && length > 0 ? runsWithHyperlink(runs, length, link) : runs
 }

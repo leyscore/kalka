@@ -371,6 +371,66 @@
         "checkbox": true
       },
       {
+        "id": "view-outlines",
+        "label": "Outlines",
+        "sub": [
+          {
+            "id": "view-outlines-all",
+            "label": "Show Outlines",
+            "checkbox": true
+          },
+          {
+            "id": "view-outlines-selection",
+            "label": "Show Outlines for Selection",
+            "checkbox": true
+          },
+          {
+            "type": "separator"
+          },
+          {
+            "id": "view-outlines-hidden",
+            "label": "Include Hidden Layers",
+            "checkbox": true
+          },
+          {
+            "id": "view-outlines-bounds",
+            "label": "Include Object Bounds",
+            "checkbox": true
+          }
+        ]
+      },
+      {
+        "id": "view-mask-outlines",
+        "label": "Mask Outlines",
+        "checkbox": true
+      },
+      {
+        "id": "view-frame-outlines",
+        "label": "Frame Outlines",
+        "checkbox": true
+      },
+      {
+        "id": "view-pixel-preview",
+        "label": "Pixel Preview",
+        "sub": [
+          {
+            "id": "view-pixel-preview-off",
+            "label": "Disabled",
+            "checkbox": true
+          },
+          {
+            "id": "view-pixel-preview-1x",
+            "label": "1x",
+            "checkbox": true
+          },
+          {
+            "id": "view-pixel-preview-2x",
+            "label": "2x",
+            "checkbox": true
+          }
+        ]
+      },
+      {
         "id": "view-multiplayer-cursors",
         "label": "Multiplayer Cursors",
         "accelerator": "Alt+CmdOrCtrl+\\",
@@ -763,6 +823,10 @@
         "accelerator": "CmdOrCtrl+Shift+X"
       },
       {
+        "id": "text.link",
+        "label": "Create Link"
+      },
+      {
         "type": "separator"
       },
       {
@@ -908,6 +972,11 @@
         "id": "selection.distributeVertical",
         "label": "Distribute Vertical Spacing",
         "accelerator": "Alt+Shift+V"
+      },
+      {
+        "id": "selection.tidyUp",
+        "label": "Tidy Up",
+        "accelerator": "CTRL+Alt+T"
       }
     ]
   }

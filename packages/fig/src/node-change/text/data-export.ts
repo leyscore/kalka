@@ -61,6 +61,7 @@ function textStyleOverrideToKiwi(
     override.lineHeight = { value: style.lineHeight, units: 'PIXELS' }
   }
   applyTextDecorationOverrideFields(override, style, fillToKiwiPaint)
+  if (style.hyperlink?.type === 'URL') override.hyperlink = { url: style.hyperlink.value }
   if (style.fills && style.fills.length > 0) {
     override.fillPaints = style.fills.map(fillToKiwiPaint)
   }

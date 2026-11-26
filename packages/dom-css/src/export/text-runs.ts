@@ -48,8 +48,47 @@ function cleanRuns(runs: readonly StyleRun[], length: number): StyleRun[] {
     .filter((run) => run.start < length && run.length > 0)
 }
 
+/** How a text's runs are written. */
+export interface TextRunOptions {
+  /**
+   * Whether a run with a web link is an `<a>`; false inside a link or button, where another
+   * `<a>` is not allowed, so the run stays a `<span>`.
+   */
+  links?: boolean
+}
+
+/**
+ * A run's element: an `<a>` opening its link in a new tab, as Figma's links do, which takes the
+ * text's colour and decoration instead of the browser's link style; a `<span>` otherwise.
+ */
+function runElement(style: CharacterStyleOverride, text: string, links: boolean): DesignNode {
+  const href = links && style.hyperlink?.type === 'URL' ? style.hyperlink.value : undefined
+  const children: DesignNode[] = [{ type: 'text', text }]
+  if (href === undefined)
+    return {
+      type: 'element',
+      tagName: 'span',
+      attrs: {},
+      inlineStyle: characterStyleToCSS(style),
+      children
+    }
+  return {
+    type: 'element',
+    tagName: 'a',
+    attrs: { href, target: '_blank', rel: 'noopener noreferrer' },
+    inlineStyle: { color: 'inherit', 'text-decoration': 'inherit', ...characterStyleToCSS(style) },
+    children
+  }
+}
+
 /** The characters of `text` from `from` to `to`, plain where no run styles them. */
-function runChildren(text: string, runs: readonly StyleRun[], from: number, to: number) {
+function runChildren(
+  text: string,
+  runs: readonly StyleRun[],
+  from: number,
+  to: number,
+  links: boolean
+) {
   const children: DesignNode[] = []
   let cursor = from
   for (const run of runs) {
@@ -57,13 +96,7 @@ function runChildren(text: string, runs: readonly StyleRun[], from: number, to: 
     const end = Math.min(run.start + run.length, to)
     if (start < cursor || start >= end) continue
     if (start > cursor) children.push({ type: 'text', text: text.slice(cursor, start) })
-    children.push({
-      type: 'element',
-      tagName: 'span',
-      attrs: {},
-      inlineStyle: characterStyleToCSS(run.style),
-      children: [{ type: 'text', text: text.slice(start, end) }]
-    })
+    children.push(runElement(run.style, text.slice(start, end), links))
     cursor = end
   }
   if (cursor < to) children.push({ type: 'text', text: text.slice(cursor, to) })
@@ -85,7 +118,11 @@ export const LIST_INDENT = '1.5em'
  * and above a nested list, so every item of a list is that far from the next. An empty paragraph
  * keeps its line with a `<br>`.
  */
-function textBlockChildren(node: TextBlockNode, runs: readonly StyleRun[]): DesignNode[] {
+function textBlockChildren(
+  node: TextBlockNode,
+  runs: readonly StyleRun[],
+  links: boolean
+): DesignNode[] {
   const paragraphs = node.text.split('\n')
   const starts: number[] = []
   let offset = 0
@@ -97,7 +134,7 @@ function textBlockChildren(node: TextBlockNode, runs: readonly StyleRun[]): Desi
     const start = starts[index] ?? 0
     const end = start + (paragraphs[index]?.length ?? 0)
     if (end === start) return [{ type: 'element', tagName: 'br', attrs: {}, children: [] }]
-    return runChildren(node.text, runs, start, end)
+    return runChildren(node.text, runs, start, end, links)
   }
   const margin = (spacing: number) => (spacing === 0 ? '0' : `0 0 ${px(spacing)}`)
   const itemSpacing = node.listSpacing
@@ -150,13 +187,14 @@ function textBlockChildren(node: TextBlockNode, runs: readonly StyleRun[]): Desi
 
 /**
  * A text layer's characters as DOM children: plain text where the layer's own style applies,
- * a span with the run's CSS where a style run overrides it. A text with paragraph spacing, an
+ * a span with the run's CSS where a style run overrides it, a link where the run has one. A text with paragraph spacing, an
  * indent or a list is written as blocks instead.
  */
-export function textRunChildren(node: TextBlockNode): DesignNode[] {
+export function textRunChildren(node: TextBlockNode, options: TextRunOptions = {}): DesignNode[] {
   const { text } = node
+  const links = options.links ?? true
   const runs = cleanRuns(node.styleRuns, text.length)
-  if (hasParagraphBlocks(node)) return textBlockChildren(node, runs)
+  if (hasParagraphBlocks(node)) return textBlockChildren(node, runs, links)
   if (runs.length === 0) return [{ type: 'text', text }]
-  return runChildren(text, runs, 0, text.length)
+  return runChildren(text, runs, 0, text.length, links)
 }

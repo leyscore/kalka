@@ -364,6 +364,15 @@ export interface FontFeature {
   enabled: boolean
 }
 
+/**
+ * Where a link in a text goes, as Figma's `HyperlinkTarget`: a web address, or a layer of the
+ * file by its id.
+ */
+export interface TextHyperlink {
+  type: 'URL' | 'NODE'
+  value: string
+}
+
 export interface CharacterStyleOverride {
   fontWeight?: number
   italic?: boolean
@@ -381,6 +390,8 @@ export interface CharacterStyleOverride {
   fontVariations?: FontVariation[]
   fontFeatures?: FontFeature[]
   textLanguage?: string | null
+  /** The link the characters open, Figma's hyperlink on a range of text. */
+  hyperlink?: TextHyperlink
 }
 
 export interface StyleRun {

@@ -2,11 +2,22 @@ import { baseKeymap } from 'prosemirror-commands'
 import { history, redo, undo } from 'prosemirror-history'
 import { keymap } from 'prosemirror-keymap'
 import type { Node as ProseMirrorNode } from 'prosemirror-model'
-import { AllSelection, EditorState, TextSelection, type Command } from 'prosemirror-state'
+import {
+  AllSelection,
+  EditorState,
+  Selection,
+  TextSelection,
+  type Command
+} from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 
 import type { Editor, ExternalTextEditor } from '@kalka/core/editor'
-import type { CharacterStyleOverride, SceneNode, TextListType } from '@kalka/scene-graph'
+import type {
+  CharacterStyleOverride,
+  SceneNode,
+  TextHyperlink,
+  TextListType
+} from '@kalka/scene-graph'
 
 import type { DomSceneProjector } from '#vue/canvas/dom-scene/projector'
 import {
@@ -320,6 +331,43 @@ export class DomTextEditor implements ExternalTextEditor {
     return true
   }
 
+  selectLink(): TextHyperlink | null {
+    const view = this.view
+    if (!view) return null
+    const { selection } = view.state
+    const { empty } = selection
+    // Select all starts outside the first paragraph, so look from the first character on.
+    const $from = selection.$from.parent.isTextblock
+      ? selection.$from
+      : (Selection.findFrom(selection.$from, 1, true)?.$from ?? selection.$from)
+    const linkOf = (child: ProseMirrorNode | undefined) =>
+      (child?.marks[0]?.attrs.style as CharacterStyleOverride | undefined)?.hyperlink ?? null
+    const pieces: { start: number; end: number; link: TextHyperlink | null }[] = []
+    $from.parent.forEach((child, offset) => {
+      pieces.push({ start: offset, end: offset + child.nodeSize, link: linkOf(child) })
+    })
+    const offset = $from.parentOffset
+    // The caret takes the link of the characters after it, or before it at a link's end.
+    const at = pieces.findIndex(
+      (piece) => offset >= piece.start && offset < piece.end && piece.link !== null
+    )
+    const index =
+      at !== -1 ? at : pieces.findIndex((piece) => piece.end === offset && piece.link !== null)
+    const link = pieces[index]?.link ?? null
+    if (!link || !empty) return link
+    const same = (piece: (typeof pieces)[number] | undefined) =>
+      piece?.link?.type === link.type && piece.link.value === link.value
+    let first = index
+    let last = index
+    while (same(pieces[first - 1])) first--
+    while (same(pieces[last + 1])) last++
+    const base = $from.start()
+    const from = base + (pieces[first]?.start ?? offset)
+    const to = base + (pieces[last]?.end ?? offset)
+    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, from, to)))
+    return link
+  }
+
   listSelection(type: TextListType): boolean {
     const view = this.view
     if (!view) return false
@@ -378,8 +426,8 @@ export class DomTextEditor implements ExternalTextEditor {
     return hit?.pos ?? null
   }
 
-  /** The page takes focus back after the pointer event that placed the caret. */
-  private focus(): void {
+  /** The page takes focus back after the pointer event that placed the caret, or a dialog. */
+  focus(): void {
     cancelAnimationFrame(this.focusFrame)
     this.focusFrame = requestAnimationFrame(() => {
       this.view?.focus()

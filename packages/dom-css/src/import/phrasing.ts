@@ -1,11 +1,11 @@
 import { isEqual } from 'es-toolkit'
 
-import type { CharacterStyleOverride, StyleRun } from '@kalka/scene-graph'
+import type { CharacterStyleOverride, StyleRun, TextHyperlink } from '@kalka/scene-graph'
 import { clipsBackgroundToText, mergedStyle, pickStyle } from '@kalka/scene-graph/css-model'
 
 import type { DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { inheritedTextStyle } from './measured'
-import { characterStyleFromCSS, type TextContent } from './text-runs'
+import { characterStyleFromCSS, elementHyperlink, type TextContent } from './text-runs'
 
 /**
  * Paragraphs as text layers: a block whose content is only text and inline elements (`a`,
@@ -95,7 +95,8 @@ export function phrasingContent(element: DesignElement): TextContent {
         ? collapsed.replace(/^ /, '')
         : collapsed
   }
-  const visit = (nodes: readonly DesignNode[]) => {
+  // A link holds for what is inside its `<a>`, styled elements there too.
+  const visit = (nodes: readonly DesignNode[], link: TextHyperlink | undefined) => {
     for (const node of nodes) {
       if (node.type === 'text') {
         append(node.text)
@@ -106,13 +107,21 @@ export function phrasingContent(element: DesignElement): TextContent {
         continue
       }
       const start = text.length
-      visit(node.children)
+      const ownLink = elementHyperlink(node)
+      const hyperlink = ownLink ?? link
+      // A link's run goes before the runs inside it, so their own styles stay on top of it.
+      const at = ownLink ? styleRuns.length : -1
+      visit(node.children, hyperlink)
       const style = override(base, characterStyleFromCSS(inheritedTextStyle(mergedStyle(node))))
+      if (hyperlink) style.hyperlink = hyperlink
       const length = text.length - start
-      if (length > 0 && Object.keys(style).length > 0) styleRuns.push({ start, length, style })
+      if (length > 0 && Object.keys(style).length > 0) {
+        if (at >= 0) styleRuns.splice(at, 0, { start, length, style })
+        else styleRuns.push({ start, length, style })
+      }
     }
   }
-  visit(element.children)
+  visit(element.children, undefined)
   const trimmed = text.replace(/\s+$/, '')
   return {
     text: trimmed,

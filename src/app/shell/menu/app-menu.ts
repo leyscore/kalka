@@ -192,6 +192,7 @@ export function useAppMenu() {
     'text.italic': 'italic',
     'text.underline': 'underline',
     'text.strikethrough': 'strikethrough',
+    'text.link': 'createTextLink',
     'text.list-bulleted': 'bulletedList',
     'text.list-numbered': 'numberedList',
     'text.alignment': 'textAlignment',

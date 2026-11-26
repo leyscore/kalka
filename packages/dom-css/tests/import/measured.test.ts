@@ -80,6 +80,27 @@ describe('measured HTML import', () => {
     expect(text?.styleRuns[0]).toMatchObject({ start: 9, length: 5 })
   })
 
+  test("a link's address becomes the hyperlink of its characters", () => {
+    const link = element('a', box(0, 0, 40, 24), { ...BLOCK, display: 'inline' }, [
+      element('strong', box(0, 0, 20, 24), { ...BLOCK, display: 'inline', 'font-weight': '700' }, [
+        { type: 'text', text: 'the' }
+      ]),
+      { type: 'text', text: ' guide' }
+    ])
+    link.attrs.href = 'https://kalka.design/guide'
+    const paragraph = element('p', box(0, 0, 600, 24), BLOCK, [
+      { type: 'text', text: 'Read ' },
+      link
+    ])
+    const { graph, artboard } = graphOf(measured([paragraph]))
+    const [text] = graph.getChildren(artboard?.id ?? '')
+    const hyperlink = { type: 'URL', value: 'https://kalka.design/guide' }
+    expect(text?.styleRuns).toEqual([
+      { start: 5, length: 9, style: { hyperlink } },
+      { start: 5, length: 3, style: { fontWeight: 700, hyperlink } }
+    ])
+  })
+
   test('flex stays auto layout unless a child has margins, which the layer model lacks', () => {
     const row = (margin: string) =>
       element(

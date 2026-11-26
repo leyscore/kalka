@@ -12,6 +12,7 @@ import {
   useCommonMessages
 } from '@kalka/vue'
 
+import { getActiveEditorStoreOrNull } from '@/app/editor/active-store'
 import { usePagePaletteGroup } from '@/app/editor/pages/palette'
 import { useAppMenu } from '@/app/shell/menu/app-menu'
 import IconButton from '@/components/ui/button/IconButton.vue'
@@ -48,6 +49,8 @@ if (IS_BROWSER) {
       ? event.metaKey && !event.ctrlKey
       : event.ctrlKey && !event.metaKey
     if (!hasPlatformModifier || event.altKey || event.shiftKey || event.code !== 'KeyK') return
+    // In the text being edited, ⌘K creates a link, as in Figma.
+    if (getActiveEditorStoreOrNull()?.state.editingTextId) return
     event.preventDefault()
     open.value = true
   })

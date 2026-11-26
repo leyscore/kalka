@@ -409,6 +409,8 @@ export interface NodeChange {
   textBidiVersion?: number
   textDecoration?: string
   textDecorationSkipInk?: boolean
+  /** A link on the text, or on the characters of a style override. */
+  hyperlink?: { url?: string; guid?: GUID; openInNewTab?: boolean }
   textDecorationFillPaints?: Paint[]
   textUnderlineOffset?: { value?: number; units?: string }
   textDecorationThickness?: { value?: number; units?: string }

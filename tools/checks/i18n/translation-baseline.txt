@@ -33,6 +33,7 @@ de:files.dashboard
 de:find.kindText
 de:menu.aboutVersion
 de:menu.text
+de:menu.textLinkHeading
 de:panels.alpha
 de:panels.behaviourMax
 de:panels.behaviourMin
@@ -349,6 +350,7 @@ it:diagnostics.categoryRuntime
 it:diagnostics.durationMs
 it:files.dashboard
 it:menu.file
+it:menu.textLinkHeading
 it:panels.ai
 it:panels.auto
 it:panels.behaviourMax
@@ -457,6 +459,7 @@ pl:diagnostics.categoryAI
 pl:diagnostics.categoryMCP
 pl:diagnostics.categoryRenderer
 pl:diagnostics.durationMs
+pl:menu.textLinkHeading
 pl:panels.ai
 pl:panels.auto
 pl:panels.behaviourMin

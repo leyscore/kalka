@@ -71,6 +71,7 @@ import KeyboardShortcutsDialog from '@/components/keyboard-shortcuts/KeyboardSho
 import RenameSelectionDialog from '@/components/selection/RenameSelectionDialog.vue'
 import AppBanners from '@/components/shell/AppBanners.vue'
 import TabBar from '@/components/TabBar.vue'
+import TextLinkDialog from '@/components/text/TextLinkDialog.vue'
 import { AppConfirmationDialog } from '@/components/ui/dialog'
 import OffsetPathDialog from '@/components/vector/OffsetPathDialog.vue'
 import { IS_BROWSER, IS_TAURI } from '@/constants'
@@ -431,6 +432,7 @@ onUnmounted(() => {
     <AppBanners v-if="!(IS_TAURI && tabsInTopBar)" />
     <RenameSelectionDialog />
     <OffsetPathDialog />
+    <TextLinkDialog />
     <CommandPalette />
     <KeyboardShortcutsDialog />
     <AboutDialog v-if="!IS_TAURI" />

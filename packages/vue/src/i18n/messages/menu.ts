@@ -75,6 +75,11 @@ export const menuMessageDefaults = {
   italic: 'Italic',
   underline: 'Underline',
   strikethrough: 'Strikethrough',
+  createTextLink: 'Create link',
+  textLinkHeading: 'Link',
+  textLinkAddress: 'Address',
+  textLinkInvalid: 'Enter a web, email or phone address.',
+  removeTextLink: 'Remove link',
 
   pasteHere: 'Paste here',
   pasteToReplace: 'Paste to replace',
