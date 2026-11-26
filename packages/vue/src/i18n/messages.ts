@@ -12,6 +12,7 @@ import { credentialsMessageDefaults, credentialsMessages } from '#vue/i18n/messa
 import { designCheckMessageDefaults, designCheckMessages } from '#vue/i18n/messages/design-check'
 import { diagnosticsMessageDefaults, diagnosticsMessages } from '#vue/i18n/messages/diagnostics'
 import { editorMessageDefaults, editorMessages } from '#vue/i18n/messages/editor'
+import { effectMessageDefaults, effectMessages } from '#vue/i18n/messages/effects'
 import { filesMessageDefaults, filesMessages } from '#vue/i18n/messages/files'
 import { findMessageDefaults, findMessages } from '#vue/i18n/messages/find'
 import { fontsMessageDefaults, fontsMessages } from '#vue/i18n/messages/fonts'
@@ -45,6 +46,7 @@ export {
   designCheckMessages,
   diagnosticsMessages,
   editorMessages,
+  effectMessages,
   filesMessages,
   findMessages,
   fontsMessages,
@@ -77,6 +79,7 @@ export const messageDefaults = {
   designCheck: designCheckMessageDefaults,
   diagnostics: diagnosticsMessageDefaults,
   editor: editorMessageDefaults,
+  effects: effectMessageDefaults,
   files: filesMessageDefaults,
   find: findMessageDefaults,
   fonts: fontsMessageDefaults,

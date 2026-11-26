@@ -4,18 +4,22 @@ import type { Editor } from '@kalka/core/editor'
 import type { Effect, SceneNode } from '@kalka/scene-graph'
 import type { Color } from '@kalka/scene-graph/primitives'
 
-import { useI18n } from '#vue/i18n/useI18n.js'
+import { useEffectMessages, useI18n } from '#vue/i18n/useI18n.js'
 
 type EffectType = Effect['type']
 
 const { panels } = useI18n()
+const effectLabels = useEffectMessages()
 
 const EFFECT_LABELS: Record<string, string> = {
   DROP_SHADOW: panels.value.dropShadow,
   INNER_SHADOW: panels.value.innerShadow,
   LAYER_BLUR: panels.value.layerBlur,
   BACKGROUND_BLUR: panels.value.backgroundBlur,
-  FOREGROUND_BLUR: panels.value.foregroundBlur
+  FOREGROUND_BLUR: panels.value.foregroundBlur,
+  NOISE: effectLabels.value.noise,
+  TEXTURE: effectLabels.value.texture,
+  GLASS: effectLabels.value.glass
 }
 
 export const EFFECT_TYPES = Object.keys(EFFECT_LABELS) as EffectType[]
@@ -23,6 +27,62 @@ export const EFFECT_OPTIONS = EFFECT_TYPES.map((t) => ({
   value: t,
   label: EFFECT_LABELS[t]
 }))
+
+export function isBlur(type: string) {
+  return type === 'LAYER_BLUR' || type === 'BACKGROUND_BLUR' || type === 'FOREGROUND_BLUR'
+}
+
+/** The fields only some kinds of effect have, cleared when an effect changes kind. */
+const KIND_FIELDS = {
+  blurType: undefined,
+  startRadius: undefined,
+  startOffset: undefined,
+  endOffset: undefined,
+  noiseType: undefined,
+  noiseSize: undefined,
+  density: undefined,
+  secondaryColor: undefined,
+  opacity: undefined,
+  clipToShape: undefined,
+  refraction: undefined,
+  depth: undefined,
+  lightAngle: undefined,
+  lightIntensity: undefined,
+  dispersion: undefined
+} satisfies Partial<Record<keyof Effect, undefined>>
+
+/**
+ * The settings an effect takes when it becomes `type`, as Figma starts them: a shadow's offset,
+ * a noise's grain, a texture's spread, a glass's light and refraction. A blur keeps its radius.
+ */
+export function effectKindDefaults(type: EffectType, from: Effect): Partial<Effect> {
+  const changes: Partial<Effect> = { ...KIND_FIELDS, type }
+  if (isShadow(type)) {
+    if (!isShadow(from.type)) Object.assign(changes, { offset: { x: 0, y: 4 }, spread: 0 })
+    return changes
+  }
+  Object.assign(changes, { offset: { x: 0, y: 0 }, spread: 0 })
+  if (type === 'NOISE')
+    Object.assign(changes, {
+      color: { ...DEFAULT_NOISE_COLOR },
+      noiseType: 'MONOTONE',
+      noiseSize: 0.5,
+      density: 0.5
+    })
+  if (type === 'TEXTURE') Object.assign(changes, { radius: 4, noiseSize: 0.5, clipToShape: true })
+  if (type === 'GLASS')
+    Object.assign(changes, {
+      radius: 4,
+      refraction: 0.8,
+      depth: 20,
+      lightAngle: -45,
+      lightIntensity: 0.8,
+      dispersion: 0.5
+    })
+  return changes
+}
+
+const DEFAULT_NOISE_COLOR: Color = { r: 0, g: 0, b: 0, a: 0.25 }
 
 export function isShadow(type: string) {
   return type === 'DROP_SHADOW' || type === 'INNER_SHADOW'
@@ -94,15 +154,7 @@ export function createEffectControlActions(expandedIndex: Ref<number | null>) {
     type: EffectType
   ) {
     if (!node) return
-    const changes: Partial<Effect> = { type }
-    if (!isShadow(type)) {
-      changes.offset = { x: 0, y: 0 }
-      changes.spread = 0
-    } else if (!isShadow(node.effects[index].type)) {
-      changes.offset = { x: 0, y: 4 }
-      changes.spread = 0
-    }
-    patch(index, changes)
+    patch(index, effectKindDefaults(type, node.effects[index]))
   }
 
   function updateColor(

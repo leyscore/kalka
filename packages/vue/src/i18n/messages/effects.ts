@@ -1,0 +1,43 @@
+import { i18n } from '#vue/i18n/create'
+
+/** Labels of the newer effects and of an image's adjustments. */
+export const effectMessageDefaults = {
+  noise: 'Noise',
+  texture: 'Texture',
+  glass: 'Glass',
+  blurType: 'Blur type',
+  uniform: 'Uniform',
+  progressive: 'Progressive',
+  startBlur: 'Start blur',
+  endBlur: 'End blur',
+  direction: 'Direction',
+  topToBottom: 'Top to bottom',
+  bottomToTop: 'Bottom to top',
+  leftToRight: 'Left to right',
+  rightToLeft: 'Right to left',
+  noiseType: 'Noise type',
+  monotone: 'Monotone',
+  duotone: 'Duotone',
+  multitone: 'Multitone',
+  size: 'Size',
+  density: 'Density',
+  secondColor: 'Second color',
+  clipToShape: 'Clip to shape',
+  light: 'Light',
+  lightAngle: 'Light angle',
+  refraction: 'Refraction',
+  depth: 'Depth',
+  dispersion: 'Dispersion',
+  frost: 'Frost',
+  adjustments: 'Adjustments',
+  exposure: 'Exposure',
+  contrast: 'Contrast',
+  saturation: 'Saturation',
+  temperature: 'Temperature',
+  tint: 'Tint',
+  highlights: 'Highlights',
+  shadows: 'Shadows',
+  resetAdjustments: 'Reset adjustments'
+} as const
+
+export const effectMessages = i18n('effects', effectMessageDefaults)

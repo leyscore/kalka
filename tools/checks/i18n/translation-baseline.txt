@@ -187,6 +187,8 @@ fr:diagnostics.categoryDocument
 fr:diagnostics.categoryMCP
 fr:diagnostics.durationMs
 fr:diagnostics.title
+fr:effects.saturation
+fr:effects.texture
 fr:files.dashboard
 fr:find.kindImage
 fr:find.kindInstance

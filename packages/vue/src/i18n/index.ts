@@ -11,6 +11,7 @@ export {
   useDesignCheckMessages,
   useDiagnosticsMessages,
   useEditorMessages,
+  useEffectMessages,
   useFileMessages,
   useFindMessages,
   useFontMessages,

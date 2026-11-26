@@ -11,6 +11,7 @@ import credentials from './credentials.json'
 import designCheck from './design-check.json'
 import diagnostics from './diagnostics.json'
 import editor from './editor.json'
+import effects from './effects.json'
 import files from './files.json'
 import find from './find.json'
 import fonts from './fonts.json'
@@ -42,6 +43,7 @@ export default {
   designCheck,
   diagnostics,
   editor,
+  effects,
   files,
   find,
   fonts,

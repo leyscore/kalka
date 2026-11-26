@@ -18,6 +18,7 @@ import {
   commitDiscretePropertyListChange,
   useBlendModeOptions
 } from '@/components/properties/blend-mode/use'
+import EffectKindSettings from '@/components/properties/effects/EffectKindSettings.vue'
 import PropertyItemRow from '@/components/properties/item-list/PropertyItemRow.vue'
 import PropertyListRoot from '@/components/properties/PropertyListRoot.vue'
 import AppliedStyle from '@/components/properties/styles/AppliedStyle.vue'
@@ -38,6 +39,14 @@ const blendModeOptions = useBlendModeOptions()
 const effectStyle = useSharedStyleBinding('effect')
 /** An applied effect style stands in for the effects, as in Figma. */
 const hasStyle = computed(() => typeof effectStyle.styleId.value === 'string')
+
+/** Shadows and one- or two-tone noise draw in a color, which a variable can set. */
+function hasColor(effect: Effect): boolean {
+  return (
+    effectsCtx.isShadow(effect.type) ||
+    (effect.type === 'NOISE' && effect.noiseType !== 'MULTITONE')
+  )
+}
 
 function effectPreview(effect: Effect): Fill {
   return {
@@ -229,7 +238,19 @@ function effectPreview(effect: Effect): Fill {
                 />
               </Tip>
             </div>
+          </template>
 
+          <EffectKindSettings
+            v-else
+            :effect="effect"
+            :index="index"
+            :node-id="activeNode?.id ?? ''"
+            @scrub="effectsCtx.scrubEffect(activeNode, index, $event)"
+            @commit="effectsCtx.commitEffect(activeNode, index, $event)"
+            @change="commitDiscretePropertyListChange(flush, () => actions.patch(index, $event))"
+          />
+
+          <template v-if="hasColor(effect)">
             <BindableValueRoot
               v-slot="binding"
               :provider="colorProvider"
@@ -285,20 +306,6 @@ function effectPreview(effect: Effect): Fill {
               </div>
             </BindableValueRoot>
           </template>
-
-          <VariableNumberField
-            v-else
-            class="w-24 flex-none"
-            icon="B"
-            :node-id="activeNode?.id ?? ''"
-            :binding-path="`effects/${index}/radius`"
-            :aria-label="panels.radius"
-            :model-value="effect.radius"
-            :min="0"
-            data-property="effect-radius"
-            @update:model-value="effectsCtx.scrubEffect(activeNode, index, { radius: $event })"
-            @commit="effectsCtx.commitEffect(activeNode, index, { radius: $event })"
-          />
         </div>
       </div>
     </PanelSection>

@@ -2,10 +2,20 @@
 import { useFileDialog, useObjectUrl } from '@vueuse/core'
 import { computed, shallowRef, watch } from 'vue'
 
-import type { Fill, ImageScaleMode } from '@kalka/scene-graph'
+import {
+  hasImageFilters,
+  IMAGE_FILTER_KEYS,
+  imageFilterValue,
+  type Fill,
+  type ImageFilterKey,
+  type ImageScaleMode
+} from '@kalka/scene-graph'
+import { useEffectMessages } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
+import NumberField from '@/components/inputs/NumberField.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
+import IconButton from '@/components/ui/button/IconButton.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 
 const IMAGE_SCALE_MODES: { value: ImageScaleMode; label: string }[] = [
@@ -54,6 +64,22 @@ onFileChange(async (files) => {
   })
 })
 
+const labels = useEffectMessages()
+
+/** Figma's image adjustments, each from -100 to 100 in the panel and -1 to 1 on the paint. */
+function adjustment(key: ImageFilterKey): number {
+  return Math.round(imageFilterValue(fill.filters, key) * 100)
+}
+
+function adjust(key: ImageFilterKey, value: number) {
+  const filters = { ...fill.filters, [key]: Math.max(-1, Math.min(1, value / 100)) }
+  emit('update', { ...fill, filters: hasImageFilters(filters) ? filters : undefined })
+}
+
+function resetAdjustments() {
+  emit('update', { ...fill, filters: undefined })
+}
+
 const scaleMode = computed({
   get: () => fill.imageScaleMode ?? ('FILL' as ImageScaleMode),
   set: (mode: ImageScaleMode) => emit('update', { ...fill, imageScaleMode: mode })
@@ -82,5 +108,29 @@ const scaleMode = computed({
       :options="IMAGE_SCALE_MODES"
       @update:model-value="(m) => (scaleMode = m as ImageScaleMode)"
     />
+    <div class="flex flex-col gap-1" data-slot="image-adjustments">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] text-muted">{{ labels.adjustments }}</span>
+        <IconButton
+          v-if="hasImageFilters(fill.filters)"
+          :label="labels.resetAdjustments"
+          data-test-id="image-adjustments-reset"
+          @click="resetAdjustments"
+        >
+          <icon-hugeicons-refresh-cw class="size-3" />
+        </IconButton>
+      </div>
+      <NumberField
+        v-for="key in IMAGE_FILTER_KEYS"
+        :key="key"
+        :label="labels[key]"
+        :aria-label="labels[key]"
+        :model-value="adjustment(key)"
+        :min="-100"
+        :max="100"
+        :data-property="`image-${key}`"
+        @update:model-value="adjust(key, $event)"
+      />
+    </div>
   </div>
 </template>

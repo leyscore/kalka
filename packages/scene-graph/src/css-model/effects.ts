@@ -21,9 +21,12 @@ function filterURL(body: string, attrs = ''): string {
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}#f")`
 }
 
-/** An SVG image as a `data:` URL, for `feImage`. */
+/**
+ * An SVG image as a `data:` URL, for `feImage`. Its quotes are escaped too: the URL sits in a
+ * quoted attribute of the filter's own SVG.
+ */
 function imageURL(svg: string): string {
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`
+  return `data:image/svg+xml,${encodeURIComponent(svg).replaceAll("'", '%27')}`
 }
 
 function flood(color: Color, result: string): string {

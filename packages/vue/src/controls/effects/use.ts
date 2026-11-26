@@ -5,6 +5,7 @@ import {
   createDefaultEffect,
   createEffectControlActions,
   createEffectEditActions,
+  isBlur,
   isShadow,
   type EffectEditSnapshot
 } from '#vue/controls/effects/helpers'
@@ -29,6 +30,7 @@ export function useEffectsControls() {
     effectOptions: EFFECT_OPTIONS,
     createDefaultEffect,
     isShadow,
+    isBlur,
     ...editActions,
     ...controlActions
   }
