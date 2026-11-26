@@ -62,7 +62,9 @@ test('chat step limit validates, persists and preserves reasoning preferences', 
 
   // A preset commits without revealing the field, and an invalid draft is not saved.
   await limit.click()
-  await page.getByRole('option', { name: '200', exact: true }).click()
+  // The open list can reach past the window's edge, so the preset is typed, as Custom was.
+  await page.keyboard.type('200')
+  await page.keyboard.press('Enter')
   await expect(limit).toHaveText('200')
   await reloadAndOpenChatSettings(page)
   await expect(limit).toHaveText('200')
