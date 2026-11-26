@@ -4,6 +4,8 @@ import type { SceneNode } from '@kalka/scene-graph'
 import type { Color } from '@kalka/scene-graph/primitives'
 
 import { figmaBlendModeToSkia } from './blend'
+import { glassRefractionFilter, isProgressiveBlur, progressiveBlurFilter } from './effect-filters'
+import { applyClippedBackdrop } from './effects'
 import type { SkiaRenderer } from './renderer'
 import {
   makeNodeShapePath,
@@ -512,6 +514,29 @@ function drawShapeInnerShadow(
   }
 }
 
+/** What lies behind a glass, bent at its edges and then frosted by its radius. */
+function renderGlassBackdrop(
+  r: SkiaRenderer,
+  canvas: Canvas,
+  node: SceneNode,
+  rect: Float32Array,
+  hasRadius: boolean,
+  effect: SceneEffect
+): void {
+  const refraction = glassRefractionFilter(r, effect, node.width, node.height)
+  const frost = effect.radius > 0 ? r.getCachedBlur(effect.radius / 2) : null
+  if (refraction && frost) {
+    const both = r.ck.ImageFilter.MakeCompose(frost, refraction.filter)
+    applyClippedBackdrop(r, canvas, node, rect, hasRadius, both)
+    both.delete()
+  } else if (refraction) {
+    applyClippedBackdrop(r, canvas, node, rect, hasRadius, refraction.filter)
+  } else if (frost) {
+    applyClippedBackdrop(r, canvas, node, rect, hasRadius, frost)
+  }
+  refraction?.release()
+}
+
 export function renderEffects(
   r: SkiaRenderer,
   canvas: Canvas,
@@ -528,16 +553,19 @@ export function renderEffects(
       renderNoiseEffect(r, canvas, node, rect, hasRadius, effect)
     }
 
-    // A glass blurs what lies behind it by its frost.
-    if (pass === 'behind' && effect.type === 'GLASS' && effect.radius > 0) {
-      r.applyClippedBlur(canvas, node, rect, hasRadius, effect.radius / 2)
+    if (pass === 'behind' && effect.type === 'GLASS') {
+      renderGlassBackdrop(r, canvas, node, rect, hasRadius, effect)
     }
 
     if (pass === 'behind' && effect.type === 'DROP_SHADOW') {
       renderDropShadow(r, canvas, node, effect, hasRadius, shadowShapeChild)
     }
 
-    if (pass === 'behind' && effect.type === 'BACKGROUND_BLUR') {
+    if (pass === 'behind' && effect.type === 'BACKGROUND_BLUR' && isProgressiveBlur(effect, node)) {
+      const progressive = progressiveBlurFilter(r, effect, node.width, node.height)
+      applyClippedBackdrop(r, canvas, node, rect, hasRadius, progressive.filter)
+      progressive.release()
+    } else if (pass === 'behind' && effect.type === 'BACKGROUND_BLUR') {
       r.applyClippedBlur(canvas, node, rect, hasRadius, uniformBlurRadius(effect) / 2)
     }
 

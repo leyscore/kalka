@@ -2,6 +2,7 @@ import type { Canvas, ImageFilter, MaskFilter } from 'canvaskit-wasm'
 
 import type { SceneNode } from '@kalka/scene-graph'
 
+import { clippedToSource, isProgressiveBlur, progressiveBlurFilter } from './effect-filters'
 import type { SkiaRenderer } from './renderer'
 
 export function getCachedDropShadow(
@@ -57,6 +58,18 @@ export function applyClippedBlur(
   hasRadius: boolean,
   sigma: number
 ): void {
+  applyClippedBackdrop(r, canvas, node, rect, hasRadius, r.getCachedBlur(sigma))
+}
+
+/** Draws what lies behind a layer, inside its shape, through `backdrop`. */
+export function applyClippedBackdrop(
+  r: SkiaRenderer,
+  canvas: Canvas,
+  node: SceneNode,
+  rect: Float32Array,
+  hasRadius: boolean,
+  backdrop: ImageFilter
+): void {
   // Entry guard: reset shared paint to known state
   r.effectLayerPaint.setImageFilter(null)
   r.effectLayerPaint.setColorFilter(null)
@@ -64,7 +77,7 @@ export function applyClippedBlur(
 
   canvas.save()
   r.clipNodeShape(canvas, node, rect, hasRadius)
-  canvas.saveLayer(undefined, rect, r.getCachedBlur(sigma), undefined, r.ck.TileMode.Clamp)
+  canvas.saveLayer(undefined, rect, backdrop, undefined, r.ck.TileMode.Clamp)
   canvas.restore()
   // Exit guard: ensure shared paint is in clean state
   r.effectLayerPaint.setImageFilter(null)
@@ -83,8 +96,8 @@ export interface LayerEffectFilter {
 
 /**
  * The filter a layer is drawn through for its layer blur and texture, or null when it has
- * neither. A progressive blur draws its average radius: Skia has no blur that varies across a
- * layer, which the canvas draws with an SVG filter (`@kalka/scene-graph/css-model`).
+ * neither: a texture kept to the layer's pixels unless it is not clipped to its shape, and a
+ * progressive blur blended along its ramp, as the canvas's SVG filters draw them.
  */
 export function layerEffectFilter(r: SkiaRenderer, node: SceneNode): LayerEffectFilter | null {
   const blur = node.effects.find(
@@ -111,12 +124,20 @@ export function layerEffectFilter(r: SkiaRenderer, node: SceneNode): LayerEffect
       null
     )
     made.push(map, filter)
+    if (texture.clipToShape !== false) {
+      filter = clippedToSource(r, filter)
+      made.push(filter)
+    }
     padding += texture.radius
   }
   if (blur) {
-    const radius =
-      blur.blurType === 'PROGRESSIVE' ? (blur.radius + (blur.startRadius ?? 0)) / 2 : blur.radius
-    const blurFilter = r.getCachedBlur(radius / 2)
+    const radius = Math.max(blur.radius, blur.startRadius ?? 0)
+    let blurFilter = r.getCachedBlur(radius / 2)
+    if (isProgressiveBlur(blur, node)) {
+      const progressive = progressiveBlurFilter(r, blur, node.width, node.height)
+      blurFilter = progressive.filter
+      made.push({ delete: progressive.release })
+    }
     if (filter) {
       filter = r.ck.ImageFilter.MakeCompose(blurFilter, filter)
       made.push(filter)
