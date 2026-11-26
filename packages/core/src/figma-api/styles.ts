@@ -243,6 +243,53 @@ export class FigmaStylesAPI {
     const after = reference
       ? styleDefinition(graph, styleIdOf(reference), SHARED_TYPES[type])
       : null
+    this.place(type, moved, after)
+  }
+
+  /**
+   * Moves a style folder, every style whose name starts with `target/`, after the folder
+   * `reference` or first among its siblings when it is null, as Figma's
+   * `moveLocalPaintFolderAfter` and the like do. Folders are slash-separated paths such as
+   * `Brand/Colors`; the two must sit in the same parent folder.
+   */
+  moveFolderAfter(type: FigmaStyleType, target: string, reference: string | null): void {
+    const call = `moveLocal${type.charAt(0)}${type.slice(1).toLowerCase()}FolderAfter`
+    const folder = folderPath(target)
+    const styles = getSharedStyles(this.host.graph, sharedKind(type))
+    const inFolder = (path: string) =>
+      styles.filter((style) => isWithin(styleFolder(style.name), path))
+    const moving = inFolder(folder)
+    if (!folder || moving.length === 0) throw new Error(`${call}: there is no folder "${target}"`)
+    const parent = parentFolder(folder)
+    let after: string | null
+    if (reference === null) {
+      // First among its siblings: before the first style of the parent folder.
+      const first = styles.findIndex((style) => isWithin(styleFolder(style.name), parent))
+      after = first > 0 ? styles[first - 1].nodeId : null
+    } else {
+      const referencePath = folderPath(reference)
+      const anchors = inFolder(referencePath).filter((style) => !moving.includes(style))
+      if (!referencePath || anchors.length === 0) {
+        throw new Error(`${call}: there is no folder "${reference}"`)
+      }
+      if (parentFolder(referencePath) !== parent) {
+        throw new Error(`${call}: "${target}" and "${reference}" are not in the same folder`)
+      }
+      after = anchors[anchors.length - 1].nodeId
+    }
+    if (moving.some((style) => style.nodeId === after)) return
+    for (const style of moving) {
+      const node = this.host.graph.getNode(style.nodeId)
+      if (!node) continue
+      this.place(type, node, after ? (this.host.graph.getNode(after) ?? null) : null)
+      after = node.id
+    }
+  }
+
+  /** Puts a style's definition after another of its type, or first when `after` is null. */
+  private place(type: FigmaStyleType, moved: SceneNode, after: SceneNode | null): void {
+    const graph = this.host.graph
+    if (!moved.parentId) return
     const parentId = after?.parentId ?? moved.parentId
     const siblings = graph.getNode(parentId)?.childIds.filter((id) => id !== moved.id) ?? []
     const first = getSharedStyles(graph, sharedKind(type)).find(
@@ -253,6 +300,31 @@ export class FigmaStylesAPI {
       : Math.max(0, first ? siblings.indexOf(first.nodeId) : 0)
     graph.reorderChild(moved.id, parentId, index)
   }
+}
+
+/** A folder path as Figma reads one: its names trimmed, empty ones dropped. */
+function folderPath(path: string): string {
+  return String(path)
+    .split('/')
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0)
+    .join('/')
+}
+
+/** The folder a style is filed in: its name before the last `/`, as the styles panel groups it. */
+function styleFolder(name: string): string {
+  const slash = name.lastIndexOf('/')
+  return slash > 0 ? folderPath(name.slice(0, slash)) : ''
+}
+
+function parentFolder(path: string): string {
+  const slash = path.lastIndexOf('/')
+  return slash > 0 ? path.slice(0, slash) : ''
+}
+
+/** Whether a style in `folder` is in `path` or one of its subfolders; every style is in ''. */
+function isWithin(folder: string, path: string): boolean {
+  return path === '' || folder === path || folder.startsWith(`${path}/`)
 }
 
 const SHARED_KINDS = {

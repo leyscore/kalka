@@ -109,4 +109,34 @@ describe('figma styles', () => {
     figma.moveLocalPaintStyleAfter(names[0], null)
     expect(listed()).toEqual(['A', 'B', 'C'])
   })
+
+  test('moves a style folder after another, or first among its siblings', () => {
+    const { figma } = setup()
+    for (const name of ['Brand/Blue', 'Brand/Red', 'Grey/Light', 'Grey/Dark', 'Accent']) {
+      Reflect.set(figma.createPaintStyle(), 'name', name)
+    }
+    const listed = () => figma.getLocalPaintStyles().map((style) => get(style, 'name'))
+
+    figma.moveLocalPaintFolderAfter('Brand', 'Grey')
+    expect(listed()).toEqual(['Grey/Light', 'Grey/Dark', 'Brand/Blue', 'Brand/Red', 'Accent'])
+    figma.moveLocalPaintFolderAfter(' Brand ', null)
+    expect(listed()).toEqual(['Brand/Blue', 'Brand/Red', 'Grey/Light', 'Grey/Dark', 'Accent'])
+    expect(() => figma.moveLocalPaintFolderAfter('Missing', null)).toThrow(
+      'moveLocalPaintFolderAfter: there is no folder "Missing"'
+    )
+  })
+
+  test('moves a nested folder only among its siblings', () => {
+    const { figma } = setup()
+    for (const name of ['Brand/Logo', 'UI/Text/Body', 'UI/Surface/Card', 'UI/Surface/Page']) {
+      Reflect.set(figma.createTextStyle(), 'name', name)
+    }
+    const listed = () => figma.getLocalTextStyles().map((style) => get(style, 'name'))
+
+    figma.moveLocalTextFolderAfter('UI/Surface', null)
+    expect(listed()).toEqual(['Brand/Logo', 'UI/Surface/Card', 'UI/Surface/Page', 'UI/Text/Body'])
+    expect(() => figma.moveLocalTextFolderAfter('UI/Text', 'Brand')).toThrow(
+      'not in the same folder'
+    )
+  })
 })

@@ -363,6 +363,14 @@ export class FigmaAPI implements NodeProxyHost {
     this._styles.moveAfter('EFFECT', target, reference)
   moveLocalGridStyleAfter = (target: unknown, reference: unknown) =>
     this._styles.moveAfter('GRID', target, reference)
+  moveLocalPaintFolderAfter = (target: string, reference: string | null) =>
+    this._styles.moveFolderAfter('PAINT', target, reference)
+  moveLocalTextFolderAfter = (target: string, reference: string | null) =>
+    this._styles.moveFolderAfter('TEXT', target, reference)
+  moveLocalEffectFolderAfter = (target: string, reference: string | null) =>
+    this._styles.moveFolderAfter('EFFECT', target, reference)
+  moveLocalGridFolderAfter = (target: string, reference: string | null) =>
+    this._styles.moveFolderAfter('GRID', target, reference)
 
   getVariableById(id: string): Variable | null {
     return this.graph.variables.get(id) ?? null

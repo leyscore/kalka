@@ -6,8 +6,6 @@ import type { FigmaAPI } from './index'
 export type UnsupportedPluginAPIMember = Exclude<keyof PluginAPI, keyof FigmaAPI>
 
 const NO_PLUGIN_RUNTIME = 'Kalka scripts run without a plugin UI, session, or editor events'
-const NO_STYLE_FOLDERS =
-  'Kalka scripts can move a style but not a style folder yet; move its styles one by one'
 const NOT_DESIGN = 'Kalka edits design files; FigJam, Slides, Buzz, and Dev Mode APIs are absent'
 const NO_LIBRARY = "Kalka has no Figma team library to import from; use the document's components"
 const NOT_YET = 'Kalka does not implement this Plugin API member yet'
@@ -70,10 +68,6 @@ export const UNSUPPORTED_PLUGIN_API = {
   motion: NOT_YET,
   moveLocalCustomAnimationFolderAfter: NOT_YET,
   moveLocalCustomAnimationStyleAfter: NOT_YET,
-  moveLocalEffectFolderAfter: NO_STYLE_FOLDERS,
-  moveLocalGridFolderAfter: NO_STYLE_FOLDERS,
-  moveLocalPaintFolderAfter: NO_STYLE_FOLDERS,
-  moveLocalTextFolderAfter: NO_STYLE_FOLDERS,
   moveNodesToCoord: NOT_YET,
   off: NO_PLUGIN_RUNTIME,
   on: NO_PLUGIN_RUNTIME,
