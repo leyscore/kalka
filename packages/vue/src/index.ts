@@ -156,6 +156,11 @@ export { useSharedStyleBinding, useSharedStyles } from '#vue/controls/shared-sty
 export { groupSharedStyles, type SharedStyleGroup } from '#vue/controls/shared-style/model'
 export { useStrokeControls } from '#vue/controls/stroke/use'
 export {
+  SCALE_ANCHORS,
+  useScaleToolControls,
+  type ScaleAnchor
+} from '#vue/controls/scale/use'
+export {
   brushChoice,
   useStrokeDrawControls,
   type StrokeBrushChoice,

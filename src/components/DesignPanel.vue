@@ -43,6 +43,7 @@ import MaskSection from './properties/MaskSection.vue'
 import PageSection from './properties/PageSection.vue'
 import RetainedPanel from './properties/panel/RetainedPanel.vue'
 import PositionSection from './properties/PositionSection.vue'
+import ScaleToolSection from './properties/ScaleToolSection.vue'
 import SelectionActionsControl from './properties/SelectionActionsControl.vue'
 import ShaderSection from './properties/ShaderSection.vue'
 import StrokeSection from './properties/stroke/StrokeSection.vue'
@@ -120,6 +121,7 @@ const viewOnly = useDocumentViewOnly()
         </template>
       </PanelHeader>
       <ComponentPropertiesSection />
+      <ScaleToolSection />
       <PositionSection />
       <ConstraintsSection />
       <AppearanceSection />
@@ -205,6 +207,7 @@ const viewOnly = useDocumentViewOnly()
         <BreakpointsSection />
 
         <IconSection />
+        <ScaleToolSection />
         <PositionSection />
         <ConstraintsSection />
         <LayoutSection />

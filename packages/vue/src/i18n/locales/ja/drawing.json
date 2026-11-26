@@ -26,5 +26,17 @@
   "brushRotation": "回転",
   "brushReverse": "方向を反転",
   "simplifyHeading": "ベクターを単純化",
-  "simplifyTolerance": "許容値"
+  "simplifyTolerance": "許容値",
+  "scaleHeading": "拡大・縮小",
+  "scaleFactor": "倍率",
+  "scaleAnchor": "基準点",
+  "scaleAnchorTopLeft": "左上",
+  "scaleAnchorTopCenter": "上中央",
+  "scaleAnchorTopRight": "右上",
+  "scaleAnchorMiddleLeft": "左中央",
+  "scaleAnchorMiddleCenter": "中央",
+  "scaleAnchorMiddleRight": "右中央",
+  "scaleAnchorBottomLeft": "左下",
+  "scaleAnchorBottomCenter": "下中央",
+  "scaleAnchorBottomRight": "右下"
 }

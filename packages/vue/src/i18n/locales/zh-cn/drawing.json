@@ -26,5 +26,17 @@
   "brushRotation": "旋转",
   "brushReverse": "反转方向",
   "simplifyHeading": "简化矢量",
-  "simplifyTolerance": "容差"
+  "simplifyTolerance": "容差",
+  "scaleHeading": "缩放",
+  "scaleFactor": "缩放比例",
+  "scaleAnchor": "锚点",
+  "scaleAnchorTopLeft": "左上",
+  "scaleAnchorTopCenter": "顶部居中",
+  "scaleAnchorTopRight": "右上",
+  "scaleAnchorMiddleLeft": "左侧居中",
+  "scaleAnchorMiddleCenter": "居中",
+  "scaleAnchorMiddleRight": "右侧居中",
+  "scaleAnchorBottomLeft": "左下",
+  "scaleAnchorBottomCenter": "底部居中",
+  "scaleAnchorBottomRight": "右下"
 }

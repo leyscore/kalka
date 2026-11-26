@@ -26,5 +26,17 @@
   "brushRotation": "Поворот",
   "brushReverse": "Обратное направление",
   "simplifyHeading": "Упростить вектор",
-  "simplifyTolerance": "Допуск"
+  "simplifyTolerance": "Допуск",
+  "scaleHeading": "Масштаб",
+  "scaleFactor": "Коэффициент масштаба",
+  "scaleAnchor": "Опорная точка",
+  "scaleAnchorTopLeft": "Слева сверху",
+  "scaleAnchorTopCenter": "Сверху по центру",
+  "scaleAnchorTopRight": "Справа сверху",
+  "scaleAnchorMiddleLeft": "Слева посередине",
+  "scaleAnchorMiddleCenter": "По центру",
+  "scaleAnchorMiddleRight": "Справа посередине",
+  "scaleAnchorBottomLeft": "Слева снизу",
+  "scaleAnchorBottomCenter": "Снизу по центру",
+  "scaleAnchorBottomRight": "Справа снизу"
 }

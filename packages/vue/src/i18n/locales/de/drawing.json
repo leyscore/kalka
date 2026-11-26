@@ -26,5 +26,17 @@
   "brushRotation": "Drehung",
   "brushReverse": "Richtung umkehren",
   "simplifyHeading": "Vektor vereinfachen",
-  "simplifyTolerance": "Toleranz"
+  "simplifyTolerance": "Toleranz",
+  "scaleHeading": "Skalieren",
+  "scaleFactor": "Skalierungsfaktor",
+  "scaleAnchor": "Anker",
+  "scaleAnchorTopLeft": "Oben links",
+  "scaleAnchorTopCenter": "Oben Mitte",
+  "scaleAnchorTopRight": "Oben rechts",
+  "scaleAnchorMiddleLeft": "Mitte links",
+  "scaleAnchorMiddleCenter": "Mitte",
+  "scaleAnchorMiddleRight": "Mitte rechts",
+  "scaleAnchorBottomLeft": "Unten links",
+  "scaleAnchorBottomCenter": "Unten Mitte",
+  "scaleAnchorBottomRight": "Unten rechts"
 }

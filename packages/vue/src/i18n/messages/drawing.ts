@@ -29,7 +29,19 @@ export const drawingMessageDefaults = {
   brushRotation: 'Rotation',
   brushReverse: 'Reverse direction',
   simplifyHeading: 'Simplify vector',
-  simplifyTolerance: 'Tolerance'
+  simplifyTolerance: 'Tolerance',
+  scaleHeading: 'Scale',
+  scaleFactor: 'Scale factor',
+  scaleAnchor: 'Anchor',
+  scaleAnchorTopLeft: 'Top left',
+  scaleAnchorTopCenter: 'Top center',
+  scaleAnchorTopRight: 'Top right',
+  scaleAnchorMiddleLeft: 'Middle left',
+  scaleAnchorMiddleCenter: 'Center',
+  scaleAnchorMiddleRight: 'Middle right',
+  scaleAnchorBottomLeft: 'Bottom left',
+  scaleAnchorBottomCenter: 'Bottom center',
+  scaleAnchorBottomRight: 'Bottom right'
 } as const
 
 export const drawingMessages = i18n('drawing', drawingMessageDefaults)

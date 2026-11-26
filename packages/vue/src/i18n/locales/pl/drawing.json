@@ -26,5 +26,17 @@
   "brushRotation": "Obrót",
   "brushReverse": "Odwróć kierunek",
   "simplifyHeading": "Uprość wektor",
-  "simplifyTolerance": "Tolerancja"
+  "simplifyTolerance": "Tolerancja",
+  "scaleHeading": "Skaluj",
+  "scaleFactor": "Współczynnik skali",
+  "scaleAnchor": "Kotwica",
+  "scaleAnchorTopLeft": "Lewy górny",
+  "scaleAnchorTopCenter": "Górny środek",
+  "scaleAnchorTopRight": "Prawy górny",
+  "scaleAnchorMiddleLeft": "Lewy środek",
+  "scaleAnchorMiddleCenter": "Środek",
+  "scaleAnchorMiddleRight": "Prawy środek",
+  "scaleAnchorBottomLeft": "Lewy dolny",
+  "scaleAnchorBottomCenter": "Dolny środek",
+  "scaleAnchorBottomRight": "Prawy dolny"
 }
