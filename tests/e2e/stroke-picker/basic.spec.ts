@@ -141,7 +141,7 @@ test('stroke picker hsb saturation and brightness sliders update stroke color on
   ).toBe(true)
 })
 
-test('bound stroke picker is non-destructive, rolls back Escape, and detaches in one undo step', async ({
+test('bound stroke picker is non-destructive, keeps an edit on Escape, and detaches in one undo step', async ({
   page
 }) => {
   const canvas = new CanvasHelper(page)
@@ -197,7 +197,20 @@ test('bound stroke picker is non-destructive, rolls back Escape, and detaches in
     const node = id ? store.getNode(id) : null
     return { color: node?.strokes[0]?.color, binding: node?.boundVariables['strokes/0/color'] }
   })
-  expect(afterEscape).toEqual(before)
+  // Escape closes the picker and keeps the edit, as in Figma; undo brings the variable back.
+  expect(afterEscape.color).not.toEqual(before.color)
+  expect(afterEscape.binding).toBeUndefined()
+  await expect(page.locator('[data-picker-content]')).toHaveCount(0)
+  await canvas.undo()
+  await canvas.waitForRender()
+  const afterUndo = await page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const id = [...store.state.selectedIds][0]
+    const node = id ? store.getNode(id) : null
+    return { color: node?.strokes[0]?.color, binding: node?.boundVariables['strokes/0/color'] }
+  })
+  expect(afterUndo).toEqual(before)
 
   await openStrokePicker(page)
   await dragSlider(page, canvas, 'color-slider-hue', 0.75)

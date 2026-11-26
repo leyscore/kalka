@@ -152,8 +152,12 @@ test('toggle lock via context menu', async () => {
   const locked = children.find((c) => c.locked)
   expect(locked).toBeTruthy()
 
-  // Unlock
-  await rightClickShape(250, 230)
+  // A locked layer is not picked from the canvas, as in Figma: unlock it from its row in the layers panel.
+  await editor.page
+    .getByRole('treeitem')
+    .filter({ has: editor.page.getByRole('button', { name: 'Unlock' }) })
+    .first()
+    .click({ button: 'right' })
   await contextItem('context-toggle-lock').click()
   await editor.canvas.waitForRender()
 

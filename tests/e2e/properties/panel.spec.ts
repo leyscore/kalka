@@ -275,7 +275,7 @@ test('fill color can bind an existing variable', async () => {
   editor.canvas.assertNoErrors()
 })
 
-test('bound fill picker opens non-destructively and Escape rolls back color edits', async () => {
+test('bound fill picker opens non-destructively, and Escape keeps an edit that undo rolls back', async () => {
   await editor.canvas.clearCanvas()
   await editor.canvas.drawRect(200, 200, 80, 80)
 
@@ -324,7 +324,21 @@ test('bound fill picker opens non-destructively and Escape rolls back color edit
     const node = id ? store.getNode(id) : null
     return { color: node?.fills[0]?.color, binding: node?.boundVariables['fills/0/color'] }
   })
-  expect(after).toEqual(before)
+  // Escape closes the picker and keeps the edit, as in Figma; the edit detached the variable.
+  expect(after.color).not.toEqual(before.color)
+  expect(after.binding).toBeUndefined()
+
+  await expect(editor.page.locator('[data-picker-content]')).toHaveCount(0)
+  await editor.canvas.undo()
+  await editor.canvas.waitForRender()
+  const undone = await editor.page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const id = [...store.state.selectedIds][0]
+    const node = id ? store.getNode(id) : null
+    return { color: node?.fills[0]?.color, binding: node?.boundVariables['fills/0/color'] }
+  })
+  expect(undone).toEqual(before)
   await expect(fillItem.getByText('rollback-brand')).toBeVisible()
   editor.canvas.assertNoErrors()
 })
