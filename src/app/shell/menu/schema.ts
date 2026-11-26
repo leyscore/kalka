@@ -143,6 +143,12 @@ export const APP_MENU_SCHEMA = [
         command: 'selection.delete'
       },
       { id: 'selection.rename', label: 'Rename Selection…', shortcut: 'MOD+R' },
+      {
+        id: 'find',
+        label: 'Find and Replace…',
+        shortcut: 'MOD+F',
+        palette: { keywords: ['search', 'replace', 'find', 'text', 'layers'] }
+      },
       { type: 'separator' },
       {
         id: 'selection.selectAll',

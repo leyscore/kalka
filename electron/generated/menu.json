@@ -152,6 +152,11 @@
         "accelerator": "CmdOrCtrl+R"
       },
       {
+        "id": "find",
+        "label": "Find and Replace…",
+        "accelerator": "CmdOrCtrl+F"
+      },
+      {
         "type": "separator"
       },
       {

@@ -1,0 +1,42 @@
+{
+  "title": "Buscar y reemplazar",
+  "search": "Buscar",
+  "searchPlaceholder": "Buscar…",
+  "replacement": "Reemplazar por",
+  "replacementPlaceholder": "Reemplazar por…",
+  "toggleReplace": "Reemplazar",
+  "replace": "Reemplazar",
+  "replaceAll": "Reemplazar todo",
+  "previous": "Resultado anterior",
+  "next": "Resultado siguiente",
+  "filters": "Filtros",
+  "scope": "Buscar en",
+  "currentPage": "Esta página",
+  "allPages": "Todas las páginas",
+  "lookIn": "Buscar en",
+  "textContent": "Contenido del texto",
+  "layerNames": "Nombres de capas",
+  "matchCase": "Coincidir mayúsculas y minúsculas",
+  "wholeWord": "Palabras completas",
+  "layerTypes": "Tipos de capa",
+  "kindText": "Texto",
+  "kindFrame": "Marcos",
+  "kindSection": "Secciones",
+  "kindComponent": "Componentes",
+  "kindInstance": "Instancias",
+  "kindGroup": "Grupos",
+  "kindShape": "Formas",
+  "kindImage": "Imágenes",
+  "position": "{current} de {total}",
+  "results": {
+    "one": "{count} resultado",
+    "many": "{count} resultados"
+  },
+  "noResults": "Sin resultados",
+  "hint": "Busca en los textos y los nombres de las capas. Intro pasa al siguiente resultado y Mayús+Intro al anterior.",
+  "layerName": "Nombre de la capa",
+  "replaced": {
+    "one": "{count} coincidencia reemplazada",
+    "many": "{count} coincidencias reemplazadas"
+  }
+}

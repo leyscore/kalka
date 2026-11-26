@@ -1,0 +1,42 @@
+{
+  "title": "Rechercher et remplacer",
+  "search": "Rechercher",
+  "searchPlaceholder": "Rechercher…",
+  "replacement": "Remplacer par",
+  "replacementPlaceholder": "Remplacer par…",
+  "toggleReplace": "Remplacer",
+  "replace": "Remplacer",
+  "replaceAll": "Tout remplacer",
+  "previous": "Résultat précédent",
+  "next": "Résultat suivant",
+  "filters": "Filtres",
+  "scope": "Rechercher dans",
+  "currentPage": "Cette page",
+  "allPages": "Toutes les pages",
+  "lookIn": "Chercher dans",
+  "textContent": "Contenu du texte",
+  "layerNames": "Noms des calques",
+  "matchCase": "Respecter la casse",
+  "wholeWord": "Mots entiers",
+  "layerTypes": "Types de calques",
+  "kindText": "Texte",
+  "kindFrame": "Cadres",
+  "kindSection": "Sections",
+  "kindComponent": "Composants",
+  "kindInstance": "Instances",
+  "kindGroup": "Groupes",
+  "kindShape": "Formes",
+  "kindImage": "Images",
+  "position": "{current} sur {total}",
+  "results": {
+    "one": "{count} résultat",
+    "many": "{count} résultats"
+  },
+  "noResults": "Aucun résultat",
+  "hint": "Recherchez dans les textes et les noms des calques. Entrée passe au résultat suivant, Maj+Entrée au précédent.",
+  "layerName": "Nom du calque",
+  "replaced": {
+    "one": "{count} occurrence remplacée",
+    "many": "{count} occurrences remplacées"
+  }
+}

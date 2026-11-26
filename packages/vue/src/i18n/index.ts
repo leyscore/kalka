@@ -12,6 +12,7 @@ export {
   useDiagnosticsMessages,
   useEditorMessages,
   useFileMessages,
+  useFindMessages,
   useFontMessages,
   useMediaMessages,
   useMenuMessages,

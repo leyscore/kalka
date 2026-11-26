@@ -28,6 +28,7 @@ de:diagnostics.categoryMCP
 de:diagnostics.categoryRenderer
 de:diagnostics.durationMs
 de:files.dashboard
+de:find.kindText
 de:menu.text
 de:panels.alpha
 de:panels.behaviourMax
@@ -181,6 +182,9 @@ fr:diagnostics.categoryMCP
 fr:diagnostics.durationMs
 fr:diagnostics.title
 fr:files.dashboard
+fr:find.kindImage
+fr:find.kindInstance
+fr:find.kindSection
 fr:fonts.documentSource
 fr:fonts.variable
 fr:menu.documentation

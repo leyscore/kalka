@@ -1,0 +1,42 @@
+{
+  "title": "Trova e sostituisci",
+  "search": "Trova",
+  "searchPlaceholder": "Trova…",
+  "replacement": "Sostituisci con",
+  "replacementPlaceholder": "Sostituisci con…",
+  "toggleReplace": "Sostituisci",
+  "replace": "Sostituisci",
+  "replaceAll": "Sostituisci tutto",
+  "previous": "Risultato precedente",
+  "next": "Risultato successivo",
+  "filters": "Filtri",
+  "scope": "Cerca in",
+  "currentPage": "Questa pagina",
+  "allPages": "Tutte le pagine",
+  "lookIn": "Cerca in",
+  "textContent": "Contenuto del testo",
+  "layerNames": "Nomi dei livelli",
+  "matchCase": "Maiuscole/minuscole",
+  "wholeWord": "Parole intere",
+  "layerTypes": "Tipi di livello",
+  "kindText": "Testo",
+  "kindFrame": "Cornici",
+  "kindSection": "Sezioni",
+  "kindComponent": "Componenti",
+  "kindInstance": "Istanze",
+  "kindGroup": "Gruppi",
+  "kindShape": "Forme",
+  "kindImage": "Immagini",
+  "position": "{current} di {total}",
+  "results": {
+    "one": "{count} risultato",
+    "many": "{count} risultati"
+  },
+  "noResults": "Nessun risultato",
+  "hint": "Cerca nei testi e nei nomi dei livelli. Invio passa al risultato successivo, Maiusc+Invio al precedente.",
+  "layerName": "Nome del livello",
+  "replaced": {
+    "one": "{count} occorrenza sostituita",
+    "many": "{count} occorrenze sostituite"
+  }
+}

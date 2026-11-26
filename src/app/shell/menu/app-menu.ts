@@ -22,6 +22,7 @@ import { shortcutPlatform, useEditorCommands, useI18n } from '@kalka/vue'
 
 import { requestWriteAccess } from '@/app/document/io/capability'
 import { useEditorStore } from '@/app/editor/active-store'
+import { openFind } from '@/app/editor/find/state'
 import { openVariablesDialog } from '@/app/editor/tokens/dialog'
 import { openSettings } from '@/app/settings/open'
 import { setDesignIssuesOnCanvas, setSnappingPreference } from '@/app/settings/preferences/apply'
@@ -119,6 +120,7 @@ export function useAppMenu() {
     'copy-properties': 'copyProperties',
     'paste-properties': 'pasteProperties',
     'selection.rename': 'renameSelection',
+    find: 'find',
     'selection.moveToPage': 'moveToPage',
     language: 'language',
     preferences: 'preferences',
@@ -181,6 +183,7 @@ export function useAppMenu() {
     'save-to-storage': () => void saveDocumentToStorage(store),
     'export-selection': () => exportSelection('png'),
     ...createSelectionMenuActions(store),
+    find: openFind,
     close: () => {
       if (activeTab.value) void closeTab(activeTab.value.id)
     },

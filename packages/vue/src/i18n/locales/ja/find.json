@@ -1,0 +1,40 @@
+{
+  "title": "検索と置換",
+  "search": "検索",
+  "searchPlaceholder": "検索…",
+  "replacement": "置換後の文字列",
+  "replacementPlaceholder": "置換後の文字列…",
+  "toggleReplace": "置換",
+  "replace": "置換",
+  "replaceAll": "すべて置換",
+  "previous": "前の結果",
+  "next": "次の結果",
+  "filters": "フィルター",
+  "scope": "検索範囲",
+  "currentPage": "このページ",
+  "allPages": "すべてのページ",
+  "lookIn": "検索対象",
+  "textContent": "テキストの内容",
+  "layerNames": "レイヤー名",
+  "matchCase": "大文字と小文字を区別",
+  "wholeWord": "単語単位",
+  "layerTypes": "レイヤーの種類",
+  "kindText": "テキスト",
+  "kindFrame": "フレーム",
+  "kindSection": "セクション",
+  "kindComponent": "コンポーネント",
+  "kindInstance": "インスタンス",
+  "kindGroup": "グループ",
+  "kindShape": "シェイプ",
+  "kindImage": "画像",
+  "position": "{current} / {total}",
+  "results": {
+    "many": "{count} 件の結果"
+  },
+  "noResults": "結果なし",
+  "hint": "テキストとレイヤー名を検索します。Enter で次の結果、Shift+Enter で前の結果に移動します。",
+  "layerName": "レイヤー名",
+  "replaced": {
+    "many": "{count} 件を置換しました"
+  }
+}

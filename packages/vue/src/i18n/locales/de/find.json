@@ -1,0 +1,42 @@
+{
+  "title": "Suchen und ersetzen",
+  "search": "Suchen",
+  "searchPlaceholder": "Suchen…",
+  "replacement": "Ersetzen durch",
+  "replacementPlaceholder": "Ersetzen durch…",
+  "toggleReplace": "Ersetzen",
+  "replace": "Ersetzen",
+  "replaceAll": "Alle ersetzen",
+  "previous": "Vorheriges Ergebnis",
+  "next": "Nächstes Ergebnis",
+  "filters": "Filter",
+  "scope": "Suchen in",
+  "currentPage": "Diese Seite",
+  "allPages": "Alle Seiten",
+  "lookIn": "Suchen in",
+  "textContent": "Textinhalt",
+  "layerNames": "Ebenennamen",
+  "matchCase": "Groß-/Kleinschreibung beachten",
+  "wholeWord": "Ganze Wörter",
+  "layerTypes": "Ebenentypen",
+  "kindText": "Text",
+  "kindFrame": "Rahmen",
+  "kindSection": "Abschnitte",
+  "kindComponent": "Komponenten",
+  "kindInstance": "Instanzen",
+  "kindGroup": "Gruppen",
+  "kindShape": "Formen",
+  "kindImage": "Bilder",
+  "position": "{current} von {total}",
+  "results": {
+    "one": "{count} Ergebnis",
+    "many": "{count} Ergebnisse"
+  },
+  "noResults": "Keine Ergebnisse",
+  "hint": "Durchsucht Texte und Ebenennamen. Eingabe springt zum nächsten Ergebnis, Umschalt+Eingabe zum vorherigen.",
+  "layerName": "Ebenenname",
+  "replaced": {
+    "one": "{count} Treffer ersetzt",
+    "many": "{count} Treffer ersetzt"
+  }
+}

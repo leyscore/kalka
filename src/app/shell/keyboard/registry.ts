@@ -16,6 +16,7 @@ import {
   copySelectionProperties,
   pasteClipboardProperties
 } from '@/app/editor/clipboard/properties'
+import { openFind } from '@/app/editor/find/state'
 import { requestRenameSelection } from '@/app/editor/selection/rename-dialog'
 import { TOOL_SHORTCUTS } from '@/app/editor/session'
 import { openSettings } from '@/app/settings/open'
@@ -270,6 +271,16 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
       keys: ['$mod+KeyN', '$mod+KeyT'],
       run: ({ createTab }) => createTab(),
       whileEditingText: true
+    },
+    // Figma's ⌘F wins over the browser's find, in text being edited and in fields too.
+    {
+      id: 'find',
+      keys: appMenuTinykeysShortcut('find') ?? '$mod+KeyF',
+      run: () => {
+        if (!hasOpenDismissableLayer()) openFind()
+      },
+      shouldPreventDefault: () => !hasOpenDismissableLayer(),
+      global: true
     },
     {
       id: 'rename-selection',

@@ -5,6 +5,7 @@ import { defineAsyncComponent } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
+import { findState } from '@/app/editor/find/state'
 import { latch } from '@/app/shell/latch'
 import { useLeftPanel } from '@/app/shell/left-panel/use'
 import splitterTheme from '@/theme/splitter'
@@ -13,6 +14,7 @@ import AssetsPanel from './assets-panel/AssetsPanel.vue'
 import CodePanel from './CodePanel.vue'
 import CommentsPanel from './comments/CommentsPanel.vue'
 import DesignCheckPanel from './design-check/DesignCheckPanel.vue'
+import FindPanel from './find/FindPanel.vue'
 import FolderPanel from './folder/FolderPanel.vue'
 import InstructionsPanel from './instructions/InstructionsPanel.vue'
 import LayerTree from './LayerTree/LayerTree.vue'
@@ -21,6 +23,7 @@ import HistoryPanel from './versions/HistoryPanel.vue'
 
 const { panels } = useI18n()
 const { activePanel } = useLeftPanel()
+const findOpen = findState.open
 // The chat, its model SDKs and markdown load when the agent first opens, then stay mounted.
 const ChatPanel = defineAsyncComponent(() => import('./ChatPanel.vue'))
 const chatUsed = latch(() => activePanel.value === 'ai')
@@ -39,6 +42,8 @@ const splitterStyles = tv(splitterTheme)({ direction: 'vertical' })
       <HistoryPanel v-else-if="activePanel === 'history'" />
       <InstructionsPanel v-else-if="activePanel === 'instructions'" />
       <CommentsPanel v-else-if="activePanel === 'comments'" />
+      <!-- Figma's ⌘F takes the place of the pages and layers until it is closed. -->
+      <FindPanel v-else-if="activePanel === 'file' && findOpen" />
       <SplitterGroup
         v-else-if="activePanel === 'file'"
         direction="vertical"

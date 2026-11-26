@@ -1,0 +1,40 @@
+{
+  "title": "查找和替换",
+  "search": "查找",
+  "searchPlaceholder": "查找…",
+  "replacement": "替换为",
+  "replacementPlaceholder": "替换为…",
+  "toggleReplace": "替换",
+  "replace": "替换",
+  "replaceAll": "全部替换",
+  "previous": "上一个结果",
+  "next": "下一个结果",
+  "filters": "筛选",
+  "scope": "搜索范围",
+  "currentPage": "当前页面",
+  "allPages": "所有页面",
+  "lookIn": "查找位置",
+  "textContent": "文本内容",
+  "layerNames": "图层名称",
+  "matchCase": "区分大小写",
+  "wholeWord": "全字匹配",
+  "layerTypes": "图层类型",
+  "kindText": "文本",
+  "kindFrame": "画框",
+  "kindSection": "分区",
+  "kindComponent": "组件",
+  "kindInstance": "实例",
+  "kindGroup": "编组",
+  "kindShape": "形状",
+  "kindImage": "图片",
+  "position": "{current} / {total}",
+  "results": {
+    "many": "{count} 个结果"
+  },
+  "noResults": "没有结果",
+  "hint": "查找文本和图层名称。按 Enter 转到下一个结果，按 Shift+Enter 转到上一个结果。",
+  "layerName": "图层名称",
+  "replaced": {
+    "many": "已替换 {count} 处"
+  }
+}
