@@ -26,3 +26,34 @@ test('a quick click with the text tool opens the new text for typing', async ({ 
   await expect.poll(() => editedText(page)).toBe('abc')
   canvas.assertNoErrors()
 })
+
+function pageTexts(page: Page) {
+  return page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const pageNode = store.graph.getNode(store.state.currentPageId)
+    return (pageNode?.childIds ?? []).flatMap((id) => {
+      const node = store.graph.getNode(id)
+      return node?.type === 'TEXT' ? [{ text: node.text, width: node.width }] : []
+    })
+  })
+}
+
+test('text made on the page outside any frame is measured as it is typed', async ({ page }) => {
+  const canvas = new CanvasHelper(page)
+  await page.goto('/?test&no-chrome&no-rulers')
+  await canvas.waitForInit()
+
+  await canvas.selectTool('text')
+  await canvas.click(300, 300)
+  await canvas.waitForTextEditor()
+  await page.keyboard.type('Hello')
+  await expect.poll(async () => (await pageTexts(page))[0]?.width ?? 0).toBeGreaterThan(1)
+
+  await page.keyboard.press('Escape')
+  await expect.poll(() => editedText(page)).toBeNull()
+  const [text] = await pageTexts(page)
+  expect(text?.text).toBe('Hello')
+  expect(text?.width).toBeGreaterThan(1)
+  canvas.assertNoErrors()
+})

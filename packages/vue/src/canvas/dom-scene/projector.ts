@@ -13,7 +13,7 @@ import {
 import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 import { blendModeToCSS } from '@kalka/scene-graph/css-model'
 
-import { buildNode, patchAttributes } from './build'
+import { buildNode, isElementNode, patchAttributes } from './build'
 import { deviceScale, HAIRLINE_SCALE, setDeviceScale } from './device-scale'
 import {
   addArtboardFont,
@@ -834,7 +834,7 @@ export class DomSceneProjector {
     }
     const built = buildNode(doc, projected, (layerId, element) => this.register(layerId, element))
     const node = this.graph.getNode(id)
-    if (isRoot && node && built instanceof Element && projected.type === 'element') {
+    if (isRoot && node && isElementNode(built) && projected.type === 'element') {
       patchAttributes(built, this.attributesFor(node, projected, true))
     }
     if (current) current.replaceWith(built)

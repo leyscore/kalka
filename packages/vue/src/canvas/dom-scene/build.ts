@@ -21,6 +21,14 @@ export function buildNode(
   return element
 }
 
+/**
+ * Whether a built node is an element. An artboard's nodes come from its iframe's realm, where
+ * `instanceof Element` of the editor's window is false.
+ */
+export function isElementNode(node: Node): node is Element {
+  return node.nodeType === 1
+}
+
 /** Brings an element's attributes in line with `wanted`, touching only what differs. */
 export function patchAttributes(element: Element, wanted: Map<string, string>): void {
   for (const name of element.getAttributeNames()) {
