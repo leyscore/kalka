@@ -38,6 +38,7 @@ import {
   serializePluginRelaunchData
 } from '../plugin-data'
 import { exportPrototypeFields } from '../prototype'
+import { exportStrokeWidthProfile } from '../stroke-width'
 import { effectWithVariableBindings } from '../variable/bindings'
 import {
   applyColorVariableBinding,
@@ -1125,6 +1126,12 @@ export function sceneNodeToKiwiWithContext(
     KALKA_PLUGIN_DATA.shader,
     node.shader ?? undefined
   )
+  node.pluginData = withPluginData(
+    node.pluginData,
+    KALKA_PLUGIN_DATA.strokeBrush,
+    node.strokeBrush ?? undefined
+  )
+  exportStrokeWidthProfile(node, nc)
   if (nc.type === 'CANVAS') nc.pageType = 'DESIGN'
   if (node.type === 'BOOLEAN_OPERATION')
     nc.booleanOperation = toKiwiBooleanOperation(node.booleanOperation)

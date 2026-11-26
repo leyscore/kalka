@@ -54,6 +54,8 @@ const EDITED_RAW_FIELDS: Partial<Record<string, readonly string[]>> = {
   strokeMiterLimit: ['miterLimit', ...STROKE_GEOMETRY_RAW_FIELDS],
   strokeCap: [...STROKE_GEOMETRY_RAW_FIELDS],
   dashPattern: [...STROKE_GEOMETRY_RAW_FIELDS],
+  strokeWidthProfile: ['variableWidthPoints', ...STROKE_GEOMETRY_RAW_FIELDS],
+  strokeBrush: ['brushType', 'scatterStrokeSettings', ...STROKE_GEOMETRY_RAW_FIELDS],
   text: [...TEXT_DERIVED_RAW_FIELDS],
   styleRuns: [...TEXT_DERIVED_RAW_FIELDS],
   fontSize: ['fontSize', ...TEXT_DERIVED_RAW_FIELDS],

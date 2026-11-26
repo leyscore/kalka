@@ -86,7 +86,7 @@ const STROKED_SHAPES = new Set<SceneNode['type']>(['RECTANGLE', 'ELLIPSE', 'LINE
 /**
  * Whether a shape's stroke is one CSS cannot draw: an outline or a shadow paints a single color,
  * so a gradient or image stroke would draw in its fallback color, and a line's box cannot end in
- * round caps or arrowheads. Such a shape draws as SVG, unless it asks for an HTML tag of its own.
+ * round caps or arrowheads, change width along its length or follow a brush. Such a shape draws as SVG, unless it asks for an HTML tag of its own.
  */
 function strokeNeedsVector(node: SceneNode): boolean {
   if (!STROKED_SHAPES.has(node.type) || node.htmlTag || node.childIds.length > 0) return false
@@ -94,6 +94,8 @@ function strokeNeedsVector(node: SceneNode): boolean {
   if (!stroke) return false
   if (stroke.type !== 'SOLID') return true
   if (node.type !== 'LINE') return false
+  // A width profile or a brush draws the line as a shape.
+  if (node.strokeBrush !== null || node.strokeWidthProfile.length > 0) return true
   const { start, end } = lineEndCaps(stroke.cap ?? node.strokeCap, node.vectorNetwork)
   return [start, end].some((cap) => cap !== 'NONE' && cap !== 'SQUARE')
 }

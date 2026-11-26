@@ -10,6 +10,7 @@ import common from './common.json'
 import credentials from './credentials.json'
 import designCheck from './design-check.json'
 import diagnostics from './diagnostics.json'
+import drawing from './drawing.json'
 import editor from './editor.json'
 import effects from './effects.json'
 import files from './files.json'
@@ -43,6 +44,7 @@ export default {
   credentials,
   designCheck,
   diagnostics,
+  drawing,
   editor,
   effects,
   files,

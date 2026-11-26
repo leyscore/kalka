@@ -8,6 +8,7 @@ import AppButton from '@/components/ui/button/AppButton.vue'
 import { usePopoverUI } from '@/components/ui/overlay/popover'
 
 import StrokeDashControls from './StrokeDashControls.vue'
+import StrokeDrawControls from './StrokeDrawControls.vue'
 import StrokeGeometryControls from './StrokeGeometryControls.vue'
 
 const { stroke } = defineProps<{ stroke?: Stroke }>()
@@ -44,6 +45,7 @@ const styles = usePopoverUI({
         </div>
         <div :class="styles.body">
           <StrokeDashControls v-if="stroke" :stroke="stroke" @patch="emit('patch', $event)" />
+          <StrokeDrawControls />
           <StrokeGeometryControls />
         </div>
       </PopoverContent>

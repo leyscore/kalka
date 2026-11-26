@@ -95,6 +95,8 @@ export const INSTANCE_SYNC_PROPS: (keyof SceneNode)[] = [
   'strokeCap',
   'strokeJoin',
   'strokeMiterLimit',
+  'strokeWidthProfile',
+  'strokeBrush',
   'dashPattern',
   'independentStrokeWeights',
   'borderTopWeight',

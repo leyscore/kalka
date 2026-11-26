@@ -10,6 +10,8 @@ import {
 import { strokeOverflow } from '@kalka/scene-graph/geometry'
 import { isGradientFill } from '@kalka/scene-graph/gradient'
 
+import { strokeOutlineSVGPath } from '#core/vector/stroke-outline'
+
 import {
   createGradientDef,
   formatColor,
@@ -175,4 +177,16 @@ export function alignedStrokeElements(
     )
   )
   return [svg('g', { mask: `url(#${id})` }, ...stroked)]
+}
+
+/** A stroke a width profile or a brush shapes, as a path filled with its paint; null otherwise. */
+export function strokeOutlineElement(
+  node: SceneNode,
+  stroke: Stroke | undefined,
+  strokeAttrs: SVGAttrs
+): SVGNode | null {
+  if (!stroke || strokeAttrs.stroke === undefined) return null
+  const d = strokeOutlineSVGPath(node, stroke)
+  if (d === null) return null
+  return svg('path', { d, fill: strokeAttrs.stroke, 'fill-opacity': strokeAttrs['stroke-opacity'] })
 }

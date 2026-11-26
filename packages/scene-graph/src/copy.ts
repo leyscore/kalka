@@ -277,6 +277,8 @@ export function cloneNodeProps(
     // component's opaque raw payload here duplicates megabytes of metadata per instance.
     source: componentId === null ? structuredClone(src.source) : createDefaultSourceMetadata(),
     dashPattern: copyOpt(src.dashPattern, (a) => [...a]),
+    strokeWidthProfile: copyOpt(src.strokeWidthProfile, (a) => a.map((point) => ({ ...point }))),
+    strokeBrush: src.strokeBrush ? { ...src.strokeBrush } : null,
     fontVariations: copyOpt(src.fontVariations, (a) => a.map((v) => ({ ...v }))),
     fontFeatures: copyOpt(src.fontFeatures, (a) => a.map((v) => ({ ...v }))),
     listLines: copyOpt(src.listLines, (a) => a.map((line) => ({ ...line }))),

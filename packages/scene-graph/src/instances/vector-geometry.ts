@@ -15,6 +15,8 @@ const STROKE_OUTLINE_FIELDS = [
   'strokeCap',
   'strokeJoin',
   'strokeMiterLimit',
+  'strokeWidthProfile',
+  'strokeBrush',
   'dashPattern'
 ] as const
 

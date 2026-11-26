@@ -282,6 +282,39 @@ export interface Stroke extends Fill {
   dashPattern?: number[]
 }
 
+/**
+ * A point of a variable-width stroke, as Figma's `VariableWidthPoint`: `position` runs from 0 to
+ * 1 along each subpath by length, `ascent` and `descent` are how far the stroke reaches on the
+ * left and right of the path looking along it, as fractions of the stroke weight (a uniform
+ * stroke is 0.5 on each side). Widths between points are interpolated smoothly.
+ */
+export interface StrokeWidthPoint {
+  position: number
+  ascent: number
+  descent: number
+}
+
+/** How a brush draws a stroke: one shape bent along the path, or copies dropped along it. */
+export type StrokeBrushType = 'STRETCH' | 'SCATTER'
+
+/**
+ * A stroke drawn with a brush, as Figma Draw's brushes. `id` names one of Kalka's own brushes;
+ * a scatter brush drops a copy every `gap` stroke weights, varied by `sizeJitter` and
+ * `angularJitter` (0–1), `wiggle` (stroke weights off the path) and `rotation` (degrees), the
+ * same way each time for one `seed`. A stretch brush can run backwards (`reverse`).
+ */
+export interface StrokeBrush {
+  type: StrokeBrushType
+  id: string
+  gap: number
+  wiggle: number
+  sizeJitter: number
+  angularJitter: number
+  rotation: number
+  reverse: boolean
+  seed: number
+}
+
 /** A blur's falloff: the same everywhere, or growing across the layer. */
 export type BlurType = 'NORMAL' | 'PROGRESSIVE'
 
@@ -708,6 +741,10 @@ export interface SceneNode {
   strokeAlign: Stroke['align']
 
   strokeMiterLimit: number
+  /** The stroke's width along the path; empty draws it at its weight everywhere. */
+  strokeWidthProfile: StrokeWidthPoint[]
+  /** The brush the stroke is drawn with; null draws a plain stroke. */
+  strokeBrush: StrokeBrush | null
 
   minWidth: number | null
   maxWidth: number | null

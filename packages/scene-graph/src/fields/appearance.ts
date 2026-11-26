@@ -16,6 +16,8 @@ export const STROKE_FIELDS = [
   'strokeCap',
   'strokeJoin',
   'strokeMiterLimit',
+  'strokeWidthProfile',
+  'strokeBrush',
   'dashPattern',
   'independentStrokeWeights',
   'borderTopWeight',

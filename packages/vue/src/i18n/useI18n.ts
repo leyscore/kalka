@@ -14,6 +14,7 @@ import {
   credentialsMessages,
   designCheckMessages,
   diagnosticsMessages,
+  drawingMessages,
   editorMessages,
   effectMessages,
   prototypeMessages,
@@ -51,6 +52,7 @@ export const useCommonMessages = () => useI18nNamespace(commonMessages)
 export const useCredentialMessages = () => useI18nNamespace(credentialsMessages)
 export const useDesignCheckMessages = () => useI18nNamespace(designCheckMessages)
 export const useDiagnosticsMessages = () => useI18nNamespace(diagnosticsMessages)
+export const useDrawingMessages = () => useI18nNamespace(drawingMessages)
 export const useEditorMessages = () => useI18nNamespace(editorMessages)
 export const useEffectMessages = () => useI18nNamespace(effectMessages)
 export const usePrototypeMessages = () => useI18nNamespace(prototypeMessages)

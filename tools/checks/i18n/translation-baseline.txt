@@ -215,6 +215,7 @@ fr:diagnostics.categoryDocument
 fr:diagnostics.categoryMCP
 fr:diagnostics.durationMs
 fr:diagnostics.title
+fr:drawing.brushRotation
 fr:effects.saturation
 fr:effects.texture
 fr:files.dashboard

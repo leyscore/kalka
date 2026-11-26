@@ -33,6 +33,7 @@ import {
   readNodeChangePluginData
 } from './plugin-data'
 import { importPrototypeFields } from './prototype'
+import { importStrokeWidthProfile } from './stroke-width'
 import { importStyleRuns } from './style/runs'
 import { importListLines } from './text/lines'
 import { convertLetterSpacing, convertLineHeight, mapTextDecoration } from './text/values'
@@ -657,7 +658,10 @@ function convertVectorAndStrokeProps(nc: NodeChange, blobs: Uint8Array[]) {
     borderBottomWeight: (nc.borderBottomWeight ?? 0) as number,
     borderLeftWeight: (nc.borderLeftWeight ?? 0) as number,
     independentStrokeWeights: (nc.borderStrokeWeightsIndependent ?? false) as boolean,
-    strokeMiterLimit: (nc.miterLimit ?? DEFAULT_STROKE_MITER_LIMIT) as number
+    strokeMiterLimit: (nc.miterLimit ?? DEFAULT_STROKE_MITER_LIMIT) as number,
+    strokeWidthProfile: importStrokeWidthProfile(nc),
+    // Figma's own brushes are its assets; their outline comes in as stroke geometry.
+    strokeBrush: readNodeChangePluginData(nc, KALKA_PLUGIN_DATA.strokeBrush) ?? null
   }
 }
 

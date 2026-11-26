@@ -32,6 +32,7 @@ import {
   arrowHeadElements,
   buildSVGStrokeAttrs,
   hasAlignedStroke,
+  strokeOutlineElement,
   type SVGAttrs
 } from './strokes'
 
@@ -399,6 +400,8 @@ function buildShapeChildren(
   ctx: SVGExportContext
 ): SVGNode[] {
   const stroke = node.strokes.find((s) => s.visible)
+  const outline = strokeOutlineElement(node, stroke, strokeAttrs)
+  if (outline) return [...buildShapeChildren(node, visibleFills, fillAttr, {}, 0, ctx), outline]
   if (hasAlignedStroke(node, stroke, strokeAttrs)) {
     const fills = buildShapeChildren(node, visibleFills, fillAttr, {}, 0, ctx)
     const shape = (attrs: SVGAttrs) => nodeShapeElements(node, null, attrs, ctx)

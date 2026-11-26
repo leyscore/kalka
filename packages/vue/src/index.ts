@@ -155,6 +155,12 @@ export { useEffectsControls } from '#vue/controls/effects/use'
 export { useSharedStyleBinding, useSharedStyles } from '#vue/controls/shared-style/use'
 export { groupSharedStyles, type SharedStyleGroup } from '#vue/controls/shared-style/model'
 export { useStrokeControls } from '#vue/controls/stroke/use'
+export {
+  brushChoice,
+  useStrokeDrawControls,
+  type StrokeBrushChoice,
+  type StrokeBrushSetting
+} from '#vue/controls/stroke/draw'
 export { isStrokeCapValue } from '#vue/controls/stroke/helpers'
 export { isEndPointCap } from '#vue/controls/stroke/end-caps'
 export type { EndPointCap, EndPointSide } from '#vue/controls/stroke/end-caps'

@@ -20,6 +20,7 @@ import {
   type LibraryAssetSource,
   type PluginDataEntry,
   type SourceLibraryPublication,
+  type StrokeBrush,
   type TextDirection,
   type TokenUnit
 } from '../types'
@@ -34,6 +35,18 @@ const DIRECTIONS = ['AUTO', 'LTR', 'RTL'] as const satisfies readonly (
   | TextDirection
   | LayoutDirection
 )[]
+
+const strokeBrushSchema: v.GenericSchema<unknown, StrokeBrush> = v.object({
+  type: v.picklist(['STRETCH', 'SCATTER']),
+  id: v.string(),
+  gap: v.pipe(v.number(), v.finite()),
+  wiggle: v.pipe(v.number(), v.finite()),
+  sizeJitter: v.pipe(v.number(), v.finite()),
+  angularJitter: v.pipe(v.number(), v.finite()),
+  rotation: v.pipe(v.number(), v.finite()),
+  reverse: v.boolean(),
+  seed: v.pipe(v.number(), v.finite())
+})
 
 const textPathBox: v.GenericSchema<unknown, Rect> = v.pipe(
   v.object({ x: v.number(), y: v.number(), width: v.number(), height: v.number() }),
@@ -152,6 +165,8 @@ export const KALKA_PLUGIN_DATA = {
   exportSettings: jsonPluginDataField('exportSettings', 'format', exportSettings),
   /** A shader drawn behind the layer's content, which Figma has no paint for. */
   shader: jsonPluginDataField('shader', 'format', shaderLayerSchema),
+  /** A brush the stroke is drawn with: Kalka's own brushes, which Figma has no asset for. */
+  strokeBrush: jsonPluginDataField('strokeBrush', 'format', strokeBrushSchema),
   /** The HTML tag a layer is written as, which Figma has no field for. */
   htmlTag: textPluginDataField('htmlTag', 'format', HTML_TAGS),
   /** The class names a layer's element carries. */

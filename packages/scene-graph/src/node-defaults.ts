@@ -166,6 +166,8 @@ export function createDefaultNode(
     strokeWeight: DEFAULT_STROKE_WEIGHT,
     strokeAlign: defaultStrokeAlign(type),
     strokeMiterLimit: DEFAULT_STROKE_MITER_LIMIT,
+    strokeWidthProfile: [],
+    strokeBrush: null,
     minWidth: null,
     maxWidth: null,
     minHeight: null,

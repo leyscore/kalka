@@ -11,6 +11,7 @@ import { commonMessageDefaults, commonMessages } from '#vue/i18n/messages/common
 import { credentialsMessageDefaults, credentialsMessages } from '#vue/i18n/messages/credentials'
 import { designCheckMessageDefaults, designCheckMessages } from '#vue/i18n/messages/design-check'
 import { diagnosticsMessageDefaults, diagnosticsMessages } from '#vue/i18n/messages/diagnostics'
+import { drawingMessageDefaults, drawingMessages } from '#vue/i18n/messages/drawing'
 import { editorMessageDefaults, editorMessages } from '#vue/i18n/messages/editor'
 import { effectMessageDefaults, effectMessages } from '#vue/i18n/messages/effects'
 import { filesMessageDefaults, filesMessages } from '#vue/i18n/messages/files'
@@ -46,6 +47,7 @@ export {
   credentialsMessages,
   designCheckMessages,
   diagnosticsMessages,
+  drawingMessages,
   editorMessages,
   effectMessages,
   prototypeMessages,
@@ -80,6 +82,7 @@ export const messageDefaults = {
   credentials: credentialsMessageDefaults,
   designCheck: designCheckMessageDefaults,
   diagnostics: diagnosticsMessageDefaults,
+  drawing: drawingMessageDefaults,
   editor: editorMessageDefaults,
   effects: effectMessageDefaults,
   prototype: prototypeMessageDefaults,

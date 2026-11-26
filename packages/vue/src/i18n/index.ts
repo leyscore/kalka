@@ -10,6 +10,7 @@ export {
   useCredentialMessages,
   useDesignCheckMessages,
   useDiagnosticsMessages,
+  useDrawingMessages,
   useEditorMessages,
   useEffectMessages,
   usePrototypeMessages,

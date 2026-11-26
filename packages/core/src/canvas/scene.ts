@@ -30,6 +30,7 @@ import {
   effectRasterScaleMatches
 } from './renderer/effect-raster-cache'
 import { makeSmoothRRectPath, nodeHasRadius, nodeHasSmoothCorners } from './shapes'
+import { drawStrokeOutline } from './stroke-outline'
 import {
   configureStrokePaint,
   drawArrowHeads,
@@ -837,6 +838,7 @@ function paintNodeStrokes(
   vectorStroke: Path[] | null
 ): void {
   forVisibleStrokes(r, node, graph, (stroke, color) => {
+    if (drawStrokeOutline(r, canvas, node, stroke, color)) return
     if (
       stroke.dashPattern &&
       stroke.dashPattern.length > 0 &&
