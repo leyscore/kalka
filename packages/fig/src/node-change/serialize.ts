@@ -2,6 +2,7 @@ import {
   DEFAULT_STROKE_WEIGHT,
   normalizeFontFamily,
   KALKA_PLUGIN_DATA,
+  spacingPercent,
   withPluginData
 } from '@kalka/scene-graph'
 import { fractionalPosition } from '@kalka/scene-graph/order-keys'
@@ -48,11 +49,27 @@ import {
   type KiwiNodeChange
 } from './export/node'
 import { exportTextData, fontVariationToKiwi } from './text/data-export'
+import { exportTextLines } from './text/lines'
 import { toKiwiWindingRule } from './vector/geometry'
 
-function textLines(text: string): NonNullable<NodeChange['textData']>['lines'] {
-  const lineCount = Math.max(1, text.split('\n').length)
-  return Array.from({ length: lineCount }, () => ({ lineType: 'PLAIN' }))
+/**
+ * Line height and letter spacing in the units they were set in, and paragraph spacing and
+ * indent. Figma saves a line height set in percent as a multiple of the font size.
+ */
+function serializeTextSpacing(node: SceneNode, nc: KiwiNodeChange): void {
+  const relative = node.fontSize > 0
+  if (node.lineHeight != null) {
+    nc.lineHeight =
+      relative && node.lineHeightUnit === 'PERCENT'
+        ? { value: spacingPercent(node.lineHeight, node.fontSize) / 100, units: 'RAW' }
+        : { value: node.lineHeight, units: 'PIXELS' }
+  }
+  nc.letterSpacing =
+    relative && node.letterSpacingUnit === 'PERCENT'
+      ? { value: spacingPercent(node.letterSpacing, node.fontSize), units: 'PERCENT' }
+      : { value: node.letterSpacing, units: 'PIXELS' }
+  if (node.paragraphSpacing !== 0) nc.paragraphSpacing = node.paragraphSpacing
+  if (node.paragraphIndent !== 0) nc.paragraphIndent = node.paragraphIndent
 }
 
 function serializeCornerRadii(node: SceneNode, nc: KiwiNodeChange): void {
@@ -105,7 +122,7 @@ function serializeTextProps(
     style: weightToFigmaStyle(node.fontWeight, node.italic),
     postscript: ''
   }
-  nc.textData = exportTextData(node, textLines, fillToKiwiPaint)
+  nc.textData = exportTextData(node, exportTextLines, fillToKiwiPaint)
   if (node.fontVariations.length > 0) {
     nc.fontVariations = node.fontVariations.map(fontVariationToKiwi)
   }
@@ -137,8 +154,7 @@ function serializeTextProps(
     })
   }
   if (node.leadingTrim !== 'NONE') nc.leadingTrim = node.leadingTrim
-  if (node.lineHeight != null) nc.lineHeight = { value: node.lineHeight, units: 'PIXELS' }
-  nc.letterSpacing = { value: node.letterSpacing, units: 'PIXELS' }
+  serializeTextSpacing(node, nc)
   if (node.textDecoration !== 'NONE') {
     nc.textDecoration = node.textDecoration === 'UNDERLINE' ? 'UNDERLINE' : 'STRIKETHROUGH'
   }

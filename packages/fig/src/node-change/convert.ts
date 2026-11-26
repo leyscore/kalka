@@ -31,6 +31,7 @@ import {
   readNodeChangePluginData
 } from './plugin-data'
 import { importStyleRuns } from './style/runs'
+import { importListLines } from './text/lines'
 import { convertLetterSpacing, convertLineHeight, mapTextDecoration } from './text/values'
 import {
   alignGeometryWindingRules,
@@ -347,7 +348,12 @@ type TextProps = Pick<
   | 'textDecorationFills'
   | 'leadingTrim'
   | 'lineHeight'
+  | 'lineHeightUnit'
   | 'letterSpacing'
+  | 'letterSpacingUnit'
+  | 'paragraphSpacing'
+  | 'paragraphIndent'
+  | 'listLines'
   | 'maxLines'
   | 'styleRuns'
   | 'fontVariations'
@@ -379,6 +385,24 @@ function convertTextDecorationProps(
   }
 }
 
+/** The units the text's spacing was set in, and its paragraphs' spacing, indent and lists. */
+function convertTextParagraphs(
+  nc: NodeChange
+): Pick<
+  SceneNode,
+  'lineHeightUnit' | 'letterSpacingUnit' | 'paragraphSpacing' | 'paragraphIndent' | 'listLines'
+> {
+  const letterSpacingPercent = nc.letterSpacing?.units === 'PERCENT' && nc.letterSpacing.value !== 0
+  return {
+    // Figma's Auto is 100% of the font's own height; a percentage typed in is a multiple, RAW.
+    lineHeightUnit: nc.lineHeight?.units === 'RAW' ? 'PERCENT' : 'PIXELS',
+    letterSpacingUnit: letterSpacingPercent ? 'PERCENT' : 'PIXELS',
+    paragraphSpacing: nc.paragraphSpacing ?? 0,
+    paragraphIndent: nc.paragraphIndent ?? 0,
+    listLines: importListLines(nc)
+  }
+}
+
 function convertTextProps(nc: NodeChange, blobs: Uint8Array[]): TextProps {
   return {
     text: nc.textData?.characters ?? '',
@@ -398,6 +422,7 @@ function convertTextProps(nc: NodeChange, blobs: Uint8Array[]): TextProps {
     leadingTrim: (nc.leadingTrim ?? 'NONE') as SceneNode['leadingTrim'],
     lineHeight: importedTextLineHeight(nc),
     letterSpacing: convertLetterSpacing(nc.letterSpacing, nc.fontSize),
+    ...convertTextParagraphs(nc),
     maxLines: (nc.maxLines ?? null) as number | null,
     styleRuns: importStyleRuns(nc),
     fontVariations: convertFontVariations(nc),

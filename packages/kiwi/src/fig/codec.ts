@@ -371,6 +371,8 @@ export interface NodeChange {
   emojiImageSet?: string
   lineHeight?: { value: number; units: string }
   letterSpacing?: { value: number; units: string }
+  paragraphSpacing?: number
+  paragraphIndent?: number
   // Symbol/Instance
   symbolData?: { symbolID: GUID }
   // ComponentSet

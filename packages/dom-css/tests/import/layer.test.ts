@@ -128,6 +128,29 @@ describe('applyLayerStyle', () => {
     expect(read.textAlignHorizontal).toBe('JUSTIFIED')
   })
 
+  test('reads paragraphs and lists back as the projection writes them', () => {
+    const graph = new SceneGraph()
+    const text = graph.createNode('TEXT', graph.getPages()[0].id, {
+      text: 'Intro\nOne\nNested\n\nOutro',
+      paragraphSpacing: 12,
+      paragraphIndent: 8,
+      listLines: [
+        { type: 'NONE', level: 0 },
+        { type: 'ORDERED', level: 0 },
+        { type: 'UNORDERED', level: 1 },
+        { type: 'NONE', level: 0 },
+        { type: 'NONE', level: 0 }
+      ],
+      styleRuns: [{ start: 6, length: 3, style: { fontWeight: 700 } }]
+    })
+    const read = readBack(graph, text)
+    expect(read.text).toBe(text.text)
+    expect(read.styleRuns).toEqual(text.styleRuns)
+    expect(read.listLines).toEqual(text.listLines)
+    expect(read.paragraphSpacing).toBe(12)
+    expect(read.paragraphIndent).toBe(8)
+  })
+
   test('takes images from a resolver and shaders from their attribute', () => {
     const graph = new SceneGraph()
     const node = createDefaultNode(() => 'image', 'RECTANGLE')

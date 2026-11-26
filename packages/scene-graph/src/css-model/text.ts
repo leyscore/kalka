@@ -1,11 +1,43 @@
+import valueParser from 'postcss-value-parser'
+
 import { parseCSSNumber } from '../css'
+import { pixelsFromPercent, spacingPercent } from '../text-paragraphs'
 import type { SceneNode } from '../types'
 import { pickStyle } from './from-css'
 import { px, type PropertyFamily } from './types'
 
+/** A spacing as a multiple of the font size, the way CSS keeps it following the size. */
+function fontRelative(pixels: number, fontSize: number): string {
+  return String(spacingPercent(pixels, fontSize) / 100)
+}
+
+/**
+ * A spacing CSS gives relative to the font size: a unitless line height, or `em` and `%`. The
+ * pixels it comes to at the layer's font size, or null when it is not one.
+ */
+function readFontRelative(value: string | undefined, fontSize: number, unitless: boolean) {
+  const dimension = value ? valueParser.unit(value.trim()) : false
+  if (!dimension) return null
+  const number = Number(dimension.number)
+  if (!Number.isFinite(number)) return null
+  const unit = dimension.unit.toLowerCase()
+  if (unit === 'em' || (unitless && unit === '')) return pixelsFromPercent(number * 100, fontSize)
+  if (unit === '%') return pixelsFromPercent(number, fontSize)
+  return null
+}
+
 export const font: PropertyFamily = {
   name: 'font',
-  fields: ['fontFamily', 'fontSize', 'fontWeight', 'italic', 'lineHeight', 'letterSpacing'],
+  fields: [
+    'fontFamily',
+    'fontSize',
+    'fontWeight',
+    'italic',
+    'lineHeight',
+    'lineHeightUnit',
+    'letterSpacing',
+    'letterSpacingUnit'
+  ],
   properties: [
     'font-family',
     'font-size',
@@ -19,9 +51,21 @@ export const font: PropertyFamily = {
     style['font-size'] = css('fontSize', px(node.fontSize))
     style['font-weight'] = String(node.fontWeight)
     if (node.italic) style['font-style'] = 'italic'
-    if (node.lineHeight !== null) style['line-height'] = css('lineHeight', px(node.lineHeight))
-    if (node.letterSpacing !== 0)
-      style['letter-spacing'] = css('letterSpacing', px(node.letterSpacing))
+    // A percentage is a unitless line height, which runs in another size scale as Figma's do.
+    if (node.lineHeight !== null) {
+      const literal =
+        node.lineHeightUnit === 'PERCENT' && node.fontSize > 0
+          ? fontRelative(node.lineHeight, node.fontSize)
+          : px(node.lineHeight)
+      style['line-height'] = css('lineHeight', literal)
+    }
+    if (node.letterSpacing !== 0) {
+      const literal =
+        node.letterSpacingUnit === 'PERCENT' && node.fontSize > 0
+          ? `${fontRelative(node.letterSpacing, node.fontSize)}em`
+          : px(node.letterSpacing)
+      style['letter-spacing'] = css('letterSpacing', literal)
+    }
   },
   read(style, node) {
     const fontFamily = pickStyle(style, 'font-family')
@@ -29,12 +73,34 @@ export const font: PropertyFamily = {
       node.fontFamily = fontFamily.split(',')[0]?.replaceAll('"', '').trim() || node.fontFamily
     for (const [property, field] of [
       ['font-size', 'fontSize'],
-      ['font-weight', 'fontWeight'],
-      ['line-height', 'lineHeight'],
-      ['letter-spacing', 'letterSpacing']
+      ['font-weight', 'fontWeight']
     ] as const) {
       const value = parseCSSNumber(pickStyle(style, property))
       if (value !== null) node[field] = value
+    }
+    const lineHeight = pickStyle(style, 'line-height')
+    const relativeLineHeight = readFontRelative(lineHeight, node.fontSize, true)
+    if (relativeLineHeight !== null) {
+      node.lineHeight = relativeLineHeight
+      node.lineHeightUnit = 'PERCENT'
+    } else {
+      const value = parseCSSNumber(lineHeight)
+      if (value !== null) {
+        node.lineHeight = value
+        node.lineHeightUnit = 'PIXELS'
+      }
+    }
+    const letterSpacing = pickStyle(style, 'letter-spacing')
+    const relativeLetterSpacing = readFontRelative(letterSpacing, node.fontSize, false)
+    if (relativeLetterSpacing !== null) {
+      node.letterSpacing = relativeLetterSpacing
+      node.letterSpacingUnit = 'PERCENT'
+    } else {
+      const value = parseCSSNumber(letterSpacing)
+      if (value !== null) {
+        node.letterSpacing = value
+        node.letterSpacingUnit = 'PIXELS'
+      }
     }
     node.italic = pickStyle(style, 'font-style') === 'italic'
   }

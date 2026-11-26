@@ -1,4 +1,5 @@
 import {
+  hasParagraphBlocks,
   INLINE_HTML_TAGS,
   isHTMLTag,
   readIcon,
@@ -70,6 +71,9 @@ export function nestedTag(
     return child !== undefined && child.type !== 'TEXT'
   })
   if (TEXT_BLOCK_TAGS.has(tag) && holdsBlock) return defaultTagForNode(node)
+  // Text set apart in paragraphs or lists is blocks, which a `<p>` would be closed by.
+  if (node.type === 'TEXT' && (tag === 'span' || tag === 'p') && hasParagraphBlocks(node))
+    return 'div'
   return tag
 }
 

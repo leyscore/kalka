@@ -9,7 +9,12 @@ export const INSTANCE_SYNC_TEXT_PROPS = [
   'italic',
   'textDirection',
   'letterSpacing',
+  'letterSpacingUnit',
   'lineHeight',
+  'lineHeightUnit',
+  'paragraphSpacing',
+  'paragraphIndent',
+  'listLines',
   'textCase',
   'textDecoration',
   'textDecorationStyle',
@@ -31,7 +36,8 @@ export const INSTANCE_SYNC_TEXT_PROPS = [
 
 /** Fields that belong to another one: overriding the owner keeps them too. */
 export const INSTANCE_SYNC_FIELD_OWNERS: Readonly<Partial<Record<string, string>>> = {
-  styleRuns: 'text'
+  styleRuns: 'text',
+  listLines: 'text'
 }
 
 export const INSTANCE_SYNC_PROPS: (keyof SceneNode)[] = [

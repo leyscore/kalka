@@ -1,8 +1,14 @@
-import type { CharacterStyleOverride, StyleRun } from '@kalka/scene-graph'
+import {
+  compactListLines,
+  type CharacterStyleOverride,
+  type SceneNode,
+  type StyleRun,
+  type TextListLine
+} from '@kalka/scene-graph'
 import { parseCSSColor, parseCSSNumber } from '@kalka/scene-graph/css'
 import { paintColor } from '@kalka/scene-graph/css-model'
 
-import type { DesignNode, DesignStyleDeclaration } from '../types'
+import type { DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 
 function decorationFromCSS(value: string): CharacterStyleOverride['textDecoration'] | undefined {
   if (value === 'underline') return 'UNDERLINE'
@@ -39,11 +45,70 @@ export function characterStyleFromCSS(style: DesignStyleDeclaration): CharacterS
 export interface TextContent {
   text: string
   styleRuns: StyleRun[]
+  /** Set when the text is written as paragraph blocks, as the projection writes them. */
+  paragraphs?: Pick<SceneNode, 'listLines' | 'paragraphSpacing' | 'paragraphIndent'>
+}
+
+const BLOCK_TAGS = new Set(['p', 'div', 'ul', 'ol', 'li'])
+
+function isBlock(node: DesignNode): node is DesignElement {
+  return node.type === 'element' && BLOCK_TAGS.has(node.tagName.toLowerCase())
+}
+
+/** The bottom margin a block's CSS sets, from `margin-bottom` or the `margin` shorthand. */
+function bottomMargin(style: DesignStyleDeclaration | undefined): number | null {
+  const longhand = parseCSSNumber(style?.['margin-bottom'] ?? style?.['margin-block-end'])
+  if (longhand !== null) return longhand
+  const values = style?.margin?.trim().split(/\s+/) ?? []
+  return parseCSSNumber(values.length >= 3 ? values[2] : values[0])
+}
+
+interface BlockParagraph {
+  children: readonly DesignNode[]
+  list: TextListLine
+}
+
+/** A text's paragraphs from its blocks: `<p>` and `<div>`, and the items of its lists. */
+function blockParagraphs(children: readonly DesignNode[], level: number): BlockParagraph[] {
+  const paragraphs: BlockParagraph[] = []
+  const plain: TextListLine = { type: 'NONE', level: 0 }
+  for (const child of children) {
+    if (child.type === 'text') {
+      if (child.text.trim()) paragraphs.push({ children: [child], list: plain })
+      continue
+    }
+    const tag = child.tagName.toLowerCase()
+    if (tag === 'ul' || tag === 'ol') {
+      const type = tag === 'ol' ? 'ORDERED' : 'UNORDERED'
+      for (const item of child.children) {
+        if (item.type !== 'element' || item.tagName.toLowerCase() !== 'li') continue
+        const inline = item.children.filter((node) => !isBlock(node))
+        paragraphs.push({ children: inline, list: { type, level } })
+        const nested = item.children.filter(isBlock)
+        paragraphs.push(...blockParagraphs(nested, level + 1))
+      }
+    } else if (isBlock(child)) {
+      paragraphs.push({ children: child.children, list: plain })
+    } else {
+      paragraphs.push({ children: [child], list: plain })
+    }
+  }
+  return paragraphs
+}
+
+/** The spacing and indent the first paragraph blocks set, as the projection writes them. */
+function blockSpacing(children: readonly DesignNode[]) {
+  const blocks = children.filter(isBlock)
+  const spaced = blocks.length > 1 ? bottomMargin(blocks[0]?.inlineStyle) : null
+  const first = blocks.find((block) => block.tagName.toLowerCase() === 'p')
+  const indent = parseCSSNumber(first?.inlineStyle?.['text-indent'])
+  return { paragraphSpacing: spaced ?? 0, paragraphIndent: indent ?? 0 }
 }
 
 /**
  * A text element's characters and style runs: plain text keeps the layer's own style, an inline
- * element with a `style` becomes a run with that style, and `<br>` a line break.
+ * element with a `style` becomes a run with that style, and `<br>` a line break. A text written
+ * as blocks, paragraphs and lists, has a line per paragraph and keeps each one's list.
  */
 export function textContentFromChildren(children: readonly DesignNode[]): TextContent {
   let text = ''
@@ -69,6 +134,25 @@ export function textContentFromChildren(children: readonly DesignNode[]): TextCo
         styleRuns.push({ start, length, style: override })
     }
   }
-  visit(children, undefined)
-  return { text, styleRuns }
+  if (!children.some(isBlock)) {
+    visit(children, undefined)
+    return { text, styleRuns }
+  }
+  const paragraphs = blockParagraphs(children, 0)
+  paragraphs.forEach((paragraph, index) => {
+    if (index > 0) text += '\n'
+    // A paragraph holding only a line break is an empty one, the break keeping its line.
+    const empty = paragraph.children.every(
+      (node) => node.type === 'element' && node.tagName.toLowerCase() === 'br'
+    )
+    if (!empty) visit(paragraph.children, undefined)
+  })
+  return {
+    text,
+    styleRuns,
+    paragraphs: {
+      ...blockSpacing(children),
+      listLines: compactListLines(paragraphs.map((paragraph) => paragraph.list))
+    }
+  }
 }

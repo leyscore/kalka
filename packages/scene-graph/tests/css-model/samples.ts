@@ -166,6 +166,17 @@ export const SAMPLES: Sample[] = [
     }
   },
   {
+    name: 'text spaced as a percentage of its size',
+    type: 'TEXT',
+    fields: {
+      fontSize: 20,
+      lineHeight: 30,
+      lineHeightUnit: 'PERCENT',
+      letterSpacing: -0.4,
+      letterSpacingUnit: 'PERCENT'
+    }
+  },
+  {
     name: 'text centered in its box',
     type: 'TEXT',
     fields: { width: 240, height: 120, textAutoResize: 'NONE', textAlignVertical: 'CENTER' }
@@ -196,4 +207,3 @@ export const SAMPLES: Sample[] = [
     fields: { width: 240, textAutoResize: 'HEIGHT', maxLines: 3, textTruncation: 'ENDING' }
   }
 ]
-

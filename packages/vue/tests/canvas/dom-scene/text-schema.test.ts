@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { StyleRun } from '@kalka/scene-graph'
+import type { StyleRun, TextListLine } from '@kalka/scene-graph'
 
 import { docToText, textToDoc } from '#vue/canvas/dom-scene/text/schema'
 
@@ -22,7 +22,8 @@ describe('text layers as ProseMirror documents', () => {
     const runs: StyleRun[] = [{ start: 1, length: 4, style: red }]
     expect(docToText(textToDoc('ab\ncd', runs))).toEqual({
       text: 'ab\ncd',
-      styleRuns: [{ start: 1, length: 4, style: red }]
+      styleRuns: [{ start: 1, length: 4, style: red }],
+      listLines: []
     })
     // A break is not a character to the editor: a run starting on one starts after it.
     expect(
@@ -37,7 +38,7 @@ describe('text layers as ProseMirror documents', () => {
       { start: 17, length: 4, style: bold },
       { start: 31, length: 5, style: red }
     ]
-    expect(docToText(textToDoc(text, runs))).toEqual({ text, styleRuns: runs })
+    expect(docToText(textToDoc(text, runs))).toEqual({ text, styleRuns: runs, listLines: [] })
   })
 
   test('adjacent equal runs merge, empty ones vanish', () => {
@@ -54,6 +55,17 @@ describe('text layers as ProseMirror documents', () => {
   test('empty text is one empty paragraph', () => {
     const doc = textToDoc('', [])
     expect(doc.childCount).toBe(1)
-    expect(docToText(doc)).toEqual({ text: '', styleRuns: [] })
+    expect(docToText(doc)).toEqual({ text: '', styleRuns: [], listLines: [] })
+  })
+
+  test('each paragraph keeps its list', () => {
+    const listLines: TextListLine[] = [
+      { type: 'NONE', level: 0 },
+      { type: 'ORDERED', level: 0 },
+      { type: 'UNORDERED', level: 1 }
+    ]
+    const doc = textToDoc('Intro\nOne\nTwo', [], listLines)
+    expect(doc.child(1).attrs).toEqual({ list: 'ORDERED', level: 0 })
+    expect(docToText(doc).listLines).toEqual(listLines)
   })
 })

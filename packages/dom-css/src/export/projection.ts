@@ -290,10 +290,18 @@ function textDesignNode(
     sourceSceneNodeId: node.id,
     sourceSceneNode: node,
     children: textRunChildren(node).map((child) =>
-      child.type === 'element'
-        ? { ...child, inlineStyle: withFontFallbacks(child.inlineStyle, context.fontFallbacks) }
-        : child
+      withChildFontFallbacks(child, context.fontFallbacks)
     )
+  }
+}
+
+/** A text's run, or block of runs, with the fallback families after those its runs name. */
+function withChildFontFallbacks(node: DesignNode, fallbacks: readonly string[]): DesignNode {
+  if (node.type !== 'element') return node
+  return {
+    ...node,
+    inlineStyle: withFontFallbacks(node.inlineStyle, fallbacks),
+    children: node.children.map((child) => withChildFontFallbacks(child, fallbacks))
   }
 }
 

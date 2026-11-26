@@ -6,9 +6,17 @@ import { AllSelection, EditorState, TextSelection, type Command } from 'prosemir
 import { EditorView } from 'prosemirror-view'
 
 import type { Editor, ExternalTextEditor } from '@kalka/core/editor'
-import type { CharacterStyleOverride, SceneNode } from '@kalka/scene-graph'
+import type { CharacterStyleOverride, SceneNode, TextListType } from '@kalka/scene-graph'
 
 import type { DomSceneProjector } from '#vue/canvas/dom-scene/projector'
+import {
+  handleListShortcut,
+  indentListItem,
+  liftListItem,
+  paragraphDecorations,
+  setListType,
+  splitListItem
+} from '#vue/canvas/dom-scene/text/paragraphs'
 import { docToText, textSchema, textToDoc } from '#vue/canvas/dom-scene/text/schema'
 
 type StyleKey = keyof CharacterStyleOverride
@@ -99,6 +107,7 @@ export class DomTextEditor implements ExternalTextEditor {
   private nodeId: string | null = null
   private focusFrame = 0
   private openFrame = 0
+  private stopWatchingParagraphs: (() => void) | null = null
   /**
    * Keys pressed between the start of the edit and the editor's focus, which reach the app's
    * window instead: a new layer's artboard may still be loading. Null once the editor has focus.
@@ -195,7 +204,7 @@ export class DomTextEditor implements ExternalTextEditor {
         )
       }
     const state = EditorState.create({
-      doc: textToDoc(node.text, node.styleRuns),
+      doc: textToDoc(node.text, node.styleRuns, node.listLines),
       plugins: [
         history(),
         keymap({
@@ -213,7 +222,11 @@ export class DomTextEditor implements ExternalTextEditor {
           Escape: () => {
             this.editor.commitTextEdit()
             return true
-          }
+          },
+          Enter: splitListItem,
+          Backspace: liftListItem,
+          Tab: indentListItem(1),
+          'Shift-Tab': indentListItem(-1)
         }),
         keymap(baseKeymap)
       ]
@@ -224,6 +237,12 @@ export class DomTextEditor implements ExternalTextEditor {
       {
         state,
         dispatchTransaction: (tr) => this.dispatch(tr),
+        // Paragraph spacing, indent and list markers, drawn as the projection draws them.
+        decorations: (current) => {
+          const layer = this.editor.graph.getNode(nodeId)
+          return layer ? paragraphDecorations(current.doc, layer) : null
+        },
+        handleTextInput: handleListShortcut,
         // Pasted text keeps the style where it lands, as in Figma; formatting from elsewhere does not.
         handlePaste: (view, event) => {
           const text = event.clipboardData?.getData('text/plain')
@@ -235,6 +254,11 @@ export class DomTextEditor implements ExternalTextEditor {
     )
     // Keys reach the artboard's own window; app shortcuts listen on the editor's.
     this.view.dom.addEventListener('keydown', this.forwardShortcut)
+    // Spacing set in the panel while typing redraws the paragraphs.
+    this.stopWatchingParagraphs = this.editor.onEditorEvent('node:updated', (id, changes) => {
+      if (id !== nodeId || !('paragraphSpacing' in changes || 'paragraphIndent' in changes)) return
+      this.view?.updateState(this.view.state)
+    })
     this.selectAll()
     this.focus()
   }
@@ -268,6 +292,8 @@ export class DomTextEditor implements ExternalTextEditor {
     const id = this.nodeId
     const frame = this.view?.dom.ownerDocument.defaultView?.frameElement
     this.view?.dom.removeEventListener('keydown', this.forwardShortcut)
+    this.stopWatchingParagraphs?.()
+    this.stopWatchingParagraphs = null
     this.view?.destroy()
     // Focus leaves the artboard with the edit, so the app's shortcuts hear the next key.
     if (frame && document.activeElement === frame && frame instanceof HTMLElement) frame.blur()
@@ -283,6 +309,12 @@ export class DomTextEditor implements ExternalTextEditor {
       setStyle(key as StyleKey, value)(view.state, (tr) => this.dispatch(tr))
     }
     return true
+  }
+
+  listSelection(type: TextListType): boolean {
+    const view = this.view
+    if (!view) return false
+    return setListType(type)(view.state, (tr) => this.dispatch(tr))
   }
 
   selectAll(): void {

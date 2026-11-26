@@ -4,6 +4,7 @@ import {
   type CharacterStyleOverride,
   type InstanceOverrideState,
   type SceneNode,
+  type TextListType,
   type UndoEntry
 } from '@kalka/scene-graph'
 import { copyDerivedGlyphs, copyGeometryPaths } from '@kalka/scene-graph/copy'
@@ -179,12 +180,20 @@ export function createTextActions(ctx: EditorContext, options: TextActionOptions
       ctx.undo.push({
         label: 'Edit text',
         forward: () => {
-          ctx.graph.updateNode(node.id, { text: after.text, styleRuns: after.styleRuns })
+          ctx.graph.updateNode(node.id, {
+            text: after.text,
+            styleRuns: after.styleRuns,
+            listLines: after.listLines ?? []
+          })
           restoreInstanceOverrides(ctx, instanceOverridesAfter)
           ctx.runLayoutForNode(node.id)
         },
         inverse: () => {
-          ctx.graph.updateNode(node.id, { text: before.text, styleRuns: before.styleRuns })
+          ctx.graph.updateNode(node.id, {
+            text: before.text,
+            styleRuns: before.styleRuns,
+            listLines: before.listLines ?? []
+          })
           restoreInstanceOverrides(ctx, instanceOverridesBefore)
           ctx.runLayoutForNode(node.id)
         }
@@ -320,5 +329,20 @@ export function createTextActions(ctx: EditorContext, options: TextActionOptions
     return ctx.getExternalTextEditor()?.styleSelection?.(style) ?? false
   }
 
-  return { startTextEditing, updateTextEditNode, commitTextEdit, styleTextSelection }
+  /**
+   * Sets the list of the paragraphs the selection touches in the text being edited, as Figma's
+   * list buttons do while typing; false when `nodeId` is not being edited.
+   */
+  function listTextSelection(nodeId: string, type: TextListType): boolean {
+    if (ctx.state.editingTextId !== nodeId) return false
+    return ctx.getExternalTextEditor()?.listSelection?.(type) ?? false
+  }
+
+  return {
+    startTextEditing,
+    updateTextEditNode,
+    commitTextEdit,
+    styleTextSelection,
+    listTextSelection
+  }
 }

@@ -84,6 +84,7 @@ export * from './geometry'
 export * from './guides'
 export * from './layout-guides'
 export * from './font-style'
+export * from './text-paragraphs'
 export * from './shared-styles'
 export { default as TransformMatrix } from './matrix'
 export type { Mat3 } from './matrix'
@@ -106,6 +107,7 @@ import { updateNodePreview, type NodePreviewObserver } from './preview'
 import { randomIndex } from './random'
 import { styleDetachmentChanges } from './shared-styles'
 import { markSourceFieldsEdited } from './source-metadata'
+import { fontRelativeChanges } from './text-paragraphs'
 import { GLYPH_AFFECTING_KEYS, invalidateTextCaches, TEXT_PICTURE_KEYS } from './text-picture'
 import { remapCopiedReferences } from './transfer/copied'
 import * as Variables from './variables'
@@ -662,6 +664,8 @@ export class SceneGraph {
     this.updateNodePreview(id, { x, y })
   }
   updateNodePreview(id: string, changes: Partial<SceneNode>): void {
+    const node = this.nodes.get(id)
+    if (node) changes = fontRelativeChanges(node, changes)
     const appliedChanges = updateNodePreview(this, id, changes, (node, applied) => {
       for (const observe of this.previewObservers) observe(node, applied)
     })
@@ -677,7 +681,7 @@ export class SceneGraph {
     const node = this.nodes.get(id)
     if (!node) return
     changes = stripUndefinedProps(styleDetachmentChanges(node, stripUndefinedProps(changes)))
-    this.applyNodeChanges(node, changes)
+    this.applyNodeChanges(node, fontRelativeChanges(node, changes))
   }
 
   /** Replay captured properties without dropping explicit undefined values or absent keys. */

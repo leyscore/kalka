@@ -276,6 +276,19 @@ export type TextDecorationStyle = 'SOLID' | 'DOTTED' | 'WAVY'
 export type LeadingTrim = 'NONE' | 'CAP_HEIGHT'
 export type TextDirection = 'AUTO' | 'LTR' | 'RTL'
 export type LayoutDirection = 'AUTO' | 'LTR' | 'RTL'
+/**
+ * The unit a text's line height or letter spacing is set in, as Figma shows it back: pixels, or
+ * a percentage of the font size. The field itself always holds pixels.
+ */
+export type TextSpacingUnit = 'PIXELS' | 'PERCENT'
+/** Figma's list types: a paragraph that is no list, a numbered one or a bulleted one. */
+export type TextListType = 'NONE' | 'ORDERED' | 'UNORDERED'
+
+/** One paragraph's list: its type and how deep it is nested, 0 for the outermost list. */
+export interface TextListLine {
+  type: TextListType
+  level: number
+}
 
 export interface FontVariation {
   axis: string
@@ -546,7 +559,20 @@ export interface SceneNode {
   textUnderlineOffset: number | null
   leadingTrim: LeadingTrim
   lineHeight: number | null
+  /** Whether `lineHeight` was set as a percentage of the font size; it still holds pixels. */
+  lineHeightUnit: TextSpacingUnit
   letterSpacing: number
+  /** Whether `letterSpacing` was set as a percentage of the font size; it still holds pixels. */
+  letterSpacingUnit: TextSpacingUnit
+  /** Space after each paragraph but the last, in pixels. */
+  paragraphSpacing: number
+  /** Indent of each paragraph's first line, in pixels. */
+  paragraphIndent: number
+  /**
+   * Each paragraph's list, one entry per line of `text`; empty when no paragraph is in a list.
+   * Read it through `textListLines`, which fits it to the text's lines.
+   */
+  listLines: TextListLine[]
   maxLines: number | null
 
   styleRuns: StyleRun[]

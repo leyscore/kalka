@@ -113,6 +113,8 @@ export function scaleNodeChanges(
     fontSize: node.fontSize * scale,
     letterSpacing: node.letterSpacing * scale,
     lineHeight: scaledOptional(node.lineHeight, scale),
+    paragraphSpacing: node.paragraphSpacing * scale,
+    paragraphIndent: node.paragraphIndent * scale,
     textDecorationThickness: scaledOptional(node.textDecorationThickness, scale),
     textUnderlineOffset: scaledOptional(node.textUnderlineOffset, scale),
     styleRuns: scaledStyleRuns(node.styleRuns, scale),

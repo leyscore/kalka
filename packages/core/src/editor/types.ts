@@ -6,6 +6,7 @@ import type {
   SceneGraph,
   SceneGraphEvents,
   SceneNode,
+  TextListType,
   VectorSegment,
   VectorVertex
 } from '@kalka/scene-graph'
@@ -206,6 +207,8 @@ export interface ExternalTextEditor extends TextCaretControl {
    * no characters are selected, so the change belongs to the whole layer.
    */
   styleSelection?(style: CharacterStyleOverride): boolean
+  /** Sets the list of the paragraphs the selection touches, or takes them out of it. */
+  listSelection?(type: TextListType): boolean
 }
 
 export interface EditorContext {

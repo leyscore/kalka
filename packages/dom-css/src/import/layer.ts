@@ -50,7 +50,8 @@ export function applyLayerStyle(
 
 /** A text element's characters and runs, the layer's own style left to its CSS. */
 export function applyLayerText(node: SceneNode, element: DesignElement): void {
-  const { text, styleRuns } = textContentFromChildren(element.children)
+  const { text, styleRuns, paragraphs } = textContentFromChildren(element.children)
   node.text = text
   node.styleRuns = styleRuns
+  if (paragraphs) Object.assign(node, paragraphs)
 }

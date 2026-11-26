@@ -92,11 +92,11 @@ function collectTextStyleOverrides(node: SceneNode): {
 
 export function exportTextData(
   node: SceneNode,
-  textLines: (text: string) => NonNullable<NodeChange['textData']>['lines'],
+  textLines: (node: SceneNode) => NonNullable<NodeChange['textData']>['lines'],
   fillToKiwiPaint: (fill: SceneNode['fills'][number]) => Paint
 ): NodeChange['textData'] {
   if (node.styleRuns.length === 0) {
-    return { characters: node.text, lines: textLines(node.text) }
+    return { characters: node.text, lines: textLines(node) }
   }
 
   const { charIds, styleMap } = collectTextStyleOverrides(node)
@@ -106,7 +106,7 @@ export function exportTextData(
 
   return {
     characters: node.text,
-    lines: textLines(node.text),
+    lines: textLines(node),
     characterStyleIDs: charIds,
     styleOverrideTable: overrideTable
   }

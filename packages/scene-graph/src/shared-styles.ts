@@ -25,7 +25,11 @@ const TEXT_STYLE_KEYS = new Set<keyof SceneNode>([
   'italic',
   'fontSize',
   'lineHeight',
+  'lineHeightUnit',
   'letterSpacing',
+  'letterSpacingUnit',
+  'paragraphSpacing',
+  'paragraphIndent',
   'textDecoration',
   'textCase',
   'fontFeatures'

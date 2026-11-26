@@ -1,7 +1,7 @@
 import type { Paragraph } from 'canvaskit-wasm'
 import { isEqual } from 'es-toolkit/predicate'
 
-import type { SceneNode, StyleRun } from '@kalka/scene-graph'
+import type { SceneNode, StyleRun, TextListLine } from '@kalka/scene-graph'
 import { copyDerivedGlyphs, copyGeometryPaths, copyStyleRuns } from '@kalka/scene-graph/copy'
 
 export type TextEditSizeSnapshot = Partial<Pick<SceneNode, 'width' | 'height'>>
@@ -9,6 +9,8 @@ export type TextEditSizeSnapshot = Partial<Pick<SceneNode, 'width' | 'height'>>
 export type TextEditSnapshot = {
   text: string
   styleRuns: StyleRun[]
+  /** The paragraphs' lists, which the editor changes with the text. */
+  listLines?: TextListLine[]
   size?: TextEditSizeSnapshot
 }
 
@@ -27,6 +29,7 @@ export function createTextEditSession(node: SceneNode): TextEditSession {
     before: {
       text: node.text,
       styleRuns: copyStyleRuns(node.styleRuns),
+      listLines: structuredClone(node.listLines),
       size: { width: node.width, height: node.height }
     },
     beforePathText: node.textPathData
@@ -44,6 +47,7 @@ export function snapshotTextNode(node: SceneNode | undefined, fallbackText = '')
   return {
     text: node?.text ?? fallbackText,
     styleRuns: node ? copyStyleRuns(node.styleRuns) : [],
+    listLines: node ? structuredClone(node.listLines) : [],
     size: node ? { width: node.width, height: node.height } : undefined
   }
 }
@@ -69,6 +73,7 @@ export function textSnapshotChanged(before: TextEditSnapshot, after: TextEditSna
   return (
     before.text !== after.text ||
     !styleRunsEqual(before.styleRuns, after.styleRuns) ||
+    !isEqual(before.listLines ?? [], after.listLines ?? []) ||
     (after.size !== undefined && !sizeEqual(before.size ?? {}, after.size))
   )
 }

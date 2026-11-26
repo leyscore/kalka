@@ -1,4 +1,13 @@
-import type { CharacterStyleOverride, SceneNode, StyleRun } from '@kalka/scene-graph'
+import {
+  hasParagraphBlocks,
+  listStyleType,
+  textBlocks,
+  textListLines,
+  type CharacterStyleOverride,
+  type SceneNode,
+  type StyleRun,
+  type TextListBlock
+} from '@kalka/scene-graph'
 import { fillToCSS } from '@kalka/scene-graph/css-model'
 
 import type { DesignNode, DesignStyleDeclaration } from '../types'
@@ -39,28 +48,102 @@ function cleanRuns(runs: readonly StyleRun[], length: number): StyleRun[] {
     .filter((run) => run.start < length && run.length > 0)
 }
 
-/**
- * A text layer's characters as DOM children: plain text where the layer's own style applies,
- * a span with the run's CSS where a style run overrides it.
- */
-export function textRunChildren(node: Pick<SceneNode, 'text' | 'styleRuns'>): DesignNode[] {
-  const { text } = node
-  const runs = cleanRuns(node.styleRuns, text.length)
-  if (runs.length === 0) return [{ type: 'text', text }]
+/** The characters of `text` from `from` to `to`, plain where no run styles them. */
+function runChildren(text: string, runs: readonly StyleRun[], from: number, to: number) {
   const children: DesignNode[] = []
-  let cursor = 0
+  let cursor = from
   for (const run of runs) {
-    if (run.start < cursor) continue
-    if (run.start > cursor) children.push({ type: 'text', text: text.slice(cursor, run.start) })
+    const start = Math.max(run.start, from)
+    const end = Math.min(run.start + run.length, to)
+    if (start < cursor || start >= end) continue
+    if (start > cursor) children.push({ type: 'text', text: text.slice(cursor, start) })
     children.push({
       type: 'element',
       tagName: 'span',
       attrs: {},
       inlineStyle: characterStyleToCSS(run.style),
-      children: [{ type: 'text', text: text.slice(run.start, run.start + run.length) }]
+      children: [{ type: 'text', text: text.slice(start, end) }]
     })
-    cursor = run.start + run.length
+    cursor = end
   }
-  if (cursor < text.length) children.push({ type: 'text', text: text.slice(cursor) })
+  if (cursor < to) children.push({ type: 'text', text: text.slice(cursor, to) })
   return children
+}
+
+type TextBlockNode = Pick<
+  SceneNode,
+  'text' | 'styleRuns' | 'paragraphSpacing' | 'paragraphIndent' | 'listLines'
+>
+
+/** How deep each nested list sits, past the marker of the list around it. */
+export const LIST_INDENT = '1.5em'
+
+/**
+ * A text with paragraphs set apart, as blocks: a `<p>` per paragraph outside a list, `<ul>` and
+ * `<ol>` for lists, a deeper list inside the item before it. Paragraph spacing is the space
+ * below each block but the last; an empty paragraph keeps its line with a `<br>`.
+ */
+function textBlockChildren(node: TextBlockNode, runs: readonly StyleRun[]): DesignNode[] {
+  const paragraphs = node.text.split('\n')
+  const starts: number[] = []
+  let offset = 0
+  for (const paragraph of paragraphs) {
+    starts.push(offset)
+    offset += paragraph.length + 1
+  }
+  const content = (index: number): DesignNode[] => {
+    const start = starts[index] ?? 0
+    const end = start + (paragraphs[index]?.length ?? 0)
+    if (end === start) return [{ type: 'element', tagName: 'br', attrs: {}, children: [] }]
+    return runChildren(node.text, runs, start, end)
+  }
+  const margin = (spacing: number) => (spacing === 0 ? '0' : `0 0 ${px(spacing)}`)
+  const list = (block: TextListBlock, spacing: number): DesignNode => {
+    const marker = listStyleType(block.type, block.level)
+    return {
+      type: 'element',
+      tagName: block.type === 'ORDERED' ? 'ol' : 'ul',
+      attrs: {},
+      inlineStyle: {
+        margin: margin(spacing),
+        'padding-inline-start': LIST_INDENT,
+        'list-style-type': marker
+      },
+      // Each item names its marker too: a page's reset often takes list styles off items.
+      children: block.items.map((item) => ({
+        type: 'element',
+        tagName: 'li',
+        attrs: {},
+        inlineStyle: { 'list-style-type': marker },
+        children: [...content(item.paragraph), ...item.lists.map((inner) => list(inner, 0))]
+      }))
+    }
+  }
+  const blocks = textBlocks(textListLines(node))
+  return blocks.map((block, index) => {
+    const spacing = index < blocks.length - 1 ? node.paragraphSpacing : 0
+    if (block.kind === 'list') return list(block, spacing)
+    const inlineStyle: DesignStyleDeclaration = { margin: margin(spacing) }
+    if (node.paragraphIndent !== 0) inlineStyle['text-indent'] = px(node.paragraphIndent)
+    return {
+      type: 'element',
+      tagName: 'p',
+      attrs: {},
+      inlineStyle,
+      children: content(block.paragraph)
+    }
+  })
+}
+
+/**
+ * A text layer's characters as DOM children: plain text where the layer's own style applies,
+ * a span with the run's CSS where a style run overrides it. A text with paragraph spacing, an
+ * indent or a list is written as blocks instead.
+ */
+export function textRunChildren(node: TextBlockNode): DesignNode[] {
+  const { text } = node
+  const runs = cleanRuns(node.styleRuns, text.length)
+  if (hasParagraphBlocks(node)) return textBlockChildren(node, runs)
+  if (runs.length === 0) return [{ type: 'text', text }]
+  return runChildren(text, runs, 0, text.length)
 }

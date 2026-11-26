@@ -1,8 +1,15 @@
 import { Schema, type Mark, type Node as ProseMirrorNode } from 'prosemirror-model'
 
-import type { CharacterStyleOverride, StyleRun } from '@kalka/scene-graph'
+import {
+  compactListLines,
+  textListLines,
+  type CharacterStyleOverride,
+  type StyleRun,
+  type TextListLine
+} from '@kalka/scene-graph'
 
 import { characterStyleToCSS, styleText } from '#vue/canvas/dom-scene/text/css'
+import { paragraphList } from '#vue/canvas/dom-scene/text/paragraphs'
 
 /**
  * A text layer as ProseMirror sees it: paragraphs of characters, each carrying at most one
@@ -14,6 +21,8 @@ export const textSchema = new Schema({
     doc: { content: 'paragraph+' },
     paragraph: {
       content: 'text*',
+      // The paragraph's list, which Figma keeps per line: its type and nesting level.
+      attrs: { list: { default: 'NONE' }, level: { default: 0 } },
       // A block per line, so the layer's own line height and alignment apply to each.
       toDOM: () => ['div', { style: 'margin:0' }, 0],
       parseDOM: [{ tag: 'div' }, { tag: 'p' }]
@@ -50,8 +59,13 @@ function stylesByCharacter(
   return styles
 }
 
-/** A layer's `text` and `styleRuns` as a ProseMirror document. */
-export function textToDoc(text: string, runs: readonly StyleRun[]): ProseMirrorNode {
+/** A layer's `text`, `styleRuns` and `listLines` as a ProseMirror document. */
+export function textToDoc(
+  text: string,
+  runs: readonly StyleRun[],
+  listLines: readonly TextListLine[] = []
+): ProseMirrorNode {
+  const lists = textListLines({ text, listLines: [...listLines] })
   const styles = stylesByCharacter(text, runs)
   const paragraphs: ProseMirrorNode[] = []
   let lineStart = 0
@@ -64,7 +78,10 @@ export function textToDoc(text: string, runs: readonly StyleRun[]): ProseMirrorN
       content.push(textSchema.text(line.slice(segmentStart, index), style ? styleMark(style) : []))
       segmentStart = index
     }
-    paragraphs.push(textSchema.nodes.paragraph.create(null, content))
+    const list = lists[paragraphs.length]
+    paragraphs.push(
+      textSchema.nodes.paragraph.create({ list: list?.type, level: list?.level }, content)
+    )
     lineStart += line.length + 1
   }
   return textSchema.nodes.doc.create(null, paragraphs)
@@ -74,12 +91,21 @@ function sameStyle(a: CharacterStyleOverride, b: CharacterStyleOverride): boolea
   return JSON.stringify(a) === JSON.stringify(b)
 }
 
-/** A ProseMirror document back as a layer's `text` and `styleRuns`, adjacent equal runs merged. */
-export function docToText(doc: ProseMirrorNode): { text: string; styleRuns: StyleRun[] } {
+/**
+ * A ProseMirror document back as a layer's `text`, `styleRuns`, adjacent equal runs merged, and
+ * each paragraph's list.
+ */
+export function docToText(doc: ProseMirrorNode): {
+  text: string
+  styleRuns: StyleRun[]
+  listLines: TextListLine[]
+} {
   let text = ''
   const styleRuns: StyleRun[] = []
+  const lines: TextListLine[] = []
   doc.forEach((paragraph, _offset, index) => {
     if (index > 0) text += '\n'
+    lines.push(paragraphList(paragraph))
     paragraph.forEach((child, _childOffset, childIndex) => {
       const characters = child.text ?? ''
       const style = child.marks.find((mark) => mark.type === textSchema.marks.style)?.attrs
@@ -98,5 +124,5 @@ export function docToText(doc: ProseMirrorNode): { text: string; styleRuns: Styl
       text += characters
     })
   })
-  return { text, styleRuns }
+  return { text, styleRuns, listLines: compactListLines(lines) }
 }
