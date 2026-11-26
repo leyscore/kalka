@@ -1,6 +1,7 @@
 import { watchDebounced } from '@vueuse/core'
 import { watch, type WatchHandle } from 'vue'
 
+import { holdLiveRecovery } from '@/app/document/recovery/live'
 import { getRecoveryStore } from '@/app/document/recovery/store'
 import type { RecoveryStore } from '@/app/document/recovery/types'
 import { createCanvasId } from '@/app/storage/id'
@@ -43,6 +44,8 @@ export function createDocumentRecovery({
   recoveryId = createCanvasId()
 }: DocumentRecoveryOptions): DocumentRecoveryController {
   let id = recoveryId
+  // Another window or tab never offers this document's snapshot while it is open here.
+  let releaseLive = holdLiveRecovery(id)
   let protectedVersion = currentVersion()
   let persistedVersion: number | null = null
   let requestedVersion = protectedVersion
@@ -128,6 +131,10 @@ export function createDocumentRecovery({
       const previousId = id
       await invalidateActiveWrite()
       id = nextId
+      if (previousId !== nextId) {
+        releaseLive()
+        releaseLive = holdLiveRecovery(nextId)
+      }
       // The adopted snapshot holds the document as it is now.
       const version = currentVersion()
       protectedVersion = version
@@ -157,6 +164,7 @@ export function createDocumentRecovery({
     },
     disposeRecovery() {
       disposed = true
+      releaseLive()
       lifecycleGeneration++
       stopVersionWatch()
       stopEnabledWatch()

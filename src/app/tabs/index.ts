@@ -18,6 +18,7 @@ import {
 } from '@/app/document/io/imported-document'
 import type { DocumentSourceIdentity } from '@/app/document/io/types'
 import { getRecoveryStore, type RecoverySnapshotMeta } from '@/app/document/recovery'
+import { liveRecoveryIds } from '@/app/document/recovery/live'
 import { setActiveEditorStore } from '@/app/editor/active-store'
 import type {
   EditorPreparationHandle as DocumentLoadSession,
@@ -541,8 +542,10 @@ export async function openFileInNewTab(
   }
 }
 
+/** Snapshots to recover: those no open document holds, in this window or another one. */
 export async function listRecoverySnapshots(): Promise<RecoverySnapshotMeta[]> {
-  return getRecoveryStore().list()
+  const [snapshots, live] = await Promise.all([getRecoveryStore().list(), liveRecoveryIds()])
+  return snapshots.filter((snapshot) => !live.has(snapshot.id))
 }
 
 export async function discardRecoverySnapshot(id: string): Promise<void> {

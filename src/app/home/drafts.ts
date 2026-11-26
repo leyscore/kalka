@@ -7,6 +7,7 @@ import {
   type RecoverySnapshotMeta
 } from '@/app/document/recovery'
 import { isRecoveryKeptElsewhere } from '@/app/document/recovery/kept-elsewhere'
+import { liveRecoveryIds } from '@/app/document/recovery/live'
 import { recoveryEnabled } from '@/app/document/recovery/preferences'
 import { getTabsSnapshot, restoreRecoverySnapshot, switchTab, type Tab } from '@/app/tabs'
 
@@ -55,7 +56,7 @@ async function recoverySnapshots(): Promise<RecoverySnapshotMeta[]> {
 
 /** The drafts, the last changed first. A snapshot of a file's unsaved edits is not a draft. */
 export async function listDrafts(): Promise<DraftDocument[]> {
-  const snapshots = await recoverySnapshots()
+  const [snapshots, live] = await Promise.all([recoverySnapshots(), liveRecoveryIds()])
   const tabs = getTabsSnapshot()
   const openRecoveryIds = new Set(tabs.map((tab) => tab.store.getRecoveryId()))
   const byId = new Map(snapshots.map((snapshot) => [snapshot.id, snapshot]))
@@ -73,7 +74,11 @@ export async function listDrafts(): Promise<DraftDocument[]> {
       }
     })
   const kept = snapshots
-    .filter((snapshot) => !snapshot.sourcePath && !openRecoveryIds.has(snapshot.id))
+    // A draft open in another window is that window's; opening it here would make a copy.
+    .filter(
+      (snapshot) =>
+        !snapshot.sourcePath && !openRecoveryIds.has(snapshot.id) && !live.has(snapshot.id)
+    )
     .map((snapshot): DraftDocument => ({
       id: `draft:${snapshot.id}`,
       name: snapshot.documentName,
