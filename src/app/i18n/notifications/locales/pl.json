@@ -39,5 +39,9 @@
   "designTokensImported": "Zaimportowano tokeny projektowe: {count}.",
   "selectionLinkCopied": "Skopiowano link do zaznaczenia.",
   "selectionLinkUnavailable": "Udostępnij ten plik na serwerze lub zapisz go w aplikacji desktopowej, aby linkować do jego warstw.",
-  "eyedropperUnavailable": "Pipeta wymaga Chrome, Edge lub aplikacji desktopowej."
+  "eyedropperUnavailable": "Pipeta wymaga Chrome, Edge lub aplikacji desktopowej.",
+  "noFramesToExport": "Ten plik nie ma ramek do eksportu.",
+  "framesPDFExportFailed": "Nie udało się wyeksportować ramek do PDF.",
+  "revertNothingSaved": "Ten plik nie został jeszcze zapisany, więc nie ma do czego wrócić.",
+  "revertConfirm": "Przywrócić zapisaną wersję „{name}”? Niezapisane zmiany zostaną utracone."
 }

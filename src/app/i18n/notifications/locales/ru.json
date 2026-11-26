@@ -39,5 +39,9 @@
   "designTokensImported": "Импортировано дизайн-токенов: {count}.",
   "selectionLinkCopied": "Ссылка на выделение скопирована.",
   "selectionLinkUnavailable": "Чтобы ссылаться на слои, откройте доступ к файлу на сервере или сохраните его в настольном приложении.",
-  "eyedropperUnavailable": "Пипетке нужен Chrome, Edge или настольное приложение."
+  "eyedropperUnavailable": "Пипетке нужен Chrome, Edge или настольное приложение.",
+  "noFramesToExport": "В этом файле нет фреймов для экспорта.",
+  "framesPDFExportFailed": "Не удалось экспортировать фреймы в PDF.",
+  "revertNothingSaved": "Файл ещё не сохранён, поэтому возвращаться не к чему.",
+  "revertConfirm": "Вернуть «{name}» к сохранённой версии? Несохранённые изменения будут потеряны."
 }

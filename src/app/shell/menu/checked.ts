@@ -8,6 +8,8 @@ export interface MenuCheckSource {
     autosaveEnabled: boolean
     showRulers: boolean
     showPixelGrid?: boolean
+    showLayoutGrids?: boolean
+    documentColorSpace?: string
     showRemoteCursors: boolean
     snappingPreferences: SnappingPreferences
     keepToolSelected?: boolean
@@ -30,6 +32,12 @@ export function appMenuChecked(id: string, source: MenuCheckSource): boolean | u
       return state.showRulers
     case 'view-pixel-grid':
       return state.showPixelGrid !== false
+    case 'color-profile-srgb':
+      return state.documentColorSpace === 'srgb'
+    case 'color-profile-p3':
+      return state.documentColorSpace === 'display-p3'
+    case 'view-layout-grids':
+      return state.showLayoutGrids !== false
     case 'view-multiplayer-cursors':
       return state.showRemoteCursors
     case 'view-design-issues':

@@ -2,7 +2,7 @@ import { tinykeys } from 'tinykeys'
 import type { KeyBindingMap } from 'tinykeys'
 import { onScopeDispose } from 'vue'
 
-import { editorCommandMetadata } from '@kalka/vue'
+import { editorCommandMetadata, shortcutPlatform } from '@kalka/vue'
 import type { EditorCommandId } from '@kalka/vue'
 
 import { askAboutSelection } from '@/app/ai/chat/ask-selection'
@@ -233,6 +233,14 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
       keys: 'Shift+Quote',
       run: ({ store }) => {
         store.state.showPixelGrid = store.state.showPixelGrid === false
+        store.requestRepaint()
+      }
+    },
+    {
+      id: 'view-layout-grids',
+      keys: ['Control+Shift+Digit4', ...(shortcutPlatform() === 'mac' ? ['Control+KeyG'] : [])],
+      run: ({ store }) => {
+        store.state.showLayoutGrids = store.state.showLayoutGrids === false
         store.requestRepaint()
       }
     },

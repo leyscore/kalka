@@ -13,6 +13,7 @@ import { latch } from '@/app/shell/latch'
 import {
   SIDE_PANEL_MIN_WIDTH,
   loadEditorLayout,
+  onPanelWidthsReset,
   saveEditorLayout,
   sidePanelSizeLimits
 } from '@/app/shell/layout-storage'
@@ -63,6 +64,13 @@ const layersLimits = computed(() =>
 const propertiesLimits = computed(() =>
   sidePanelSizeLimits(SIDE_PANEL_MIN_WIDTH.properties, panelsWidth.value)
 )
+// View › Reset panel widths puts both side panels back; the canvas takes the rest.
+const layersPanel = useTemplateRef<{ resize: (size: number) => void }>('layersPanel')
+const propertiesPanel = useTemplateRef<{ resize: (size: number) => void }>('propertiesPanel')
+onPanelWidthsReset(([layers, , properties]) => {
+  layersPanel.value?.resize(layers)
+  propertiesPanel.value?.resize(properties)
+})
 const horizontalSplitterStyles = tv(splitterTheme)({ direction: 'horizontal', gutter: true })
 /** One canvas previewing takes the whole window, in the canvas-only layout; split view keeps panels. */
 const playingAlone = computed(() => store.state.play !== null && store.visiblePaneCount.value <= 1)
@@ -102,6 +110,7 @@ const desktopLayout = computed(
         >
           <SplitterPanel
             id="layers"
+            ref="layersPanel"
             :default-size="initialEditorLayout[0]"
             :min-size="layersLimits.minSize"
             :max-size="layersLimits.maxSize"
@@ -135,6 +144,7 @@ const desktopLayout = computed(
           </SplitterResizeHandle>
           <SplitterPanel
             id="properties"
+            ref="propertiesPanel"
             :default-size="initialEditorLayout[2]"
             :min-size="propertiesLimits.minSize"
             :max-size="propertiesLimits.maxSize"

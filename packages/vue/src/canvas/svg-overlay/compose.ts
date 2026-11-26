@@ -149,7 +149,9 @@ export function composeOverlay(input: ComposeInput): ComposedOverlay {
     ...sectionTitlesLayer(input),
     ...componentLabelsLayer(input),
     // Structure, over the design and under every editing outline.
-    ...layoutGridsLayer(input, input.pageId, input.gridFrames),
+    ...(input.overlays.showLayoutGrids === false
+      ? []
+      : layoutGridsLayer(input, input.pageId, input.gridFrames)),
     ...pixelGridLayer(input, { ...input.viewportSize, dpr: input.dpr, pageColor: input.pageColor }),
     ...componentSetBordersLayer(input, input.labels),
     ...codeFocusLayer(input),

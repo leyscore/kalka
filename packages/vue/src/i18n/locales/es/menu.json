@@ -119,5 +119,18 @@
   "pickColor": "Seleccionar color",
   "keepToolSelected": "Mantener la herramienta tras usarla",
   "renameDuplicatedLayers": "Renombrar capas duplicadas",
-  "nudgeAmount": "Distancia de desplazamiento…"
+  "nudgeAmount": "Distancia de desplazamiento…",
+  "layoutGrids": "Cuadrículas de diseño",
+  "resetPanelWidths": "Restablecer el ancho de los paneles",
+  "aboutKalka": "Acerca de Kalka",
+  "aboutVersion": "Versión",
+  "aboutLicense": "Código abierto con licencia MIT.",
+  "aboutReleaseNotes": "Notas de la versión",
+  "aboutDesktopApp": "App de escritorio",
+  "colorProfile": "Perfil de color",
+  "convertColorsToSRGB": "Convertir los colores a sRGB",
+  "convertColorsToDisplayP3": "Convertir los colores a Display P3",
+  "exportFramesToPDF": "Exportar marcos a PDF…",
+  "revertToSaved": "Volver a la versión guardada",
+  "duplicateFile": "Duplicar"
 }

@@ -43,5 +43,9 @@
   "reloadFromDisk": "Ricarica dal disco",
   "selectionLinkCopied": "Link alla selezione copiato.",
   "selectionLinkUnavailable": "Condividi questo file su un server, o salvalo nell’app desktop, per creare link ai suoi livelli.",
-  "eyedropperUnavailable": "Il contagocce richiede Chrome, Edge o l’app desktop."
+  "eyedropperUnavailable": "Il contagocce richiede Chrome, Edge o l’app desktop.",
+  "noFramesToExport": "Questo file non ha frame da esportare.",
+  "framesPDFExportFailed": "Impossibile esportare i frame in PDF.",
+  "revertNothingSaved": "Questo file non è ancora stato salvato, quindi non c’è nulla da ripristinare.",
+  "revertConfirm": "Ripristinare «{name}» alla versione salvata? Le modifiche non salvate andranno perse."
 }

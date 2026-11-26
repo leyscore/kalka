@@ -119,5 +119,18 @@
   "pickColor": "Farbe aufnehmen",
   "keepToolSelected": "Werkzeug nach Verwendung beibehalten",
   "renameDuplicatedLayers": "Duplizierte Ebenen umbenennen",
-  "nudgeAmount": "Verschiebeweite…"
+  "nudgeAmount": "Verschiebeweite…",
+  "layoutGrids": "Layoutraster",
+  "resetPanelWidths": "Panelbreiten zurücksetzen",
+  "aboutKalka": "Über Kalka",
+  "aboutVersion": "Version",
+  "aboutLicense": "Open Source unter der MIT-Lizenz.",
+  "aboutReleaseNotes": "Versionshinweise",
+  "aboutDesktopApp": "Desktop-App",
+  "colorProfile": "Farbprofil",
+  "convertColorsToSRGB": "Farben in sRGB umwandeln",
+  "convertColorsToDisplayP3": "Farben in Display P3 umwandeln",
+  "exportFramesToPDF": "Rahmen als PDF exportieren…",
+  "revertToSaved": "Auf gespeicherte Version zurücksetzen",
+  "duplicateFile": "Duplizieren"
 }

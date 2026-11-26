@@ -39,5 +39,9 @@
   "designTokensImported": "已导入 {count} 个设计令牌。",
   "selectionLinkCopied": "已复制所选内容的链接。",
   "selectionLinkUnavailable": "在服务器上共享此文件，或在桌面应用中保存它，才能链接到其图层。",
-  "eyedropperUnavailable": "吸管工具需要 Chrome、Edge 或桌面应用。"
+  "eyedropperUnavailable": "吸管工具需要 Chrome、Edge 或桌面应用。",
+  "noFramesToExport": "此文件没有可导出的框架。",
+  "framesPDFExportFailed": "无法将框架导出为 PDF。",
+  "revertNothingSaved": "此文件尚未保存，无可恢复的内容。",
+  "revertConfirm": "将“{name}”恢复为已保存的版本？未保存的更改将丢失。"
 }

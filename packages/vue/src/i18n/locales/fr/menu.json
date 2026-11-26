@@ -119,5 +119,18 @@
   "pickColor": "Pipette",
   "keepToolSelected": "Garder l’outil après usage",
   "renameDuplicatedLayers": "Renommer les calques dupliqués",
-  "nudgeAmount": "Quantité de déplacement…"
+  "nudgeAmount": "Quantité de déplacement…",
+  "layoutGrids": "Grilles de mise en page",
+  "resetPanelWidths": "Réinitialiser la largeur des panneaux",
+  "aboutKalka": "À propos de Kalka",
+  "aboutVersion": "Version",
+  "aboutLicense": "Open source sous licence MIT.",
+  "aboutReleaseNotes": "Notes de version",
+  "aboutDesktopApp": "App de bureau",
+  "colorProfile": "Profil colorimétrique",
+  "convertColorsToSRGB": "Convertir les couleurs en sRGB",
+  "convertColorsToDisplayP3": "Convertir les couleurs en Display P3",
+  "exportFramesToPDF": "Exporter les cadres en PDF…",
+  "revertToSaved": "Rétablir la version enregistrée",
+  "duplicateFile": "Dupliquer"
 }

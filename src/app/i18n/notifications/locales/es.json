@@ -43,5 +43,9 @@
   "reloadFromDisk": "Volver a cargar desde el disco",
   "selectionLinkCopied": "Enlace a la selección copiado.",
   "selectionLinkUnavailable": "Comparte este archivo en un servidor, o guárdalo en la app de escritorio, para enlazar sus capas.",
-  "eyedropperUnavailable": "El cuentagotas necesita Chrome, Edge o la app de escritorio."
+  "eyedropperUnavailable": "El cuentagotas necesita Chrome, Edge o la app de escritorio.",
+  "noFramesToExport": "Este archivo no tiene ningún marco que exportar.",
+  "framesPDFExportFailed": "No se pudieron exportar los marcos a PDF.",
+  "revertNothingSaved": "Este archivo aún no se ha guardado, así que no hay nada que restaurar.",
+  "revertConfirm": "¿Volver a la versión guardada de «{name}»? Se perderán los cambios sin guardar."
 }

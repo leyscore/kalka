@@ -39,5 +39,9 @@
   "designTokensImported": "{count} 個のデザイントークンを読み込みました。",
   "selectionLinkCopied": "選択範囲へのリンクをコピーしました。",
   "selectionLinkUnavailable": "レイヤーへのリンクを作るには、このファイルをサーバーで共有するか、デスクトップアプリで保存してください。",
-  "eyedropperUnavailable": "スポイトには Chrome、Edge、またはデスクトップアプリが必要です。"
+  "eyedropperUnavailable": "スポイトには Chrome、Edge、またはデスクトップアプリが必要です。",
+  "noFramesToExport": "このファイルには書き出すフレームがありません。",
+  "framesPDFExportFailed": "フレームを PDF に書き出せませんでした。",
+  "revertNothingSaved": "このファイルはまだ保存されていないため、元に戻せる内容がありません。",
+  "revertConfirm": "「{name}」を保存済みのバージョンに戻しますか？保存していない変更は失われます。"
 }

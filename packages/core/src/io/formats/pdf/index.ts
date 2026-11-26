@@ -1,2 +1,2 @@
-export { renderNodesToPDF } from './export'
-export type { PDFExportOptions } from './export'
+export { documentFrames, renderFramesToPDF, renderNodesToPDF } from './export'
+export type { DocumentFrame, PDFExportOptions } from './export'

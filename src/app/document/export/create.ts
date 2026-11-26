@@ -1,5 +1,11 @@
 import type { Editor, EditorState } from '@kalka/core/editor'
-import type { BuiltinIOFormatId, ExportRequest, IORegistry } from '@kalka/core/io'
+import {
+  documentFrames,
+  renderFramesToPDF,
+  type BuiltinIOFormatId,
+  type ExportRequest,
+  type IORegistry
+} from '@kalka/core/io'
 import { loadCanvasKit } from '@kalka/vue'
 
 import { domPrintPDF, domRasterize } from '@/app/document/export/dom-raster'
@@ -144,11 +150,25 @@ export function createDocumentExportActions(
     await exportTarget(getSelectionExportTarget(), formatId, { scale })
   }
 
+  /**
+   * Every top-level frame of every page in one PDF, a frame to a page, as Figma's File › Export
+   * frames to PDF. False when the document has no frame to print.
+   */
+  async function exportFramesToPDF(): Promise<boolean> {
+    const name = sanitizeZipEntryName(state.documentName || 'Untitled')
+    const data = await renderFramesToPDF(editor.graph, documentFrames(editor.graph), {
+      title: name
+    })
+    if (!data) return false
+    return saveExportedFile(data, `${name}.pdf`, 'PDF', '.pdf', 'application/pdf', downloadBlob)
+  }
+
   return {
     renderExportImage,
     listSelectionExportFormats,
     exportTarget,
     exportTargets,
-    exportSelection
+    exportSelection,
+    exportFramesToPDF
   }
 }

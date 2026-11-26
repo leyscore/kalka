@@ -31,6 +31,7 @@ import {
   setSnappingPreference
 } from '@/app/settings/preferences/apply'
 import { appPreferences } from '@/app/settings/preferences/store'
+import { openAbout } from '@/app/shell/about'
 import { openShortcutsHelp } from '@/app/shell/keyboard/help'
 import { appMenuChecked } from '@/app/shell/menu/checked'
 import { createSharedEditorMenuActions } from '@/app/shell/menu/editor-actions'
@@ -116,6 +117,9 @@ export function useAppMenu() {
     'save-as': 'saveAs',
     'save-to-storage': 'saveToStorage',
     'export-selection': 'exportSelection',
+    'export-frames-pdf': 'exportFramesToPDF',
+    'revert-to-saved': 'revertToSaved',
+    'duplicate-file': 'duplicateFile',
     autosave: 'autosave',
     close: 'closeTab',
     copy: 'copy',
@@ -138,11 +142,16 @@ export function useAppMenu() {
     preferences: 'preferences',
     settings: 'settings',
     documentation: 'documentation',
+    'about-kalka': 'aboutKalka',
+    'color-profile': 'colorProfile',
+    'color-profile-convert-srgb': 'convertColorsToSRGB',
+    'color-profile-convert-p3': 'convertColorsToDisplayP3',
     'keyboard-shortcuts': 'keyboardShortcuts',
     variables: 'variables',
     'insert-icon': 'insertIcon',
     'view-rulers': 'rulers',
     'view-pixel-grid': 'pixelGrid',
+    'view-layout-grids': 'layoutGrids',
     'view-multiplayer-cursors': 'multiplayerCursors',
     'view-design-issues': 'designIssues',
     'snap-geometry': 'snapToGeometry',
@@ -153,6 +162,7 @@ export function useAppMenu() {
     'nudge-amount': 'nudgeAmount',
     profiler: 'profiler',
     'toggle-ui': 'toggleUI',
+    'reset-panel-widths': 'resetPanelWidths',
     'toggle-preview': 'togglePreview',
     theme: 'theme',
     'theme-light': 'themeLight',
@@ -230,6 +240,7 @@ export function useAppMenu() {
     'nudge-amount': openSettings,
     documentation: () => void openExternalLink(docsURL(locale.value)),
     'keyboard-shortcuts': openShortcutsHelp,
+    'about-kalka': openAbout,
     variables: () => openVariablesDialog(store),
     'insert-icon': () => {
       store.state.iconPickerOpen = true
@@ -272,6 +283,15 @@ export function useAppMenu() {
       case 'view-pixel-grid':
         return (value: boolean) => {
           if ((store.state.showPixelGrid !== false) !== value) itemAction(item)?.()
+        }
+      case 'color-profile-srgb':
+      case 'color-profile-p3':
+        return (value: boolean) => {
+          if (value) itemAction(item)?.()
+        }
+      case 'view-layout-grids':
+        return (value: boolean) => {
+          if ((store.state.showLayoutGrids !== false) !== value) itemAction(item)?.()
         }
       case 'view-multiplayer-cursors':
         return (value: boolean) => {

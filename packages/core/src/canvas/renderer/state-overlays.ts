@@ -20,6 +20,7 @@ export function overlaysFromEditorState(
     playIslands: previewing ? new Set(playIslandRoots(graph, state.currentPageId)) : undefined,
     hoveredNodeId: previewing ? null : state.hoveredNodeId,
     showPixelGrid: !previewing && state.showPixelGrid !== false,
+    showLayoutGrids: state.showLayoutGrids !== false,
     transforming: state.transforming,
     measurementMode: state.measurementMode,
     enteredContainerId: state.enteredContainerId,

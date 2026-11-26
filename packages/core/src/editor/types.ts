@@ -53,6 +53,8 @@ export interface EditorSharedState {
   snappingPreferences: SnappingPreferences
   /** Draw the pixel grid once zoomed in far enough, as Figma's View › Pixel grid; shown unless false. */
   showPixelGrid?: boolean
+  /** Draw frames' layout grids, as Figma's View › Layout grids; shown unless false. */
+  showLayoutGrids?: boolean
   presenceCursors: PresenceCursor[]
   documentName: string
   /** Design check markers and highlight, shared by every canvas pane. */

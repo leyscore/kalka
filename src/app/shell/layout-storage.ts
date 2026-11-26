@@ -1,9 +1,10 @@
+import { createEventHook } from '@vueuse/core'
 import * as v from 'valibot'
 
 import { IS_BROWSER } from '@kalka/core/constants'
 
 const EDITOR_LAYOUT_KEY = 'kalka:editor-layout'
-const DEFAULT_EDITOR_LAYOUT = [17, 64, 19]
+export const DEFAULT_EDITOR_LAYOUT: readonly [number, number, number] = [17, 64, 19]
 const EditorLayoutJSON = v.pipe(
   v.string(),
   v.parseJson(),
@@ -11,18 +12,29 @@ const EditorLayoutJSON = v.pipe(
 )
 
 export function loadEditorLayout(): number[] {
-  if (!IS_BROWSER) return DEFAULT_EDITOR_LAYOUT
+  if (!IS_BROWSER) return [...DEFAULT_EDITOR_LAYOUT]
   try {
     const parsed = v.safeParse(EditorLayoutJSON, window.localStorage.getItem(EDITOR_LAYOUT_KEY))
-    return parsed.success ? parsed.output : DEFAULT_EDITOR_LAYOUT
+    return parsed.success ? parsed.output : [...DEFAULT_EDITOR_LAYOUT]
   } catch {
-    return DEFAULT_EDITOR_LAYOUT
+    return [...DEFAULT_EDITOR_LAYOUT]
   }
 }
 
 export function saveEditorLayout(layout: number[]): void {
   if (!IS_BROWSER) return
   window.localStorage.setItem(EDITOR_LAYOUT_KEY, JSON.stringify(layout))
+}
+
+const panelWidthsReset = createEventHook<readonly [number, number, number]>()
+
+/** Runs `handler` with the layout each time the side panels go back to their first widths. */
+export const onPanelWidthsReset = panelWidthsReset.on
+
+/** Puts the layers and properties panels back to their first widths, as Figma's Reset panel widths. */
+export function resetPanelWidths(): void {
+  saveEditorLayout([...DEFAULT_EDITOR_LAYOUT])
+  void panelWidthsReset.trigger(DEFAULT_EDITOR_LAYOUT)
 }
 
 /**

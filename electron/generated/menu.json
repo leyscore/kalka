@@ -54,6 +54,14 @@
         "label": "Save to Storage…"
       },
       {
+        "id": "duplicate-file",
+        "label": "Duplicate"
+      },
+      {
+        "id": "revert-to-saved",
+        "label": "Revert to Saved"
+      },
+      {
         "type": "separator"
       },
       {
@@ -76,6 +84,37 @@
           {
             "id": "export-fig",
             "label": ".fig"
+          }
+        ]
+      },
+      {
+        "id": "export-frames-pdf",
+        "label": "Export Frames to PDF…"
+      },
+      {
+        "id": "color-profile",
+        "label": "Color Profile",
+        "sub": [
+          {
+            "id": "color-profile-srgb",
+            "label": "sRGB",
+            "checkbox": true
+          },
+          {
+            "id": "color-profile-p3",
+            "label": "Display P3",
+            "checkbox": true
+          },
+          {
+            "type": "separator"
+          },
+          {
+            "id": "color-profile-convert-srgb",
+            "label": "Convert Colors to sRGB"
+          },
+          {
+            "id": "color-profile-convert-p3",
+            "label": "Convert Colors to Display P3"
           }
         ]
       },
@@ -326,6 +365,12 @@
         "checkbox": true
       },
       {
+        "id": "view-layout-grids",
+        "label": "Layout Grids",
+        "accelerator": "CTRL+Shift+4",
+        "checkbox": true
+      },
+      {
         "id": "view-multiplayer-cursors",
         "label": "Multiplayer Cursors",
         "accelerator": "Alt+CmdOrCtrl+\\",
@@ -426,6 +471,10 @@
         "id": "toggle-ui",
         "label": "Toggle UI",
         "accelerator": "CmdOrCtrl+\\"
+      },
+      {
+        "id": "reset-panel-widths",
+        "label": "Reset Panel Widths"
       },
       {
         "id": "toggle-preview",

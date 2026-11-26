@@ -60,7 +60,11 @@ export const notificationMessageDefaults = {
   selectionLinkCopied: 'Link to the selection copied.',
   selectionLinkUnavailable:
     'Share this file on a server, or save it in the desktop app, to link to its layers.',
-  eyedropperUnavailable: 'The eyedropper needs Chrome, Edge or the desktop app.'
+  eyedropperUnavailable: 'The eyedropper needs Chrome, Edge or the desktop app.',
+  noFramesToExport: 'This file has no frame to export.',
+  framesPDFExportFailed: 'Could not export the frames to PDF.',
+  revertNothingSaved: 'This file has not been saved yet, so there is nothing to revert to.',
+  revertConfirm: params('Revert “{name}” to its saved version? Your unsaved changes will be lost.')
 } as const
 
 const localeLoaders = {

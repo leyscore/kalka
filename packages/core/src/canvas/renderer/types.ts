@@ -40,6 +40,8 @@ export interface RenderOverlays {
   hoveredNodeId?: string | null
   /** Draw the pixel grid when zoomed in far enough. */
   showPixelGrid?: boolean
+  /** Draw frames' layout grids; drawn unless false. */
+  showLayoutGrids?: boolean
   transforming?: boolean
   measurementMode?: MeasurementMode
   enteredContainerId?: string | null

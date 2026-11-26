@@ -38,6 +38,7 @@ export {
   type SVGImportOptions
 } from './formats/svg'
 export { renderNodesToHTML } from './formats/html'
+export { documentFrames, renderFramesToPDF, type DocumentFrame } from './formats/pdf'
 export { createVectorElement, vectorElement } from './formats/html/vectors'
 export type { BooleanPathResolver, SVGPathOutline } from './formats/svg/defs'
 export {

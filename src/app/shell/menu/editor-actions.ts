@@ -1,5 +1,8 @@
 import type { SceneNode } from '@kalka/scene-graph'
 
+import { exportFramesToPDF } from '@/app/document/export/frames-pdf'
+import { duplicateDocument } from '@/app/document/io/duplicate'
+import { revertToSaved } from '@/app/document/io/revert'
 import { useEditorStore } from '@/app/editor/active-store'
 import { placeImage } from '@/app/editor/clipboard/place-image'
 import {
@@ -8,6 +11,7 @@ import {
   setSnappingPreference
 } from '@/app/settings/preferences/apply'
 import { appPreferences } from '@/app/settings/preferences/store'
+import { resetPanelWidths } from '@/app/shell/layout-storage'
 import { createTextMenuActions } from '@/app/shell/menu/text-actions'
 
 type TextFormatUpdates = {
@@ -85,6 +89,10 @@ export function createSharedEditorMenuActions(
       store.state.showPixelGrid = store.state.showPixelGrid === false
       store.requestRepaint()
     },
+    'view-layout-grids': () => {
+      store.state.showLayoutGrids = store.state.showLayoutGrids === false
+      store.requestRepaint()
+    },
     'view-multiplayer-cursors': () => {
       store.state.showRemoteCursors = !store.state.showRemoteCursors
       store.requestRepaint()
@@ -101,6 +109,14 @@ export function createSharedEditorMenuActions(
       setEditingPreference('keepToolSelected', !appPreferences.value.editing.keepToolSelected),
     'rename-duplicated-layers': () =>
       setEditingPreference('renameDuplicates', !appPreferences.value.editing.renameDuplicates),
+    'reset-panel-widths': resetPanelWidths,
+    'export-frames-pdf': () => void exportFramesToPDF(store),
+    'revert-to-saved': () => void revertToSaved(store),
+    'duplicate-file': () => void duplicateDocument(store),
+    'color-profile-srgb': () => store.setDocumentColorSpace('srgb'),
+    'color-profile-p3': () => store.setDocumentColorSpace('display-p3'),
+    'color-profile-convert-srgb': () => store.setDocumentColorSpace('srgb', 'convert'),
+    'color-profile-convert-p3': () => store.setDocumentColorSpace('display-p3', 'convert'),
     'toggle-ui': () => {
       store.state.showUI = !store.state.showUI
     },

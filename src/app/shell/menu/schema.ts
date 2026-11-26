@@ -1,5 +1,6 @@
 import type { EditorCommandId } from '@kalka/vue'
 
+import { FILE_MENU } from '@/app/shell/menu/file-menu'
 import { TEXT_MENU } from '@/app/shell/menu/text-menu'
 
 export type AppMenuTarget = 'all' | 'browser' | 'native'
@@ -64,57 +65,7 @@ export interface AppMenuGroupSchema {
 }
 
 export const APP_MENU_SCHEMA = [
-  {
-    label: 'File',
-    paletteIcon: 'file',
-    items: [
-      { id: 'new', label: 'New', shortcut: 'MOD+N' },
-      { id: 'open', label: 'Open…', shortcut: 'MOD+O' },
-      { id: 'open-folder', label: 'Open Folder…', target: 'native' },
-      { id: 'open-recent', label: 'Open Recent', target: 'native' },
-      { id: 'open-storage-workspace', label: 'Open Storage Workspace…', handler: 'shell' },
-      { id: 'import-claude-design', label: 'Import Claude Design Project…' },
-      // Figma's ⇧⌘K is Create component set here.
-      { id: 'place-image', label: 'Place Image…' },
-      { type: 'separator' },
-      { id: 'save', label: 'Save', shortcut: 'MOD+S' },
-      { id: 'save-as', label: 'Save As…', shortcut: 'MOD+SHIFT+S' },
-      { id: 'save-as-folder', label: 'Save As Folder…', target: 'native' },
-      { id: 'save-to-storage', label: 'Save to Storage…' },
-      { type: 'separator' },
-      {
-        id: 'export-selection',
-        label: 'Export Selection',
-        palette: { icon: 'download' },
-        shortcut: 'MOD+SHIFT+E',
-        sub: [
-          {
-            id: 'export-png',
-            label: 'PNG',
-            palette: { icon: 'download', label: 'exportSelectionAsPNG' }
-          },
-          {
-            id: 'export-svg',
-            label: 'SVG',
-            palette: { icon: 'download', label: 'exportSelectionAsSVG' }
-          },
-          {
-            id: 'export-pptx',
-            label: 'PPTX',
-            palette: { icon: 'download', label: 'exportSelectionAsPPTX' }
-          },
-          {
-            id: 'export-fig',
-            label: '.fig',
-            palette: { icon: 'download', label: 'exportSelectionAsFig' }
-          }
-        ]
-      },
-      { type: 'separator' },
-      { id: 'autosave', label: 'Autosave', checkbox: true },
-      { id: 'close', label: 'Close Tab', shortcut: 'MOD+W' }
-    ]
-  },
+  FILE_MENU,
   {
     label: 'Edit',
     paletteIcon: 'pencil',
@@ -252,6 +203,13 @@ export const APP_MENU_SCHEMA = [
       { id: 'view-rulers', label: 'Rulers', checkbox: true, shortcut: 'SHIFT+R' },
       // Figma's View › Pixel grid, shown once zoomed in far enough.
       { id: 'view-pixel-grid', label: 'Pixel Grid', checkbox: true, shortcut: "SHIFT+'" },
+      // Figma's Windows key; Ctrl+G is Group there, so Ctrl+G is added on the Mac only.
+      {
+        id: 'view-layout-grids',
+        label: 'Layout Grids',
+        checkbox: true,
+        shortcut: 'CTRL+SHIFT+4'
+      },
       {
         id: 'view-multiplayer-cursors',
         label: 'Multiplayer Cursors',
@@ -325,8 +283,11 @@ export const APP_MENU_SCHEMA = [
         accelerator: 'Ctrl+Shift+/'
       },
       { id: 'documentation', label: 'Documentation', handler: 'shell' },
+      // The desktop app has About in its application menu, as the system's own panel.
+      { id: 'about-kalka', label: 'About Kalka', target: 'browser' },
       { type: 'separator' },
       { id: 'toggle-ui', label: 'Toggle UI', shortcut: 'MOD+\\' },
+      { id: 'reset-panel-widths', label: 'Reset Panel Widths' },
       { id: 'toggle-preview', label: 'Preview', shortcut: 'MOD+ALT+↩' },
       { type: 'separator' },
       { id: 'profiler', label: 'Profiler', checkbox: true, target: 'browser' },

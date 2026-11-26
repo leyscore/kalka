@@ -127,7 +127,20 @@ export const menuMessageDefaults = {
   pickColor: 'Pick color',
   keepToolSelected: 'Keep tool selected after use',
   renameDuplicatedLayers: 'Rename duplicated layers',
-  nudgeAmount: 'Nudge amount…'
+  nudgeAmount: 'Nudge amount…',
+  layoutGrids: 'Layout grids',
+  resetPanelWidths: 'Reset panel widths',
+  aboutKalka: 'About Kalka',
+  aboutVersion: 'Version',
+  aboutLicense: 'Open source under the MIT licence.',
+  aboutReleaseNotes: 'Release notes',
+  aboutDesktopApp: 'Desktop app',
+  colorProfile: 'Color profile',
+  convertColorsToSRGB: 'Convert colors to sRGB',
+  convertColorsToDisplayP3: 'Convert colors to Display P3',
+  exportFramesToPDF: 'Export frames to PDF…',
+  revertToSaved: 'Revert to saved',
+  duplicateFile: 'Duplicate'
 } as const
 
 export const menuMessages = i18n('menu', menuMessageDefaults)

@@ -119,5 +119,18 @@
   "pickColor": "Пипетка",
   "keepToolSelected": "Не сбрасывать инструмент после использования",
   "renameDuplicatedLayers": "Переименовывать дубликаты слоёв",
-  "nudgeAmount": "Шаг сдвига…"
+  "nudgeAmount": "Шаг сдвига…",
+  "layoutGrids": "Модульные сетки",
+  "resetPanelWidths": "Сбросить ширину панелей",
+  "aboutKalka": "О Kalka",
+  "aboutVersion": "Версия",
+  "aboutLicense": "Открытый исходный код под лицензией MIT.",
+  "aboutReleaseNotes": "Примечания к выпуску",
+  "aboutDesktopApp": "Приложение для компьютера",
+  "colorProfile": "Цветовой профиль",
+  "convertColorsToSRGB": "Преобразовать цвета в sRGB",
+  "convertColorsToDisplayP3": "Преобразовать цвета в Display P3",
+  "exportFramesToPDF": "Экспорт фреймов в PDF…",
+  "revertToSaved": "Вернуться к сохранённой версии",
+  "duplicateFile": "Дублировать"
 }

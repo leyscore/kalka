@@ -43,5 +43,9 @@
   "reloadFromDisk": "Von der Festplatte neu laden",
   "selectionLinkCopied": "Link zur Auswahl kopiert.",
   "selectionLinkUnavailable": "Teile diese Datei auf einem Server oder speichere sie in der Desktop-App, um auf ihre Ebenen zu verlinken.",
-  "eyedropperUnavailable": "Die Pipette braucht Chrome, Edge oder die Desktop-App."
+  "eyedropperUnavailable": "Die Pipette braucht Chrome, Edge oder die Desktop-App.",
+  "noFramesToExport": "Diese Datei hat keinen Rahmen zum Exportieren.",
+  "framesPDFExportFailed": "Die Rahmen konnten nicht als PDF exportiert werden.",
+  "revertNothingSaved": "Diese Datei wurde noch nicht gespeichert, es gibt nichts wiederherzustellen.",
+  "revertConfirm": "„{name}“ auf die gespeicherte Version zurücksetzen? Nicht gespeicherte Änderungen gehen verloren."
 }

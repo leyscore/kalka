@@ -43,5 +43,9 @@
   "reloadFromDisk": "Recharger depuis le disque",
   "selectionLinkCopied": "Lien vers la sélection copié.",
   "selectionLinkUnavailable": "Partagez ce fichier sur un serveur, ou enregistrez-le dans l’app de bureau, pour créer un lien vers ses calques.",
-  "eyedropperUnavailable": "La pipette demande Chrome, Edge ou l’app de bureau."
+  "eyedropperUnavailable": "La pipette demande Chrome, Edge ou l’app de bureau.",
+  "noFramesToExport": "Ce fichier n’a aucun cadre à exporter.",
+  "framesPDFExportFailed": "Impossible d’exporter les cadres en PDF.",
+  "revertNothingSaved": "Ce fichier n’a pas encore été enregistré : il n’y a rien à rétablir.",
+  "revertConfirm": "Rétablir « {name} » dans sa version enregistrée ? Vos modifications non enregistrées seront perdues."
 }

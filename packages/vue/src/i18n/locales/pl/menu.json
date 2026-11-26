@@ -119,5 +119,18 @@
   "pickColor": "Pobierz kolor",
   "keepToolSelected": "Zachowaj narzędzie po użyciu",
   "renameDuplicatedLayers": "Zmieniaj nazwy zduplikowanych warstw",
-  "nudgeAmount": "Wielkość przesunięcia…"
+  "nudgeAmount": "Wielkość przesunięcia…",
+  "layoutGrids": "Siatki układu",
+  "resetPanelWidths": "Przywróć szerokość paneli",
+  "aboutKalka": "O Kalka",
+  "aboutVersion": "Wersja",
+  "aboutLicense": "Open source na licencji MIT.",
+  "aboutReleaseNotes": "Informacje o wydaniu",
+  "aboutDesktopApp": "Aplikacja desktopowa",
+  "colorProfile": "Profil kolorów",
+  "convertColorsToSRGB": "Konwertuj kolory na sRGB",
+  "convertColorsToDisplayP3": "Konwertuj kolory na Display P3",
+  "exportFramesToPDF": "Eksportuj ramki do PDF…",
+  "revertToSaved": "Przywróć zapisaną wersję",
+  "duplicateFile": "Duplikuj"
 }
