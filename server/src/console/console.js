@@ -236,6 +236,7 @@
       el('span', { class: 'thumb', style: { '--c': colorOf(doc.id) } }),
       el('span', { class: 'meta' },
         el('span', { class: 'grow' }, el('span', {}, doc.name), el('span', {}, 'Edited ' + when(doc.updatedAt).toLowerCase())),
+        doc.linkRole === 'view' ? el('span', { class: 'pill', title: 'Members open it read-only, except whoever made it and administrators.' }, 'VIEW ONLY') : null,
         doc.pending ? el('span', { class: 'pill warn', title: 'A version uploaded by ' + doc.pending.by + ' ' + when(doc.pending.at).toLowerCase() + ' waits for Kalka to apply it.' }, 'NEW VERSION') : null,
         doc.live ? el('span', { class: 'pill ok', title: doc.live + ' open now' }, el('span', { class: 'live' }), String(doc.live)) : null))
   }
@@ -255,6 +256,17 @@
         : [el('button', { type: 'button', role: 'menuitem', onclick: () => { closePop(); openConnect() } }, icon('plug-01'), 'Connect Kalka')]),
       el('button', { type: 'button', role: 'menuitem', onclick: () => { closePop(); download(doc) } }, icon('download-01'), 'Download .kalka')
     ]
+    // How members who open it may use it: whoever made the file, or an administrator, chooses.
+    const sharing = doc.linkRole === 'view' ? 'Members can view' : 'Members can edit'
+    if (isAdmin() || (me && doc.createdBy === me.id)) {
+      const next = doc.linkRole === 'view' ? 'edit' : 'view'
+      items.push(el('button', { type: 'button', role: 'menuitem', 'data-link-role': doc.linkRole, onclick: async () => {
+        closePop()
+        try { await api('PATCH', '/api/documents/' + doc.id, { linkRole: next }); toast(next === 'view' ? 'Members now open it read-only' : 'Members can edit it again'); route() } catch (e) { toast(e.message) }
+      } }, icon(next === 'view' ? 'view' : 'edit-02'), next === 'view' ? 'Share to view only' : 'Share to edit'))
+    } else {
+      items.push(el('div', { class: 'head', 'data-link-role': doc.linkRole }, el('span', {}, sharing)))
+    }
     if (canEdit()) {
       items.push(el('button', { type: 'button', role: 'menuitem', onclick: () => { closePop(); renameFile(doc) } }, icon('edit-02'), 'Rename'),
         el('hr'),
@@ -703,6 +715,7 @@
     'document.restored': ['restored a file', 'refresh'],
     'document.deleted': ['deleted a file for good', 'delete-02'],
     'document.exported': ['exported a file', 'download-01'],
+    'document.link_role_changed': ['changed how a file is shared', 'link-01'],
     'document.uploaded': ['uploaded a new version', 'share-01'],
     'settings.changed': ['changed settings', 'settings-02'],
     'app_password.created': ['created an app password', 'key-01'],
