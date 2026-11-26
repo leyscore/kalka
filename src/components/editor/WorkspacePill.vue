@@ -1,23 +1,36 @@
 <script setup lang="ts">
-import { useI18n } from '@kalka/vue'
+import { useI18n, usePrototypeMessages } from '@kalka/vue'
 
 import { resolvedAppTheme } from '@/app/shell/theme'
 import BrandMark from '@/components/brand/BrandMark.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
+import AppSelect from '@/components/ui/select/AppSelect.vue'
 
 /**
  * The pill of the canvas-only layout: the document name and the way back. In preview it says
- * so, resets the controls, and leaves preview.
+ * so, resets the controls, and leaves preview; presenting a page with several flows, it picks
+ * the flow to play, as Figma's flow list in presentation view.
  */
-const { documentName, mode, shortcut } = defineProps<{
+const {
+  documentName,
+  mode,
+  shortcut,
+  flows = [],
+  flowId = null
+} = defineProps<{
   documentName: string
   mode: 'collapsed' | 'preview'
   /** The shortcut of the way back: Toggle UI, or leaving preview. */
   shortcut: string
+  /** The page's flows, by the frame each starts at. */
+  flows?: { value: string; label: string }[]
+  /** The flow presented now, if it started at one. */
+  flowId?: string | null
 }>()
-const emit = defineEmits<{ showUi: []; reset: []; leave: [] }>()
+const emit = defineEmits<{ showUi: []; reset: []; leave: []; flow: [startId: string] }>()
 const { editor } = useI18n()
+const prototype = usePrototypeMessages()
 </script>
 
 <template>
@@ -43,6 +56,15 @@ const { editor } = useI18n()
         <icon-hugeicons-play class="size-3" />
         {{ editor.previewing }}
       </span>
+      <AppSelect
+        v-if="flows.length > 1"
+        :model-value="flowId ?? ''"
+        :options="flows"
+        :label="prototype.flows"
+        :placeholder="prototype.flows"
+        data-property="preview-flow"
+        @update:model-value="(value) => value && emit('flow', value)"
+      />
       <AppButton size="xs" variant="soft" data-property="preview-reset" @click="emit('reset')">
         <icon-hugeicons-rotate-ccw class="size-3" />
         {{ editor.resetPreview }}

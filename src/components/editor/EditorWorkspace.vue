@@ -4,6 +4,7 @@ import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
 import { tv } from 'tailwind-variants'
 import { computed, defineAsyncComponent, useTemplateRef } from 'vue'
 
+import { flowStartingPoints } from '@kalka/scene-graph'
 import { formatShortcut, useViewportKind } from '@kalka/vue'
 
 import { openFolderFile } from '@/app/document/folder/view'
@@ -78,6 +79,14 @@ onPanelWidthsReset(([layers, , properties]) => {
 const horizontalSplitterStyles = tv(splitterTheme)({ direction: 'horizontal', gutter: true })
 /** One canvas previewing takes the whole window, in the canvas-only layout; split view keeps panels. */
 const playingAlone = computed(() => store.state.play !== null && store.visiblePaneCount.value <= 1)
+/** The flows of the page presented, to pick another one from the preview pill. */
+const presentedFlows = computed(() => {
+  void store.state.sceneVersion
+  if (!store.state.play?.present) return []
+  return flowStartingPoints(store.graph, store.state.currentPageId).map(
+    ({ node, startingPoint }) => ({ value: node.id, label: startingPoint.name || node.name })
+  )
+})
 // Until a room's document arrives there is nothing to edit, so its screen replaces the editor.
 const { pending: roomPending } = useRoomActions()
 const desktopLayout = computed(
@@ -191,8 +200,11 @@ const desktopLayout = computed(
         mode="preview"
         :document-name="store.state.documentName"
         :shortcut="formatShortcut(appMenuShortcut('toggle-preview')) ?? ''"
+        :flows="presentedFlows"
+        :flow-id="store.state.play?.present?.startId"
         @reset="store.resetPlay()"
         @leave="store.stopPlay()"
+        @flow="store.presentFrom"
       />
       <WorkspacePill
         v-else-if="!isMobile"

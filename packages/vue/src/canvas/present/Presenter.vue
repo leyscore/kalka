@@ -22,6 +22,8 @@ import { colorToCSS } from '@kalka/scene-graph/color'
 
 import { useEditor } from '#vue/editor/context'
 
+import { useDelayTimers, type DelayFrame } from './delays'
+import { useHotspotHints } from './hotspots'
 import { animatePose, layerBoxes, REST, screenPoses, smartAnimate, type Pose } from './motion'
 import PresentScreen from './PresentScreen.vue'
 import { applyScrolling, overlayPlacement } from './scrolling'
@@ -232,6 +234,7 @@ async function playVariant(step: Extract<PresentStep, { kind: 'variant' }>, next
   const smart = step.transition?.type === 'SMART_ANIMATE'
   const before = smart && root ? layerBoxes(root, stageRect(), scale.value) : null
   present.value = next
+  void settled().then(() => rearmVariant(step.rootId, step.path))
   if (!step.transition || !root) return
   await settled()
   if (before) return finish(smartAnimate(root, before, stageRect(), scale.value, step.transition))
@@ -320,7 +323,7 @@ function runReaction(reaction: PrototypeReaction, context: ActionContext) {
     for (const action of reaction.actions) apply(action, context)
   }
   const delay = reaction.trigger.type === 'AFTER_TIMEOUT' ? 0 : reaction.trigger.delay
-  if (delay > 0) timers.push(setTimeout(go, delay * 1000))
+  if (delay > 0) timers.later(delay, go)
   else go()
 }
 
@@ -405,7 +408,16 @@ function onPointerUp(event: PointerEvent) {
 
 function onClick(event: MouseEvent) {
   dragStart = null
-  fire(hitOf(event), 'ON_CLICK')
+  if (!fire(hitOf(event), 'ON_CLICK')) flashHotspots()
+}
+
+/** A click that runs nothing flashes where the layers that do something are. */
+const { hotspots, fading, flash } = useHotspotHints((element) =>
+  scaler.value ? boxIn(element, scaler.value) : { x: 0, y: 0, width: 0, height: 0 }
+)
+
+function flashHotspots() {
+  flash(shownFrameViews())
 }
 
 /** A click on an overlay's background, outside the overlay, closes it when it says so. */
@@ -434,10 +446,7 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
           candidate.trigger.keyCodes.length === pressed.size &&
           candidate.trigger.keyCodes.every((code) => pressed.has(code))
       )
-      const rootId =
-        key === screen.value.key
-          ? screen.value.rootId
-          : overlays.value.find((o) => o.key === key)?.frameId
+      const rootId = rootOfKey(key)
       if (reaction && rootId && graph.isDescendant(node.id, rootId)) {
         event.preventDefault()
         runReaction(reaction, { graph, rootId, nodeIds: [node.id], pathOf: instance.pathOf })
@@ -449,42 +458,38 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
 
 // --- Timers, scrolling and restarts ---------------------------------------------------------
 
-let timers: ReturnType<typeof setTimeout>[] = []
-function clearTimers() {
-  for (const timer of timers) clearTimeout(timer)
-  timers = []
+function rootOfKey(key: string): string | undefined {
+  return key === screen.value.key
+    ? screen.value.rootId
+    : overlays.value.find((overlay) => overlay.key === key)?.frameId
 }
 
-/** After delay: timed from when each frame shows, again each time it shows. */
-function armDelays() {
-  clearTimers()
-  for (const key of shownKeys()) {
+/** The shown frames, each with the graph and paths of its presented layers. */
+function shownFrameViews(): (DelayFrame & { elementOf: (nodeId: string) => HTMLElement | null })[] {
+  return shownKeys().flatMap((key) => {
     const instance = instances.get(key)
-    const rootId =
-      key === screen.value.key
-        ? screen.value.rootId
-        : overlays.value.find((o) => o.key === key)?.frameId
-    if (!instance || !rootId) continue
-    const graph = instance.graph()
-    for (const node of graph.getAllNodes()) {
-      if (node.id !== rootId && !graph.isDescendant(node.id, rootId)) continue
-      const reaction = node.reactions.find(
-        (candidate) => candidate.trigger.type === 'AFTER_TIMEOUT'
-      )
-      if (!reaction) continue
-      const nodeIds: string[] = []
-      graph.closest(node.id, (current) => {
-        nodeIds.push(current.id)
-        return current.id === rootId
-      })
-      timers.push(
-        setTimeout(
-          () => runReaction(reaction, { graph, rootId, nodeIds, pathOf: instance.pathOf }),
-          reaction.trigger.delay * 1000
-        )
-      )
-    }
-  }
+    const rootId = rootOfKey(key)
+    return instance && rootId
+      ? [
+          {
+            rootId,
+            graph: instance.graph(),
+            pathOf: instance.pathOf,
+            elementOf: instance.elementOf
+          }
+        ]
+      : []
+  })
+}
+
+const timers = useDelayTimers((reaction, context) => runReaction(reaction, context))
+const clearTimers = timers.clear
+const armDelays = () => timers.arm(shownFrameViews())
+
+/** An instance changed variant: the timers of the variant it left stop, the new one's start. */
+function rearmVariant(rootId: string, path: string) {
+  const frame = shownFrameViews().find((view) => view.rootId === rootId)
+  if (frame) timers.rearm(frame, path)
 }
 
 let unscroll: (() => void)[] = []
@@ -626,6 +631,19 @@ function overlayBackground(frameId: string): string {
               :style="overlayStyle(overlay)"
             />
           </div>
+          <div
+            v-for="hotspot in hotspots"
+            :key="hotspot.id"
+            data-test-id="prototype-hotspot"
+            class="pointer-events-none absolute z-20 rounded-[2px] border border-[#0d99ff] bg-[#0d99ff]/25 transition-opacity duration-300"
+            :class="{ 'opacity-0': fading }"
+            :style="{
+              left: `${hotspot.x}px`,
+              top: `${hotspot.y}px`,
+              width: `${hotspot.width}px`,
+              height: `${hotspot.height}px`
+            }"
+          />
         </div>
       </div>
     </div>

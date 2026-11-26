@@ -50,8 +50,15 @@ export function createPlayActions(ctx: EditorContext) {
       ctx.state.play = { ...ctx.state.play, revision: ctx.state.play.revision + 1 }
   }
 
+  /** Present from another frame, such as another flow's start, as a fresh presentation. */
+  function presentFrom(startId: string): void {
+    const play = ctx.state.play
+    if (!play?.present || !ctx.graph.getNode(startId)) return
+    ctx.state.play = { revision: play.revision + 1, present: { startId } }
+  }
+
   // Another document's layers start from their designed state, not from the old islands'.
   ctx.onEditorEvent('graph:replaced', resetPlay)
 
-  return { startPlay, stopPlay, togglePlay, resetPlay }
+  return { startPlay, stopPlay, togglePlay, resetPlay, presentFrom }
 }
