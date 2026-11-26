@@ -42,7 +42,9 @@ export const serverDocumentSchema = v.object({
   /** Who made it; a server older than link roles may not say. */
   createdBy: v.optional(v.string()),
   /** A server older than link roles shares every file to edit. */
-  linkRole: v.optional(serverLinkRoleSchema, 'edit')
+  linkRole: v.optional(serverLinkRoleSchema, 'edit'),
+  /** For a branch, the file it branches from; a server older than branches has none. */
+  branchOf: v.optional(v.nullable(v.string()), null)
 })
 export type ServerDocument = v.InferOutput<typeof serverDocumentSchema>
 
@@ -199,6 +201,26 @@ export const serverAPI = {
     }),
   document: (base: string, token: string, id: string) =>
     serverRequest(base, `/api/documents/${id}`, { token, schema: serverDocumentSchema }),
+  branches: (base: string, token: string, id: string) =>
+    serverRequest(base, `/api/documents/${id}/branches`, {
+      token,
+      schema: v.array(serverDocumentSchema)
+    }),
+  createBranch: (base: string, token: string, id: string, name: string) =>
+    serverRequest(base, `/api/documents/${id}/branches`, {
+      method: 'POST',
+      token,
+      body: { name },
+      schema: serverDocumentSchema
+    }),
+  /** Merges a branch into the file it comes from; `force` replaces changes made there since. */
+  mergeBranch: (base: string, token: string, id: string, force: boolean) =>
+    serverRequest(base, `/api/documents/${id}/merge`, {
+      method: 'POST',
+      token,
+      body: { force },
+      schema: serverDocumentSchema
+    }),
   pending: pendingVersion,
   /** Dismisses a waiting version; `dismissed` is false when another window took it first. */
   dismissPending: (base: string, token: string, id: string, version: string) =>

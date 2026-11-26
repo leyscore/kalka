@@ -6,6 +6,7 @@ export const APP_DATABASE_NAMES = {
   localCanvas: 'kalka-cloud-local',
   outbox: 'kalka-cloud-outbox',
   recovery: 'kalka-recovery',
+  versions: 'kalka-versions',
   diagnostics: 'kalka-diagnostics',
   /** Written and deleted once per page, to learn whether the engine stores Blobs. */
   blobProbe: 'kalka-blob-probe'

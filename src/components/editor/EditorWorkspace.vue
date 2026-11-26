@@ -7,6 +7,7 @@ import { computed, defineAsyncComponent, useTemplateRef } from 'vue'
 import { formatShortcut, useViewportKind } from '@kalka/vue'
 
 import { openFolderFile } from '@/app/document/folder/view'
+import { useAutoCheckpoints } from '@/app/document/versions/checkpoints/use'
 import { provideTabEditorStore } from '@/app/editor/active-store'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import { latch } from '@/app/shell/latch'
@@ -30,6 +31,7 @@ import MobileHud from '@/components/MobileHud/MobileHud.vue'
 import PropertiesPanel from '@/components/PropertiesPanel.vue'
 import AppBanners from '@/components/shell/AppBanners.vue'
 import Toolbar from '@/components/Toolbar/Toolbar.vue'
+import CheckpointPreviewBanner from '@/components/versions/CheckpointPreviewBanner.vue'
 import { IS_TAURI } from '@/constants'
 import splitterTheme from '@/theme/splitter'
 
@@ -46,6 +48,8 @@ const showChrome = appRuntimeConfig.showChrome
 const { tab } = defineProps<{ tab: Tab }>()
 const store = tab.store
 provideTabEditorStore(store)
+// While this tab shows its document, a version of it is kept now and then as it is edited.
+useAutoCheckpoints(store)
 // Variables and their code views load the first time they open: as a page over the panels and the
 // canvas in the desktop layout, as a dialog in the others.
 const VariablesDialog = defineAsyncComponent(
@@ -92,6 +96,7 @@ const desktopLayout = computed(
     class="flex flex-1 flex-col gap-2 overflow-hidden px-2 pb-2 [--color-glass-border:var(--color-border)] [--color-glass:var(--color-panel)]"
   >
     <EditorTopBar />
+    <CheckpointPreviewBanner :store="store" class="panel-float rounded-lg" />
     <!-- In the desktop app the top bar is the window's title bar, so the banners come under it.
          They bring their own margins: the wrapper gives back the workspace's padding and gap. -->
     <div v-if="IS_TAURI" class="-mx-2 -mt-2 flex flex-col">

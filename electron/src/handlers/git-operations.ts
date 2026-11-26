@@ -21,7 +21,7 @@ const IGNORED_AT_START = '.DS_Store\nThumbs.db\n'
 /** The one remote Kalka sets up and publishes to. */
 const REMOTE = 'origin'
 
-class GitError extends Error {}
+export class GitError extends Error {}
 
 /** The environment git runs in: the login shell's PATH, so the person's own git is found. */
 async function gitEnv(extra: Record<string, string>): Promise<NodeJS.ProcessEnv> {
@@ -29,7 +29,7 @@ async function gitEnv(extra: Record<string, string>): Promise<NodeJS.ProcessEnv>
   return { ...process.env, ...(path ? { PATH: path } : {}), ...extra }
 }
 
-async function git(cwd: string, args: string[], timeout = TIMEOUT_MS): Promise<string> {
+export async function git(cwd: string, args: string[], timeout = TIMEOUT_MS): Promise<string> {
   const env = await gitEnv({ GIT_TERMINAL_PROMPT: '0', LC_ALL: 'C' })
   return new Promise((resolve, reject) => {
     execFile(
@@ -186,7 +186,7 @@ function repositoryPaths(root: string, paths: string[]): string[] {
   })
 }
 
-async function requireRepository(documentPath: unknown): Promise<string> {
+export async function requireRepository(documentPath: unknown): Promise<string> {
   const path = v.parse(AbsolutePath, documentPath)
   const root = await repositoryOf(path)
   if (!root) throw new GitError('This document is not in a Git repository')

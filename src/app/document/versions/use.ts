@@ -1,12 +1,15 @@
 import { useEventListener } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 
+import { createBranchActions } from '@/app/document/versions/branches'
 import { agentChanges } from '@/app/document/versions/bursts'
 import type { EditorStore } from '@/app/editor/active-store'
 
 import {
   commitVersion,
   connectGitRemote,
+  readGitBranches,
+  type GitBranches,
   pullVersions,
   pushVersions,
   readGitHistory,
@@ -26,7 +29,18 @@ import {
 
 export type DocumentVersions = ReturnType<typeof useDocumentVersions>
 export type VersionsState = 'unsaved' | 'untracked' | 'tracked' | 'loading'
-type Operation = 'commit' | 'connect' | 'identity' | 'init' | 'pull' | 'push' | 'restore'
+type Operation =
+  | 'branch'
+  | 'commit'
+  | 'connect'
+  | 'identity'
+  | 'init'
+  | 'merge'
+  | 'pull'
+  | 'push'
+  | 'restore'
+  | 'review'
+  | 'switch'
 
 /**
  * The versions panel's workflow for one document: whether its file is in a repository, what
@@ -44,6 +58,7 @@ export function useDocumentVersions(store: EditorStore) {
   const error = ref('')
   const message = ref('')
   const path = ref(store.getDocumentFilePath())
+  const branches = ref<GitBranches | null>(null)
 
   const state = computed<VersionsState>(() => {
     if (!path.value) return 'unsaved'
@@ -84,6 +99,8 @@ export function useDocumentVersions(store: EditorStore) {
       history.value = next ? await readGitHistory(current) : []
       remote.value = next ? await readGitRemote(current) : null
       identity.value = next ? await readGitIdentity(current) : null
+      // A desktop build older than branches has no answer: the rest of the panel still works.
+      branches.value = next ? await readGitBranches(current).catch(() => null) : null
       error.value = ''
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : String(cause)
@@ -158,6 +175,14 @@ export function useDocumentVersions(store: EditorStore) {
       if (remote.value) await pushVersions(documentPath)
     })
 
+  const branchActions = createBranchActions({
+    store,
+    run,
+    saveFirst,
+    record,
+    remote
+  })
+
   // A save changes the file on disk: what changed is read again.
   watch(unsaved, (now, before) => {
     if (before && !now) void refresh()
@@ -183,6 +208,8 @@ export function useDocumentVersions(store: EditorStore) {
     refresh,
     commit,
     restore,
+    branches,
+    ...branchActions,
     bursts: computed(() => versionBursts(history.value)),
     start: () => run('init', startGitRepository),
     pull: () => run('pull', pullVersions),

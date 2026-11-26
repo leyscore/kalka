@@ -3,12 +3,16 @@ import { ref } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
+import { useHistorySource } from '@/app/document/versions/checkpoints/use'
 import { changeKind, type GitCommit } from '@/app/document/versions/git'
 import { useDocumentVersions, type DocumentVersions } from '@/app/document/versions/use'
 import { useEditorStore } from '@/app/editor/active-store'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
+import CheckpointHistory from '@/components/versions/CheckpointHistory.vue'
+import GitBranches from '@/components/versions/GitBranches.vue'
+import ServerBranches from '@/components/versions/ServerBranches.vue'
 import { versionTimeline } from '@/theme/panel/folder'
 
 const { panels } = useI18n()
@@ -39,6 +43,12 @@ function restore(commit: GitCommit): void {
   })
 }
 
+/**
+ * A server file lists its branches here; a file Git does not keep still has a history: versions
+ * kept on this device as it is edited.
+ */
+const { serverRoomId, checkpoints } = useHistorySource(store)
+
 const timeline = versionTimeline()
 const remoteURL = ref('')
 const identityName = ref('')
@@ -54,7 +64,11 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', tim
 
 <template>
   <div class="flex min-h-0 flex-1 flex-col" data-test-id="versions-panel">
-    <div v-if="state === 'unsaved' || state === 'untracked'" class="flex flex-col gap-3 px-4 py-3">
+    <ServerBranches v-if="serverRoomId" :room-id="serverRoomId" />
+    <div
+      v-else-if="state === 'unsaved' || state === 'untracked'"
+      class="flex flex-col gap-3 px-4 py-3"
+    >
       <p class="text-xs leading-relaxed text-muted">
         {{ state === 'unsaved' ? panels.versionsUnsaved : panels.versionsUntracked }}
       </p>
@@ -70,6 +84,9 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', tim
         {{ panels.versionsStart }}
       </AppButton>
     </div>
+    <CheckpointHistory
+      v-if="!serverRoomId && checkpoints && (state === 'unsaved' || state === 'untracked')"
+    />
 
     <template v-else-if="state === 'tracked' && status">
       <header class="flex shrink-0 items-center gap-2 px-4 pt-1 pb-2 text-xs">
@@ -106,6 +123,7 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', tim
       </p>
 
       <div class="min-h-0 flex-1 overflow-y-auto">
+        <GitBranches :versions="versions" />
         <h3 class="px-4 pt-2 pb-1.5 text-[11px] font-semibold text-muted">
           {{ panels.versionsChanges }}
         </h3>

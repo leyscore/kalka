@@ -1,8 +1,9 @@
 import { registerAll } from '../ipc'
+import { gitBranchHandlers } from './branches'
 import { gitHandlers } from './git-operations'
 
-export { gitHandlers }
+export { gitBranchHandlers, gitHandlers }
 
 export function registerGitHandlers(): void {
-  registerAll(gitHandlers, 'git')
+  registerAll({ ...gitHandlers, ...gitBranchHandlers }, 'git')
 }

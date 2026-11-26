@@ -105,6 +105,42 @@ export function versionBursts(
   return bursts
 }
 
+const BranchesSchema = v.object({ current: v.nullable(v.string()), branches: v.array(v.string()) })
+const BranchChangeSchema = v.object({ path: v.string(), status: v.string() })
+
+export type GitBranches = v.InferOutput<typeof BranchesSchema>
+export type GitBranchChange = v.InferOutput<typeof BranchChangeSchema>
+
+export async function readGitBranches(documentPath: string): Promise<GitBranches> {
+  return v.parse(BranchesSchema, await call('git.branches', documentPath))
+}
+
+/** Starts a branch from the current version and moves onto it. */
+export async function createGitBranch(documentPath: string, name: string): Promise<void> {
+  await call('git.createBranch', documentPath, name)
+}
+
+export async function switchGitBranch(documentPath: string, name: string): Promise<void> {
+  await call('git.switchBranch', documentPath, name)
+}
+
+/** The files a branch changed since it left the current one. */
+export async function readBranchChanges(
+  documentPath: string,
+  name: string
+): Promise<GitBranchChange[]> {
+  return v.parse(v.array(BranchChangeSchema), await call('git.branchChanges', documentPath, name))
+}
+
+/** Merges a branch into the current one; changes that meet leave everything as it was. */
+export async function mergeGitBranch(documentPath: string, name: string): Promise<void> {
+  await call('git.merge', documentPath, name)
+}
+
+export async function deleteGitBranch(documentPath: string, name: string): Promise<void> {
+  await call('git.deleteBranch', documentPath, name)
+}
+
 export async function pullVersions(documentPath: string): Promise<void> {
   await call('git.pull', documentPath)
 }
