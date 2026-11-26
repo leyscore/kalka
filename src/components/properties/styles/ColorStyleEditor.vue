@@ -78,7 +78,8 @@ function remove(index: number) {
           class="w-full flex-none"
           :opacity="fill.opacity"
           :opacity-label="panels.opacity"
-          @update:opacity="setPaint(index, { ...fill, opacity: $event })"
+          @update:opacity="previewPaint(index, { ...fill, opacity: $event })"
+          @commit:opacity="setPaint(index, { ...fill, opacity: $event })"
         >
           <template #preview>
             <FillPicker

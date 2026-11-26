@@ -29,7 +29,12 @@ import NumberField from '@/components/inputs/NumberField.vue'
 import paintFieldTheme from '@/theme/paint/field'
 
 const { opacity, opacityLabel, class: className, ui } = defineProps<PaintFieldProps>()
-const emit = defineEmits<{ 'update:opacity': [opacity: number] }>()
+/** `update:opacity` follows a scrub step by step; `commit:opacity` comes once when it ends. */
+const emit = defineEmits<{
+  'update:opacity': [opacity: number]
+  'commit:opacity': [opacity: number]
+}>()
+const fraction = (percent: number) => Math.max(0, Math.min(1, percent / 100))
 defineSlots<PaintFieldSlots>()
 const styles = computed(() => tv(paintFieldTheme)())
 </script>
@@ -62,7 +67,8 @@ const styles = computed(() => tv(paintFieldTheme)())
         display: 'pl-1.5'
       }"
       data-property="opacity"
-      @update:model-value="emit('update:opacity', Math.max(0, Math.min(1, $event / 100)))"
+      @update:model-value="emit('update:opacity', fraction($event))"
+      @commit="(value: number) => emit('commit:opacity', fraction(value))"
     />
     <div v-if="$slots.binding" :class="styles.binding({ class: ui?.binding })" data-slot="binding">
       <slot name="binding" />
