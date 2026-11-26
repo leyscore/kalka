@@ -46,6 +46,8 @@ const { panels } = useI18n()
 /** Escape closes the picker and keeps the paint, as in Figma; the selection stays. */
 function closeFromEscape(event: KeyboardEvent) {
   event.stopPropagation()
+  // Commit now rather than once the close finishes, so an Undo pressed right after Escape takes it back.
+  emit('openChange', false)
 }
 </script>
 
