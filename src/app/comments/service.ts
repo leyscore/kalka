@@ -1,3 +1,4 @@
+import { until } from '@vueuse/core'
 import { computed, ref, shallowRef, toRaw } from 'vue'
 
 import {
@@ -367,6 +368,31 @@ export function useComments(store: EditorStore) {
       changed()
     }
   }
+}
+
+/** How long a notification waits for its file to load before it gives up opening the thread. */
+const THREAD_LOAD_TIMEOUT_MS = 15_000
+
+/**
+ * Opens a thread once its document holds it, on its page and in view, as Figma does when a
+ * notification is opened: a file just opened from Home loads its comments a moment later.
+ */
+export async function revealCommentThread(store: EditorStore, threadId: string): Promise<boolean> {
+  const thread = await until(() => {
+    void store.state.sceneVersion
+    void revisionOf(store.graph).value
+    return findCommentThread(store.graph, threadId)
+  })
+    .toBeTruthy({ timeout: THREAD_LOAD_TIMEOUT_MS })
+    .catch(() => undefined)
+  if (!thread) return false
+  if (store.state.currentPageId !== thread.anchor.pageId)
+    await store.switchPage(thread.anchor.pageId)
+  const point = commentPosition(store.graph, thread)
+  if (point) store.centerOn(point.x, point.y, Math.max(store.state.zoom, 1))
+  const state = stateOf(store)
+  state.value = { ...state.value, openThreadId: thread.id, draft: null, pinsVisible: true }
+  return true
 }
 
 export type CommentsController = ReturnType<typeof useComments>

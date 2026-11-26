@@ -13,13 +13,15 @@ import {
   serverUnreadNotifications,
   type ServerNotification
 } from '@/app/collab/server/notifications'
+import { revealCommentThread } from '@/app/comments/service'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import { usePopoverUI } from '@/components/ui/overlay/popover'
 
 /**
  * The bell by the server's files, as Figma's: mentions of this person and replies to their
- * comments, in every file on the server. Opening one opens its file and marks it read.
+ * comments, in every file on the server. Opening one opens its file at the thread and marks it
+ * read.
  */
 const { collaboration, locale } = useI18n()
 const cls = usePopoverUI({ content: 'z-50 flex w-80 flex-col gap-1 p-2' })
@@ -54,7 +56,8 @@ const DATE_FORMAT: Intl.DateTimeFormatOptions = { dateStyle: 'medium', timeStyle
 
 function openNotification(notification: ServerNotification) {
   open.value = false
-  openServerDocumentById(notification.documentId, notification.documentName)
+  const session = openServerDocumentById(notification.documentId, notification.documentName)
+  if (session) void revealCommentThread(session.store, notification.threadId)
   if (!notification.read) void readServerNotifications([notification.id]).catch(() => undefined)
 }
 
