@@ -57,6 +57,7 @@ const TOOL_LABELS: Record<Tool, () => string> = {
   PENCIL: () => tools.value.pencil,
   SCALE: () => tools.value.scale,
   SHAPE_BUILDER: () => tools.value.shapeBuilder,
+  VARIABLE_WIDTH: () => tools.value.variableWidth,
   TEXT: () => tools.value.text,
   HAND: () => tools.value.hand
 }

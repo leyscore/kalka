@@ -7,6 +7,7 @@ import type {
   NodeType,
   SceneNode,
   Stroke,
+  StrokeWidthPoint,
   TextPathData,
   VectorNetwork
 } from '@kalka/scene-graph'
@@ -183,6 +184,19 @@ export interface DragShapeBuilder {
   remove: boolean
 }
 
+/**
+ * A width point dragged with the Variable width tool: its width on both sides, one side, or its
+ * place along the path. `original` is the profile before the press, for undo and Escape.
+ */
+export interface DragWidth {
+  type: 'width'
+  nodeId: string
+  index: number
+  line: number
+  mode: 'both' | 'left' | 'right' | 'move'
+  original: StrokeWidthPoint[]
+}
+
 /** A freehand stroke the pencil is drawing; the points live in the editor state. */
 export interface DragPencil {
   type: 'pencil'
@@ -268,6 +282,7 @@ export type DragState =
   | DragPencil
   | DragScale
   | DragShapeBuilder
+  | DragWidth
   | DragTextSelect
   | DragEditNode
   | DragEditHandle

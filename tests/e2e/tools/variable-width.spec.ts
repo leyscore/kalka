@@ -105,3 +105,46 @@ test('a width profile and a brush are set from the stroke settings and drawn as 
   await expect.poll(async () => (await layer(path))?.brush?.gap).toBe(1.5)
   editor.canvas.assertNoErrors()
 })
+
+/** A page point on the screen. */
+async function toScreen(x: number, y: number) {
+  const box = await editor.canvas.canvas.boundingBox()
+  const view = await editor.page.evaluate(() => {
+    const state = window.kalka?.getStore?.().state
+    if (!state) throw new Error('Kalka store not initialized')
+    return { zoom: state.zoom, panX: state.panX, panY: state.panY }
+  })
+  return {
+    x: (box?.x ?? 0) + x * view.zoom + view.panX,
+    y: (box?.y ?? 0) + y * view.zoom + view.panY
+  }
+}
+
+test('the Variable width tool adds a width point by dragging out from the path', async () => {
+  const { page } = editor
+  const { path } = await setup()
+  await page.keyboard.press('Shift+W')
+  await expect
+    .poll(() => page.evaluate(() => window.kalka?.getStore?.().state.activeTool))
+    .toBe('VARIABLE_WIDTH')
+  // The path runs from (80, 180) to (380, 140) on the page; its middle is at (230, 160).
+  const start = await toScreen(230, 160)
+  await page.mouse.move(start.x, start.y)
+  await expect
+    .poll(() => page.evaluate(() => window.kalka?.getStore?.().state.widthEdit?.hover !== null))
+    .toBe(true)
+  await page.mouse.down()
+  await page.mouse.move(start.x, start.y - 20, { steps: 4 })
+  await page.mouse.up()
+
+  const profile = (await layer(path))?.profile ?? []
+  expect(profile.length).toBe(3)
+  expect(profile[1].position).toBeCloseTo(0.5, 1)
+  // 20 px out from a 12 px stroke: each side reaches 20 px, 5/3 of the weight.
+  expect(profile[1].ascent).toBeGreaterThan(1.3)
+  expect(profile[1].ascent).toBeCloseTo(profile[1].descent)
+
+  await editor.canvas.undo()
+  await expect.poll(async () => (await layer(path))?.profile).toEqual([])
+  editor.canvas.assertNoErrors()
+})

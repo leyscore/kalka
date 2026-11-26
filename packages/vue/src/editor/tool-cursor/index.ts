@@ -15,6 +15,7 @@ const TOOL_CURSORS: Record<Tool, string> = {
   PENCIL: 'crosshair',
   SCALE: 'default',
   SHAPE_BUILDER: 'default',
+  VARIABLE_WIDTH: 'crosshair',
   HAND: 'grab'
 }
 

@@ -5,16 +5,23 @@ import type { Editor } from '@kalka/core/editor'
 import { endPrototypeLink } from '#vue/canvas/prototype-link'
 import { scaleFactor } from '#vue/canvas/scale/input'
 import { finishShapeBuilderDrag, moveShapeBuilderDrag } from '#vue/canvas/shape-builder/input'
+import { finishVariableWidthDrag, moveVariableWidthDrag } from '#vue/canvas/variable-width/input'
 import { handleNodeEditPointerUp } from '#vue/canvas/vector-input/input'
-import type { DragPencil, DragScale, DragShapeBuilder, DragState } from '#vue/shared/input/types'
+import type {
+  DragPencil,
+  DragScale,
+  DragShapeBuilder,
+  DragState,
+  DragWidth
+} from '#vue/shared/input/types'
 
-/** A pointer move for the pencil, the Scale tool and the Shape builder; whether it was theirs. */
+/** A pointer move for the pencil and the Scale, Shape builder and Variable width tools; whether it was theirs. */
 export function moveToolDrag(
   d: DragState,
   cx: number,
   cy: number,
   editor: Editor
-): d is DragPencil | DragScale | DragShapeBuilder {
+): d is DragPencil | DragScale | DragShapeBuilder | DragWidth {
   if (d.type === 'pencil') {
     editor.pencilExtend(cx, cy)
     return true
@@ -25,6 +32,10 @@ export function moveToolDrag(
   }
   if (d.type === 'shape-builder') {
     moveShapeBuilderDrag(d, cx, cy, editor)
+    return true
+  }
+  if (d.type === 'width') {
+    moveVariableWidthDrag(d, cx, cy, editor)
     return true
   }
   return false
@@ -51,6 +62,11 @@ export function endToolDrag(drag: Ref<DragState | null>, editor: Editor, commit:
   if (d?.type === 'shape-builder') {
     drag.value = null
     finishShapeBuilderDrag(d, editor, commit)
+    return true
+  }
+  if (d?.type === 'width') {
+    drag.value = null
+    finishVariableWidthDrag(d, editor, commit)
     return true
   }
   return false

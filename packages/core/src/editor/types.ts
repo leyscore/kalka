@@ -54,6 +54,7 @@ export type Tool =
   | 'PENCIL'
   | 'SCALE'
   | 'SHAPE_BUILDER'
+  | 'VARIABLE_WIDTH'
   | 'HAND'
 
 export interface EditorSharedState {
@@ -106,6 +107,24 @@ export interface EditorSharedState {
   canvasVersion: number
 }
 
+/** A point of a variable-width stroke on the canvas: on the path, and the stroke's two edges. */
+export interface WidthHandle {
+  center: Vector
+  left: Vector
+  right: Vector
+}
+
+/**
+ * What the Variable width tool draws on a path, page-absolute: a handle at each width point, the
+ * one dragged, and where the pointer would add one.
+ */
+export interface WidthEditOverlay {
+  nodeId: string
+  handles: WidthHandle[]
+  active: number | null
+  hover: WidthHandle | null
+}
+
 /** What the Shape builder draws: each region's outline, the hovered one and those picked. */
 export interface ShapeBuilderOverlay {
   /** SVG path data on the page. */
@@ -154,6 +173,8 @@ export interface EditorViewState {
   pencilStroke: Vector[] | null
   /** The Shape builder's regions while the tool is on. */
   shapeBuilder: ShapeBuilderOverlay | null
+  /** The Variable width tool's handles while it is on over a path. */
+  widthEdit: WidthEditOverlay | null
   autoLayoutHover: {
     nodeId: string
     kind: 'frame' | 'children' | 'spacing' | 'spacing-value' | 'padding' | 'padding-value'

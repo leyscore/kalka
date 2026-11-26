@@ -13,5 +13,6 @@
   "hand": "Hand",
   "pencil": "Bleistift",
   "scale": "Skalieren",
-  "shapeBuilder": "Formen-Builder"
+  "shapeBuilder": "Formen-Builder",
+  "variableWidth": "Variable Breite"
 }

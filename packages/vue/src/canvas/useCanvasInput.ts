@@ -14,6 +14,7 @@ import { bindShapeBuilder, updateShapeBuilderHover } from '#vue/canvas/shape-bui
 import { createTextEditInput } from '#vue/canvas/text-edit/input'
 import { endToolDrag, handleToolPointerUp, moveToolDrag } from '#vue/canvas/tools/drags'
 import { handleToolMouseDown } from '#vue/canvas/tools/input'
+import { bindVariableWidth, updateVariableWidthHover } from '#vue/canvas/variable-width/input'
 import { createCanvasTransformInput } from '#vue/canvas/transform/input'
 import { finishMarquee } from '#vue/canvas/transform/marquee'
 import {
@@ -55,7 +56,8 @@ const CANCELLABLE_DRAGS = new Set<DragState['type']>([
   'rotate',
   'pencil',
   'scale',
-  'shape-builder'
+  'shape-builder',
+  'width'
 ])
 
 /**
@@ -267,6 +269,7 @@ export function useCanvasInput(
       const { cx, cy } = coords
       updatePenHover(cx, cy, editor)
       updateShapeBuilderHover(cx, cy, e.altKey, editor)
+      if (editor.state.activeTool === 'VARIABLE_WIDTH') updateVariableWidthHover(cx, cy, editor)
     }
 
     if (!drag.value) {
@@ -547,6 +550,7 @@ export function useCanvasInput(
       cancelPointerInteraction()
   })
   bindShapeBuilder(editor)
+  bindVariableWidth(editor)
   const stopToolListener = editor.onEditorEvent('tool:changed', () => {
     if (!isEnabled()) return
     editor.setMeasurementMode('off')

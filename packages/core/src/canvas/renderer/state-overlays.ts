@@ -49,6 +49,7 @@ export function overlaysFromEditorState(
       : null,
     pencilStroke: state.pencilStroke,
     shapeBuilder: state.shapeBuilder,
+    widthEdit: state.widthEdit,
     nodeEditState: state.nodeEditState ?? null,
     presenceCursors: state.presenceCursors,
     designIssues: state.designIssues,

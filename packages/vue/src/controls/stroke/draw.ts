@@ -74,7 +74,12 @@ export function useStrokeDrawControls() {
       return
     }
     for (const node of paths.value) {
-      if (!previewed.has(node.id)) previewed.set(node.id, node.strokeWidthProfile)
+      if (!previewed.has(node.id)) {
+        previewed.set(
+          node.id,
+          node.strokeWidthProfile.map((point) => ({ ...point }))
+        )
+      }
       editor.updateNode(node.id, { strokeWidthProfile: strokeWidthPreset(preset) })
     }
   }
@@ -98,7 +103,7 @@ export function useStrokeDrawControls() {
   function previewBrushSetting(key: StrokeBrushSetting, value: number) {
     for (const node of paths.value) {
       if (!node.strokeBrush) continue
-      if (!originals.has(node.id)) originals.set(node.id, node.strokeBrush)
+      if (!originals.has(node.id)) originals.set(node.id, { ...node.strokeBrush })
       editor.updateNode(node.id, { strokeBrush: { ...node.strokeBrush, [key]: value } })
     }
   }

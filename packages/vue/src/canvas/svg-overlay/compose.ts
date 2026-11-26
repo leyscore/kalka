@@ -49,6 +49,7 @@ import {
   type OverlayContext
 } from '#vue/canvas/svg-overlay/layers/selection'
 import { shapeBuilderLayer } from '#vue/canvas/svg-overlay/layers/shape-builder'
+import { variableWidthLayer } from '#vue/canvas/svg-overlay/layers/variable-width'
 import { nodeEditLayer, penLayer, pencilLayer } from '#vue/canvas/svg-overlay/layers/vector-edit'
 import {
   frameOutlinesLayer,
@@ -193,6 +194,7 @@ export function composeOverlay(input: ComposeInput): ComposedOverlay {
     ...penLayer(input),
     ...pencilLayer(input),
     ...shapeBuilderLayer(input),
+    ...variableWidthLayer(input),
     ...issueLayer(input, issueMarkers, input.overlays.designIssues?.hoveredMarkerKey),
     ...presenceLayer(input),
     ...rulers

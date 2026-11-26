@@ -13,5 +13,6 @@
   "hand": "Mano",
   "pencil": "Matita",
   "scale": "Scala",
-  "shapeBuilder": "Generatore di forme"
+  "shapeBuilder": "Generatore di forme",
+  "variableWidth": "Spessore variabile"
 }

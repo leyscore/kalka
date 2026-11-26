@@ -13,5 +13,6 @@
   "hand": "Рука",
   "pencil": "Карандаш",
   "scale": "Масштаб",
-  "shapeBuilder": "Конструктор фигур"
+  "shapeBuilder": "Конструктор фигур",
+  "variableWidth": "Переменная ширина"
 }

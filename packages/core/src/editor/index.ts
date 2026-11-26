@@ -84,6 +84,8 @@ export type {
   ExternalTextEditor,
   FigmaClipboardImageResolver,
   ShapeBuilderOverlay,
+  WidthEditOverlay,
+  WidthHandle,
   TextCaretControl,
   Tool
 } from './types'

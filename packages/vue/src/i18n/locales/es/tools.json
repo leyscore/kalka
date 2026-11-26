@@ -13,5 +13,6 @@
   "hand": "Mano",
   "pencil": "Lápiz",
   "scale": "Escalar",
-  "shapeBuilder": "Generador de formas"
+  "shapeBuilder": "Generador de formas",
+  "variableWidth": "Grosor variable"
 }

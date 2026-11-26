@@ -5,6 +5,7 @@ import type { SnapGuide } from '@kalka/scene-graph/snap'
 import type { GuideOverlayState } from '#core/canvas/guides/types'
 import type { DesignIssueOverlay } from '#core/canvas/issues/types'
 import type { PrototypeLinkDrag } from '#core/editor/play/connections'
+import type { WidthEditOverlay } from '#core/editor/types'
 import type { RotationPreview } from '#core/geometry'
 import type { TextEditor } from '#core/text/editor'
 
@@ -97,6 +98,8 @@ export interface RenderOverlays {
   } | null
   /** The pencil's stroke while it is drawn, page-absolute. */
   pencilStroke?: Vector[] | null
+  /** The Variable width tool's handles on a path. */
+  widthEdit?: WidthEditOverlay | null
   /** The Shape builder's regions, with the hovered and picked ones. */
   shapeBuilder?: {
     outlines: string[]

@@ -13,5 +13,6 @@
   "hand": "Main",
   "pencil": "Crayon",
   "scale": "Mise à l'échelle",
-  "shapeBuilder": "Générateur de formes"
+  "shapeBuilder": "Générateur de formes",
+  "variableWidth": "Largeur variable"
 }

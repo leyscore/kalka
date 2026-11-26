@@ -16,7 +16,7 @@ export const EDITOR_TOOLS: EditorToolDef[] = [
     shortcut: 'R',
     flyout: ['RECTANGLE', 'LINE', 'ARROW', 'ELLIPSE', 'POLYGON', 'STAR', 'SHAPE_BUILDER']
   },
-  { key: 'PEN', label: 'Pen', shortcut: 'P', flyout: ['PEN', 'PENCIL'] },
+  { key: 'PEN', label: 'Pen', shortcut: 'P', flyout: ['PEN', 'PENCIL', 'VARIABLE_WIDTH'] },
   { key: 'TEXT', label: 'Text', shortcut: 'T' },
   { key: 'HAND', label: 'Hand', shortcut: 'H' }
 ]
@@ -34,5 +34,6 @@ export const TOOL_SHORTCUTS: Partial<Record<string, Tool>> = {
   KeyP: 'PEN',
   'Shift+KeyP': 'PENCIL',
   'Shift+KeyM': 'SHAPE_BUILDER',
+  'Shift+KeyW': 'VARIABLE_WIDTH',
   KeyH: 'HAND'
 }
