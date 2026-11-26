@@ -30,6 +30,7 @@ import { applyGridAnchors } from '../node-change/grid'
 import { annotationCategoriesOf, importHandoffRecords } from '../node-change/handoff'
 import { embeddedImages } from '../node-change/images'
 import { readNodeChangePluginData } from '../node-change/plugin-data'
+import { importLegacyFlowStarts } from '../node-change/prototype'
 import { figArchiveRecordInfo, type FigArchiveRecordInfo } from '../record-patch'
 import { applyDocumentLayoutBindings } from './bindings/layout'
 import { applyDocumentPaintBindings } from './bindings/paint'
@@ -588,5 +589,6 @@ function materializeReaderInto(
     applyGridAnchors(graph, materialized)
   })
   if (state.handoffCategories) importHandoffRecords(graph, pages, sources, state.handoffCategories)
+  importLegacyFlowStarts(graph, pages, sources)
   return state
 }

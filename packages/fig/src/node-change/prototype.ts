@@ -2,6 +2,7 @@ import type { NodeChange } from '@kalka/kiwi/fig/codec'
 import { guidToString } from '@kalka/kiwi/fig/guid'
 import type {
   OverflowDirection,
+  SceneGraph,
   OverlayPositionType,
   PrototypeAction,
   PrototypeDevice,
@@ -16,6 +17,7 @@ import type {
   SceneNode,
   ScrollBehavior
 } from '@kalka/scene-graph'
+import { orderKeyBetween } from '@kalka/scene-graph/order-keys'
 import type { Color, GUID, Vector } from '@kalka/scene-graph/primitives'
 
 /**
@@ -490,4 +492,33 @@ export function exportPageSettings(node: SceneNode, nc: Obj): void {
     nc.prototypeDevice = written
   }
   if (node.prototypeBackground) nc.prototypeBackgroundColor = exportColor(node.prototypeBackground)
+}
+
+/**
+ * Files from before flows name where their prototype starts on the page itself
+ * (`prototypeStartNodeID`). Figma opens such a page with that frame as its one flow, and so does
+ * this, unless the page has flows already.
+ */
+export function importLegacyFlowStarts(
+  graph: SceneGraph,
+  pages: readonly { sourceId: string; properties: NodeChange }[],
+  sources: ReadonlyMap<string, string>
+): void {
+  for (const page of pages) {
+    const pageId = sources.get(page.sourceId)
+    const startGuid = guidOf(page.properties.prototypeStartNodeID)
+    const startId = startGuid ? sources.get(startGuid) : undefined
+    const start = startId ? graph.getNode(startId) : undefined
+    if (!pageId || !start || start.parentId !== pageId) continue
+    if (graph.getChildren(pageId).some((node) => node.prototypeStartingPoint)) continue
+    graph.preserveSourceMetadataDuring(() =>
+      graph.updateNode(start.id, {
+        prototypeStartingPoint: {
+          name: 'Flow 1',
+          description: '',
+          position: orderKeyBetween(null, null)
+        }
+      })
+    )
+  }
 }

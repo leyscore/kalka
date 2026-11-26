@@ -198,4 +198,41 @@ describe('.fig prototype round trip', () => {
       cleared.nodeChanges.find((nc) => nc.name === 'Counter')?.prototypeInteractions
     ).toBeUndefined()
   })
+
+  test("opens a page's legacy start frame as its one flow", () => {
+    const page = (start: number, flow: boolean) => [
+      record({ guid: { sessionID: 0, localID: 0 }, type: 'DOCUMENT', name: 'Document' }),
+      record({
+        guid: { sessionID: 0, localID: 1 },
+        parentIndex: { guid: { sessionID: 0, localID: 0 }, position: '!' },
+        type: 'CANVAS',
+        name: 'Page 1',
+        prototypeStartNodeID: { sessionID: 1, localID: start }
+      }),
+      record({
+        guid: { sessionID: 1, localID: 2 },
+        parentIndex: { guid: { sessionID: 0, localID: 1 }, position: '!' },
+        type: 'FRAME',
+        name: 'Home',
+        size: { x: 390, y: 844 }
+      }),
+      record({
+        guid: { sessionID: 1, localID: 3 },
+        parentIndex: { guid: { sessionID: 0, localID: 1 }, position: '"' },
+        type: 'FRAME',
+        name: 'Menu',
+        size: { x: 390, y: 844 },
+        ...(flow
+          ? { prototypeStartingPoint: { name: 'Main', description: '', position: 'a' } }
+          : {})
+      })
+    ]
+    const legacy = materializeDocument(page(3, false)).graph
+    expect(byName(legacy, 'Menu').prototypeStartingPoint?.name).toBe('Flow 1')
+    expect(byName(legacy, 'Home').prototypeStartingPoint).toBeNull()
+
+    const flows = materializeDocument(page(2, true)).graph
+    expect(byName(flows, 'Home').prototypeStartingPoint).toBeNull()
+    expect(byName(flows, 'Menu').prototypeStartingPoint?.name).toBe('Main')
+  })
 })
