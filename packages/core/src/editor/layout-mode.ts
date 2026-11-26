@@ -2,10 +2,10 @@ import { pick } from 'es-toolkit/object'
 
 import type { LayoutMode, SceneNode } from '@kalka/scene-graph'
 import { getAxisAlignedBoundsInParent } from '@kalka/scene-graph/coordinate'
-import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { computeLayout } from '#core/layout'
 
+import { inferredSpacing } from './layout-inference'
 import type { EditorContext } from './types'
 
 export function createLayoutModeActions(ctx: EditorContext) {
@@ -152,17 +152,4 @@ function autoLayoutDefaults(
     primaryAxisSizing: 'HUG',
     counterAxisSizing: 'HUG'
   }
-}
-
-/** The average gap between neighbours along the flow, so the row keeps its length; never negative. */
-function inferredSpacing(boxes: readonly Rect[], mode: 'HORIZONTAL' | 'VERTICAL'): number {
-  if (boxes.length < 2) return 0
-  const start = (box: Rect) => (mode === 'HORIZONTAL' ? box.x : box.y)
-  const size = (box: Rect) => (mode === 'HORIZONTAL' ? box.width : box.height)
-  const sorted = boxes.toSorted((a, b) => start(a) - start(b))
-  let gaps = 0
-  for (let i = 1; i < sorted.length; i++) {
-    gaps += start(sorted[i]) - (start(sorted[i - 1]) + size(sorted[i - 1]))
-  }
-  return Math.max(0, Math.round(gaps / (sorted.length - 1)))
 }

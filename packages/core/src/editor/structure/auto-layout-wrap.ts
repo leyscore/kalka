@@ -1,6 +1,12 @@
-import type { LayoutMode, SceneNode } from '@kalka/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 import { getAxisAlignedBoundsInParent } from '@kalka/scene-graph/coordinate'
 
+import {
+  flowOrder,
+  inferredCounterAlign,
+  inferredFlow,
+  inferredSpacing
+} from '#core/editor/layout-inference'
 import {
   canvasWrapIndex,
   unwrapToPlaces,
@@ -24,9 +30,11 @@ export function wrapInAutoLayout(ctx: EditorContext, selectedNodes: SceneNode[])
   const index = canvasWrapIndex(parent, selectedNodes)
 
   const bounds = getAxisAlignedBoundsInParent(selectedNodes, parentId, ctx.graph)
-
-  const direction: LayoutMode =
-    selectedNodes.length <= 1 || bounds.height > bounds.width ? 'VERTICAL' : 'HORIZONTAL'
+  // As Figma does, the frame reads how the layers are already laid out: a row or a column, the
+  // gap between them, their shared alignment, and their order along the flow.
+  const boxes = selectedNodes.map((n) => getAxisAlignedBoundsInParent([n], parentId, ctx.graph))
+  const direction = inferredFlow(boxes)
+  const sortedIds = flowOrder(boxes, direction).map((i) => selectedNodes[i].id)
 
   const frame = ctx.graph.createNode('FRAME', parentId, {
     name: 'Frame',
@@ -37,16 +45,12 @@ export function wrapInAutoLayout(ctx: EditorContext, selectedNodes: SceneNode[])
     layoutMode: direction,
     primaryAxisSizing: 'HUG',
     counterAxisSizing: 'HUG',
+    itemSpacing: inferredSpacing(boxes, direction),
     primaryAxisAlign: 'MIN',
-    counterAxisAlign: 'MIN',
+    counterAxisAlign: inferredCounterAlign(boxes, direction),
     fills: []
   })
   const frameId = frame.id
-
-  const sortedIds = selectedNodes
-    .map((n) => ({ id: n.id, pos: ctx.graph.getAbsolutePosition(n.id) }))
-    .sort((a, b) => a.pos.y - b.pos.y || a.pos.x - b.pos.x)
-    .map((n) => n.id)
 
   for (const id of sortedIds) {
     ctx.graph.reparentNode(id, frameId)
