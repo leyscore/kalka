@@ -12,6 +12,7 @@ export {
 } from './sync'
 export { firstCSSNumber, laysOutChildren, px } from './types'
 export * from './to-css'
+export { effectFilters, imageFiltersToCSS, type EffectFilters } from './effects'
 export * from './from-css'
 export * from './gradient'
 export * from './grid'

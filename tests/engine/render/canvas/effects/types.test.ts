@@ -135,7 +135,7 @@ describe('Renderer handles all effect types (Behavioral)', () => {
     expect(canvas.drawPath).toHaveBeenCalled()
   })
 
-  test('renders raw Figma noise effects as a bounded visual fallback', () => {
+  test('renders noise effects over the layer, clipped to its shape', () => {
     const r = createMockRenderer()
     const canvas = createMockCanvas()
     const node: Partial<SceneNode> = {
@@ -144,35 +144,19 @@ describe('Renderer handles all effect types (Behavioral)', () => {
       height: 20,
       fills: [],
       childIds: [],
-      effects: [],
-      source: {
-        format: 'fig',
-        id: '1:1',
-        orderKey: null,
-        editedFields: [],
-        fig: {
-          rawSize: null,
-          rawTransform: null,
-          rawNodeFields: {
-            effects: [
-              {
-                type: 'NOISE',
-                visible: true,
-                color: { r: 0, g: 0, b: 0, a: 1 },
-                density: 1,
-                noiseSize: { x: 0.25, y: 0.25 },
-                noiseType: 'MONOTONE'
-              }
-            ]
-          },
-          layout: null,
-          symbolOverrides: [],
-          componentPropAssignments: [],
-          derivedSymbolData: [],
-          derivedSymbolDataLayoutVersion: null,
-          uniformScaleFactor: null
+      effects: [
+        {
+          type: 'NOISE',
+          visible: true,
+          color: { r: 0, g: 0, b: 0, a: 1 },
+          offset: { x: 0, y: 0 },
+          radius: 0,
+          spread: 0,
+          density: 1,
+          noiseSize: 0.25,
+          noiseType: 'MONOTONE'
         }
-      }
+      ]
     }
 
     renderEffects(
@@ -188,7 +172,7 @@ describe('Renderer handles all effect types (Behavioral)', () => {
     expect(canvas.drawRect).toHaveBeenCalled()
   })
 
-  test('bounds raw noise effect draw calls for large nodes', () => {
+  test('bounds noise effect draw calls for large nodes', () => {
     const r = createMockRenderer()
     const canvas = createMockCanvas()
     const node: Partial<SceneNode> = {
@@ -197,34 +181,18 @@ describe('Renderer handles all effect types (Behavioral)', () => {
       height: 1000,
       fills: [],
       childIds: [],
-      effects: [],
-      source: {
-        format: 'fig',
-        id: '1:1',
-        orderKey: null,
-        editedFields: [],
-        fig: {
-          rawSize: null,
-          rawTransform: null,
-          rawNodeFields: {
-            effects: [
-              {
-                type: 'NOISE',
-                visible: true,
-                color: { r: 0, g: 0, b: 0, a: 1 },
-                density: 1,
-                noiseSize: { x: 0.1, y: 0.1 }
-              }
-            ]
-          },
-          layout: null,
-          symbolOverrides: [],
-          componentPropAssignments: [],
-          derivedSymbolData: [],
-          derivedSymbolDataLayoutVersion: null,
-          uniformScaleFactor: null
+      effects: [
+        {
+          type: 'NOISE',
+          visible: true,
+          color: { r: 0, g: 0, b: 0, a: 1 },
+          offset: { x: 0, y: 0 },
+          radius: 0,
+          spread: 0,
+          density: 1,
+          noiseSize: 0.1
         }
-      }
+      ]
     }
 
     renderEffects(

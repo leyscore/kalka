@@ -55,6 +55,7 @@ export * from './behaviours/layers'
 export * from './behaviours/model'
 export * from './behaviours/spec'
 export * from './copy'
+export * from './image-filters'
 export {
   createDefaultNode,
   defaultStrokeAlign,

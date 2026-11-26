@@ -1,6 +1,8 @@
 import { fromUint8Array } from 'js-base64'
 
 import {
+  hasImageFilters,
+  imageFilterMatrix,
   patternSource,
   patternTileCopies,
   patternTileLayout,
@@ -305,6 +307,7 @@ function createImagePattern(
   const id = nextDefId(ctx, 'img')
   const base64 = fromUint8Array(data)
   const mime = detectImageMime(data)
+  const adjusted = imageAdjustmentFilter(fill, ctx)
   const tile = fill.imageScaleMode === 'TILE' ? imageTileSize(fill, data) : null
   if (tile) {
     const width = round(tile.width)
@@ -314,7 +317,7 @@ function createImagePattern(
       node: svg(
         'pattern',
         { id, patternUnits: 'userSpaceOnUse', width, height },
-        svg('image', { href: `data:${mime};base64,${base64}`, width, height })
+        svg('image', { href: `data:${mime};base64,${base64}`, width, height, ...adjusted })
       )
     }
   }
@@ -333,10 +336,26 @@ function createImagePattern(
         href: `data:${mime};base64,${base64}`,
         width: node.width,
         height: node.height,
-        preserveAspectRatio: fill.imageScaleMode === 'FIT' ? 'xMidYMid meet' : 'xMidYMid slice'
+        preserveAspectRatio: fill.imageScaleMode === 'FIT' ? 'xMidYMid meet' : 'xMidYMid slice',
+        ...adjusted
       })
     )
   }
+}
+
+/** An image's adjustments as a color matrix filter, the one the canvas draws with. */
+function imageAdjustmentFilter(fill: Fill, ctx: SVGExportContext): { filter?: string } {
+  if (!hasImageFilters(fill.filters)) return {}
+  const id = nextDefId(ctx, 'adj')
+  const values = imageFilterMatrix(fill.filters).join(' ')
+  ctx.defs.push(
+    svg(
+      'filter',
+      { id, 'color-interpolation-filters': 'sRGB' },
+      svg('feColorMatrix', { type: 'matrix', values })
+    )
+  )
+  return { filter: `url(#${id})` }
 }
 
 function detectImageMime(data: Uint8Array): string {

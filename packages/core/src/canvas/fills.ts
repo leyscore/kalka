@@ -1,6 +1,8 @@
-import type { Canvas, Paint } from 'canvaskit-wasm'
+import type { Canvas, Image, Paint } from 'canvaskit-wasm'
 
 import {
+  hasImageFilters,
+  imageFilterMatrix,
   patternSource,
   patternTileCopies,
   patternTileLayout,
@@ -392,6 +394,57 @@ export function makeImageFillLocalMatrix(
   )
 }
 
+/**
+ * The image with its paint's adjustments baked in, through the color matrix the canvas's SVG
+ * filter uses (`@kalka/scene-graph/image-filters`), so exports and thumbnails match it.
+ */
+function adjustedImage(r: SkiaRenderer, image: Image, matrix: number[]): Image | null {
+  const surface = r.ck.MakeSurface(image.width(), image.height())
+  if (!surface) return null
+  const paint = new r.ck.Paint()
+  const filter = r.ck.ColorFilter.MakeMatrix(matrix)
+  try {
+    paint.setColorFilter(filter)
+    const canvas = surface.getCanvas()
+    canvas.clear(r.ck.TRANSPARENT)
+    canvas.drawImage(image, 0, 0, paint)
+    return surface.makeImageSnapshot()
+  } finally {
+    filter.delete()
+    paint.delete()
+    surface.delete()
+  }
+}
+
+/**
+ * The decoded image a fill draws, with its adjustments baked in, from the renderer's cache.
+ * `temporary` when the cache did not keep it, so the caller deletes it once drawn.
+ */
+function cachedFillImage(
+  r: SkiaRenderer,
+  fill: Fill,
+  baseKey: string,
+  bytes: () => Uint8Array | undefined
+): { image: Image; temporary: boolean } | null {
+  const matrix = hasImageFilters(fill.filters) ? imageFilterMatrix(fill.filters) : undefined
+  const key = matrix ? `${baseKey}|${matrix.join(',')}` : baseKey
+  const hit = r.imageCache.get(key)
+  if (hit) return { image: hit, temporary: false }
+  const data = bytes()
+  if (!data) return null
+  const decoded = r.ck.MakeImageFromEncoded(data)
+  if (!decoded) return null
+  let image: Image
+  try {
+    const drawn = matrix ? adjustedImage(r, decoded, matrix) : null
+    image = (drawn ?? decoded).makeCopyWithDefaultMipmaps()
+    drawn?.delete()
+  } finally {
+    decoded.delete()
+  }
+  return { image, temporary: !r.imageCache.set(key, image) }
+}
+
 export function applyImageFill(
   r: SkiaRenderer,
   fill: Fill,
@@ -406,21 +459,11 @@ export function applyImageFill(
       r.imagePreviews.get(graph, hash, previewEdge(node, r.zoom, r.dpr))
     : undefined
   if (r.viewportImageRendering && !preview) return false
-  const key = preview?.key ?? hash
-  let img = r.imageCache.get(key)
-  let temporary = false
-  if (!img) {
-    const data = preview?.preview.bytes ?? graph.images.get(hash)
-    if (!data) return false
-    const decoded = r.ck.MakeImageFromEncoded(data)
-    if (!decoded) return false
-    try {
-      img = decoded.makeCopyWithDefaultMipmaps()
-    } finally {
-      decoded.delete()
-    }
-    temporary = !r.imageCache.set(key, img)
-  }
+  const cached = cachedFillImage(r, fill, preview?.key ?? hash, () =>
+    preview ? preview.preview.bytes : graph.images.get(hash)
+  )
+  if (!cached) return false
+  const { image: img, temporary } = cached
 
   try {
     const imgW = img.width()

@@ -7,7 +7,15 @@ import {
   isGradientFill
 } from '../gradient'
 import type { Color } from '../primitives'
-import { drawsImage, type BlendMode, type Effect, type Fill, type Stroke } from '../types'
+import {
+  drawsImage,
+  type BlendMode,
+  type Effect,
+  type Fill,
+  type ImageFilters,
+  type Stroke
+} from '../types'
+import { effectFilters } from './effects'
 import type { CSSDeclarations } from './types'
 
 /** Opaque colors as hex, which Tailwind matches to its palette; translucent ones as `rgba()`. */
@@ -61,19 +69,26 @@ export function textShadowToCSS(effects: readonly Effect[]): string | undefined 
   return shadows.length > 0 ? shadows.join(', ') : undefined
 }
 
-/** Every visible shadow, in order, plus layer and background blur. */
-export function effectsToCSS(effects: Effect[]): CSSDeclarations {
+/**
+ * Every visible shadow, in order, plus layer and background blur and the effects SVG filters
+ * draw (`./effects`). `size` places a progressive blur and a glass's refraction; `imageFilters`
+ * are an image layer's adjustments, which come first in its `filter`.
+ */
+export function effectsToCSS(
+  effects: Effect[],
+  size: { width: number; height: number } = { width: 0, height: 0 },
+  imageFilters?: ImageFilters
+): CSSDeclarations {
   const style: CSSDeclarations = {}
   const visible = effects.filter((effect) => effect.visible)
-  const shadows = visible.filter(
-    (effect) => effect.type === 'DROP_SHADOW' || effect.type === 'INNER_SHADOW'
-  )
-  if (shadows.length > 0) style['box-shadow'] = shadows.map(shadowToCSS).join(', ')
-  for (const effect of visible) {
-    if (effect.type === 'LAYER_BLUR' || effect.type === 'FOREGROUND_BLUR')
-      style.filter = `blur(${effect.radius}px)`
-    if (effect.type === 'BACKGROUND_BLUR') style['backdrop-filter'] = `blur(${effect.radius}px)`
-  }
+  const filters = effectFilters(visible, size, imageFilters)
+  const shadows = visible
+    .filter((effect) => effect.type === 'DROP_SHADOW' || effect.type === 'INNER_SHADOW')
+    .map(shadowToCSS)
+  shadows.push(...filters.shadows)
+  if (shadows.length > 0) style['box-shadow'] = shadows.join(', ')
+  if (filters.filter.length > 0) style.filter = filters.filter.join(' ')
+  if (filters.backdrop.length > 0) style['backdrop-filter'] = filters.backdrop.join(' ')
   return style
 }
 

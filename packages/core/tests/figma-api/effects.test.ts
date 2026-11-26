@@ -137,9 +137,55 @@ describe('node.effects', () => {
   })
 
   test('reports Figma effects Kalka does not model yet', () => {
-    expect(() => assign([{ type: 'NOISE' }])).toThrow('NOISE effects are not supported')
-    expect(() =>
-      assign([{ type: 'LAYER_BLUR', blurType: 'PROGRESSIVE', radius: 4, visible: true }])
-    ).toThrow('Progressive blur is not supported')
+    expect(() => assign([{ type: 'SHADER', visible: true, id: 'x' }])).toThrow(
+      'SHADER effects are not supported'
+    )
+  })
+
+  test('reads and writes progressive blur, noise, texture and glass', () => {
+    const effects = [
+      {
+        type: 'LAYER_BLUR',
+        blurType: 'PROGRESSIVE',
+        radius: 12,
+        startRadius: 2,
+        startOffset: { x: 0, y: 0.5 },
+        endOffset: { x: 1, y: 0.5 },
+        visible: true,
+        boundVariables: {}
+      },
+      {
+        type: 'NOISE',
+        noiseType: 'DUOTONE',
+        color: { r: 0, g: 0, b: 0, a: 1 },
+        secondaryColor: { r: 1, g: 1, b: 1, a: 1 },
+        blendMode: 'NORMAL',
+        noiseSize: 0.5,
+        density: 0.4,
+        visible: true,
+        boundVariables: {}
+      },
+      {
+        type: 'TEXTURE',
+        noiseSize: 0.5,
+        radius: 8,
+        clipToShape: true,
+        visible: true,
+        boundVariables: {}
+      },
+      {
+        type: 'GLASS',
+        radius: 8,
+        refraction: 0.3,
+        depth: 2,
+        lightAngle: 45,
+        lightIntensity: 0.5,
+        dispersion: 0.2,
+        visible: true,
+        boundVariables: {}
+      }
+    ]
+    const rect = assign(effects)
+    expect(rect.effects).toEqual(effects)
   })
 })

@@ -19,6 +19,7 @@ import { vectorNetworkToCenterlinePath } from '#core/vector'
 
 import { figmaBlendModeToSkia, needsIsolatedBlendLayer } from './blend'
 import { renderBooleanOperation } from './boolean'
+import { layerEffectFilter } from './effects'
 import { drawVectorMultiStyleFills, paintFills } from './fills'
 import { drawLayoutGrids } from './layout-grids'
 import { renderMaskedChildIds } from './masks'
@@ -353,17 +354,15 @@ export function renderNode(
     canvas.saveLayer(r.opacityPaint, layerBounds)
   }
 
-  const layerBlur = node.effects.find(
-    (e) => e.visible && (e.type === 'LAYER_BLUR' || e.type === 'FOREGROUND_BLUR')
-  )
+  const layerBlur = layerEffectFilter(r, node)
   if (layerBlur) {
     // Entry guard: reset shared paint to known state
     r.effectLayerPaint.setImageFilter(null)
     r.effectLayerPaint.setColorFilter(null)
     r.effectLayerPaint.setBlendMode(r.ck.BlendMode.SrcOver)
 
-    r.effectLayerPaint.setImageFilter(r.getCachedBlur(layerBlur.radius / 2))
-    const blurPadding = layerBlur.radius * 2
+    r.effectLayerPaint.setImageFilter(layerBlur.filter)
+    const blurPadding = layerBlur.padding
     canvas.saveLayer(
       r.effectLayerPaint,
       viewportLayerBounds(r, graph, node, blurPadding, overlays.rotationPreview) ??
@@ -392,6 +391,7 @@ export function renderNode(
 
   if (layerBlur) {
     canvas.restore()
+    layerBlur.release()
     // Exit guard: ensure shared paint is in clean state
     r.effectLayerPaint.setImageFilter(null)
     r.effectLayerPaint.setColorFilter(null)

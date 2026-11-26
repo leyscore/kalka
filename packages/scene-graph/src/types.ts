@@ -191,6 +191,20 @@ export interface GradientStop {
 
 export type GradientTransform = Matrix
 
+/**
+ * An image paint's adjustments, as Figma's plugin API names them (`ImageFilters`): each from -1
+ * to 1, 0 leaving the image as it is. A positive tint goes towards magenta, as in `.fig` files.
+ */
+export interface ImageFilters {
+  exposure?: number
+  contrast?: number
+  saturation?: number
+  temperature?: number
+  tint?: number
+  highlights?: number
+  shadows?: number
+}
+
 export interface Fill {
   type: FillType
   color: Color
@@ -205,6 +219,8 @@ export interface Fill {
   videoHash?: string
   imageScaleMode?: ImageScaleMode
   imageTransform?: GradientTransform
+  /** An image paint's adjustments (exposure, contrast, saturation...). */
+  filters?: ImageFilters
   sourceNodeId?: string
   scale?: number
   spacing?: number
@@ -256,8 +272,23 @@ export interface Stroke extends Fill {
   dashPattern?: number[]
 }
 
+/** A blur's falloff: the same everywhere, or growing across the layer. */
+export type BlurType = 'NORMAL' | 'PROGRESSIVE'
+
+/**
+ * A layer effect, with Figma's plugin API names. `radius` is a shadow's or blur's blur, a
+ * texture's spread and a glass's frost; `color` a shadow's or a noise's color.
+ */
 export interface Effect {
-  type: 'DROP_SHADOW' | 'INNER_SHADOW' | 'LAYER_BLUR' | 'BACKGROUND_BLUR' | 'FOREGROUND_BLUR'
+  type:
+    | 'DROP_SHADOW'
+    | 'INNER_SHADOW'
+    | 'LAYER_BLUR'
+    | 'BACKGROUND_BLUR'
+    | 'FOREGROUND_BLUR'
+    | 'NOISE'
+    | 'TEXTURE'
+    | 'GLASS'
   color: Color
   offset: Vector
   radius: number
@@ -265,6 +296,29 @@ export interface Effect {
   visible: boolean
   blendMode?: BlendMode
   showShadowBehindNode?: boolean
+  /** A progressive blur goes from `startRadius` at `startOffset` to `radius` at `endOffset`. */
+  blurType?: BlurType
+  startRadius?: number
+  /** Where a progressive blur starts and ends, in the layer's unit box. */
+  startOffset?: Vector
+  endOffset?: Vector
+  noiseType?: NoiseType
+  /** A noise's or texture's grain size in pixels. */
+  noiseSize?: number
+  /** How much of the layer a noise covers, 0 to 1. */
+  density?: number
+  /** A duotone noise's second color. */
+  secondaryColor?: Color
+  /** A multitone noise's opacity, 0 to 1. */
+  opacity?: number
+  /** A texture keeps to the layer's shape. */
+  clipToShape?: boolean
+  /** A glass's refraction (0 to 1), depth in pixels, light angle in degrees, light (0 to 1) and dispersion (0 to 1). */
+  refraction?: number
+  depth?: number
+  lightAngle?: number
+  lightIntensity?: number
+  dispersion?: number
 }
 
 export type ConstraintType = 'MIN' | 'CENTER' | 'MAX' | 'STRETCH' | 'SCALE'

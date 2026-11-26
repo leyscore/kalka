@@ -32,7 +32,10 @@ function isBoundedAtomicBlurChunk(graph: SceneGraph, chunk: RenderChunk): boolea
   return (
     node?.effects.some(
       (effect) =>
-        effect.visible && (effect.type === 'LAYER_BLUR' || effect.type === 'FOREGROUND_BLUR')
+        effect.visible &&
+        (effect.type === 'LAYER_BLUR' ||
+          effect.type === 'FOREGROUND_BLUR' ||
+          effect.type === 'TEXTURE')
     ) === true
   )
 }

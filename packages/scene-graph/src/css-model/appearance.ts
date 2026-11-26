@@ -1,16 +1,25 @@
 import { parseCSSNumber, parseCSSShadows } from '../css'
-import type { SceneNode } from '../types'
+import { drawsImage, type SceneNode } from '../types'
 import { pickStyle } from './from-css'
 import { blendModeFromCSS, blurEffects } from './paint-from-css'
 import { blendModeToCSS, effectsToCSS, textShadowToCSS } from './to-css'
 import { type CSSDeclarations, type PropertyFamily, px } from './types'
 
+/**
+ * Shadows, blurs and the effects SVG filters draw. An image layer's adjustments filter it too:
+ * an `<img>` draws only its picture, so they change nothing else.
+ */
 export const effects: PropertyFamily = {
   name: 'effects',
-  fields: ['effects'],
+  fields: ['effects', 'fills', 'width', 'height'],
   properties: ['box-shadow', 'filter', 'backdrop-filter'],
   write(style, node) {
-    Object.assign(style, effectsToCSS(node.effects))
+    const image = node.fills.at(0)
+    const adjusted =
+      image && drawsImage(image) && image.visible && node.childIds.length === 0
+        ? image.filters
+        : undefined
+    Object.assign(style, effectsToCSS(node.effects, node, adjusted))
   },
   read(style, node) {
     const read = [...parseCSSShadows(pickStyle(style, 'box-shadow')), ...blurEffects(style)]

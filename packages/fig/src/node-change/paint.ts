@@ -1,15 +1,20 @@
-import type { Paint, Effect as KiwiEffect } from '@kalka/kiwi/fig/codec'
+import type { Paint, PaintFilter, Effect as KiwiEffect } from '@kalka/kiwi/fig/codec'
 import { guidToString, stringToGuid } from '@kalka/kiwi/fig/guid'
-import type {
-  Fill,
-  FillType,
-  Stroke,
-  Effect,
-  BlendMode,
-  ImageScaleMode,
-  GradientTransform,
-  StrokeCap,
-  StrokeJoin
+import {
+  hasImageFilters,
+  imageFilterValue,
+  type BlendMode,
+  type Effect,
+  type Fill,
+  type FillType,
+  type GradientTransform,
+  type ImageFilterKey,
+  type ImageFilters,
+  type ImageScaleMode,
+  type NoiseType,
+  type Stroke,
+  type StrokeCap,
+  type StrokeJoin
 } from '@kalka/scene-graph'
 import { BLACK } from '@kalka/scene-graph/constants'
 import type { Color, Matrix } from '@kalka/scene-graph/primitives'
@@ -64,7 +69,45 @@ export function fillToKiwiPaint(fill: Fill): Paint {
   if (fill.density !== undefined) paint.density = fill.density
   if (fill.noiseSize) paint.noiseSize = fill.noiseSize
   if (fill.customEffectId) paint.customEffectId = { guid: stringToGuid(fill.customEffectId) }
+  const filter = kiwiPaintFilter(fill.filters)
+  if (filter) paint.paintFilter = filter
   return paint
+}
+
+/** Image adjustments as `.fig` files keep them, where saturation is `vibrance`. */
+function kiwiPaintFilter(filters: ImageFilters | undefined): PaintFilter | undefined {
+  if (!hasImageFilters(filters)) return undefined
+  const value = (key: ImageFilterKey) => imageFilterValue(filters, key)
+  return {
+    exposure: value('exposure'),
+    contrast: value('contrast'),
+    vibrance: value('saturation'),
+    temperature: value('temperature'),
+    tint: value('tint'),
+    highlights: value('highlights'),
+    shadows: value('shadows')
+  }
+}
+
+/**
+ * Image adjustments from a paint: `paintFilter`, or the older `filterColorAdjust` that has no
+ * contrast. Brightness, detail and vignette have no field in Figma's panel or plugin API.
+ */
+function sceneImageFilters(p: Paint): ImageFilters | undefined {
+  const source = p.paintFilter ?? p.filterColorAdjust
+  if (!source) return undefined
+  const filters: ImageFilters = {}
+  const pairs: [ImageFilterKey, number | undefined][] = [
+    ['exposure', source.exposure],
+    ['contrast', p.paintFilter?.contrast],
+    ['saturation', source.vibrance],
+    ['temperature', source.temperature],
+    ['tint', source.tint],
+    ['highlights', source.highlights],
+    ['shadows', source.shadows]
+  ]
+  for (const [key, value] of pairs) if (value) filters[key] = value
+  return hasImageFilters(filters) ? filters : undefined
 }
 
 function convertColor(color?: Partial<Color>): Color {
@@ -145,6 +188,8 @@ function applyImagePaintFields(fill: Fill, p: Paint): void {
   if (video) fill.videoHash = video
   fill.imageScaleMode = sceneScaleMode(p.imageScaleMode)
   if (p.transform) fill.imageTransform = convertGradientTransform(p.transform)
+  const filters = sceneImageFilters(p)
+  if (filters) fill.filters = filters
 }
 
 function applySchemaPaintFields(fill: Fill, p: Paint): void {
@@ -202,16 +247,111 @@ export function convertStrokes(
   }))
 }
 
+/** Figma effect kinds a scene effect draws; repeat, symmetry and custom effects stay raw. */
+const SCENE_EFFECT_TYPES: Partial<Record<KiwiEffect['type'], Effect['type']>> = {
+  DROP_SHADOW: 'DROP_SHADOW',
+  INNER_SHADOW: 'INNER_SHADOW',
+  LAYER_BLUR: 'LAYER_BLUR',
+  FOREGROUND_BLUR: 'FOREGROUND_BLUR',
+  BACKGROUND_BLUR: 'BACKGROUND_BLUR',
+  NOISE: 'NOISE',
+  GRAIN: 'TEXTURE',
+  GLASS: 'GLASS'
+}
+
+const NOISE_TYPES = new Set(['MONOTONE', 'DUOTONE', 'MULTITONE'])
+
+function progressiveBlurFields(e: KiwiEffect): Partial<Effect> {
+  if (e.blurOpType !== 'PROGRESSIVE') return {}
+  const fields: Partial<Effect> = { blurType: 'PROGRESSIVE', startRadius: e.startRadius ?? 0 }
+  if (e.startOffset) fields.startOffset = { x: e.startOffset.x, y: e.startOffset.y }
+  if (e.endOffset) fields.endOffset = { x: e.endOffset.x, y: e.endOffset.y }
+  return fields
+}
+
+function noiseFields(e: KiwiEffect): Partial<Effect> {
+  const fields: Partial<Effect> = {
+    noiseType: e.noiseType && NOISE_TYPES.has(e.noiseType) ? (e.noiseType as NoiseType) : 'MONOTONE'
+  }
+  if (e.density !== undefined) fields.density = e.density
+  if (e.secondaryColor) fields.secondaryColor = convertColor(e.secondaryColor)
+  if (e.opacity !== undefined) fields.opacity = e.opacity
+  return fields
+}
+
+/** A glass, from the names `.fig` files give its parts to the plugin API's. */
+function glassFields(e: KiwiEffect): Partial<Effect> {
+  const fields: Partial<Effect> = {}
+  if (e.refractionIntensity !== undefined) fields.refraction = e.refractionIntensity
+  if (e.refractionRadius !== undefined) fields.depth = e.refractionRadius
+  if (e.specularAngle !== undefined) fields.lightAngle = e.specularAngle
+  if (e.specularIntensity !== undefined) fields.lightIntensity = e.specularIntensity
+  if (e.chromaticAberration !== undefined) fields.dispersion = e.chromaticAberration
+  return fields
+}
+
+/** The fields only some kinds of effect have, as the plugin API names them. */
+function effectKindFields(type: Effect['type'], e: KiwiEffect): Partial<Effect> {
+  if (type.endsWith('_BLUR')) return progressiveBlurFields(e)
+  const size = e.noiseSize ? { noiseSize: e.noiseSize.x } : {}
+  if (type === 'NOISE') return { ...size, ...noiseFields(e) }
+  if (type === 'TEXTURE') return { ...size, clipToShape: e.clipToShape ?? true }
+  if (type === 'GLASS') return glassFields(e)
+  return {}
+}
+
 export function convertEffects(effects?: KiwiEffect[]): Effect[] {
   if (!effects) return []
-  return effects.map((e) => ({
-    type: e.type,
-    color: convertColor(e.color),
-    offset: e.offset ?? { x: 0, y: 0 },
-    radius: e.radius ?? 0,
-    spread: e.spread ?? 0,
-    visible: e.visible ?? true,
-    blendMode: (e.blendMode ?? 'NORMAL') as BlendMode,
-    showShadowBehindNode: e.showShadowBehindNode ?? true
-  }))
+  return effects.flatMap((e) => {
+    const type = SCENE_EFFECT_TYPES[e.type]
+    if (!type) return []
+    return [
+      {
+        type,
+        color: convertColor(e.color),
+        offset: e.offset ?? { x: 0, y: 0 },
+        radius: e.radius ?? 0,
+        spread: e.spread ?? 0,
+        visible: e.visible ?? true,
+        blendMode: (e.blendMode ?? 'NORMAL') as BlendMode,
+        showShadowBehindNode: e.showShadowBehindNode ?? true,
+        ...effectKindFields(type, e)
+      }
+    ]
+  })
+}
+
+/** A scene effect's kind-specific fields as `.fig` files keep them. */
+export function kiwiEffectKindFields(effect: Effect): Partial<KiwiEffect> {
+  const fields: Partial<KiwiEffect> = {}
+  if (effect.blurType === 'PROGRESSIVE') {
+    fields.blurOpType = 'PROGRESSIVE'
+    fields.startRadius = effect.startRadius ?? 0
+    fields.startOffset = effect.startOffset ?? { x: 0.5, y: 0 }
+    fields.endOffset = effect.endOffset ?? { x: 0.5, y: 1 }
+  }
+  if (effect.noiseSize !== undefined)
+    fields.noiseSize = { x: effect.noiseSize, y: effect.noiseSize }
+  if (effect.type === 'NOISE') {
+    fields.noiseType = effect.noiseType ?? 'MONOTONE'
+    if (effect.density !== undefined) fields.density = effect.density
+    if (effect.secondaryColor) fields.secondaryColor = safeColor(effect.secondaryColor)
+    if (effect.opacity !== undefined) fields.opacity = effect.opacity
+  }
+  if (effect.type === 'TEXTURE') fields.clipToShape = effect.clipToShape ?? true
+  if (effect.type === 'GLASS') {
+    if (effect.refraction !== undefined) fields.refractionIntensity = effect.refraction
+    if (effect.depth !== undefined) fields.refractionRadius = effect.depth
+    if (effect.lightAngle !== undefined) fields.specularAngle = effect.lightAngle
+    if (effect.lightIntensity !== undefined) fields.specularIntensity = effect.lightIntensity
+    if (effect.dispersion !== undefined) fields.chromaticAberration = effect.dispersion
+  }
+  return fields
+}
+
+/** A scene effect type as `.fig` files name it. */
+export function kiwiEffectType(type: Effect['type']): KiwiEffect['type'] {
+  if (type === 'LAYER_BLUR') return 'FOREGROUND_BLUR'
+  if (type === 'TEXTURE') return 'GRAIN'
+  return type
 }

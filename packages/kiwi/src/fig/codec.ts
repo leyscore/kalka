@@ -149,6 +149,9 @@ export interface Paint {
   noiseSize?: Vector
   customEffectId?: { guid?: GUID }
   colorVar?: VariableAliasData
+  paintFilter?: PaintFilter
+  /** The older container for image adjustments, without contrast. */
+  filterColorAdjust?: PaintFilter
 }
 
 /** A paint's or effect's field bound to a variable, as `.fig` files keep it (`VariableData`). */
@@ -163,8 +166,34 @@ export interface VariableAliasData {
   resolvedDataType?: string
 }
 
+/** An image paint's adjustments (`PaintFilterMessage`); `vibrance` is the panel's saturation. */
+export interface PaintFilter {
+  tint?: number
+  shadows?: number
+  highlights?: number
+  detail?: number
+  exposure?: number
+  vignette?: number
+  temperature?: number
+  vibrance?: number
+  contrast?: number
+  brightness?: number
+}
+
 export interface Effect {
-  type: 'DROP_SHADOW' | 'INNER_SHADOW' | 'LAYER_BLUR' | 'BACKGROUND_BLUR' | 'FOREGROUND_BLUR'
+  /** `GRAIN` is the panel's texture; `REPEAT`, `SYMMETRY` and `CUSTOM` have no scene effect. */
+  type:
+    | 'DROP_SHADOW'
+    | 'INNER_SHADOW'
+    | 'LAYER_BLUR'
+    | 'BACKGROUND_BLUR'
+    | 'FOREGROUND_BLUR'
+    | 'NOISE'
+    | 'GRAIN'
+    | 'GLASS'
+    | 'REPEAT'
+    | 'SYMMETRY'
+    | 'CUSTOM'
   color?: Color
   offset?: Vector
   radius?: number
@@ -172,6 +201,22 @@ export interface Effect {
   spread?: number
   blendMode?: string
   showShadowBehindNode?: boolean
+  blurOpType?: 'NORMAL' | 'PROGRESSIVE'
+  startRadius?: number
+  startOffset?: Vector
+  endOffset?: Vector
+  secondaryColor?: Color
+  noiseSize?: Vector
+  seed?: number
+  clipToShape?: boolean
+  density?: number
+  noiseType?: string
+  opacity?: number
+  refractionRadius?: number
+  specularAngle?: number
+  specularIntensity?: number
+  chromaticAberration?: number
+  refractionIntensity?: number
   colorVar?: VariableAliasData
   radiusVar?: VariableAliasData
   spreadVar?: VariableAliasData

@@ -1,10 +1,7 @@
 import type { Canvas, Path } from 'canvaskit-wasm'
 
-import { readEffectiveFigmaRawField } from '@kalka/fig'
 import type { SceneNode } from '@kalka/scene-graph'
-import type { Color, Vector } from '@kalka/scene-graph/primitives'
-
-import { BLACK } from '#core/constants'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { figmaBlendModeToSkia } from './blend'
 import type { SkiaRenderer } from './renderer'
@@ -15,18 +12,9 @@ import {
   nodeHasSmoothCorners
 } from './shapes'
 
-const MAX_RAW_NOISE_CELLS = 12_000
+const MAX_NOISE_CELLS = 12_000
 
-interface RawNoiseEffect {
-  type: 'NOISE'
-  visible?: boolean
-  color?: Color
-  secondaryColor?: Color
-  opacity?: number
-  density?: number
-  noiseSize?: Vector
-  noiseType?: 'MONOTONE' | 'DUOTONE' | 'MULTITONE'
-}
+type SceneEffect = SceneNode['effects'][number]
 
 function resetEffectLayerPaint(r: SkiaRenderer): void {
   r.effectLayerPaint.setImageFilter(null)
@@ -34,52 +22,53 @@ function resetEffectLayerPaint(r: SkiaRenderer): void {
   r.effectLayerPaint.setBlendMode(r.ck.BlendMode.SrcOver)
 }
 
-function rawNoiseEffects(node: SceneNode): RawNoiseEffect[] {
-  const source = (node as Partial<SceneNode>).source
-  const effects = source ? readEffectiveFigmaRawField(node, 'effects') : undefined
-  if (!Array.isArray(effects)) return []
-  return effects.filter(
-    (effect): effect is RawNoiseEffect =>
-      effect !== null &&
-      typeof effect === 'object' &&
-      'type' in effect &&
-      effect.type === 'NOISE' &&
-      ('visible' in effect ? effect.visible !== false : true)
-  )
-}
-
 function seededNoise(seed: number): number {
   const x = Math.sin(seed * 12.9898) * 43758.5453
   return x - Math.floor(x)
 }
 
+/** A grain's color: the noise's, or for duotone every other one its second color, or for multitone any hue. */
+function grainColor(effect: SceneEffect, cell: number): Color {
+  if (effect.noiseType === 'DUOTONE' && seededNoise(cell + 0.5) < 0.5)
+    return effect.secondaryColor ?? { r: 1, g: 1, b: 1, a: 1 }
+  if (effect.noiseType === 'MULTITONE')
+    return {
+      r: seededNoise(cell + 0.1),
+      g: seededNoise(cell + 0.2),
+      b: seededNoise(cell + 0.3),
+      a: effect.opacity ?? 1
+    }
+  return effect.color
+}
+
+/** Noise: grains of the effect's size over a share of the layer its density sets. */
 function renderNoiseEffect(
   r: SkiaRenderer,
   canvas: Canvas,
   node: SceneNode,
   rect: Float32Array,
   hasRadius: boolean,
-  effect: RawNoiseEffect
+  effect: SceneEffect
 ): void {
-  const density = Math.max(0, Math.min(1, effect.density ?? 0.3))
-  const requestedStep = Math.max(2, Math.round((effect.noiseSize?.x ?? 0.5) * 8))
-  const boundedStep = Math.ceil(Math.sqrt((node.width * node.height) / MAX_RAW_NOISE_CELLS))
+  const density = Math.max(0, Math.min(1, effect.density ?? 0.5))
+  const requestedStep = Math.max(1, (effect.noiseSize ?? 0.5) * 2)
+  const boundedStep = Math.ceil(Math.sqrt((node.width * node.height) / MAX_NOISE_CELLS))
   const step = Math.max(requestedStep, boundedStep)
-  const color = effect.color ?? BLACK
-  const opacity = effect.opacity ?? color.a
   const paint = new r.ck.Paint()
   try {
     paint.setAntiAlias(false)
+    paint.setBlendMode(figmaBlendModeToSkia(r.ck, effect.blendMode ?? 'NORMAL'))
     canvas.save()
     r.clipNodeShape(canvas, node, rect, hasRadius)
     for (let y = 0; y < node.height; y += step) {
       for (let x = 0; x < node.width; x += step) {
-        const value = seededNoise((x + 1) * 73856093 + (y + 1) * 19349663)
+        const cell = (x + 1) * 73856093 + (y + 1) * 19349663
+        const value = seededNoise(cell)
         if (value > density) continue
-        const alpha = Math.max(0, Math.min(1, opacity * (0.35 + value * 0.65)))
-        paint.setColor(r.ck.Color4f(color.r, color.g, color.b, alpha))
+        const color = grainColor(effect, cell)
+        paint.setColor(r.ck.Color4f(color.r, color.g, color.b, color.a))
         canvas.drawRect(
-          r.ck.LTRBRect(x, y, Math.min(node.width, x + 1), Math.min(node.height, y + 1)),
+          r.ck.LTRBRect(x, y, Math.min(node.width, x + step), Math.min(node.height, y + step)),
           paint
         )
       }
@@ -88,6 +77,13 @@ function renderNoiseEffect(
   } finally {
     paint.delete()
   }
+}
+
+/** A blur's radius as one value: a progressive blur draws its average, as Skia has no ramp. */
+export function uniformBlurRadius(effect: SceneEffect): number {
+  return effect.blurType === 'PROGRESSIVE'
+    ? (effect.radius + (effect.startRadius ?? 0)) / 2
+    : effect.radius
 }
 
 function drawChildTransform(canvas: Canvas, child: SceneNode, offset = { x: 0, y: 0 }): void {
@@ -525,21 +521,24 @@ export function renderEffects(
   pass: 'behind' | 'front',
   shadowShapeChild?: SceneNode | null
 ): void {
-  if (pass === 'front') {
-    for (const effect of rawNoiseEffects(node)) {
-      renderNoiseEffect(r, canvas, node, rect, hasRadius, effect)
-    }
-  }
-
   for (const effect of node.effects) {
     if (!effect.visible) continue
+
+    if (pass === 'front' && effect.type === 'NOISE') {
+      renderNoiseEffect(r, canvas, node, rect, hasRadius, effect)
+    }
+
+    // A glass blurs what lies behind it by its frost.
+    if (pass === 'behind' && effect.type === 'GLASS' && effect.radius > 0) {
+      r.applyClippedBlur(canvas, node, rect, hasRadius, effect.radius / 2)
+    }
 
     if (pass === 'behind' && effect.type === 'DROP_SHADOW') {
       renderDropShadow(r, canvas, node, effect, hasRadius, shadowShapeChild)
     }
 
     if (pass === 'behind' && effect.type === 'BACKGROUND_BLUR') {
-      r.applyClippedBlur(canvas, node, rect, hasRadius, effect.radius / 2)
+      r.applyClippedBlur(canvas, node, rect, hasRadius, uniformBlurRadius(effect) / 2)
     }
 
     if (pass === 'front' && effect.type === 'INNER_SHADOW') {

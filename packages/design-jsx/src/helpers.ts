@@ -5,10 +5,16 @@ import {
   backgroundBlur,
   dropShadow,
   foregroundBlur,
+  glass,
   innerShadow,
   layerBlur,
+  noise,
+  texture,
   type BlurEffectOptions,
-  type ShadowEffectOptions
+  type GlassEffectOptions,
+  type NoiseEffectOptions,
+  type ShadowEffectOptions,
+  type TextureEffectOptions
 } from './effects'
 import {
   angularGradient,
@@ -38,8 +44,40 @@ const SHADOW_OPTIONS = {
 
 const BLUR_OPTIONS = {
   radius: true,
-  visible: true
+  visible: true,
+  blurType: true,
+  startRadius: true,
+  startOffset: true,
+  endOffset: true
 } satisfies OptionKeys<BlurEffectOptions>
+
+const NOISE_OPTIONS = {
+  noiseType: true,
+  color: true,
+  secondaryColor: true,
+  opacity: true,
+  noiseSize: true,
+  density: true,
+  blendMode: true,
+  visible: true
+} satisfies OptionKeys<NoiseEffectOptions>
+
+const TEXTURE_OPTIONS = {
+  noiseSize: true,
+  radius: true,
+  clipToShape: true,
+  visible: true
+} satisfies OptionKeys<TextureEffectOptions>
+
+const GLASS_OPTIONS = {
+  radius: true,
+  refraction: true,
+  depth: true,
+  lightAngle: true,
+  lightIntensity: true,
+  dispersion: true,
+  visible: true
+} satisfies OptionKeys<GlassEffectOptions>
 
 const SOLID_OPTIONS = {
   opacity: true,
@@ -95,6 +133,9 @@ export function designJSXHelpers(warnings: string[]) {
     layerBlur: checked(warnings, 'layerBlur', layerBlur, BLUR_OPTIONS, 0),
     backgroundBlur: checked(warnings, 'backgroundBlur', backgroundBlur, BLUR_OPTIONS, 0),
     foregroundBlur: checked(warnings, 'foregroundBlur', foregroundBlur, BLUR_OPTIONS, 0),
+    noise: checked(warnings, 'noise', noise, NOISE_OPTIONS, 0),
+    texture: checked(warnings, 'texture', texture, TEXTURE_OPTIONS, 0),
+    glass: checked(warnings, 'glass', glass, GLASS_OPTIONS, 0),
     solid: checked(warnings, 'solid', solid, SOLID_OPTIONS, 1),
     gradient: checked(warnings, 'gradient', gradient, GRADIENT_OPTIONS, 2),
     linearGradient: checked(warnings, 'linearGradient', linearGradient, GRADIENT_OPTIONS, 1),

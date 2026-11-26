@@ -65,6 +65,7 @@ export function createMockRenderer(overrides: Partial<SkiaRenderer> = {}): SkiaR
       TRANSPARENT: new Float32Array([0, 0, 0, 0]),
       Paint: class {
         setAntiAlias = mock(() => undefined)
+        setBlendMode = mock(() => undefined)
         setColor = mock(() => undefined)
         setShader = mock(() => undefined)
         setStyle = mock(() => undefined)

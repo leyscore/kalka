@@ -26,6 +26,7 @@ import type { GUID, Matrix, Vector } from '@kalka/scene-graph/primitives'
 import { bytesToHex } from '../bytes'
 import { exportCanvasGuides } from '../canvas-guides'
 import { snapshotInstanceGeometry } from '../instance/geometry'
+import { kiwiEffectKindFields, kiwiEffectType } from '../paint'
 import {
   applyExportSettingsPluginData,
   applyHTMLElementPluginData,
@@ -823,7 +824,10 @@ const SUPPORTED_NORMALIZED_EFFECT_TYPES = new Set([
   'INNER_SHADOW',
   'LAYER_BLUR',
   'BACKGROUND_BLUR',
-  'FOREGROUND_BLUR'
+  'FOREGROUND_BLUR',
+  'NOISE',
+  'GRAIN',
+  'GLASS'
 ])
 
 function hasRawUnsupportedEffects(node: SceneNode): boolean {
@@ -918,14 +922,15 @@ function applyNodeVisualProps(
         node,
         index,
         {
-          type: effect.type === 'LAYER_BLUR' ? 'FOREGROUND_BLUR' : effect.type,
+          type: kiwiEffectType(effect.type),
           color: context.safeColor(effect.color),
           offset: effect.offset,
           radius: effect.radius,
           spread: effect.spread,
           visible: effect.visible,
           blendMode: effect.blendMode ?? 'NORMAL',
-          showShadowBehindNode: effect.showShadowBehindNode
+          showShadowBehindNode: effect.showShadowBehindNode,
+          ...kiwiEffectKindFields(effect)
         },
         context.varIdToGuid
       )

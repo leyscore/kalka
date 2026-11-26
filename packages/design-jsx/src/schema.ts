@@ -263,6 +263,9 @@ export const DESIGN_JSX_HELPERS: DesignJSXHelperDefinition[] = [
   'layerBlur',
   'backgroundBlur',
   'foregroundBlur',
+  'noise',
+  'texture',
+  'glass',
   'designVar',
   'defineVars'
 ].map((name) => ({ name, description: `Kalka ${name} helper.` }))

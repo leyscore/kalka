@@ -162,7 +162,45 @@ const EFFECT_HELPERS: Record<Effect['type'], string> = {
   INNER_SHADOW: 'innerShadow',
   LAYER_BLUR: 'layerBlur',
   BACKGROUND_BLUR: 'backgroundBlur',
-  FOREGROUND_BLUR: 'foregroundBlur'
+  FOREGROUND_BLUR: 'foregroundBlur',
+  NOISE: 'noise',
+  TEXTURE: 'texture',
+  GLASS: 'glass'
+}
+
+/** A noise, texture or glass: the options its helper takes, in the plugin API's names. */
+function grainOrGlassOptions(effect: Effect, visible: false | undefined) {
+  if (effect.type === 'NOISE') {
+    return options({
+      noiseType: effect.noiseType,
+      color: formatColor(effect.color, effect.color.a),
+      secondaryColor: effect.secondaryColor
+        ? formatColor(effect.secondaryColor, effect.secondaryColor.a)
+        : undefined,
+      opacity: effect.opacity,
+      noiseSize: effect.noiseSize,
+      density: effect.density,
+      blendMode: blendMode(effect.blendMode),
+      visible
+    })
+  }
+  if (effect.type === 'TEXTURE') {
+    return options({
+      radius: effect.radius,
+      noiseSize: effect.noiseSize,
+      clipToShape: effect.clipToShape === false ? false : undefined,
+      visible
+    })
+  }
+  return options({
+    radius: effect.radius,
+    refraction: effect.refraction,
+    depth: effect.depth,
+    lightAngle: effect.lightAngle,
+    lightIntensity: effect.lightIntensity,
+    dispersion: effect.dispersion,
+    visible
+  })
 }
 
 function effectValue(effect: Effect): HelperCall {
@@ -179,6 +217,21 @@ function effectValue(effect: Effect): HelperCall {
         visible,
         blendMode: blendMode(effect.blendMode),
         showShadowBehindNode: effect.showShadowBehindNode
+      })
+    )
+  }
+  if (effect.type === 'NOISE' || effect.type === 'TEXTURE' || effect.type === 'GLASS')
+    return helperCall(EFFECT_HELPERS[effect.type], grainOrGlassOptions(effect, visible))
+  if (effect.blurType === 'PROGRESSIVE') {
+    return helperCall(
+      EFFECT_HELPERS[effect.type],
+      options({
+        radius: effect.radius,
+        blurType: 'PROGRESSIVE',
+        startRadius: effect.startRadius,
+        startOffset: effect.startOffset && { ...effect.startOffset },
+        endOffset: effect.endOffset && { ...effect.endOffset },
+        visible
       })
     )
   }
@@ -205,7 +258,11 @@ function effectShorthand(effects: Effect[]): JSXProp[] | null {
   if (effects.some((effect) => !effect.visible)) return null
   const shadow = effects.length > 0 ? plainDropShadow(effects[0]) : null
   const rest = shadow ? effects.slice(1) : effects
-  if (rest.length > 1 || rest.some((effect) => effect.type !== 'LAYER_BLUR')) return null
+  if (
+    rest.length > 1 ||
+    rest.some((effect) => effect.type !== 'LAYER_BLUR' || effect.blurType === 'PROGRESSIVE')
+  )
+    return null
   const props: JSXProp[] = []
   if (shadow) props.push(['shadow', shadow])
   for (const blur of rest) props.push(['blur', blur.radius])

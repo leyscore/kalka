@@ -49,7 +49,9 @@ export function nodeRequiresAtomicChunk(graph: SceneGraph, node: SceneNode): boo
         effect.visible &&
         (effect.type === 'LAYER_BLUR' ||
           effect.type === 'FOREGROUND_BLUR' ||
-          effect.type === 'BACKGROUND_BLUR')
+          effect.type === 'BACKGROUND_BLUR' ||
+          effect.type === 'TEXTURE' ||
+          effect.type === 'GLASS')
     )
   const hasMasks = node.childIds.some((childId) => graph.getNode(childId)?.isMask === true)
   return isolated || hasMasks

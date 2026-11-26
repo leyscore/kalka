@@ -72,3 +72,63 @@ export function applyClippedBlur(
   r.effectLayerPaint.setBlendMode(r.ck.BlendMode.SrcOver)
   canvas.restore()
 }
+
+/** A layer drawn through filters: what they are and how far past the layer they reach. */
+export interface LayerEffectFilter {
+  filter: ImageFilter
+  padding: number
+  /** Releases what was made for this draw; cached filters stay. */
+  release(): void
+}
+
+/**
+ * The filter a layer is drawn through for its layer blur and texture, or null when it has
+ * neither. A progressive blur draws its average radius: Skia has no blur that varies across a
+ * layer, which the canvas draws with an SVG filter (`@kalka/scene-graph/css-model`).
+ */
+export function layerEffectFilter(r: SkiaRenderer, node: SceneNode): LayerEffectFilter | null {
+  const blur = node.effects.find(
+    (effect) =>
+      effect.visible && (effect.type === 'LAYER_BLUR' || effect.type === 'FOREGROUND_BLUR')
+  )
+  const texture = node.effects.find(
+    (effect) => effect.visible && effect.type === 'TEXTURE' && effect.radius > 0
+  )
+  if (!blur && !texture) return null
+  const made: { delete(): void }[] = []
+  let filter: ImageFilter | null = null
+  let padding = 0
+  if (texture) {
+    const frequency = 1 / (2 * Math.max(0.25, texture.noiseSize ?? 0.5))
+    const noise = r.ck.Shader.MakeFractalNoise(frequency, frequency, 1, 1, 0, 0)
+    const map = r.ck.ImageFilter.MakeShader(noise)
+    noise.delete()
+    filter = r.ck.ImageFilter.MakeDisplacementMap(
+      r.ck.ColorChannel.Red,
+      r.ck.ColorChannel.Green,
+      texture.radius * 2,
+      map,
+      null
+    )
+    made.push(map, filter)
+    padding += texture.radius
+  }
+  if (blur) {
+    const radius =
+      blur.blurType === 'PROGRESSIVE' ? (blur.radius + (blur.startRadius ?? 0)) / 2 : blur.radius
+    const blurFilter = r.getCachedBlur(radius / 2)
+    if (filter) {
+      filter = r.ck.ImageFilter.MakeCompose(blurFilter, filter)
+      made.push(filter)
+    } else filter = blurFilter
+    padding += radius * 2
+  }
+  if (!filter) return null
+  return {
+    filter,
+    padding,
+    release: () => {
+      for (const object of made) object.delete()
+    }
+  }
+}

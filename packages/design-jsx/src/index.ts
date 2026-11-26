@@ -55,11 +55,17 @@ export {
   backgroundBlur,
   dropShadow,
   foregroundBlur,
+  glass,
   innerShadow,
   layerBlur,
+  noise,
+  texture,
   type BlurEffectOptions,
   type EffectColor,
-  type ShadowEffectOptions
+  type GlassEffectOptions,
+  type NoiseEffectOptions,
+  type ShadowEffectOptions,
+  type TextureEffectOptions
 } from './effects'
 
 export {
