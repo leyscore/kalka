@@ -15,7 +15,7 @@ export interface WebviewWindowOptions {
   focus?: boolean
 }
 
-/** Another window of the app, by label. Only what the updater window uses. */
+/** Another window of the app, by label. Only what the updater window and Quit use. */
 export class WebviewWindow {
   constructor(
     readonly label: string,
@@ -57,6 +57,12 @@ export class WebviewWindow {
     })
     return stop
   }
+}
+
+/** Every open window of the app, as Tauri lists them: the editors and Software Update. */
+export async function getAllWebviewWindows(): Promise<WebviewWindow[]> {
+  const labels = await call<string[]>('window.labels')
+  return labels.map((label) => new WebviewWindow(label))
 }
 
 export { TauriEvent }

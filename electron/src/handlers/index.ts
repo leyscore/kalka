@@ -12,11 +12,18 @@ import { setOpenTarget } from './pending'
 import { registerShellHandlers } from './shell'
 import { registerSystemHandlers } from './system'
 import { registerUpdaterHandlers } from './updater'
-import { installQuitGuard, mainContents, registerWindowHandlers, type WindowHost } from './windows'
+import {
+  editorWindows,
+  frontEditorContents,
+  installQuitGuard,
+  openEditorWindow,
+  registerWindowHandlers,
+  type WindowHost
+} from './windows'
 
 export { handleLink, LINK_SCHEME, queueOpenPaths, takePendingOpen } from './pending'
 export { titleBarOptions, trackTitleBar } from './title-bar'
-export { track } from './windows'
+export { frontEditor, openEditorWindow, track } from './windows'
 
 export function registerHandlers(host: WindowHost): void {
   registerWindowHandlers(host)
@@ -29,17 +36,17 @@ export function registerHandlers(host: WindowHost): void {
   registerOAuthHandlers()
   registerGitHandlers()
   registerUpdaterHandlers()
-  // Only the editor takes documents and links; another window, such as Software Update, would
-  // drop them.
+  // Only an editor takes documents and links, the one in front; another window, such as
+  // Software Update, would drop them.
   setOpenTarget({
     notify: (event, payload) => {
-      const editor = mainContents()
+      const editor = frontEditorContents()
       if (!editor) return false
       emit(editor, event, payload)
       return true
     },
     openEditor: () => {
-      if (app.isReady() && !mainContents()) host.createWindow()
+      if (app.isReady() && editorWindows().length === 0) openEditorWindow()
     }
   })
   installQuitGuard()

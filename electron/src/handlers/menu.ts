@@ -7,7 +7,7 @@ import menuSpec from '../../generated/menu.json'
 import { emit } from '../ipc'
 import { routeMenuEvent } from './menu-route'
 import { openEditor } from './pending'
-import { windowByLabel } from './windows'
+import { frontEditor, openEditorWindow } from './windows'
 
 /** Entries of the menu the app's menu schema generates (`bun run generate:tauri-menu`). */
 interface Entry {
@@ -38,9 +38,10 @@ const checked = new Map<string, boolean>()
 
 /** A click reaches the editor as Tauri's `menu-event`, with the item id (`routeMenuEvent`). */
 function send(id: string): void {
-  const route = routeMenuEvent(id, BrowserWindow.getFocusedWindow(), windowByLabel('main'))
+  const route = routeMenuEvent(id, BrowserWindow.getFocusedWindow(), frontEditor())
   if (route.kind === 'send') emit(route.window.webContents, 'menu-event', id)
   else if (route.kind === 'close') route.window.close()
+  else if (route.kind === 'new-window') openEditorWindow()
   else openEditor()
 }
 

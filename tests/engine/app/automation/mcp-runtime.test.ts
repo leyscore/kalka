@@ -233,4 +233,54 @@ describe('MCP runtime service', () => {
     expect(result.ok).toBe(false)
     expect(service.state.status).toBe('idle')
   })
+
+  test('only the editor window in front holds the app connection', async () => {
+    const { calls, service } = setup()
+    await service.setBridgeTarget(false)
+    await service.start(getStore)
+    expect(calls).toEqual([])
+
+    await service.setBridgeTarget(true)
+    expect(calls).toEqual(['connect'])
+    await service.setBridgeTarget(false)
+    expect(calls).toEqual(['connect', 'disconnect-bridge'])
+    expect(service.state.status).toBe('running')
+  })
+
+  test('a window that comes forward finds the server again when another window owns it', async () => {
+    let spawns = 0
+    const { calls, service } = setup({
+      spawn: async () => {
+        spawns++
+        return { authToken: `token-${spawns}`, managed: false, disconnect: () => undefined }
+      }
+    })
+    await service.setBridgeTarget(false)
+    await service.start(getStore)
+
+    await service.setBridgeTarget(true)
+    expect(spawns).toBe(2)
+    expect(calls).toEqual(['connect'])
+    expect(service.state.status).toBe('running')
+  })
+
+  test('starts the server again when the one it started is gone', async () => {
+    let healthy = true
+    let spawns = 0
+    const { calls, service } = setup({
+      readHealth: async () => (healthy ? { status: 'ok', tools: [descriptor()] } : null),
+      spawn: async () => {
+        spawns++
+        healthy = true
+        return { authToken: 'token', managed: true, disconnect: () => calls.push('kill') }
+      }
+    })
+    await service.start(getStore)
+    healthy = false
+
+    await service.setBridgeTarget(true)
+    expect(spawns).toBe(2)
+    expect(calls).toEqual(['connect', 'disconnect-bridge', 'kill', 'connect'])
+    expect(service.state.status).toBe('running')
+  })
 })

@@ -6,8 +6,10 @@ import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, protocol, session, shell, type WebContents } from 'electron'
 
 import {
+  frontEditor,
   handleLink,
   LINK_SCHEME,
+  openEditorWindow,
   queueOpenPaths,
   registerHandlers,
   titleBarOptions,
@@ -120,7 +122,8 @@ function grantPermissions(): void {
   )
 }
 
-function createWindow(): BrowserWindow {
+/** An editor window; the first is `main`, later ones come from File › New Window. */
+function createWindow(label: string): BrowserWindow {
   const window = new BrowserWindow({
     title: 'Kalka',
     icon: ICON,
@@ -144,7 +147,7 @@ function createWindow(): BrowserWindow {
   // Off macOS the app draws its own menu, as on the web; the native bar stays hidden but keeps
   // its accelerators.
   if (process.platform !== 'darwin') window.setMenuBarVisibility(false)
-  track(window, 'main')
+  track(window, label)
   trackTitleBar(window)
   window.once('ready-to-show', () => window.show())
   void window.loadURL(pageURL(''))
@@ -175,7 +178,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on('second-instance', (_event, argv) => {
     void queueOpenPaths(designFiles(argv))
     for (const link of links(argv)) handleLink(link)
-    const window = BrowserWindow.getAllWindows()[0]
+    const window = frontEditor() ?? BrowserWindow.getAllWindows()[0]
     if (window) {
       if (window.isMinimized()) window.restore()
       window.focus()
@@ -201,9 +204,9 @@ if (!app.requestSingleInstanceLock()) {
       isTrustedSender(frame, DEV_URL)
     )
     registerHandlers({ createWindow, pageURL, preload: PRELOAD })
-    createWindow()
+    openEditorWindow()
     app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow()
+      if (BrowserWindow.getAllWindows().length === 0) openEditorWindow()
     })
   })()
 

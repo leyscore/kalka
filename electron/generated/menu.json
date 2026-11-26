@@ -8,6 +8,11 @@
         "accelerator": "CmdOrCtrl+N"
       },
       {
+        "id": "new-window",
+        "label": "New Window",
+        "accelerator": "CmdOrCtrl+Shift+N"
+      },
+      {
         "id": "open",
         "label": "Open…",
         "accelerator": "CmdOrCtrl+O"

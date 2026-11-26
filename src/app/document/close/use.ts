@@ -4,8 +4,9 @@ import { onMounted, onScopeDispose, watch } from 'vue'
 
 import { commonMessages, filesMessages } from '@kalka/vue'
 
-import { confirmAppExit, isExitApproved } from '@/app/document/close/exit'
+import { confirmAppExit, isExitApproved, resetAppExitApproval } from '@/app/document/close/exit'
 import { notificationMessages } from '@/app/i18n/notifications'
+import { QUIT_CANCELLED_EVENT } from '@/app/shell/editor-windows'
 import { toast } from '@/app/shell/ui'
 import { allTabs } from '@/app/tabs'
 import { IS_TAURI } from '@/constants'
@@ -71,6 +72,9 @@ export function useDocumentCloseProtection() {
         void requestClose(() => window.destroy())
       })
       .then(registerCleanup)
+    // A quit this window agreed to stopped at another window, which kept its documents.
+    const { listen } = await import('@tauri-apps/api/event')
+    await listen(QUIT_CANCELLED_EVENT, () => resetAppExitApproval()).then(registerCleanup)
   })
 
   // Follows the interface language, so the native box speaks it too.

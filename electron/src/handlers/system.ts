@@ -4,7 +4,7 @@ import { app, clipboard, ClipboardItem, shell } from 'electron'
 
 import { registerAll, type CallContext } from '../ipc'
 import { installDownloadedUpdate } from './updater'
-import { markExiting } from './windows'
+import { exitFromPage, markExiting } from './windows'
 
 const EXTERNAL = /^(https?:|mailto:)/i
 
@@ -34,9 +34,8 @@ export function registerSystemHandlers(): void {
   )
   registerAll(
     {
-      exit(_context: CallContext, code: number) {
-        markExiting()
-        app.exit(code)
+      exit(context: CallContext, code: number) {
+        exitFromPage(context.window, code)
       },
       relaunch() {
         if (installDownloadedUpdate()) return

@@ -32,6 +32,7 @@ import {
 } from '@/app/settings/preferences/apply'
 import { appPreferences } from '@/app/settings/preferences/store'
 import { openAbout } from '@/app/shell/about'
+import { openNewEditorWindow } from '@/app/shell/editor-windows'
 import { openShortcutsHelp } from '@/app/shell/keyboard/help'
 import { appMenuChecked } from '@/app/shell/menu/checked'
 import { createSharedEditorMenuActions } from '@/app/shell/menu/editor-actions'
@@ -51,7 +52,7 @@ import { useAppTheme } from '@/app/shell/theme'
 import { openExternalLink } from '@/app/shell/ui'
 import { saveDocumentToStorage } from '@/app/storage/workspace/save'
 import { closeTab, activeTab } from '@/app/tabs'
-import { docsURL } from '@/constants'
+import { docsURL, IS_TAURI } from '@/constants'
 
 export interface AppMenuGroup {
   label: string
@@ -88,6 +89,7 @@ function shortcutKeys(shortcut: string | undefined): string[] | undefined {
 }
 
 function isVisible(entry: { target?: string }): boolean {
+  if (entry.target === 'desktop') return IS_TAURI
   return entry.target !== 'native'
 }
 
@@ -109,6 +111,7 @@ export function useAppMenu() {
 
   const translatedMenuItemLabels: Partial<Record<string, keyof typeof menu.value>> = {
     new: 'new',
+    'new-window': 'newWindow',
     open: 'open',
     'open-folder': 'openFolder',
     'import-claude-design': 'importClaudeDesign',
@@ -244,6 +247,7 @@ export function useAppMenu() {
     new: () => {
       void import('@/app/tabs').then((m) => m.createTab())
     },
+    'new-window': () => void openNewEditorWindow(),
     open: () => void openFileDialog(),
     'import-claude-design': () => void importClaudeDesignDialog(),
     'open-storage-workspace': () => openStorageWorkspace(router),

@@ -8,10 +8,19 @@ import {
   DEFAULT_CLOSE_FALLBACK_TEXT,
   type PageCloseRequest
 } from './close-ask'
+import { createFocusOrder, createQuitSequence, isEditorLabel, nextEditorLabel } from './editors'
 import { applyTitleBarTheme, TitleBarTheme } from './title-bar'
 
+/** Tells each editor page whether the MCP server's calls are its own (`src/app/automation/mcp`). */
+export const MCP_TARGET_EVENT = 'mcp-target'
+/** Tells a page that agreed to quit that another window kept its documents open. */
+export const QUIT_CANCELLED_EVENT = 'quit-cancelled'
+/** How far a new editor window sits from the one in front, as on macOS. */
+const CASCADE_OFFSET = 24
+
 export interface WindowHost {
-  createWindow(): BrowserWindow
+  /** Opens an editor window with the given label. */
+  createWindow(label: string): BrowserWindow
   /** The page `path` of the app, in development or in the built app. */
   pageURL(path: string): string
   preload: string
@@ -24,7 +33,11 @@ const destroying = new WeakSet<BrowserWindow>()
 const unanswerable = new WeakSet<BrowserWindow>()
 const fallbackText = new WeakMap<BrowserWindow, CloseFallbackText>()
 const closeAsks = createPageCloseAsks<BrowserWindow>()
+const focusOrder = createFocusOrder<BrowserWindow>()
 let exiting = false
+let openEditorWith: WindowHost['createWindow'] | null = null
+/** The editor window the pages were last told holds the MCP server's calls. */
+let mcpTarget: BrowserWindow | null = null
 
 export function windowByLabel(label: string): BrowserWindow | null {
   const window = labels.get(label)
@@ -36,8 +49,50 @@ export function labelOf(window: BrowserWindow): string | undefined {
   return undefined
 }
 
-export function mainContents(): WebContents | null {
-  return windowByLabel('main')?.webContents ?? null
+function isEditor(window: BrowserWindow): boolean {
+  return !window.isDestroyed() && isEditorLabel(labelOf(window))
+}
+
+export function editorWindows(): BrowserWindow[] {
+  return BrowserWindow.getAllWindows().filter(isEditor)
+}
+
+/** The editor window in front, or the one last in front while another window or app is. */
+export function frontEditor(): BrowserWindow | null {
+  const focused = BrowserWindow.getFocusedWindow()
+  if (focused && isEditor(focused)) return focused
+  return focusOrder.latest(isEditor) ?? editorWindows()[0] ?? null
+}
+
+export function frontEditorContents(): WebContents | null {
+  return frontEditor()?.webContents ?? null
+}
+
+/** Opens another editor window, a little below and right of the one in front. */
+export function openEditorWindow(): BrowserWindow | null {
+  if (!openEditorWith) return null
+  const from = frontEditor()
+  const window = openEditorWith(nextEditorLabel((label) => windowByLabel(label) !== null))
+  if (from && !from.isMaximized() && !from.isFullScreen()) {
+    const [x, y] = from.getPosition()
+    if (x !== undefined && y !== undefined)
+      window.setPosition(x + CASCADE_OFFSET, y + CASCADE_OFFSET)
+  }
+  return window
+}
+
+/**
+ * The MCP server takes one app connection, so only the editor in front connects; the others
+ * let go, and a window that comes forward takes over. `always` also tells a target that did not
+ * change, such as after the server stopped with the window that started it.
+ */
+export function announceMCPTarget(always = true, closing?: BrowserWindow): void {
+  const editors = editorWindows().filter((window) => window !== closing)
+  const target = frontEditor()
+  const next = target && target !== closing ? target : (editors[0] ?? null)
+  if (!always && next === mcpTarget) return
+  mcpTarget = next
+  for (const window of editors) emit(window.webContents, MCP_TARGET_EVENT, window === next)
 }
 
 export function broadcast(event: string, payload?: unknown): void {
@@ -50,6 +105,14 @@ export function broadcast(event: string, payload?: unknown): void {
  */
 export function track(window: BrowserWindow, label: string): void {
   labels.set(label, window)
+  if (isEditorLabel(label)) {
+    focusOrder.focus(window)
+    announceMCPTarget()
+    window.on('focus', () => {
+      focusOrder.focus(window)
+      announceMCPTarget(false)
+    })
+  }
   window.on('close', (event) => {
     if (exiting || destroying.has(window) || !intercepted.has(window)) return
     event.preventDefault()
@@ -64,6 +127,11 @@ export function track(window: BrowserWindow, label: string): void {
   window.webContents.on('did-start-loading', () => unanswerable.delete(window))
   window.on('closed', () => {
     if (labels.get(label) === window) labels.delete(label)
+    if (isEditorLabel(label)) {
+      focusOrder.remove(window)
+      quit.gone(window)
+      announceMCPTarget(true, window)
+    }
     broadcast(`tauri://destroyed:${label}`)
   })
 }
@@ -92,7 +160,8 @@ function askPage(
   window: BrowserWindow,
   event: string,
   payload: unknown,
-  proceed: PageCloseRequest['proceed']
+  proceed: PageCloseRequest['proceed'],
+  declined?: () => void
 ): void {
   closeAsks.ask(window, {
     send: () => {
@@ -100,7 +169,11 @@ function askPage(
       emit(window.webContents, event, payload)
       return true
     },
-    fallback: () => closeWithoutPage(window),
+    fallback: async () => {
+      const closing = await closeWithoutPage(window)
+      if (!closing) declined?.()
+      return closing
+    },
     proceed
   })
 }
@@ -109,18 +182,68 @@ export function markExiting(): void {
   exiting = true
 }
 
-/** Quitting with windows open asks the editor first, as a Quit menu click does. */
+/** An editor window whose page asks about its documents before it closes. */
+function asksOnQuit(window: BrowserWindow): boolean {
+  return isEditor(window) && intercepted.has(window)
+}
+
+function quitAskers(): BrowserWindow[] {
+  const inFront = focusOrder.all(asksOnQuit)
+  return [
+    ...inFront,
+    ...editorWindows().filter((window) => asksOnQuit(window) && !inFront.includes(window))
+  ]
+}
+
+function finishQuit(): void {
+  markExiting()
+  app.quit()
+}
+
+const quit = createQuitSequence<BrowserWindow>({
+  editors: quitAskers,
+  ask(window) {
+    if (window.isMinimized()) window.restore()
+    window.show()
+    window.focus()
+    askPage(
+      window,
+      'menu-event',
+      'quit',
+      () => {
+        if (!quit.agree(window)) finishQuit()
+      },
+      () => quit.decline()
+    )
+  },
+  finish: finishQuit,
+  cancelled(agreed) {
+    for (const window of agreed) emit(window.webContents, QUIT_CANCELLED_EVENT)
+  }
+})
+
+/** Quitting with windows open asks each editor in turn, as a Quit menu click does. */
 export function installQuitGuard(): void {
   app.on('before-quit', (event) => {
-    if (exiting) return
-    const main = windowByLabel('main')
-    if (!main || !intercepted.has(main)) return
+    if (exiting || quitAskers().length === 0) return
     event.preventDefault()
-    askPage(main, 'menu-event', 'quit', () => {
-      markExiting()
-      app.quit()
-    })
+    quit.start()
   })
+}
+
+/**
+ * A page asks to exit once its documents may close. While a quit asks the windows in turn, that
+ * is its yes; on its own, as after the in-app Quit, the other editors are asked before the app
+ * ends.
+ */
+export function exitFromPage(window: BrowserWindow | null, code: number): void {
+  if (window && quit.agree(window)) return
+  if (window && isEditor(window) && quitAskers().some((other) => other !== window)) {
+    quit.start(window)
+    return
+  }
+  markExiting()
+  app.exit(code)
 }
 
 function target(context: CallContext, label?: string): BrowserWindow | null {
@@ -133,6 +256,20 @@ export function windowHandlers(host: WindowHost) {
       if (!context.window) return
       if (on) intercepted.add(context.window)
       else intercepted.delete(context.window)
+    },
+    /** The person kept their documents open: a quit asking the windows in turn stops there. */
+    cancelQuit() {
+      quit.decline()
+    },
+    /** Whether the MCP server's calls go to this window (`announceMCPTarget`). */
+    isMCPTarget(context: CallContext) {
+      return context.window !== null && context.window === (mcpTarget ?? frontEditor())
+    },
+    /** The labels of the open windows, as Tauri's `getAllWebviewWindows` gives them. */
+    labels() {
+      return [...labels.entries()]
+        .filter(([, window]) => !window.isDestroyed())
+        .map(([label]) => label)
     },
     /** The page received a close or quit request and is asking the person itself. */
     acknowledgeClose(context: CallContext) {
@@ -222,5 +359,6 @@ export function windowHandlers(host: WindowHost) {
 }
 
 export function registerWindowHandlers(host: WindowHost): void {
+  openEditorWith = host.createWindow
   registerAll(windowHandlers(host), 'window')
 }

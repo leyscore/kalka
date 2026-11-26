@@ -8,6 +8,10 @@ export function createExitApproval(confirmDocuments: () => Promise<boolean>) {
 
   return {
     isApproved: () => approved,
+    /** Another window kept its documents open, so the app stays: ask again on the next close. */
+    reset: () => {
+      approved = false
+    },
     confirm: async (): Promise<boolean> => {
       if (approved) return true
       confirmation ??= confirmDocuments()
@@ -34,14 +38,21 @@ export function confirmAppExit(): Promise<boolean> {
   return approval.confirm()
 }
 
+/** A quit this window agreed to stopped at another window (`electron/src/handlers/editors.ts`). */
+export function resetAppExitApproval(): void {
+  approval.reset()
+}
+
 /** Shared by the native Quit item and the platform exit request. */
 export async function requestAppExit(): Promise<void> {
-  if (IS_TAURI) {
-    // A Quit from the main process waits for this before falling back to a native box.
-    const { call } = await import('@/app/platform/tauri/bridge')
-    void call('window.acknowledgeClose')
+  const bridge = IS_TAURI ? await import('@/app/platform/tauri/bridge') : null
+  // A Quit from the main process waits for this before falling back to a native box.
+  if (bridge) void bridge.call('window.acknowledgeClose')
+  if (!(await confirmAppExit())) {
+    // The other windows are not asked once this one keeps its documents.
+    if (bridge) void bridge.call('window.cancelQuit')
+    return
   }
-  if (!(await confirmAppExit())) return
   const { exit } = await import('@tauri-apps/plugin-process')
   await exit(0)
 }

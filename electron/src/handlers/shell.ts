@@ -5,6 +5,7 @@ import capabilities from '../../capabilities/shell.json'
 import { emit, registerAll, type CallContext } from '../ipc'
 import { loginShellPath } from './login-env'
 import { BUNDLED_MCP_HTTP, bundledMCPCommand, bundledMCPScript } from './mcp/bundled'
+import { announceMCPTarget } from './windows'
 
 type ArgRule = string | { validator: string }
 interface ScopeEntry {
@@ -91,6 +92,7 @@ export const shellHandlers = {
     options: { cwd?: string; env?: Record<string, string>; raw?: boolean }
   ) {
     const allowed = await resolveProgram(name, args)
+    const isMCPServer = MCP_SERVER_NAMES.has(name)
     const child = spawn(allowed.cmd, allowed.args, {
       cwd: options.cwd,
       env: await inheritedEnv({ ...options.env, ...allowed.env }),
@@ -120,6 +122,8 @@ export const shellHandlers = {
       for (const lines of streams) lines?.flush()
       children.delete(pid)
       send('close', { code, signal: signalNumber(signal) })
+      // The server stops with the window that started it; the editor in front starts another.
+      if (isMCPServer) announceMCPTarget()
     })
     sender.once('destroyed', () => child.kill())
     return pid

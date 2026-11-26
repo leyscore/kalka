@@ -6,6 +6,8 @@ export const FILE_MENU = {
   paletteIcon: 'file',
   items: [
     { id: 'new', label: 'New', shortcut: 'MOD+N' },
+    // Figma's ⇧⌘N; another editor window exists only in the desktop app.
+    { id: 'new-window', label: 'New Window', shortcut: 'MOD+SHIFT+N', target: 'desktop' },
     { id: 'open', label: 'Open…', shortcut: 'MOD+O' },
     { id: 'open-folder', label: 'Open Folder…', target: 'native' },
     { id: 'open-recent', label: 'Open Recent', target: 'native' },

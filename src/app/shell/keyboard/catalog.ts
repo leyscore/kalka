@@ -6,6 +6,7 @@ import { editorCommandMetadata, formatShortcut, type ShortcutPlatform, type Tool
 import type { ShortcutDefinition } from '@/app/shell/keyboard/registry'
 import type { AppMenuActionItem, AppMenuEntry, AppMenuGroupSchema } from '@/app/shell/menu/schema'
 import { APP_MENU_SCHEMA } from '@/app/shell/menu/schema'
+import { IS_TAURI } from '@/constants'
 
 /** Figma's keyboard shortcut categories, in the order its panel shows them. */
 export const SHORTCUT_CATEGORIES = [
@@ -230,7 +231,7 @@ function menuItemIndex(): Map<string, MenuItemInfo> {
   for (const group of groups) {
     if (group.target === 'native') continue
     for (const item of menuItems(group.items)) {
-      if (item.target === 'native') continue
+      if (item.target === 'native' || (item.target === 'desktop' && !IS_TAURI)) continue
       const category = MENU_ITEM_CATEGORY[item.id] ?? MENU_GROUP_CATEGORY[group.label] ?? 'edit'
       index.set(item.id, { item, category })
     }

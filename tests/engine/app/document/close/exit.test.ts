@@ -47,3 +47,17 @@ test('a failed confirmation retries instead of caching the rejection', async () 
   expect(await approval.confirm()).toBe(true)
   expect(attempts).toBe(2)
 })
+
+test('a reset approval asks again, as after another window kept its documents', async () => {
+  let prompts = 0
+  const approval = createExitApproval(async () => {
+    prompts++
+    return true
+  })
+
+  expect(await approval.confirm()).toBe(true)
+  approval.reset()
+  expect(approval.isApproved()).toBe(false)
+  expect(await approval.confirm()).toBe(true)
+  expect(prompts).toBe(2)
+})

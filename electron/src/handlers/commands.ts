@@ -23,6 +23,7 @@ import {
 import { setChecked, setRecentFiles } from './menu'
 import { takePendingOpen, takePendingRooms, takePendingServers } from './pending'
 import { renderHTMLPage, type RenderHTMLRequest } from './raster'
+import { openEditorWindow } from './windows'
 
 const AGENT_EXECUTABLES = [
   'claude',
@@ -184,6 +185,9 @@ const commands: Record<string, (args: never) => unknown> = {
   take_pending_rooms: () => takePendingRooms(),
   take_pending_servers: () => takePendingServers(),
   set_recent_files: ({ paths }: { paths: string[] }) => setRecentFiles(paths),
+  open_editor_window: () => {
+    openEditorWindow()
+  },
   set_native_menu_checked: ({ id, checked }: { id: string; checked: boolean }) =>
     setChecked(id, checked),
   path_matches_suffix: ({ candidate, suffix }: { candidate: string; suffix: string }) =>

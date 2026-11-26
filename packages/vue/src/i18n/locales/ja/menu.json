@@ -150,6 +150,7 @@
   "revertToSaved": "保存した状態に戻す",
   "duplicateFile": "複製",
   "saveToVersionHistory": "バージョン履歴に保存…",
+  "newWindow": "新規ウインドウ",
   "vector": "ベクター",
   "joinSelection": "選択範囲を結合",
   "smoothJoinSelection": "選択範囲をスムーズに結合",

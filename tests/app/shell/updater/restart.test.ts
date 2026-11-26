@@ -46,4 +46,38 @@ describe('requestRestartApproval', () => {
 
     await expect(requestRestartApproval()).resolves.toBe(true)
   })
+
+  test('asks each editor window in turn and stops at the first that keeps its documents', async () => {
+    await mockWindows(() => ['main', 'editor-2', 'updater'])
+    const requests: string[] = []
+    const cancelled: string[] = []
+    // Tauri's mocks drop `emitTo`; this one answers for the editors: main agrees, editor-2 not.
+    const internals = (
+      window as typeof window & {
+        __TAURI_INTERNALS__: { invoke: (cmd: string, args?: unknown) => Promise<unknown> }
+      }
+    ).__TAURI_INTERNALS__
+    const invoke = internals.invoke.bind(internals)
+    internals.invoke = async (cmd, args) => {
+      if (cmd !== 'plugin:event|emit_to') return invoke(cmd, args)
+      const { target, event, payload } = args as {
+        target: { label: string }
+        event: string
+        payload: { id: string }
+      }
+      if (event === 'quit-cancelled') cancelled.push(target.label)
+      if (event !== 'updater:restart-request') return null
+      requests.push(target.label)
+      const reply = { id: payload.id, approved: target.label === 'main' }
+      setTimeout(
+        () => void invoke('plugin:event|emit', { event: 'updater:restart-reply', payload: reply }),
+        0
+      )
+      return null
+    }
+
+    await expect(requestRestartApproval()).resolves.toBe(false)
+    expect(requests).toEqual(['main', 'editor-2'])
+    expect(cancelled).toEqual(['main'])
+  })
 })

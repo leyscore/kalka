@@ -150,6 +150,7 @@
   "revertToSaved": "Rétablir la version enregistrée",
   "duplicateFile": "Dupliquer",
   "saveToVersionHistory": "Enregistrer dans l’historique des versions…",
+  "newWindow": "Nouvelle fenêtre",
   "vector": "Vecteur",
   "joinSelection": "Joindre la sélection",
   "smoothJoinSelection": "Joindre la sélection en lissant",

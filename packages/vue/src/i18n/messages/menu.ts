@@ -158,6 +158,7 @@ export const menuMessageDefaults = {
   revertToSaved: 'Revert to saved',
   duplicateFile: 'Duplicate',
   saveToVersionHistory: 'Save to version history…',
+  newWindow: 'New window',
   vector: 'Vector',
   joinSelection: 'Join selection',
   smoothJoinSelection: 'Smooth join selection',

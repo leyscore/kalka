@@ -4,7 +4,8 @@ import { FILE_MENU } from '@/app/shell/menu/file-menu'
 import { TEXT_MENU } from '@/app/shell/menu/text-menu'
 import { VECTOR_MENU } from '@/app/shell/menu/vector-menu'
 
-export type AppMenuTarget = 'all' | 'browser' | 'native'
+/** Where an item shows: `desktop` is the native menu plus the app's own menu in the desktop app. */
+export type AppMenuTarget = 'all' | 'browser' | 'native' | 'desktop'
 
 export type AppMenuIcon =
   | 'download'

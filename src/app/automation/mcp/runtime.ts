@@ -15,6 +15,7 @@ import {
   getMCPServerURL,
   spawnMCPIfNeeded
 } from './spawn'
+import { followMCPWindowTarget } from './window-target'
 
 /** The longest a scheduled start waits for the app to be idle. */
 const MCP_START_IDLE_TIMEOUT_MS = 3000
@@ -85,6 +86,11 @@ export function createMCPRuntimeService(dependencies: MCPRuntimeDependencies) {
   let server: AutomationServerHandle | null = null
   let disconnectAutomation: (() => void) | null = null
   let activeStore: (() => EditorStore) | null = null
+  /**
+   * Whether this window holds the server's one app connection. The desktop app's editor in front
+   * does; the others let go of it (`./window-target`).
+   */
+  let bridgeTarget = true
   let lifecycle: Promise<void> = Promise.resolve()
 
   function enqueue<T>(operation: () => Promise<T>): Promise<T> {
@@ -149,7 +155,7 @@ export function createMCPRuntimeService(dependencies: MCPRuntimeDependencies) {
       const health = await dependencies.readHealth(server?.authToken)
       if (health) {
         state.externallyManaged = server?.managed === false
-        if (activeStore && dependencies.canConnect()) {
+        if (activeStore && bridgeTarget && dependencies.canConnect()) {
           disconnectAutomation = dependencies.connect(activeStore, server?.authToken ?? null)
         }
         applyHealth(health)
@@ -186,6 +192,26 @@ export function createMCPRuntimeService(dependencies: MCPRuntimeDependencies) {
     return disconnectError ? { ok: false, error: disconnectError } : { ok: true }
   }
 
+  /**
+   * Follows whether this window holds the app connection. A window that comes forward connects
+   * again; when the server it knew is gone with the window that started it, or belongs to another
+   * window, it finds the server again, or starts one.
+   */
+  async function syncTargetOperation(): Promise<void> {
+    if (!bridgeTarget) {
+      disconnectAutomation?.()
+      disconnectAutomation = null
+      return
+    }
+    if (state.status !== 'running' || !activeStore || !dependencies.canConnect()) return
+    if (server?.managed && (await dependencies.readHealth(server.authToken))) {
+      disconnectAutomation ??= dependencies.connect(activeStore, server.authToken)
+      return
+    }
+    const stopped = await stopOperation(false)
+    if (stopped.ok) await startOperation()
+  }
+
   /** The latest start or restart, which callers that need the server wait for. */
   let started: Promise<MCPRuntimeResult> | null = null
   let cancelScheduled: (() => void) | null = null
@@ -206,6 +232,11 @@ export function createMCPRuntimeService(dependencies: MCPRuntimeDependencies) {
     state,
     refresh: () => enqueue(refreshOperation),
     start,
+    /** Whether this window now holds the server's app connection. */
+    setBridgeTarget(isTarget: boolean): Promise<void> {
+      bridgeTarget = isTarget
+      return enqueue(syncTargetOperation)
+    },
     /**
      * Starts the server once `defer` runs its task, such as when the app is idle after its first
      * screen, so it never delays opening files or painting. `ensure` starts it sooner.
@@ -281,8 +312,10 @@ export const refreshMCPRuntime = appMCPRuntime.refresh
 export const restartMCPRuntime = () => appMCPRuntime.restart()
 export const startMCPRuntime = (getStore: () => EditorStore) => appMCPRuntime.start(getStore)
 /** Starts the server when the app is next idle; see `whenIdle`. */
-export const scheduleMCPRuntime = (getStore: () => EditorStore) =>
+export const scheduleMCPRuntime = (getStore: () => EditorStore) => {
+  followMCPWindowTarget((isTarget) => void appMCPRuntime.setBridgeTarget(isTarget))
   appMCPRuntime.schedule(getStore, (task) => whenIdle(task, MCP_START_IDLE_TIMEOUT_MS))
+}
 /** Starts the server now if it is still waiting for the app to be idle, and waits for it. */
 export const ensureMCPRuntime = () => appMCPRuntime.ensure()
 export const stopMCPRuntime = () => appMCPRuntime.stop()

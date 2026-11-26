@@ -150,6 +150,7 @@
   "revertToSaved": "Volver a la versión guardada",
   "duplicateFile": "Duplicar",
   "saveToVersionHistory": "Guardar en el historial de versiones…",
+  "newWindow": "Nueva ventana",
   "vector": "Vector",
   "joinSelection": "Unir selección",
   "smoothJoinSelection": "Unir selección suavemente",
