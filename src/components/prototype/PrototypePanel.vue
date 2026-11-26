@@ -5,15 +5,21 @@ import {
   createPrototypeReaction,
   flowStartingPoints,
   PROTOTYPE_DEVICE_PRESETS,
+  type Color,
+  type Fill,
   type PrototypeReaction,
   type SceneNode
 } from '@kalka/scene-graph'
+import { colorToHexRaw, tryParseColor } from '@kalka/scene-graph/color'
 import { orderKeyBetween } from '@kalka/scene-graph/order-keys'
 import { usePrototypeMessages, useSceneComputed, useSelectionState } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
+import ColorPicker from '@/components/ColorPicker/ColorPicker.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
+import FillSwatch from '@/components/ui/paint/FillSwatch.vue'
+import PanelItemRow from '@/components/ui/panel/PanelItemRow.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import AppCheckbox from '@/components/ui/toggle/AppCheckbox.vue'
@@ -39,9 +45,17 @@ const backgroundId = useId()
 const SCREEN_TYPES = new Set<SceneNode['type']>(['FRAME', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE'])
 const OVERLAY_DIM = { r: 0, g: 0, b: 0, a: 0.25 }
 const NO_DEVICE = 'NONE'
+const PRESENT_BACKDROP = { r: 0.118, g: 0.118, b: 0.118, a: 1 }
 
 const pageId = computed(() => store.state.currentPageId)
-const page = useSceneComputed(() => store.graph.getNode(pageId.value))
+/** The page's prototype settings, copied out so the panel follows their edits. */
+const page = useSceneComputed(() => {
+  const current = store.graph.getNode(pageId.value)
+  return {
+    prototypeDevice: current?.prototypeDevice ? { ...current.prototypeDevice } : null,
+    prototypeBackground: current?.prototypeBackground ? { ...current.prototypeBackground } : null
+  }
+})
 const frames = useSceneComputed(() =>
   store.graph.getChildren(pageId.value).filter((child) => SCREEN_TYPES.has(child.type))
 )
@@ -151,6 +165,42 @@ const deviceOptions = computed(() => [
   { value: NO_DEVICE, label: m.value.none },
   ...PROTOTYPE_DEVICE_PRESETS.map((preset) => ({ value: preset.id, label: preset.name }))
 ])
+
+/** The presenter's backdrop, Figma's dark grey until one is chosen. */
+const prototypeBackground = computed<Color>(
+  () => page.value.prototypeBackground ?? { ...PRESENT_BACKDROP }
+)
+const backgroundFill = computed<Fill>(() => ({
+  type: 'SOLID',
+  color: prototypeBackground.value,
+  opacity: 1,
+  visible: true
+}))
+
+function setBackground(color: Color) {
+  store.updateNodeWithUndo(
+    pageId.value,
+    { prototypeBackground: { ...color, a: 1 } },
+    'Change prototype background'
+  )
+}
+
+function setBackgroundHex(event: Event) {
+  const input = event.target instanceof HTMLInputElement ? event.target : null
+  const color = input ? tryParseColor(`#${input.value.trim().replace(/^#/, '')}`) : null
+  if (color) setBackground(color)
+  else if (input) input.value = colorToHexRaw(prototypeBackground.value)
+}
+
+function rotateDevice() {
+  const device = page.value.prototypeDevice
+  if (!device) return
+  store.updateNodeWithUndo(
+    pageId.value,
+    { prototypeDevice: { ...device, rotation: device.rotation === 'CCW_90' ? 'NONE' : 'CCW_90' } },
+    'Rotate prototype device'
+  )
+}
 
 function setDevice(id: string) {
   const preset = PROTOTYPE_DEVICE_PRESETS.find((candidate) => candidate.id === id)
@@ -318,13 +368,50 @@ function setDevice(id: string) {
         </div>
       </PanelSection>
       <PanelSection :label="m.settings">
-        <AppSelect
-          :model-value="page?.prototypeDevice?.presetIdentifier || NO_DEVICE"
-          :options="deviceOptions"
-          :label="m.device"
-          data-property="prototype-device"
-          @update:model-value="setDevice"
-        />
+        <PanelItemRow>
+          <AppSelect
+            :model-value="page.prototypeDevice?.presetIdentifier || NO_DEVICE"
+            :options="deviceOptions"
+            :label="m.device"
+            :ui="{ trigger: 'w-auto flex-1' }"
+            data-property="prototype-device"
+            @update:model-value="setDevice"
+          />
+          <IconButton
+            v-if="page.prototypeDevice"
+            :label="m.rotate"
+            class="shrink-0"
+            data-test-id="prototype-rotate"
+            :data-state="page.prototypeDevice.rotation === 'CCW_90' ? 'on' : 'off'"
+            @click="rotateDevice"
+          >
+            <icon-hugeicons-rotate-left-01 class="size-3.5" />
+          </IconButton>
+        </PanelItemRow>
+        <div
+          class="mt-1 flex h-7 items-center gap-2 rounded-[5px] bg-input px-1.5"
+          data-property="prototype-background"
+        >
+          <ColorPicker :color="prototypeBackground" @update="setBackground">
+            <template #trigger>
+              <button
+                type="button"
+                :aria-label="m.background"
+                data-test-id="prototype-background"
+                class="size-5 shrink-0 cursor-pointer rounded border-0 bg-transparent p-0"
+              >
+                <FillSwatch :fill="backgroundFill" class="size-full" />
+              </button>
+            </template>
+          </ColorPicker>
+          <input
+            :aria-label="m.background"
+            class="min-w-0 flex-1 border-none bg-transparent font-mono text-[11px] text-surface outline-none"
+            :value="colorToHexRaw(prototypeBackground)"
+            maxlength="6"
+            @change="setBackgroundHex"
+          />
+        </div>
       </PanelSection>
     </template>
   </div>

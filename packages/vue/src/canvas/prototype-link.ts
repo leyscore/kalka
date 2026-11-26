@@ -40,6 +40,50 @@ export function movePrototypeLink(editor: Editor, drag: DragPrototypeLink, cx: n
   })
 }
 
+/** Screen pixels from the canvas's edge where a connection drag pans, and the fastest pan. */
+const EDGE = 40
+const MAX_PAN = 16
+
+function edgeSpeed(at: number, extent: number): number {
+  if (at < EDGE) return ((EDGE - Math.max(at, 0)) / EDGE) * MAX_PAN
+  if (at > extent - EDGE) return -((Math.min(at, extent) - (extent - EDGE)) / EDGE) * MAX_PAN
+  return 0
+}
+
+/**
+ * Pans the canvas while a connection is dragged near its edge, as Figma does, so a frame out of
+ * view can be reached; the connection follows the pointer over the moving canvas. It stops when
+ * the pointer leaves the edge or the connection is dropped.
+ */
+export function createPrototypeLinkPan(editor: Editor, canvas: Ref<HTMLElement | null>) {
+  let frame = 0
+  let pointer: { drag: DragPrototypeLink; sx: number; sy: number } | null = null
+
+  function step() {
+    frame = 0
+    if (!pointer || !editor.state.prototypeLink) return
+    const dx = edgeSpeed(pointer.sx, canvas.value?.clientWidth ?? 0)
+    const dy = edgeSpeed(pointer.sy, canvas.value?.clientHeight ?? 0)
+    if (dx === 0 && dy === 0) return
+    editor.pan(dx, dy)
+    const { x, y } = editor.screenToCanvas(pointer.sx, pointer.sy)
+    movePrototypeLink(editor, pointer.drag, x, y)
+    frame = requestAnimationFrame(step)
+  }
+
+  /**
+   * The pointer moved while connecting, to screen point (`sx`, `sy`) of the canvas and canvas
+   * point (`cx`, `cy`).
+   */
+  function move(drag: DragPrototypeLink, sx: number, sy: number, cx: number, cy: number) {
+    movePrototypeLink(editor, drag, cx, cy)
+    pointer = { drag, sx, sy }
+    if (!frame) frame = requestAnimationFrame(step)
+  }
+
+  return { move }
+}
+
 /** Dropped on a frame, the layer navigates there on click. Whether the drag was a connection. */
 export function endPrototypeLink(drag: Ref<DragState | null>, editor: Editor): boolean {
   const d = drag.value

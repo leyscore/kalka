@@ -9,9 +9,10 @@ import { createGuideInput, selectedTopLevelGuideFrameId } from '#vue/canvas/guid
 import { createCanvasLabelEdit } from '#vue/canvas/labels/edit'
 import { handlePenDragMove, updatePenHover } from '#vue/canvas/pen/input'
 import { createCanvasPointer } from '#vue/canvas/pointer/use'
-import { movePrototypeLink, startPrototypeLink } from '#vue/canvas/prototype-link'
+import { createPrototypeLinkPan, startPrototypeLink } from '#vue/canvas/prototype-link'
 import { bindShapeBuilder, updateShapeBuilderHover } from '#vue/canvas/shape-builder/input'
 import { createTextEditInput } from '#vue/canvas/text-edit/input'
+import { textOnPathCursor } from '#vue/canvas/text-on-path/input'
 import { endToolDrag, handleToolPointerUp, moveToolDrag } from '#vue/canvas/tools/drags'
 import { handleToolMouseDown } from '#vue/canvas/tools/input'
 import { createCanvasTransformInput } from '#vue/canvas/transform/input'
@@ -106,6 +107,8 @@ export function useCanvasInput(
     hitTestComponentLabel,
     hitTestFrameTitle
   )
+
+  const linkPan = createPrototypeLinkPan(editor, canvasRef)
 
   function canMeasure() {
     return (
@@ -272,6 +275,7 @@ export function useCanvasInput(
       updatePenHover(cx, cy, editor)
       updateShapeBuilderHover(cx, cy, e.altKey, editor)
       if (editor.state.activeTool === 'VARIABLE_WIDTH') updateVariableWidthHover(cx, cy, editor)
+      cursorOverride.value = textOnPathCursor(cx, cy, editor, hitFns, cursorOverride.value)
     }
 
     if (!drag.value) {
@@ -308,7 +312,7 @@ export function useCanvasInput(
     const { sx, sy, cx, cy } = getCoords(e)
 
     if (d.type === 'prototype-link') {
-      movePrototypeLink(editor, d, cx, cy)
+      linkPan.move(d, sx, sy, cx, cy)
       return
     }
 

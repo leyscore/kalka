@@ -23,6 +23,7 @@ import { colorToCSS } from '@kalka/scene-graph/color'
 import { useEditor } from '#vue/editor/context'
 
 import { useDelayTimers, type DelayFrame } from './delays'
+import { deviceBody, deviceOutset, deviceStyles } from './device'
 import { useHotspotHints } from './hotspots'
 import { animatePose, layerBoxes, REST, screenPoses, smartAnimate, type Pose } from './motion'
 import PresentScreen from './PresentScreen.vue'
@@ -108,15 +109,23 @@ const box = computed(() => {
   return frameSize(screen.value.rootId)
 })
 const hasDevice = computed(() => !!page.value?.prototypeDevice)
+const body = computed(() => deviceBody(page.value?.prototypeDevice))
 const PADDING = 32
-/** Fit the box to the window, never larger than 100%; a frame without a device fits its width. */
+/**
+ * Fit the box, in its device's body, to the window, never larger than 100%; a frame without a
+ * device fits its width.
+ */
 const scale = computed(() => {
   const { width, height } = box.value
   if (width <= 0 || height <= 0) return 1
-  const fitWidth = (viewWidth.value - PADDING * 2) / width
-  const fitHeight = hasDevice.value ? (viewHeight.value - PADDING * 2) / height : Infinity
+  const outset = deviceOutset(body.value)
+  const fitWidth = (viewWidth.value - PADDING * 2) / (width + outset.width)
+  const fitHeight = hasDevice.value
+    ? (viewHeight.value - PADDING * 2) / (height + outset.height)
+    : Infinity
   return Math.max(0.05, Math.min(1, fitWidth, fitHeight))
 })
+const device = computed(() => deviceStyles(body.value, box.value, scale.value))
 
 const overlays = computed(() =>
   present.value.overlays.map((overlay, index) => ({
@@ -583,82 +592,95 @@ function overlayBackground(frameId: string): string {
       class="flex min-h-full min-w-full items-center justify-center"
       :style="{ padding: `${PADDING}px` }"
     >
-      <div
-        class="relative shrink-0 overflow-hidden"
-        :style="{ width: `${box.width * scale}px`, height: `${box.height * scale}px` }"
-      >
+      <div class="flex shrink-0 flex-col items-center">
         <div
-          ref="scaler"
-          class="absolute top-0 left-0 origin-top-left"
-          :style="{
-            width: `${box.width}px`,
-            height: `${box.height}px`,
-            transform: `scale(${scale})`
-          }"
-          @pointermove="onPointerMove"
-          @pointerleave="onPointerLeave"
-          @pointerdown="onPointerDown"
-          @click="onClick"
+          data-test-id="prototype-device"
+          :data-device="body ? 'true' : 'false'"
+          :style="device.body"
         >
           <div
-            ref="scroller"
-            class="absolute inset-0"
-            :class="hasDevice ? 'overflow-auto' : 'overflow-hidden'"
-          >
-            <PresentScreen
-              v-if="leaving"
-              :key="leaving.shown.key"
-              :ref="(value) => register(leaving?.shown.key ?? '', value)"
-              :root-id="leaving.shown.rootId"
-              :revision="revision"
-              :variants="present.variants[leaving.shown.rootId]"
-              :variables="present.variables"
-              class="absolute top-0 left-0"
-              :style="{ zIndex: leaving.onTop ? 2 : 0 }"
-            />
-            <PresentScreen
-              :key="screen.key"
-              :ref="(value) => register(screen.key, value)"
-              :root-id="screen.rootId"
-              :revision="revision"
-              :variants="present.variants[screen.rootId]"
-              :variables="present.variables"
-              class="absolute top-0 left-0"
-              :style="{ zIndex: 1 }"
-            />
-          </div>
-          <div
-            v-for="overlay in overlays"
-            :key="overlay.key"
-            data-test-id="prototype-overlay"
-            class="absolute inset-0 z-10"
-            :style="{ background: overlayBackground(overlay.frameId) }"
-            @click="onOutside($event, overlay.frameId)"
-          >
-            <PresentScreen
-              :ref="(value) => register(overlay.key, value)"
-              :root-id="overlay.frameId"
-              :revision="revision"
-              :variants="present.variants[overlay.frameId]"
-              :variables="present.variables"
-              class="absolute"
-              :style="overlayStyle(overlay)"
-            />
-          </div>
-          <div
-            v-for="hotspot in hotspots"
-            :key="hotspot.id"
-            data-test-id="prototype-hotspot"
-            class="pointer-events-none absolute z-20 rounded-[2px] border border-[#0d99ff] bg-[#0d99ff]/25 transition-opacity duration-300"
-            :class="{ 'opacity-0': fading }"
+            class="relative shrink-0 overflow-hidden"
             :style="{
-              left: `${hotspot.x}px`,
-              top: `${hotspot.y}px`,
-              width: `${hotspot.width}px`,
-              height: `${hotspot.height}px`
+              width: `${box.width * scale}px`,
+              height: `${box.height * scale}px`,
+              ...device.screen
             }"
-          />
+          >
+            <div
+              ref="scaler"
+              class="absolute top-0 left-0 origin-top-left"
+              :style="{
+                width: `${box.width}px`,
+                height: `${box.height}px`,
+                transform: `scale(${scale})`
+              }"
+              @pointermove="onPointerMove"
+              @pointerleave="onPointerLeave"
+              @pointerdown="onPointerDown"
+              @click="onClick"
+            >
+              <div
+                ref="scroller"
+                class="absolute inset-0"
+                :class="hasDevice ? 'overflow-auto' : 'overflow-hidden'"
+              >
+                <PresentScreen
+                  v-if="leaving"
+                  :key="leaving.shown.key"
+                  :ref="(value) => register(leaving?.shown.key ?? '', value)"
+                  :root-id="leaving.shown.rootId"
+                  :revision="revision"
+                  :variants="present.variants[leaving.shown.rootId]"
+                  :variables="present.variables"
+                  class="absolute top-0 left-0"
+                  :style="{ zIndex: leaving.onTop ? 2 : 0 }"
+                />
+                <PresentScreen
+                  :key="screen.key"
+                  :ref="(value) => register(screen.key, value)"
+                  :root-id="screen.rootId"
+                  :revision="revision"
+                  :variants="present.variants[screen.rootId]"
+                  :variables="present.variables"
+                  class="absolute top-0 left-0"
+                  :style="{ zIndex: 1 }"
+                />
+              </div>
+              <div
+                v-for="overlay in overlays"
+                :key="overlay.key"
+                data-test-id="prototype-overlay"
+                class="absolute inset-0 z-10"
+                :style="{ background: overlayBackground(overlay.frameId) }"
+                @click="onOutside($event, overlay.frameId)"
+              >
+                <PresentScreen
+                  :ref="(value) => register(overlay.key, value)"
+                  :root-id="overlay.frameId"
+                  :revision="revision"
+                  :variants="present.variants[overlay.frameId]"
+                  :variables="present.variables"
+                  class="absolute"
+                  :style="overlayStyle(overlay)"
+                />
+              </div>
+              <div
+                v-for="hotspot in hotspots"
+                :key="hotspot.id"
+                data-test-id="prototype-hotspot"
+                class="pointer-events-none absolute z-20 rounded-[2px] border border-[#0d99ff] bg-[#0d99ff]/25 transition-opacity duration-300"
+                :class="{ 'opacity-0': fading }"
+                :style="{
+                  left: `${hotspot.x}px`,
+                  top: `${hotspot.y}px`,
+                  width: `${hotspot.width}px`,
+                  height: `${hotspot.height}px`
+                }"
+              />
+            </div>
+          </div>
         </div>
+        <div v-if="device.base" :style="device.base" />
       </div>
     </div>
   </div>
