@@ -78,7 +78,7 @@ export function textToDoc(
       content.push(textSchema.text(line.slice(segmentStart, index), style ? styleMark(style) : []))
       segmentStart = index
     }
-    const list = lists[paragraphs.length]
+    const list = lists.at(paragraphs.length)
     paragraphs.push(
       textSchema.nodes.paragraph.create({ list: list?.type, level: list?.level }, content)
     )

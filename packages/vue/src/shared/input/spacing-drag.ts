@@ -35,9 +35,8 @@ function dragAxis(
       return { axis: 'x', direction: 1 }
     case 'paddingRight':
       return { axis: 'x', direction: -1 }
-    case 'itemSpacing':
-      return { axis: node.layoutMode === 'VERTICAL' ? 'y' : 'x', direction: 1 }
   }
+  return { axis: node.layoutMode === 'VERTICAL' ? 'y' : 'x', direction: 1 }
 }
 
 /** The resize cursor over a padding or gap of the selected auto layout frame, else null. */

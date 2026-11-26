@@ -70,7 +70,7 @@ export function useFindSession(store: EditorStore) {
   }
 
   async function goTo(index: number): Promise<void> {
-    const match = matches.value[index]
+    const match = index < 0 ? undefined : matches.value[index]
     if (!match) return
     endTextEdit()
     current.value = index
@@ -95,7 +95,7 @@ export function useFindSession(store: EditorStore) {
     const index = matches.value.findIndex(
       (match, at) => at >= Math.max(current.value, 0) && match.field === 'text'
     )
-    const match = matches.value[index]
+    const match = index === -1 ? undefined : matches.value[index]
     if (!match) return 0
     endTextEdit()
     const replaced = store.replaceTextMatches(

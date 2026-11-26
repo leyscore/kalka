@@ -122,7 +122,7 @@ export function withListType(
   const lines = textListLines(node)
   const next = sharedListType(lines, paragraphs) === type ? 'NONE' : type
   for (const index of paragraphs) {
-    const line = lines[index]
+    const line = lines.at(index)
     if (!line) continue
     line.type = next
     if (next === 'NONE') line.level = 0

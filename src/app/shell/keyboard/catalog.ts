@@ -57,7 +57,7 @@ export interface ShortcutEntry extends Omit<ShortcutSource, 'combos'> {
   keys: string[][]
 }
 
-const MENU_GROUP_CATEGORY: Record<string, ShortcutCategory> = {
+const MENU_GROUP_CATEGORY: Partial<Record<string, ShortcutCategory>> = {
   File: 'file',
   Edit: 'edit',
   View: 'view',

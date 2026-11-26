@@ -59,7 +59,8 @@ function isBlock(node: DesignNode): node is DesignElement {
 function bottomMargin(style: DesignStyleDeclaration | undefined): number | null {
   const longhand = parseCSSNumber(style?.['margin-bottom'] ?? style?.['margin-block-end'])
   if (longhand !== null) return longhand
-  const values = style?.margin?.trim().split(/\s+/) ?? []
+  const shorthand: string | undefined = style?.margin
+  const values = shorthand?.trim().split(/\s+/) ?? []
   return parseCSSNumber(values.length >= 3 ? values[2] : values[0])
 }
 

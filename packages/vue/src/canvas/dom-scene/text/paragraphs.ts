@@ -183,7 +183,7 @@ export function indentListItem(delta: 1 | -1): Command {
 export const splitListItem: Command = (state, dispatch, view) => {
   if (state.selection.$from.parent.attrs.list === 'NONE') return false
   const item = caretItem(state)
-  if (item && item.node.content.size === 0) {
+  if (item?.node.content.size === 0) {
     dispatch?.(state.tr.setNodeMarkup(item.pos, null, { list: 'NONE', level: 0 }))
     return true
   }
@@ -196,7 +196,7 @@ export const splitListItem: Command = (state, dispatch, view) => {
  */
 export const liftListItem: Command = (state, dispatch) => {
   const item = caretItem(state)
-  if (!item || item.offset !== 0) return false
+  if (item?.offset !== 0) return false
   const level = item.node.attrs.level as number
   const attrs = level > 0 ? { ...item.node.attrs, level: level - 1 } : { list: 'NONE', level: 0 }
   dispatch?.(state.tr.setNodeMarkup(item.pos, null, attrs))
