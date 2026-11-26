@@ -1,14 +1,16 @@
 <script setup lang="ts">
+import { PopoverTrigger } from 'reka-ui'
 import { computed } from 'vue'
 
-import { TypographyControlsRoot, useI18n } from '@kalka/vue'
+import { MIXED, TypographyControlsRoot, useI18n, useSharedStyleBinding } from '@kalka/vue'
 
 import { loadFont } from '@/app/editor/fonts'
 import { appMenuShortcutLabel } from '@/app/shell/menu/shortcut'
 import FontPicker from '@/components/font-picker/FontPicker.vue'
 import FontSettingsPopover from '@/components/font-settings/FontSettingsPopover.vue'
 import NumberField from '@/components/inputs/NumberField.vue'
-import SharedStyleField from '@/components/properties/shared-style/SharedStyleField.vue'
+import TextStyleEditPopover from '@/components/properties/text-styles/TextStyleEditPopover.vue'
+import TextStylePicker from '@/components/properties/text-styles/TextStylePicker.vue'
 import LetterSpacingField from '@/components/properties/typography/LetterSpacingField.vue'
 import LineHeightField from '@/components/properties/typography/LineHeightField.vue'
 import ParagraphFields from '@/components/properties/typography/ParagraphFields.vue'
@@ -27,6 +29,23 @@ import PropertyBoundField from './component-properties/PropertyBoundField.vue'
 
 const { panels, menu } = useI18n()
 const fontLoader = { load: loadFont }
+const textStyle = useSharedStyleBinding('text')
+/** The style the text uses, or null; an applied style stands in for the font fields. */
+const appliedStyleId = computed(() => {
+  const id = textStyle.styleId.value
+  return typeof id === 'string' ? id : null
+})
+const appliedStyle = computed(() =>
+  textStyle.styles.value.find((style) => style.id === appliedStyleId.value)
+)
+const appliedDefinition = computed(() =>
+  appliedStyle.value ? textStyle.definition(appliedStyle.value.nodeId) : null
+)
+const appliedStyleName = computed(() => {
+  if (textStyle.styleId.value === MIXED) return panels.value.mixed
+  if (appliedStyle.value) return appliedStyle.value.name
+  return appliedStyleId.value ? panels.value.missingStyle({ id: appliedStyleId.value }) : ''
+})
 const alignmentOptions = computed(() => [
   { value: 'LEFT', label: panels.value.alignLeft },
   { value: 'CENTER', label: panels.value.alignCenterHorizontally },
@@ -63,82 +82,110 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
   <TypographyControlsRoot v-slot="ctx" :font-loader="fontLoader">
     <PanelSection v-if="ctx.node.value" :label="panels.typography">
       <template #actions>
+        <TextStylePicker
+          :current-style-id="appliedStyleId"
+          @apply="textStyle.bind"
+          @create="textStyle.createTextStyle"
+        />
         <PropertyBindButton field="TEXT" />
       </template>
       <PropertyBoundField field="TEXT" :label="panels.content" />
-      <SharedStyleField kind="text" :label="panels.textStyle" />
 
-      <div class="mb-1.5 flex min-w-0 items-center gap-1.5">
-        <FontPicker
-          class="min-w-0 flex-1"
-          :model-value="ctx.node.value.fontFamily"
-          :label="panels.fontFamily"
-          :preview="ctx.actions.previewFamily"
-          @select="ctx.actions.setFamily"
-        />
-        <FontSettingsPopover />
-        <Tip
-          v-if="ctx.hasMissingFonts.value"
-          :label="
-            'Missing font' +
-            (ctx.missingFonts.value.length > 1 ? 's' : '') +
-            ': ' +
-            ctx.missingFonts.value.join(', ')
-          "
+      <TextStyleEditPopover v-if="textStyle.styleId.value !== null" :definition="appliedDefinition">
+        <div
+          class="mb-3 flex h-7 min-w-0 items-center gap-1.5 rounded bg-panel-field pr-0.5 pl-1.5"
+          data-test-id="applied-text-style"
         >
-          <icon-hugeicons-alert-02
-            role="img"
-            :aria-label="
+          <icon-hugeicons-text-font class="size-3.5 shrink-0 text-muted" aria-hidden="true" />
+          <span class="min-w-0 flex-1 truncate text-xs text-surface">{{ appliedStyleName }}</span>
+          <PopoverTrigger v-if="appliedDefinition" as-child>
+            <IconButton :label="panels.editStyle" data-test-id="text-style-edit">
+              <icon-hugeicons-edit-02 class="size-3.5" />
+            </IconButton>
+          </PopoverTrigger>
+          <IconButton
+            :label="panels.detachStyle"
+            data-test-id="text-style-detach"
+            @click="textStyle.unbind()"
+          >
+            <icon-hugeicons-unlink-01 class="size-3.5" />
+          </IconButton>
+        </div>
+      </TextStyleEditPopover>
+
+      <template v-else>
+        <div class="mb-1.5 flex min-w-0 items-center gap-1.5">
+          <FontPicker
+            class="min-w-0 flex-1"
+            :model-value="ctx.node.value.fontFamily"
+            :label="panels.fontFamily"
+            :preview="ctx.actions.previewFamily"
+            @select="ctx.actions.setFamily"
+          />
+          <FontSettingsPopover />
+          <Tip
+            v-if="ctx.hasMissingFonts.value"
+            :label="
               'Missing font' +
               (ctx.missingFonts.value.length > 1 ? 's' : '') +
               ': ' +
               ctx.missingFonts.value.join(', ')
             "
-            class="size-3.5 shrink-0 text-[var(--color-warning-action)]"
-          />
-        </Tip>
-      </div>
+          >
+            <icon-hugeicons-alert-02
+              role="img"
+              :aria-label="
+                'Missing font' +
+                (ctx.missingFonts.value.length > 1 ? 's' : '') +
+                ': ' +
+                ctx.missingFonts.value.join(', ')
+              "
+              class="size-3.5 shrink-0 text-[var(--color-warning-action)]"
+            />
+          </Tip>
+        </div>
 
-      <PanelGrid :columns="2" class="mb-3">
-        <PanelFieldGroup :label="panels.fontWeight">
-          <AppSelect
-            :label="panels.fontWeight"
-            :model-value="ctx.node.value.fontWeight"
-            :options="ctx.weights"
-            :preview="(weight: number | null) => ctx.actions.previewWeight(weight)"
-            @update:model-value="ctx.actions.setWeight(+$event)"
-          />
-        </PanelFieldGroup>
-        <PanelFieldGroup :label="panels.fontSize">
-          <VariableNumberField
-            :model-value="ctx.node.value.fontSize"
-            :aria-label="panels.fontSize"
-            :min="1"
-            :max="1000"
-            :node-id="ctx.node.value.id"
-            binding-path="fontSize"
-            @update:model-value="ctx.actions.updateProp('fontSize', $event)"
-            @commit="(v: number, p: number) => ctx.actions.commitProp('fontSize', v, p)"
-          />
-        </PanelFieldGroup>
-      </PanelGrid>
+        <PanelGrid :columns="2" class="mb-3">
+          <PanelFieldGroup :label="panels.fontWeight">
+            <AppSelect
+              :label="panels.fontWeight"
+              :model-value="ctx.node.value.fontWeight"
+              :options="ctx.weights"
+              :preview="(weight: number | null) => ctx.actions.previewWeight(weight)"
+              @update:model-value="ctx.actions.setWeight(+$event)"
+            />
+          </PanelFieldGroup>
+          <PanelFieldGroup :label="panels.fontSize">
+            <VariableNumberField
+              :model-value="ctx.node.value.fontSize"
+              :aria-label="panels.fontSize"
+              :min="1"
+              :max="1000"
+              :node-id="ctx.node.value.id"
+              binding-path="fontSize"
+              @update:model-value="ctx.actions.updateProp('fontSize', $event)"
+              @commit="(v: number, p: number) => ctx.actions.commitProp('fontSize', v, p)"
+            />
+          </PanelFieldGroup>
+        </PanelGrid>
 
-      <PanelGrid :columns="2" class="mb-3">
-        <PanelFieldGroup :label="panels.lineHeight">
-          <LineHeightField
-            :node="ctx.node.value"
-            @update="ctx.actions.updateProp('lineHeight', $event)"
-            @commit="(v, p) => ctx.actions.commitProp('lineHeight', v, p)"
-          />
-        </PanelFieldGroup>
-        <PanelFieldGroup :label="panels.letterSpacing">
-          <LetterSpacingField
-            :node="ctx.node.value"
-            @update="ctx.actions.updateProp('letterSpacing', $event)"
-            @commit="(v, p) => ctx.actions.commitProp('letterSpacing', v, p)"
-          />
-        </PanelFieldGroup>
-      </PanelGrid>
+        <PanelGrid :columns="2" class="mb-3">
+          <PanelFieldGroup :label="panels.lineHeight">
+            <LineHeightField
+              :node="ctx.node.value"
+              @update="ctx.actions.updateProp('lineHeight', $event)"
+              @commit="(v, p) => ctx.actions.commitProp('lineHeight', v, p)"
+            />
+          </PanelFieldGroup>
+          <PanelFieldGroup :label="panels.letterSpacing">
+            <LetterSpacingField
+              :node="ctx.node.value"
+              @update="ctx.actions.updateProp('letterSpacing', $event)"
+              @commit="(v, p) => ctx.actions.commitProp('letterSpacing', v, p)"
+            />
+          </PanelFieldGroup>
+        </PanelGrid>
+      </template>
 
       <ParagraphFields
         :node="ctx.node.value"

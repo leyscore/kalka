@@ -655,5 +655,21 @@
   "behaviourStateUnset": "无",
   "behaviourStateField": "{state}状态",
   "searchComponentProperties": "搜索属性",
-  "noComponentProperties": "未找到属性"
+  "noComponentProperties": "未找到属性",
+  "localStyles": "本地样式",
+  "textStyles": "文本样式",
+  "styleLibrary": "样式",
+  "createStyle": "创建样式",
+  "styleName": "名称",
+  "createStyleAction": "创建",
+  "detachStyle": "分离样式",
+  "editStyle": "编辑样式",
+  "editTextStyle": "编辑文本样式",
+  "renameStyle": "重命名样式",
+  "deleteStyle": "删除样式",
+  "noTextStyles": "没有文本样式",
+  "noTextStylesHint": "选择一个文本图层，并在其排版部分创建样式。",
+  "moveStyleUp": "上移",
+  "moveStyleDown": "下移",
+  "styleActions": "样式操作"
 }

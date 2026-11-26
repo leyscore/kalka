@@ -42,6 +42,7 @@ import PositionSection from './properties/PositionSection.vue'
 import SelectionActionsControl from './properties/SelectionActionsControl.vue'
 import ShaderSection from './properties/ShaderSection.vue'
 import StrokeSection from './properties/stroke/StrokeSection.vue'
+import LocalStylesSection from './properties/text-styles/LocalStylesSection.vue'
 import TypographySection from './properties/TypographySection.vue'
 import VariablesSection from './properties/VariablesSection.vue'
 
@@ -229,6 +230,7 @@ const { panels } = useI18n()
   >
     <PageSection />
     <VariablesSection @open-dialog="openVariablesDialog(store)" />
+    <LocalStylesSection />
     <ExportSection />
   </div>
 </template>

@@ -7,7 +7,11 @@ import { useEditor, useI18n } from '@kalka/vue'
 import { parseTypedSpacing } from '@/components/properties/typography/spacing'
 import VariableNumberField from '@/components/properties/VariableNumberField.vue'
 
-const { node } = defineProps<{ node: SceneNode }>()
+const { node, apply } = defineProps<{
+  node: SceneNode
+  /** Writes a unit change, one undo step; the layer itself by default. */
+  apply?: (changes: Partial<SceneNode>, label: string) => void
+}>()
 const emit = defineEmits<{ update: [value: number]; commit: [value: number, previous: number] }>()
 const editor = useEditor()
 const { panels } = useI18n()
@@ -27,11 +31,9 @@ function onTyped(expression: string) {
   if (!typed || typed.auto) return
   const letterSpacing =
     typed.unit === 'PERCENT' ? pixelsFromPercent(typed.value, node.fontSize) : typed.value
-  editor.updateNodeWithUndo(
-    node.id,
-    { letterSpacing, letterSpacingUnit: typed.unit },
-    'Set letter spacing'
-  )
+  const changes = { letterSpacing, letterSpacingUnit: typed.unit }
+  if (apply) apply(changes, 'Set letter spacing')
+  else editor.updateNodeWithUndo(node.id, changes, 'Set letter spacing')
 }
 </script>
 

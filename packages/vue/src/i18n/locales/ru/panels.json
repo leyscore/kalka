@@ -673,5 +673,21 @@
   "behaviourStateUnset": "Нет",
   "behaviourStateField": "Состояние «{state}»",
   "searchComponentProperties": "Поиск свойств",
-  "noComponentProperties": "Свойства не найдены"
+  "noComponentProperties": "Свойства не найдены",
+  "localStyles": "Локальные стили",
+  "textStyles": "Текстовые стили",
+  "styleLibrary": "Стили",
+  "createStyle": "Создать стиль",
+  "styleName": "Название",
+  "createStyleAction": "Создать",
+  "detachStyle": "Отвязать стиль",
+  "editStyle": "Изменить стиль",
+  "editTextStyle": "Изменить текстовый стиль",
+  "renameStyle": "Переименовать стиль",
+  "deleteStyle": "Удалить стиль",
+  "noTextStyles": "Нет текстовых стилей",
+  "noTextStylesHint": "Выберите текстовый слой и создайте стиль в разделе «Типографика».",
+  "moveStyleUp": "Выше",
+  "moveStyleDown": "Ниже",
+  "styleActions": "Действия со стилем"
 }

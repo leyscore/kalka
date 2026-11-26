@@ -4,7 +4,9 @@ import {
   copyFills,
   copyLayoutGrids,
   sharedStyleRefKey,
+  sharedTextStyleValues,
   type SceneNode,
+  type SharedStyle,
   type SharedStyleKind
 } from '@kalka/scene-graph'
 
@@ -44,21 +46,34 @@ export function sharedStylePatch(
   else if (kind === 'stroke') patch.strokes = strokePaintsFromStyle(target, style)
   else if (kind === 'effect') patch.effects = copyEffects(style.effects)
   else if (kind === 'grid') patch.layoutGrids = copyLayoutGrids(style.layoutGrids)
-  else {
-    Object.assign(patch, {
-      fontFamily: style.fontFamily,
-      fontWeight: style.fontWeight,
-      italic: style.italic,
-      fontSize: style.fontSize,
-      lineHeight: style.lineHeight,
-      letterSpacing: style.letterSpacing,
-      textDecoration: style.textDecoration,
-      textCase: style.textCase
-    })
-  }
+  else Object.assign(patch, sharedTextStyleValues(style))
   return patch
 }
 
 export function sharedStyleDetachPatch(kind: SharedStyleKind): Partial<SceneNode> {
   return { [sharedStyleRefKey(kind)]: null }
+}
+
+/** Styles filed under one folder: the part of their names before the last `/`. */
+export interface SharedStyleGroup {
+  /** The folder path, empty for styles at the top level. */
+  folder: string
+  styles: Array<SharedStyle & { label: string }>
+}
+
+/** Styles grouped by folder in the order they are listed, as Figma groups `Heading/H1`. */
+export function groupSharedStyles(styles: readonly SharedStyle[]): SharedStyleGroup[] {
+  const groups: SharedStyleGroup[] = []
+  for (const style of styles) {
+    const slash = style.name.lastIndexOf('/')
+    const folder = slash > 0 ? style.name.slice(0, slash).trim() : ''
+    const label = slash > 0 ? style.name.slice(slash + 1).trim() || style.name : style.name
+    let group = groups.find((entry) => entry.folder === folder)
+    if (!group) {
+      group = { folder, styles: [] }
+      groups.push(group)
+    }
+    group.styles.push({ ...style, label })
+  }
+  return groups
 }

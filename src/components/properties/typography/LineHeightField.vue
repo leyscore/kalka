@@ -19,7 +19,11 @@ import { useSelectUI } from '@/components/ui/select/select'
 
 type LineHeightMode = 'AUTO' | 'PIXELS' | 'PERCENT'
 
-const { node } = defineProps<{ node: SceneNode }>()
+const { node, apply } = defineProps<{
+  node: SceneNode
+  /** Writes a unit or mode change, one undo step; the layer itself by default. */
+  apply?: (changes: Partial<SceneNode>, label: string) => void
+}>()
 const emit = defineEmits<{ update: [value: number]; commit: [value: number, previous: number] }>()
 const editor = useEditor()
 const { open: popupOpen, portalActive } = useRetainedPopup()
@@ -42,11 +46,14 @@ function toPixels(shown: number): number {
 }
 
 function setLineHeight(lineHeight: number, unit: SceneNode['lineHeightUnit']) {
-  editor.updateNodeWithUndo(node.id, { lineHeight, lineHeightUnit: unit }, 'Set line height')
+  if (apply) apply({ lineHeight, lineHeightUnit: unit }, 'Set line height')
+  else editor.updateNodeWithUndo(node.id, { lineHeight, lineHeightUnit: unit }, 'Set line height')
 }
 
 function setMode(next: string) {
-  if (next === 'AUTO') {
+  if (next === 'AUTO' && apply) {
+    apply({ lineHeight: null, lineHeightUnit: 'PIXELS' }, 'Use automatic line height')
+  } else if (next === 'AUTO') {
     editor.undo.runBatch('Use automatic line height', () => {
       if (node.boundVariables.lineHeight) editor.unbindVariable(node.id, 'lineHeight')
       editor.updateNodeWithUndo(

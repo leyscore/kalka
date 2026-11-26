@@ -152,7 +152,8 @@ export type {
   UseVariableBindingOptions
 } from '#vue/controls/variable-binding/use'
 export { useEffectsControls } from '#vue/controls/effects/use'
-export { useSharedStyleBinding } from '#vue/controls/shared-style/use'
+export { useSharedStyleBinding, useSharedStyles } from '#vue/controls/shared-style/use'
+export { groupSharedStyles, type SharedStyleGroup } from '#vue/controls/shared-style/model'
 export { useStrokeControls } from '#vue/controls/stroke/use'
 export { isStrokeCapValue } from '#vue/controls/stroke/helpers'
 export { isEndPointCap } from '#vue/controls/stroke/end-caps'

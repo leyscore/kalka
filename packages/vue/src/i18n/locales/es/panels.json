@@ -664,5 +664,21 @@
   "behaviourStateUnset": "Ninguno",
   "behaviourStateField": "Estado {state}",
   "searchComponentProperties": "Buscar propiedades",
-  "noComponentProperties": "No se encontraron propiedades"
+  "noComponentProperties": "No se encontraron propiedades",
+  "localStyles": "Estilos locales",
+  "textStyles": "Estilos de texto",
+  "styleLibrary": "Estilos",
+  "createStyle": "Crear estilo",
+  "styleName": "Nombre",
+  "createStyleAction": "Crear",
+  "detachStyle": "Desvincular estilo",
+  "editStyle": "Editar estilo",
+  "editTextStyle": "Editar estilo de texto",
+  "renameStyle": "Cambiar nombre del estilo",
+  "deleteStyle": "Eliminar estilo",
+  "noTextStyles": "No hay estilos de texto",
+  "noTextStylesHint": "Selecciona una capa de texto y crea un estilo desde su sección Tipografía.",
+  "moveStyleUp": "Subir",
+  "moveStyleDown": "Bajar",
+  "styleActions": "Acciones del estilo"
 }

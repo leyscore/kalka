@@ -673,5 +673,21 @@
   "behaviourStateUnset": "Brak",
   "behaviourStateField": "Stan {state}",
   "searchComponentProperties": "Szukaj właściwości",
-  "noComponentProperties": "Nie znaleziono właściwości"
+  "noComponentProperties": "Nie znaleziono właściwości",
+  "localStyles": "Style lokalne",
+  "textStyles": "Style tekstu",
+  "styleLibrary": "Style",
+  "createStyle": "Utwórz styl",
+  "styleName": "Nazwa",
+  "createStyleAction": "Utwórz",
+  "detachStyle": "Odłącz styl",
+  "editStyle": "Edytuj styl",
+  "editTextStyle": "Edytuj styl tekstu",
+  "renameStyle": "Zmień nazwę stylu",
+  "deleteStyle": "Usuń styl",
+  "noTextStyles": "Brak stylów tekstu",
+  "noTextStylesHint": "Zaznacz warstwę tekstową i utwórz styl w sekcji Typografia.",
+  "moveStyleUp": "Przenieś w górę",
+  "moveStyleDown": "Przenieś w dół",
+  "styleActions": "Akcje stylu"
 }
