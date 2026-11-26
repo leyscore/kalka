@@ -21,8 +21,16 @@ import {
   type DocumentFontInfo,
   type FontSearchResult
 } from './fonts'
+import {
+  getStrokeDraw,
+  setStrokeDraw,
+  strokeDrawCatalog,
+  type StrokeDraw,
+  type StrokeDrawChange
+} from './stroke-draw'
 
 export { BehaviourHandle, type NodeRef } from './behaviours'
+export type { StrokeDraw, StrokeDrawChange } from './stroke-draw'
 export type { DocumentFontInfo, FontSearchResult } from './fonts'
 
 /**
@@ -82,5 +90,23 @@ export class KalkaAPI {
   /** Stops carrying a family; text set in it then draws with what the computer has. */
   removeFont(family: string): boolean {
     return this.figma.graph.removeProjectFont(family)
+  }
+
+  /** Kalka's stroke width presets and brushes by type, which `setStrokeDraw` takes by name. */
+  get strokeDrawCatalog() {
+    return strokeDrawCatalog()
+  }
+
+  /** A vector's or line's Figma Draw stroke settings: its width profile and brush. */
+  getStrokeDraw(node: NodeRef): StrokeDraw {
+    return getStrokeDraw(this.figma.graph, node)
+  }
+
+  /**
+   * Sets a vector's or line's width profile (a preset such as `'taper'`, points, or null) and
+   * brush (`'SCATTER:stars'`, `{ type, id, gap, … }`, or null); a field left out stays.
+   */
+  setStrokeDraw(node: NodeRef, change: StrokeDrawChange): StrokeDraw {
+    return setStrokeDraw(this.figma.graph, node, change)
   }
 }

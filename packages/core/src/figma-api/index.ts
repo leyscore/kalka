@@ -584,6 +584,11 @@ export class FigmaAPI implements NodeProxyHost {
    * Loads the font so text measures and draws with it from then on. Hosts with their own font
    * sources replace this; a font that cannot load is skipped, where Figma would reject.
    */
+  /** Kalka's brushes are built in, so they are always loaded. */
+  loadBrushesAsync(_brushType: 'STRETCH' | 'SCATTER'): Promise<void> {
+    return Promise.resolve()
+  }
+
   async loadFontAsync(fontName: FigmaFontName): Promise<void> {
     await loadDocumentFont(this.graph, fontName.family, fontName.style).catch(() => null)
   }

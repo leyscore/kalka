@@ -107,6 +107,8 @@ export const DESIGN_JSX_SUPPORTED_PROPERTY_NAMES = [
   'dashPattern',
   'strokes',
   'strokeWeights',
+  'strokeWidthProfile',
+  'strokeBrush',
   'rounded',
   'borderRadius',
   'roundedTL',

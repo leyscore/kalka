@@ -8,6 +8,13 @@ import {
   type ProxyThis
 } from '#core/figma-api/accessor-utils'
 import {
+  brushFromFigma,
+  drawsAlongPath,
+  figmaComplexStroke,
+  figmaVariableWidth,
+  widthProfileFromFigma
+} from '#core/figma-api/complex-strokes'
+import {
   setIndependentStrokeWeight,
   setStrokeAlign,
   setStrokeWeight
@@ -32,6 +39,12 @@ function independentWeight(internals: NodeProxyInternals, field: IndependentWeig
       setIndependentStrokeWeight(graph(this, internals), nodeId(this, internals), field, value)
     }
   }
+}
+
+/** Kalka draws width profiles and brushes along vectors and lines only. */
+function assertAlongPath(node: SceneNode, property: string): void {
+  if (drawsAlongPath(node)) return
+  throw new TypeError(`${property}: Kalka draws this on vectors and lines, not on a ${node.type}`)
 }
 
 export function installStrokeNodeProxyAccessors(
@@ -96,6 +109,27 @@ export function installStrokeNodeProxyAccessors(
       },
       set(this: ProxyThis, value: number) {
         updateNode(this, internals, { strokeMiterLimit: value })
+      }
+    },
+    variableWidthStrokeProperties: {
+      get(this: ProxyThis) {
+        return figmaVariableWidth(raw(this, internals))
+      },
+      set(this: ProxyThis, value: unknown) {
+        const strokeWidthProfile = widthProfileFromFigma(value)
+        assertAlongPath(raw(this, internals), 'variableWidthStrokeProperties')
+        updateNode(this, internals, { strokeWidthProfile })
+      }
+    },
+    complexStrokeProperties: {
+      get(this: ProxyThis) {
+        return figmaComplexStroke(raw(this, internals))
+      },
+      set(this: ProxyThis, value: unknown) {
+        const node = raw(this, internals)
+        const strokeBrush = brushFromFigma(value, node.strokeBrush)
+        if (strokeBrush) assertAlongPath(node, 'complexStrokeProperties')
+        updateNode(this, internals, { strokeBrush })
       }
     },
     strokeTopWeight: independentWeight(internals, 'borderTopWeight'),

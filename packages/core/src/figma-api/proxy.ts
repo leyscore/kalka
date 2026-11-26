@@ -34,6 +34,10 @@ import {
   type FigmaVectorPath
 } from './accessors/vector'
 import { installVisualNodeProxyAccessors } from './accessors/visual'
+import type {
+  FigmaComplexStrokeProperties,
+  FigmaVariableWidthStrokeProperties
+} from './complex-strokes'
 import { installComponentPropertyAccessors } from './components'
 import type { FigmaFontName } from './fonts'
 import { installHandoffAccessors } from './handoff'
@@ -186,6 +190,8 @@ export class FigmaNodeProxy {
   declare strokeCap: string
   declare strokeJoin: string
   declare strokeMiterLimit: number
+  declare variableWidthStrokeProperties: FigmaVariableWidthStrokeProperties | null
+  declare complexStrokeProperties: FigmaComplexStrokeProperties
   declare strokeTopWeight: number
   declare strokeBottomWeight: number
   declare strokeLeftWeight: number

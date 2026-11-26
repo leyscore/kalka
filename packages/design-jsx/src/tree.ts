@@ -148,6 +148,22 @@ export type StyleProps = {
   strokeAlign?: 'inside' | 'outside' | 'center'
   strokeDash?: number[] | boolean
   dashPattern?: number[]
+  /** The stroke's width along its path, in stroke weights each side, as Figma Draw sets it. */
+  strokeWidthProfile?: Array<
+    { position: number; ascent: number; descent: number } | { position: number; width: number }
+  >
+  /** The brush the stroke is drawn with: Kalka's brush `id` of a type, with any settings. */
+  strokeBrush?: {
+    type: 'STRETCH' | 'SCATTER'
+    id: string
+    gap?: number
+    wiggle?: number
+    sizeJitter?: number
+    angularJitter?: number
+    rotation?: number
+    reverse?: boolean
+    seed?: number
+  } | null
   rounded?: number | DesignVariable
   roundedTL?: number | DesignVariable
   roundedTR?: number | DesignVariable

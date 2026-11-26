@@ -5,6 +5,7 @@ import type { Color, JSONObject } from '@kalka/scene-graph/primitives'
 
 import { applyEffectOverrides } from './overrides/effects'
 import { applyStateOverrides } from './overrides/state'
+import { applyStrokeDrawOverrides } from './overrides/stroke-draw'
 import { applyStrokeOverrides } from './overrides/strokes'
 import { DESIGN_JSX_STYLE_KEYS, designJSXProp } from './schema'
 
@@ -212,6 +213,7 @@ function applyCornerOverrides(props: Record<string, unknown>, o: Partial<SceneNo
 function applyVisualOverrides(props: Record<string, unknown>, o: Partial<SceneNode>): void {
   applyFillOverride(props, o)
   applyStrokeOverrides(props, o)
+  applyStrokeDrawOverrides(props, o)
   applyCornerOverrides(props, o)
 
   if (props.opacity !== undefined) o.opacity = props.opacity as number

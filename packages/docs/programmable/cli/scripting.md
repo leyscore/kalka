@@ -124,6 +124,11 @@ kalka eval design.fig -w -c '
 - `kalka.addFont(family)` downloads a family into the document and loads it; a name the catalogue lacks fails with close names.
 - `kalka.fonts` lists the families the document carries; `kalka.removeFont(family)` stops carrying one.
 
+A vector's or line's stroke can thicken and thin along its path and be drawn with a brush, as Figma Draw's stroke settings do:
+
+- `kalka.setStrokeDraw(node, { widthProfile, brush })` sets a width profile (a preset such as `"taper"`, points `{ position, ascent, descent }` in stroke weights, or `null`) and a brush (`"SCATTER:stars"`, `{ type, id, gap, wiggle, … }`, or `null`); a field left out stays. `kalka.getStrokeDraw(node)` reads both, and `kalka.strokeDrawCatalog` lists the presets and brushes. The `set_stroke_draw` MCP tool does the same.
+- Figma's own `variableWidthStrokeProperties` and `complexStrokeProperties` work too: a width point's `width` is both sides of the path together, Figma's brush names pick one of Kalka's brushes, which read back as `CUSTOM`, and dynamic strokes are not supported.
+
 ## Supported API surface
 
 The API is intentionally close to Figma's Plugin API, but it maps to Kalka's scene graph and file format.

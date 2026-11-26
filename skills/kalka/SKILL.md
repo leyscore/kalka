@@ -184,6 +184,8 @@ kalka eval design.fig -w -c '
 
 When you pick a typeface, keep it with the document: `kalka.searchFonts("grotesk")` lists open-licence families of the free catalogue (Google Fonts and Fontsource), and `await kalka.addFont("Space Grotesk")` downloads one with its licence into the document, so it draws the same offline, for teammates and in exported HTML. Over MCP, `search_fonts` and `add_font` do the same.
 
+A vector's or line's stroke can taper along its path or be drawn with a brush: `kalka.setStrokeDraw(line, { widthProfile: "taper", brush: "SCATTER:stars" })`, with `kalka.strokeDrawCatalog` listing the presets and brushes; over MCP, `set_stroke_draw`.
+
 ### Diff
 
 Compare nodes and documents, and apply patches:

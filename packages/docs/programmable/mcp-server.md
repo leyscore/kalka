@@ -368,6 +368,7 @@ Changes apply live in the open app. Settings tools never expose credentials, mod
 | `set_blend` | Set blend mode |
 | `set_locked` | Lock or unlock a node |
 | `set_stroke_align` | Set stroke alignment (inside/center/outside) |
+| `set_stroke_draw` | Set a vector's or line's width profile preset and brush (Figma Draw) |
 | `set_text_properties` | Set text layout: alignment, auto-resize, text case, decoration, truncation |
 | `set_layout_child` | Configure auto-layout child: sizing, grow, alignment, absolute positioning |
 | `node_move` | Move a node to a new position |

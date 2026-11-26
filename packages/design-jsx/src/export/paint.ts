@@ -144,6 +144,10 @@ export function collectStrokeProps(node: SceneNode, props: JSXProp[]): void {
     props.push(['strokeJoin', node.strokeJoin.toLowerCase()])
   }
   if (node.dashPattern.length > 0) props.push(['dashPattern', [...node.dashPattern]])
+  if (node.strokeWidthProfile.length > 0) {
+    props.push(['strokeWidthProfile', plainValue(node.strokeWidthProfile)])
+  }
+  if (node.strokeBrush) props.push(['strokeBrush', plainValue(node.strokeBrush)])
   if (node.independentStrokeWeights) {
     props.push([
       'strokeWeights',

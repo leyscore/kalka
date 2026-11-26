@@ -63,7 +63,6 @@ export const UNSUPPORTED_PLUGIN_API = {
   importShaderById: NOT_YET,
   importStyleByKeyAsync: NO_LIBRARY,
   listAvailableShaders: NOT_YET,
-  loadBrushesAsync: NOT_YET,
   mode: NO_PLUGIN_RUNTIME,
   motion: NOT_YET,
   moveLocalCustomAnimationFolderAfter: NOT_YET,

@@ -115,6 +115,15 @@ const _cssMethodMatch: CSSMethodMatch = true
 type EffectShapeMatch = Expect<Extends<FigmaNodeProxy['effects'][number], Effect>>
 const _effectShapeMatch: EffectShapeMatch = true
 
+// Width profiles and brushes read back in Figma's shapes, brush names widened to Kalka's own.
+type ComplexStrokesMatch = Expect<
+  Extends<
+    FigmaNodeProxy['variableWidthStrokeProperties'],
+    VectorNode['variableWidthStrokeProperties']
+  >
+>
+const _complexStrokesMatch: ComplexStrokesMatch = true
+
 // Variables and collections are handles on a subset of Figma's; the members checked below match.
 type VariablesAPIMembers = 'createVariableAlias' | 'createVariableAliasByIdAsync'
 type VariablesAPISurfaceMatch = Expect<

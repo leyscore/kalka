@@ -40,6 +40,7 @@ import {
   setOpacity,
   setRotation,
   setStrokeAlign,
+  setStrokeDraw,
   setTextResize,
   setVisible
 } from './modify'
@@ -161,6 +162,7 @@ export const EXTENDED_TOOLS: ToolDef[] = [
   setBlend,
   setLocked,
   setStrokeAlign,
+  setStrokeDraw,
   setImageFill,
   // Structure (advanced)
   cloneNode,

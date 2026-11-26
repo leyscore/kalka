@@ -3,5 +3,6 @@ export { setMinMax, setOpacity, setRadius, setRotation } from './modify/geometry
 export { setConstraints, setLayout, setLayoutChild } from './modify/layout'
 export { setFill, setImageFill, setStroke } from './modify/paint'
 export { setBlend, setLocked, setStrokeAlign, setVisible } from './modify/state'
+export { setStrokeDraw } from './modify/stroke-draw'
 export { setFont, setFontRange, setText, setTextProperties, setTextResize } from './modify/text'
 export { updateNode } from './modify/update'
