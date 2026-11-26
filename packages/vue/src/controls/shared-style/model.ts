@@ -1,36 +1,10 @@
-import { BLACK } from '@kalka/core/constants'
 import {
-  copyEffects,
-  copyFills,
-  copyLayoutGrids,
   sharedStyleRefKey,
-  sharedTextStyleValues,
+  sharedStyleValues,
   type SceneNode,
   type SharedStyle,
   type SharedStyleKind
 } from '@kalka/scene-graph'
-
-function strokePaintsFromStyle(target: SceneNode, style: SceneNode): SceneNode['strokes'] {
-  const fills = style.fills.filter((fill) => fill.type === 'SOLID')
-  if (fills.length === 0) return target.strokes
-  const fallback = target.strokes[0] ?? {
-    type: 'SOLID' as const,
-    color: BLACK,
-    weight: 1,
-    opacity: 1,
-    visible: true,
-    align: 'CENTER' as const
-  }
-  return fills.map((fill, index) => {
-    const current = target.strokes[index] ?? fallback
-    return {
-      ...current,
-      color: { ...fill.color },
-      opacity: fill.opacity,
-      visible: fill.visible
-    }
-  })
-}
 
 export function sharedStylePatch(
   kind: SharedStyleKind,
@@ -41,13 +15,7 @@ export function sharedStylePatch(
   const refKey = sharedStyleRefKey(kind)
   const patch: Partial<SceneNode> = { [refKey]: styleId }
   if (!style) return patch
-
-  if (kind === 'fill') patch.fills = copyFills(style.fills)
-  else if (kind === 'stroke') patch.strokes = strokePaintsFromStyle(target, style)
-  else if (kind === 'effect') patch.effects = copyEffects(style.effects)
-  else if (kind === 'grid') patch.layoutGrids = copyLayoutGrids(style.layoutGrids)
-  else Object.assign(patch, sharedTextStyleValues(style))
-  return patch
+  return { ...sharedStyleValues(kind, target, style), ...patch }
 }
 
 export function sharedStyleDetachPatch(kind: SharedStyleKind): Partial<SceneNode> {

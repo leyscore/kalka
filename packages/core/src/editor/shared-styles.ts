@@ -1,13 +1,18 @@
 import {
   findInstanceAncestor,
-  SHARED_TEXT_STYLE_FIELDS,
   sharedStyleConsumers,
+  sharedStyleFields,
+  sharedStyleKindsForType,
   sharedStyleRefKey,
-  sharedTextStyleValues,
+  sharedStyleTypeForKind,
+  sharedStyleValues,
+  sharedStyleValuesFromLayer,
+  supportsSharedStyle,
   type NodeType,
   type SceneNode,
   type SharedStyle,
-  type SharedStyleKind
+  type SharedStyleKind,
+  type SharedStyleType
 } from '@kalka/scene-graph'
 
 import type { createNodeActions } from './nodes'
@@ -15,22 +20,29 @@ import type { EditorContext } from './types'
 
 type NodeActions = ReturnType<typeof createNodeActions>
 
-const SHARED_TEXT_STYLE_KEYS = new Set<string>(SHARED_TEXT_STYLE_FIELDS)
+/**
+ * The layer a definition is, as `.fig` files keep them: text for a text style, a frame for a
+ * grid style, a rectangle for colour and effect styles.
+ */
+const DEFINITION_NODE_TYPES: Record<SharedStyleType, NodeType> = {
+  FILL: 'RECTANGLE',
+  TEXT: 'TEXT',
+  EFFECT: 'RECTANGLE',
+  GRID: 'FRAME'
+}
 
-/** The style kind a definition layer holds; stroke styles are fill styles. */
-function definitionKind(node: SceneNode): SharedStyleKind | null {
-  switch (node.sharedStyleType) {
-    case 'FILL':
-      return 'fill'
-    case 'TEXT':
-      return 'text'
-    case 'EFFECT':
-      return 'effect'
-    case 'GRID':
-      return 'grid'
-    default:
-      return null
-  }
+const CREATE_LABELS: Record<SharedStyleType, string> = {
+  FILL: 'Create color style',
+  TEXT: 'Create text style',
+  EFFECT: 'Create effect style',
+  GRID: 'Create grid style'
+}
+
+const EDIT_LABELS: Record<SharedStyleType, string> = {
+  FILL: 'Edit color style',
+  TEXT: 'Edit text style',
+  EFFECT: 'Edit effect style',
+  GRID: 'Edit grid style'
 }
 
 /**
@@ -69,61 +81,85 @@ export function createSharedStyleActions(ctx: EditorContext, nodes: NodeActions)
   }
 
   /**
-   * Makes a text style from a text layer's current properties, named `name` (a `/` files it in a
-   * folder), and applies it to that layer and the other given text layers.
+   * Makes a style of `kind` from the first given layer's current properties, named `name` (a `/`
+   * files it in a folder), and applies it to the given layers that can use it. A style made from
+   * a stroke is a colour style, as in Figma.
    */
-  function createTextStyle(name: string, nodeIds: readonly string[]): SharedStyle | null {
+  function createSharedStyle(
+    kind: SharedStyleKind,
+    name: string,
+    nodeIds: readonly string[]
+  ): SharedStyle | null {
     const trimmed = name.trim()
     const targets = nodeIds
       .map((id) => ctx.graph.getNode(id))
-      .filter((node): node is SceneNode => node?.type === 'TEXT')
+      .filter((node): node is SceneNode => !!node && supportsSharedStyle(node, kind))
     const source = targets.at(0)
     if (!trimmed || !source) return null
-    return ctx.undo.runBatch('Create text style', () => {
-      const style = addStyleNode('TEXT', {
-        ...sharedTextStyleValues(source),
+    const type = sharedStyleTypeForKind(kind)
+    const label = CREATE_LABELS[type]
+    return ctx.undo.runBatch(label, () => {
+      const style = addStyleNode(DEFINITION_NODE_TYPES[type], {
+        ...sharedStyleValuesFromLayer(kind, source),
+        ...(type === 'TEXT' ? { text: 'Ag' } : {}),
         name: trimmed,
-        text: 'Ag',
-        sharedStyleType: 'TEXT'
+        sharedStyleType: type
       })
       const styleId = style.source.id
       if (!styleId) return null
       for (const target of targets) {
         nodes.updateNodeWithUndo(
           target.id,
-          { ...sharedTextStyleValues(style), textStyleId: styleId },
-          'Create text style'
+          { ...sharedStyleValues(kind, target, style), [sharedStyleRefKey(kind)]: styleId },
+          label
         )
       }
       ctx.requestRender()
-      return { id: styleId, nodeId: style.id, name: trimmed, type: 'TEXT' }
+      return { id: styleId, nodeId: style.id, name: trimmed, type }
     })
   }
 
+  /** Makes a text style from text layers; see `createSharedStyle`. */
+  function createTextStyle(name: string, nodeIds: readonly string[]): SharedStyle | null {
+    return createSharedStyle('text', name, nodeIds)
+  }
+
   /**
-   * Changes a text style's properties and every layer that uses it, as one undo step. Layers in
-   * instances follow their component, so only definitions are changed.
+   * Changes a style's values (a colour style's paints, an effect style's effects, a grid style's
+   * guides, a text style's type settings) and every layer that uses it, as one undo step. Layers
+   * in instances follow their component, so only definitions are changed.
    */
-  function updateTextStyle(styleNodeId: string, changes: Partial<SceneNode>) {
+  function updateSharedStyle(styleNodeId: string, changes: Partial<SceneNode>) {
     const style = styleDefinition(styleNodeId)
     const styleId = style?.source.id
-    if (style?.sharedStyleType !== 'TEXT' || !styleId) return
+    const type = style?.sharedStyleType
+    if (!style || !styleId || !type) return
+    const allowed = new Set<string>(sharedStyleFields(type))
     const styleChanges = Object.fromEntries(
-      Object.entries(changes).filter(([key]) => SHARED_TEXT_STYLE_KEYS.has(key))
+      Object.entries(changes).filter(([key]) => allowed.has(key))
     ) as Partial<SceneNode>
     if (Object.keys(styleChanges).length === 0) return
-    ctx.undo.runBatch('Edit text style', () => {
-      nodes.updateNodeWithUndo(style.id, styleChanges, 'Edit text style')
-      for (const consumer of sharedStyleConsumers(ctx.graph, 'text', styleId)) {
-        if (findInstanceAncestor(ctx.graph, consumer.id)) continue
-        nodes.updateNodeWithUndo(
-          consumer.id,
-          { ...sharedTextStyleValues(style), textStyleId: styleId },
-          'Edit text style'
-        )
+    const label = EDIT_LABELS[type]
+    ctx.undo.runBatch(label, () => {
+      nodes.updateNodeWithUndo(style.id, styleChanges, label)
+      for (const kind of sharedStyleKindsForType(type)) {
+        for (const consumer of sharedStyleConsumers(ctx.graph, kind, styleId)) {
+          if (findInstanceAncestor(ctx.graph, consumer.id)) continue
+          nodes.updateNodeWithUndo(
+            consumer.id,
+            { ...sharedStyleValues(kind, consumer, style), [sharedStyleRefKey(kind)]: styleId },
+            label
+          )
+        }
       }
       ctx.requestRender()
     })
+  }
+
+  /** Changes a text style; see `updateSharedStyle`. */
+  function updateTextStyle(styleNodeId: string, changes: Partial<SceneNode>) {
+    if (styleDefinition(styleNodeId)?.sharedStyleType !== 'TEXT') return
+    updateSharedStyle(styleNodeId, changes)
   }
 
   function renameSharedStyle(styleNodeId: string, name: string) {
@@ -139,16 +175,15 @@ export function createSharedStyleActions(ctx: EditorContext, nodes: NodeActions)
    */
   function deleteSharedStyle(styleNodeId: string) {
     const style = styleDefinition(styleNodeId)
-    const kind = style ? definitionKind(style) : null
+    const type = style?.sharedStyleType
     const styleId = style?.source.id
-    if (!style || !kind || !styleId) return
+    if (!style || !type || !styleId) return
     const parentId = style.parentId
     const index = parentId ? (ctx.graph.getNode(parentId)?.childIds.indexOf(style.id) ?? -1) : -1
     const snapshot = structuredClone(style)
     ctx.undo.runBatch('Delete style', () => {
       // Stroke styles share fill definitions, so both links let go.
-      const kinds: SharedStyleKind[] = kind === 'fill' ? ['fill', 'stroke'] : [kind]
-      for (const linked of kinds) {
+      for (const linked of sharedStyleKindsForType(type)) {
         for (const consumer of sharedStyleConsumers(ctx.graph, linked, styleId))
           nodes.updateNodeWithUndo(
             consumer.id,
@@ -212,7 +247,9 @@ export function createSharedStyleActions(ctx: EditorContext, nodes: NodeActions)
 
   return {
     addStyleNode,
+    createSharedStyle,
     createTextStyle,
+    updateSharedStyle,
     updateTextStyle,
     renameSharedStyle,
     deleteSharedStyle,

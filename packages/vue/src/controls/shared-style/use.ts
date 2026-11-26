@@ -4,6 +4,7 @@ import {
   getSharedStyles,
   sharedStyleRefKey,
   sharedStyleTypeForKind,
+  supportsSharedStyle,
   type SceneNode,
   type SharedStyleKind
 } from '@kalka/scene-graph'
@@ -16,19 +17,6 @@ import {
 } from '#vue/controls/shared-style/model'
 import { useEditor } from '#vue/editor/context'
 import { useEditorEvent } from '#vue/editor/events/use'
-
-function supportsStyle(node: SceneNode, kind: SharedStyleKind): boolean {
-  if (kind === 'text') return node.type === 'TEXT'
-  if (kind === 'grid') {
-    return (
-      node.type === 'FRAME' ||
-      node.type === 'COMPONENT' ||
-      node.type === 'COMPONENT_SET' ||
-      node.type === 'INSTANCE'
-    )
-  }
-  return node.type !== 'CANVAS'
-}
 
 /**
  * The document's styles of one kind, kept current as their definitions change, with the actions
@@ -82,7 +70,7 @@ export function useSharedStyleBinding(kind: SharedStyleKind) {
   const { store, nodes, merged } = useNodeProps()
   const refKey = sharedStyleRefKey(kind)
   const active = computed(
-    () => nodes.value.length > 0 && nodes.value.every((node) => supportsStyle(node, kind))
+    () => nodes.value.length > 0 && nodes.value.every((node) => supportsSharedStyle(node, kind))
   )
   const styleId = computed(() => merged(refKey))
   const { styles, definition } = useSharedStyles(kind)
@@ -108,14 +96,24 @@ export function useSharedStyleBinding(kind: SharedStyleKind) {
     update(`Detach ${kind} style`, () => sharedStyleDetachPatch(kind))
   }
 
-  /** Makes a text style from the selected text layers' properties and applies it to them. */
-  function createTextStyle(name: string) {
-    if (kind !== 'text' || !active.value) return null
-    return store.createTextStyle(
+  /** Makes a style from the selected layers' properties and applies it to them. */
+  function createStyle(name: string) {
+    if (!active.value) return null
+    return store.createSharedStyle(
+      kind,
       name,
       nodes.value.map((node) => node.id)
     )
   }
 
-  return { kind, active, styleId, styles, definition, bind, unbind, createTextStyle }
+  return {
+    kind,
+    active,
+    styleId,
+    styles,
+    definition,
+    bind,
+    unbind,
+    createStyle
+  }
 }

@@ -1,5 +1,8 @@
+import { BLACK } from './constants'
+import { copyEffects, copyFill, copyFills, copyLayoutGrids } from './copy'
 import { SHARED_TEXT_STYLE_FIELDS } from './fields/text'
 import type { SceneGraph, SceneNode, SharedStyle, SharedStyleKind, SharedStyleType } from './index'
+import type { Fill, Stroke } from './types'
 
 const STYLE_REF_KEYS = {
   fill: 'fillStyleId',
@@ -78,6 +81,125 @@ export function sharedTextStyleValues(style: SceneNode): Partial<SceneNode> {
   for (const field of SHARED_TEXT_STYLE_FIELDS) Object.assign(values, { [field]: style[field] })
   values.fontFeatures = style.fontFeatures.map((feature) => ({ ...feature }))
   return values
+}
+
+/**
+ * The fields a style's definition holds: a colour style its paints, an effect style its effects,
+ * a grid style its layout guides and a text style its type settings.
+ */
+export function sharedStyleFields(type: SharedStyleType): readonly (keyof SceneNode)[] {
+  switch (type) {
+    case 'FILL':
+      return ['fills']
+    case 'EFFECT':
+      return ['effects']
+    case 'GRID':
+      return ['layoutGrids']
+    case 'TEXT':
+      return SHARED_TEXT_STYLE_FIELDS
+  }
+}
+
+/** The style kinds a definition of this type is applied as: a colour style paints strokes too. */
+export function sharedStyleKindsForType(type: SharedStyleType): SharedStyleKind[] {
+  switch (type) {
+    case 'FILL':
+      return ['fill', 'stroke']
+    case 'EFFECT':
+      return ['effect']
+    case 'GRID':
+      return ['grid']
+    case 'TEXT':
+      return ['text']
+  }
+}
+
+/** A stroke's paints from a colour style, each keeping the weight and placement it had. */
+function strokePaintsFromStyle(target: SceneNode, style: SceneNode): Stroke[] {
+  const fallback: Stroke = target.strokes[0] ?? {
+    type: 'SOLID',
+    color: BLACK,
+    weight: 1,
+    opacity: 1,
+    visible: true,
+    align: 'CENTER'
+  }
+  return style.fills.map((fill, index) => {
+    const { weight, align, cap, join, dashPattern } = target.strokes[index] ?? fallback
+    const stroke: Stroke = { ...copyFill(fill), weight, align }
+    if (cap) stroke.cap = cap
+    if (join) stroke.join = join
+    if (dashPattern) stroke.dashPattern = [...dashPattern]
+    return stroke
+  })
+}
+
+/** The values a style gives a layer that uses it as `kind`, copied from its definition. */
+export function sharedStyleValues(
+  kind: SharedStyleKind,
+  target: SceneNode,
+  style: SceneNode
+): Partial<SceneNode> {
+  switch (kind) {
+    case 'fill':
+      return { fills: copyFills(style.fills) }
+    case 'stroke':
+      return { strokes: strokePaintsFromStyle(target, style) }
+    case 'effect':
+      return { effects: copyEffects(style.effects) }
+    case 'grid':
+      return { layoutGrids: copyLayoutGrids(style.layoutGrids) }
+    case 'text':
+      return sharedTextStyleValues(style)
+  }
+}
+
+/** A stroke as the paint a colour style keeps, without its weight and placement. */
+function strokePaint({
+  weight: _weight,
+  align: _align,
+  cap: _cap,
+  join: _join,
+  dashPattern: _dashPattern,
+  ...paint
+}: Stroke): Fill {
+  return copyFill(paint)
+}
+
+/**
+ * What a new style made from a layer holds: its paints for a colour style (its strokes' paints
+ * when made from the stroke), its effects, its layout guides or its type settings.
+ */
+export function sharedStyleValuesFromLayer(
+  kind: SharedStyleKind,
+  source: SceneNode
+): Partial<SceneNode> {
+  switch (kind) {
+    case 'fill':
+      return { fills: copyFills(source.fills) }
+    case 'stroke':
+      return { fills: source.strokes.map(strokePaint) }
+    case 'effect':
+      return { effects: copyEffects(source.effects) }
+    case 'grid':
+      return { layoutGrids: copyLayoutGrids(source.layoutGrids) }
+    case 'text':
+      return sharedTextStyleValues(source)
+  }
+}
+
+/** Whether a layer can use a style of this kind: text styles need text, grids a frame. */
+export function supportsSharedStyle(node: SceneNode, kind: SharedStyleKind): boolean {
+  if (kind === 'text') return node.type === 'TEXT'
+  if (kind === 'grid') {
+    return (
+      node.type === 'FRAME' ||
+      node.type === 'COMPONENT' ||
+      node.type === 'COMPONENT_SET' ||
+      node.type === 'INSTANCE'
+    )
+  }
+  return node.type !== 'CANVAS'
 }
 
 /** The layers that use a style, apart from its own definition. */
