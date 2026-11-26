@@ -98,6 +98,17 @@ describe('effects CSS has no function for', () => {
     expect(style['box-shadow']).toContain('inset')
   })
 
+  test('glass dispersion bends each colour channel by its own amount', () => {
+    const glass = { ...base, type: 'GLASS' as const, refraction: 0.5, depth: 10 }
+    const plain = filterSVG(effectsToCSS([glass], size)['backdrop-filter'])
+    expect(plain.match(/feDisplacementMap/g)).toHaveLength(1)
+
+    const split = filterSVG(effectsToCSS([{ ...glass, dispersion: 1 }], size)['backdrop-filter'])
+    const scales = [...split.matchAll(/feDisplacementMap[^>]*scale='([\d.]+)'/g)].map((m) => m[1])
+    expect(scales).toEqual(['5', '10', '15'])
+    expect(split).toContain("feComposite in='rg' in2='b'")
+  })
+
   test('effects keep their order in one filter list', () => {
     const style = effectsToCSS(
       [

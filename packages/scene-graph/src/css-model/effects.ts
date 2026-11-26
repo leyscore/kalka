@@ -150,6 +150,35 @@ function blurToCSS(effect: Effect, width: number, height: number): string {
     : `blur(${num(effect.radius)}px)`
 }
 
+/** Keeps one colour channel of what it is given, and its alpha. */
+const CHANNEL_MATRICES = {
+  r: '1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0',
+  g: '0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0',
+  b: '0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0'
+} as const
+
+/**
+ * The displacement of what lies behind a glass by the map `m`. With dispersion each colour
+ * channel bends by its own amount, red least and blue most, as light through a prism, and the
+ * three are added back together: the colour fringes Figma draws at a glass's edges.
+ */
+function glassDisplacement(scale: number, dispersion: number): string {
+  const displace = (amount: number, result = '') =>
+    `<feDisplacementMap in='SourceGraphic' in2='m' scale='${num(amount)}' xChannelSelector='R' yChannelSelector='G'${result}/>`
+  if (dispersion <= 0) return displace(scale)
+  const spread = 0.5 * dispersion
+  const channel = (name: 'r' | 'g' | 'b', amount: number) =>
+    displace(amount, ` result='d${name}'`) +
+    `<feColorMatrix in='d${name}' type='matrix' values='${CHANNEL_MATRICES[name]}' result='${name}'/>`
+  return (
+    channel('r', scale * (1 - spread)) +
+    channel('g', scale) +
+    channel('b', scale * (1 + spread)) +
+    `<feComposite in='r' in2='g' operator='arithmetic' k2='1' k3='1' result='rg'/>` +
+    `<feComposite in='rg' in2='b' operator='arithmetic' k2='1' k3='1'/>`
+  )
+}
+
 /**
  * A glass's refraction: what lies behind is pulled in from the edges over a band as deep as the
  * glass, as through the rim of a lens. One gradient per axis displaces it.
@@ -175,7 +204,7 @@ function glassRefractionFilter(effect: Effect, width: number, height: number): s
     `<feImage href='${ramp(width, 'r')}' ${region} preserveAspectRatio='none' result='x'/>` +
       `<feImage href='${ramp(height, 'g')}' ${region} preserveAspectRatio='none' result='y'/>` +
       `<feComposite in='x' in2='y' operator='arithmetic' k2='1' k3='1' result='m'/>` +
-      `<feDisplacementMap in='SourceGraphic' in2='m' scale='${num(band * 2 * refraction)}' xChannelSelector='R' yChannelSelector='G'/>`,
+      glassDisplacement(band * 2 * refraction, Math.max(0, Math.min(1, effect.dispersion ?? 0))),
     ` primitiveUnits='userSpaceOnUse'`
   )
 }
