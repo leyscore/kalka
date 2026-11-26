@@ -4,6 +4,7 @@ import { ref, useTemplateRef } from 'vue'
 import { useI18n } from '@kalka/vue'
 
 import { checkpointTime } from '@/app/document/versions/checkpoints/use'
+import { compareStates } from '@/app/document/versions/compare'
 import {
   useDeviceHistory,
   useServerHistory,
@@ -72,6 +73,20 @@ function preview(version: HistoryVersion) {
       version,
       `${store.state.documentName} (${panels.value.versionsPreviewing({ time })})`
     )
+  )
+}
+
+/** Compares a version with what is on screen, as Figma's Compare changes does. */
+function compare(version: HistoryVersion) {
+  const time = checkpointTime(version)
+  void act(version.id, async () =>
+    compareStates({
+      before: await source.read(version),
+      after: store.graph,
+      beforeLabel: panels.value.versionsPreviewing({ time }),
+      afterLabel: panels.value.compareNow,
+      afterIsOpen: true
+    })
   )
 }
 
@@ -145,6 +160,16 @@ function restore(version: HistoryVersion) {
             @click="preview(checkpoint)"
           >
             {{ panels.versionsPreview }}
+          </AppButton>
+          <AppButton
+            size="xs"
+            variant="ghost"
+            class="shrink-0"
+            data-test-id="checkpoint-compare"
+            :disabled="busy !== null"
+            @click="compare(checkpoint)"
+          >
+            {{ panels.compareAction }}
           </AppButton>
           <AppButton
             v-if="!store.state.viewOnly"

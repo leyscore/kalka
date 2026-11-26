@@ -7,6 +7,7 @@ import { isTauri } from '@/app/tauri/env'
 import { folderPanel } from '@/theme/panel/folder'
 
 import CheckpointHistory from './CheckpointHistory.vue'
+import CompareChangesDialog from './CompareChangesDialog.vue'
 import ServerBranches from './ServerBranches.vue'
 import VersionsPanel from './VersionsPanel.vue'
 
@@ -34,5 +35,6 @@ const { serverRoomId, checkpoints } = useHistorySource(useEditorStore())
         {{ panels.folderVersionsDesktop }}
       </p>
     </template>
+    <CompareChangesDialog />
   </div>
 </template>

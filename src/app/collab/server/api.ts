@@ -165,6 +165,25 @@ async function versionFile(
   return response ? new Uint8Array(await response.arrayBuffer()) : null
 }
 
+/** Where a branch began, as the main file was then; null from a server that keeps none. */
+async function branchBase(base: string, token: string, id: string): Promise<Uint8Array | null> {
+  const response = await serverBytes(base, token, `/api/documents/${id}/base`)
+  return response ? new Uint8Array(await response.arrayBuffer()) : null
+}
+
+/** A branch's main file as it is now, with when it was saved. */
+export interface BranchMainFile {
+  data: Uint8Array
+  savedAt: number
+}
+
+async function branchMain(base: string, token: string, id: string): Promise<BranchMainFile | null> {
+  const response = await serverBytes(base, token, `/api/documents/${id}/main`)
+  if (!response) return null
+  const data = new Uint8Array(await response.arrayBuffer())
+  return { data, savedAt: Number(response.headers.get('X-Kalka-Saved-At') ?? 0) }
+}
+
 async function pendingVersion(
   base: string,
   token: string,
@@ -245,6 +264,30 @@ export const serverAPI = {
       method: 'POST',
       token,
       body: { force },
+      schema: serverDocumentSchema
+    }),
+  branchBase,
+  branchMain,
+  /** Records that a branch now holds its main file's changes as saved at `savedAt`. */
+  updateBranch: (base: string, token: string, id: string, savedAt: number) =>
+    serverRequest(base, `/api/documents/${id}/update`, {
+      method: 'POST',
+      token,
+      body: { savedAt },
+      schema: serverDocumentSchema
+    }),
+  /** Merges a file made from the main file saved at `mainSavedAt` and the changes chosen. */
+  mergeBranchFile: (
+    base: string,
+    token: string,
+    id: string,
+    data: Uint8Array,
+    mainSavedAt: number
+  ) =>
+    serverRequest(base, `/api/documents/${id}/merge?mainSavedAt=${mainSavedAt}`, {
+      method: 'POST',
+      token,
+      raw: new Blob([new Uint8Array(data)], { type: 'application/vnd.kalka+zip' }),
       schema: serverDocumentSchema
     }),
   versions: (base: string, token: string, id: string) =>

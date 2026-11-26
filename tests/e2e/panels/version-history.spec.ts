@@ -59,3 +59,36 @@ test('a named version is previewed in its own tab, then restored from there', as
   await expect.poll(() => layerName(page, id)).toBe('Hero')
   expect(await page.evaluate(() => window.kalka?.getStore?.()?.state.viewOnly)).toBeFalsy()
 })
+
+test('Compare changes lists the layers a version differs by and draws them', async ({ page }) => {
+  const id = await open(page)
+  await page.getByTestId('left-panel-history-tab').click()
+  const history = page.getByTestId('checkpoint-history')
+  await history.getByTestId('checkpoint-name').fill('First draft')
+  await history.getByTestId('checkpoint-save').click()
+  const version = history.locator('[data-slot="checkpoint"]').first()
+  await expect(version).toContainText('First draft')
+
+  await page.evaluate((nodeId) => {
+    const store = window.kalka?.getStore?.()
+    store?.graph.updateNode(nodeId, { name: 'Card', width: 320 })
+  }, id)
+
+  await version.getByTestId('checkpoint-compare').click()
+  const dialog = page.getByTestId('compare-changes')
+  await expect(dialog).toBeVisible()
+  const change = dialog.locator('[data-slot="compare-change"]')
+  await expect(change).toHaveCount(1)
+  await expect(change).toHaveAttribute('data-kind', 'changed')
+  await expect(change).toContainText('Card')
+  await expect(change).toContainText(/Nom|Name/)
+  await expect(dialog.locator('[data-slot="compare-side"] img')).toHaveCount(2)
+  await dialog.getByTestId('compare-overlay').click()
+  await expect(dialog.locator('[data-slot="compare-overlay"] img')).toHaveCount(2)
+
+  await dialog.getByTestId('compare-show').click()
+  await expect(dialog).toHaveCount(0)
+  await expect
+    .poll(() => page.evaluate(() => [...(window.kalka?.getStore?.()?.state.selectedIds ?? [])]))
+    .toEqual([id])
+})

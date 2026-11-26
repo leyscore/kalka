@@ -1,5 +1,7 @@
 import { ref, watch, type Ref } from 'vue'
 
+import type { SceneGraph } from '@kalka/scene-graph'
+
 import type { ServerVersion } from '@/app/collab/server/api'
 import {
   listServerVersions,
@@ -14,6 +16,7 @@ import {
   captureCheckpoint,
   openVersionPreview,
   previewCheckpoint,
+  readCheckpointGraph,
   restoreCheckpoint,
   useCheckpoints
 } from './checkpoints/use'
@@ -37,6 +40,8 @@ export interface HistorySource {
   /** Opens a version to look at, in a tab named `name`. */
   preview: (version: HistoryVersion, name: string) => Promise<void>
   restore: (version: HistoryVersion, before: string) => Promise<void>
+  /** Reads a version as a document, to compare with what is on screen. */
+  read: (version: HistoryVersion) => Promise<SceneGraph>
 }
 
 /** The versions kept on this device, for a document not shared through a server. */
@@ -58,7 +63,8 @@ export function useDeviceHistory(store: EditorStore): HistorySource {
     list,
     save: async (label) => void (await captureCheckpoint(store, 'named', label)),
     preview: (version, name) => previewCheckpoint(store, find(version), name),
-    restore: (version, before) => restoreCheckpoint(store, find(version), before)
+    restore: (version, before) => restoreCheckpoint(store, find(version), before),
+    read: (version) => readCheckpointGraph(find(version))
   }
 }
 
@@ -95,6 +101,7 @@ export function useServerHistory(store: EditorStore, roomId: () => string): Hist
         createdAt: version.createdAt,
         restore: (before) => restore(version, before)
       }),
-    restore
+    restore,
+    read: (version) => readServerVersion(roomId(), find(version))
   }
 }

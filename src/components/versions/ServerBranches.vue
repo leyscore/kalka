@@ -4,6 +4,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from '@kalka/vue'
 
 import type { ServerDocument } from '@/app/collab/server/api'
+import { reviewServerMerge, reviewServerUpdate } from '@/app/collab/server/branch-review'
 import {
   createServerBranch,
   listServerBranches,
@@ -77,6 +78,28 @@ function create() {
   })
 }
 
+const labels = () => ({ branch: document.value?.name ?? '', main: main.value?.name ?? '' })
+
+/** Reviews the branch's changes layer by layer before merging; a server too old merges whole. */
+async function review() {
+  let opened = true
+  await act(async () => {
+    opened = await reviewServerMerge(roomId, store, labels(), (merged) =>
+      toast.info(panels.value.versionsServerBranchMerged({ name: merged.name }))
+    )
+  })
+  if (!opened) merge(false)
+}
+
+function update() {
+  void act(() =>
+    reviewServerUpdate(roomId, store, {
+      ...labels(),
+      olderServer: panels.value.versionsServerBranchOlder
+    })
+  )
+}
+
 function merge(force: boolean) {
   confirmMerge.value = false
   void act(async () => {
@@ -106,9 +129,19 @@ function merge(force: boolean) {
         variant="solid"
         :loading="busy"
         data-test-id="server-branch-merge"
-        @click="merge(false)"
+        @click="review"
       >
         {{ panels.versionsServerBranchMerge }}
+      </AppButton>
+      <AppButton
+        class="self-start"
+        size="sm"
+        variant="outline"
+        :disabled="busy || store.state.viewOnly"
+        data-test-id="server-branch-update"
+        @click="update"
+      >
+        {{ panels.versionsServerBranchUpdate }}
       </AppButton>
     </template>
     <template v-else-if="document">

@@ -83,7 +83,8 @@ export async function captureCheckpoint(
   return meta
 }
 
-async function readGraph(checkpoint: CheckpointMeta) {
+/** A version kept on this device, read as a document. */
+export async function readCheckpointGraph(checkpoint: CheckpointMeta) {
   const bytes = await readCheckpoint(checkpoint.id)
   if (!bytes) throw new Error('This version is no longer on this device.')
   const { readKalkaArchive } = await import('@kalka/core/io/formats/kalka')
@@ -99,7 +100,7 @@ export async function restoreCheckpoint(
   checkpoint: CheckpointMeta,
   before: string
 ): Promise<void> {
-  const incoming = await readGraph(checkpoint)
+  const incoming = await readCheckpointGraph(checkpoint)
   await captureCheckpoint(store, 'restore', before)
   replaceDocumentContent(store.graph, incoming)
   store.refreshVariables({ variables: store.graph.variables.keys() })
@@ -131,7 +132,7 @@ export async function previewCheckpoint(
   checkpoint: CheckpointMeta,
   name: string
 ): Promise<void> {
-  openVersionPreview(await readGraph(checkpoint), name, {
+  openVersionPreview(await readCheckpointGraph(checkpoint), name, {
     source: store,
     createdAt: checkpoint.createdAt,
     restore: (before) => restoreCheckpoint(store, checkpoint, before)
