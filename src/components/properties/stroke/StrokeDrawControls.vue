@@ -147,7 +147,11 @@ function stored(key: StrokeBrushSetting, value: number): number {
       @update:model-value="setBrushId"
     />
     <div v-if="current?.type === 'SCATTER'" class="grid grid-cols-2 gap-2">
-      <PanelFieldGroup v-for="field in scatterFields" :key="field.key" :label="messages[field.label]">
+      <PanelFieldGroup
+        v-for="field in scatterFields"
+        :key="field.key"
+        :label="messages[field.label]"
+      >
         <NumberField
           :model-value="shown(field.key)"
           :min="field.key === 'gap' ? 0.1 : field.key === 'rotation' ? -360 : 0"

@@ -47,7 +47,8 @@ watch(offsetPathOpen, (open) => {
 watchDebounced(
   [distance, chosenJoin],
   ([value, corners]) => {
-    if (offsetPathOpen.value) void offsetPathPreview.preview(store, { offset: value, join: corners })
+    if (offsetPathOpen.value)
+      void offsetPathPreview.preview(store, { offset: value, join: corners })
   },
   { debounce: 120 }
 )

@@ -13,7 +13,12 @@ const { menu } = useI18n()
 </script>
 
 <template>
-  <AppDialog v-model:open="aboutOpen" size="sm" :heading="menu.aboutKalka" data-test-id="about-dialog">
+  <AppDialog
+    v-model:open="aboutOpen"
+    size="sm"
+    :heading="menu.aboutKalka"
+    data-test-id="about-dialog"
+  >
     <div class="flex flex-col items-center gap-3 py-2 text-center">
       <BrandMark variant="app-icon" decorative class="size-14" />
       <span class="text-sm font-medium text-surface">Kalka</span>
@@ -22,12 +27,8 @@ const { menu } = useI18n()
       }}</span>
       <span class="text-xs text-muted">{{ menu.aboutLicense }}</span>
       <div class="flex flex-wrap justify-center gap-2 pt-1">
-        <AppButton @click="openExternalLink(WEB_APP_ORIGIN)">
-          kalka.design
-        </AppButton>
-        <AppButton
-          @click="openExternalLink(releaseNotesURL(APP_VERSION))"
-        >
+        <AppButton @click="openExternalLink(WEB_APP_ORIGIN)"> kalka.design </AppButton>
+        <AppButton @click="openExternalLink(releaseNotesURL(APP_VERSION))">
           {{ menu.aboutReleaseNotes }}
         </AppButton>
         <AppButton @click="openExternalLink(DESKTOP_DOWNLOAD_URL)">

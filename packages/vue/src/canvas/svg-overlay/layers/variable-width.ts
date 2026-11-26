@@ -28,7 +28,15 @@ function handleShapes(
     strokeWidth: 1
   })
   return [
-    { type: 'line', x1: left.x, y1: left.y, x2: right.x, y2: right.y, stroke: color, strokeWidth: 1 },
+    {
+      type: 'line',
+      x1: left.x,
+      y1: left.y,
+      x2: right.x,
+      y2: right.y,
+      stroke: color,
+      strokeWidth: 1
+    },
     dot(left, 3.5),
     dot(right, 3.5),
     dot(center, 2.5, color)
@@ -48,7 +56,11 @@ export function variableWidthLayer(context: OverlayContext): OverlayShape[] {
     handleShapes(handle, toScreen, state.active === index)
   )
   if (state.hover) {
-    shapes.push({ type: 'group', opacity: 0.6, children: handleShapes(state.hover, toScreen, false) })
+    shapes.push({
+      type: 'group',
+      opacity: 0.6,
+      children: handleShapes(state.hover, toScreen, false)
+    })
   }
   return shapes
 }

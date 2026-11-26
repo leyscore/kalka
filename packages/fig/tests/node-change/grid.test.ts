@@ -24,7 +24,12 @@ const GRID: NodeChange = {
       { id: guid(10), position: ' ' }
     ]
   },
-  gridRows: { entries: [{ id: guid(20), position: ' ' }, { id: guid(21), position: '!' }] },
+  gridRows: {
+    entries: [
+      { id: guid(20), position: ' ' },
+      { id: guid(21), position: '!' }
+    ]
+  },
   gridColumnsSizing: {
     entries: [
       { id: guid(10), trackSize: sizing('FIXED', 120) },
