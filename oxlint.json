@@ -404,7 +404,8 @@
       "files": [
         "src/components/onboarding/WelcomeArt.vue",
         "src/components/chat/AgentCreature.vue",
-        "src/components/presence/AgentGhostFrames.vue"
+        "src/components/presence/AgentGhostFrames.vue",
+        "src/components/prototype/EasingEditor.vue"
       ],
       "rules": {
         "kalka/no-raw-svg-in-app-vue-templates": "off"

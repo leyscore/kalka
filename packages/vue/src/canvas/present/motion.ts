@@ -1,8 +1,9 @@
-import type {
-  PrototypeDirection,
-  PrototypeEasing,
-  PrototypeTransition,
-  Spring
+import {
+  easingCurve,
+  easingSpring,
+  springSamples,
+  type PrototypeDirection,
+  type PrototypeTransition
 } from '@kalka/scene-graph'
 
 /**
@@ -21,48 +22,6 @@ export interface Pose {
 }
 
 export const REST: Pose = { x: 0, y: 0, sx: 1, sy: 1, opacity: 1 }
-
-const BEZIERS: Partial<Record<PrototypeEasing['type'], string>> = {
-  LINEAR: 'linear',
-  EASE_IN: 'cubic-bezier(0.42, 0, 1, 1)',
-  EASE_OUT: 'cubic-bezier(0, 0, 0.58, 1)',
-  EASE_IN_AND_OUT: 'cubic-bezier(0.42, 0, 0.58, 1)',
-  EASE_IN_BACK: 'cubic-bezier(0.3, -0.05, 0.7, -0.5)',
-  EASE_OUT_BACK: 'cubic-bezier(0.45, 1.45, 0.8, 1)',
-  EASE_IN_AND_OUT_BACK: 'cubic-bezier(0.7, -0.4, 0.4, 1.4)'
-}
-
-/** Figma's spring presets, mass 1. */
-const SPRINGS: Partial<Record<PrototypeEasing['type'], Spring>> = {
-  GENTLE: { mass: 1, stiffness: 100, damping: 15 },
-  QUICK: { mass: 1, stiffness: 300, damping: 20 },
-  BOUNCY: { mass: 1, stiffness: 600, damping: 15 },
-  SLOW: { mass: 1, stiffness: 80, damping: 20 }
-}
-
-function springOf(easing: PrototypeEasing): Spring | null {
-  if (easing.type === 'CUSTOM_SPRING') return easing.spring
-  return SPRINGS[easing.type] ?? null
-}
-
-/** A spring's position from 0 towards 1 over time, sampled until it settles. */
-function springSamples(spring: Spring): { duration: number; values: number[] } {
-  const step = 1 / 120
-  const values: number[] = []
-  let position = 0
-  let velocity = 0
-  let still = 0
-  for (let t = 0; t < 4; t += step) {
-    const force = -spring.stiffness * (position - 1) - spring.damping * velocity
-    velocity += (force / Math.max(spring.mass, 0.01)) * step
-    position += velocity * step
-    values.push(position)
-    still = Math.abs(position - 1) < 0.001 && Math.abs(velocity) < 0.01 ? still + 1 : 0
-    if (still > 6) break
-  }
-  values.push(1)
-  return { duration: values.length * step * 1000, values }
-}
 
 function css(pose: Pose): Keyframe {
   return {
@@ -89,7 +48,7 @@ export function animatePose(
   to: Pose,
   transition: Pick<PrototypeTransition, 'duration' | 'easing'>
 ): Animation {
-  const spring = springOf(transition.easing)
+  const spring = easingSpring(transition.easing)
   if (spring) {
     const { duration, values } = springSamples(spring)
     const stride = Math.max(1, Math.floor(values.length / 40))
@@ -99,11 +58,10 @@ export function animatePose(
       { duration, easing: 'linear', fill: 'both' }
     )
   }
-  const bezier = transition.easing.bezier
-  const easing =
-    transition.easing.type === 'CUSTOM_CUBIC_BEZIER' && bezier
-      ? `cubic-bezier(${bezier.x1}, ${bezier.y1}, ${bezier.x2}, ${bezier.y2})`
-      : (BEZIERS[transition.easing.type] ?? 'ease-out')
+  const bezier = easingCurve(transition.easing)
+  const easing = bezier
+    ? `cubic-bezier(${bezier.x1}, ${bezier.y1}, ${bezier.x2}, ${bezier.y2})`
+    : 'ease-out'
   return element.animate([css(from), css(to)], {
     duration: Math.max(1, transition.duration * 1000),
     easing,

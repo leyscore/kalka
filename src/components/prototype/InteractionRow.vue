@@ -4,6 +4,9 @@ import { ref, useId } from 'vue'
 import {
   createNodeAction,
   createPrototypeTransition,
+  customEasing,
+  easingSpring,
+  type PrototypeEasingType,
   type PrototypeAction,
   type PrototypeReaction,
   type PrototypeTransition,
@@ -18,6 +21,7 @@ import PanelItemRow from '@/components/ui/panel/PanelItemRow.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import AppCheckbox from '@/components/ui/toggle/AppCheckbox.vue'
 
+import EasingEditor from './EasingEditor.vue'
 import {
   actionOptions,
   animationOptions,
@@ -145,6 +149,17 @@ function setTransition(
   const action = reaction.actions[index]
   if (action.type !== 'NODE' || !action.transition) return
   setAction(index, { ...action, transition: change(action.transition) })
+}
+
+/** Custom bezier and custom spring start from the easing chosen before, as in Figma. */
+function setEasing(index: number, type: PrototypeEasingType) {
+  setTransition(index, (t) => ({
+    ...t,
+    easing:
+      type === 'CUSTOM_CUBIC_BEZIER' || type === 'CUSTOM_SPRING'
+        ? customEasing(t.easing, type)
+        : { type, bezier: null, spring: null }
+  }))
 }
 
 function setAnimation(index: number, kind: AnimationKind) {
@@ -286,11 +301,9 @@ function setAnimation(index: number, kind: AnimationKind) {
               :label="m.easing"
               :ui="{ trigger: 'w-auto flex-1' }"
               data-property="prototype-easing"
-              @update:model-value="
-                (type) => setTransition(index, (t) => ({ ...t, easing: { ...t.easing, type } }))
-              "
+              @update:model-value="(type) => setEasing(index, type)"
             />
-            <div class="w-20 shrink-0">
+            <div v-if="!easingSpring(action.transition.easing)" class="w-20 shrink-0">
               <NumberField
                 :aria-label="m.duration"
                 suffix="ms"
@@ -305,6 +318,14 @@ function setAnimation(index: number, kind: AnimationKind) {
               />
             </div>
           </PanelItemRow>
+          <EasingEditor
+            v-if="
+              action.transition.easing.type === 'CUSTOM_CUBIC_BEZIER' ||
+              action.transition.easing.type === 'CUSTOM_SPRING'
+            "
+            :easing="action.transition.easing"
+            @update="(easing) => setTransition(index, (t) => ({ ...t, easing }))"
+          />
         </template>
       </template>
     </div>

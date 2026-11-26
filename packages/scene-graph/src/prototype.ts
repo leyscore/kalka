@@ -181,6 +181,75 @@ export const PROTOTYPE_DEVICE_PRESETS: readonly { id: string; name: string; size
   { id: 'DESKTOP', name: 'Desktop', size: { x: 1440, y: 1024 } }
 ]
 
+/** The curves of Figma's eased animations, which `cubic-bezier()` plays as they are. */
+export const PROTOTYPE_EASING_CURVES: Readonly<Partial<Record<PrototypeEasingType, CubicBezier>>> =
+  {
+    LINEAR: { x1: 0, y1: 0, x2: 1, y2: 1 },
+    EASE_IN: { x1: 0.42, y1: 0, x2: 1, y2: 1 },
+    EASE_OUT: { x1: 0, y1: 0, x2: 0.58, y2: 1 },
+    EASE_IN_AND_OUT: { x1: 0.42, y1: 0, x2: 0.58, y2: 1 },
+    EASE_IN_BACK: { x1: 0.3, y1: -0.05, x2: 0.7, y2: -0.5 },
+    EASE_OUT_BACK: { x1: 0.45, y1: 1.45, x2: 0.8, y2: 1 },
+    EASE_IN_AND_OUT_BACK: { x1: 0.7, y1: -0.4, x2: 0.4, y2: 1.4 }
+  }
+
+/** Figma's spring presets, mass 1. */
+export const PROTOTYPE_SPRING_PRESETS: Readonly<Partial<Record<PrototypeEasingType, Spring>>> = {
+  GENTLE: { mass: 1, stiffness: 100, damping: 15 },
+  QUICK: { mass: 1, stiffness: 300, damping: 20 },
+  BOUNCY: { mass: 1, stiffness: 600, damping: 15 },
+  SLOW: { mass: 1, stiffness: 80, damping: 20 }
+}
+
+/** The curve an easing plays, its own for a custom bezier; null for a spring. */
+export function easingCurve(easing: PrototypeEasing): CubicBezier | null {
+  if (easing.type === 'CUSTOM_CUBIC_BEZIER')
+    return easing.bezier ?? PROTOTYPE_EASING_CURVES.EASE_OUT ?? null
+  return PROTOTYPE_EASING_CURVES[easing.type] ?? null
+}
+
+/** The spring an easing plays, its own for a custom spring; null for a curve. */
+export function easingSpring(easing: PrototypeEasing): Spring | null {
+  if (easing.type === 'CUSTOM_SPRING')
+    return easing.spring ?? PROTOTYPE_SPRING_PRESETS.GENTLE ?? null
+  return PROTOTYPE_SPRING_PRESETS[easing.type] ?? null
+}
+
+/**
+ * Switches an easing to a custom curve or spring, as Figma's Custom bezier and Custom spring
+ * start from the easing chosen before.
+ */
+export function customEasing(
+  easing: PrototypeEasing,
+  type: 'CUSTOM_CUBIC_BEZIER' | 'CUSTOM_SPRING'
+): PrototypeEasing {
+  if (type === 'CUSTOM_CUBIC_BEZIER') {
+    const bezier = easingCurve(easing) ?? { x1: 0, y1: 0, x2: 0.58, y2: 1 }
+    return { type, bezier: { ...bezier }, spring: null }
+  }
+  const spring = easingSpring(easing) ?? { mass: 1, stiffness: 100, damping: 15 }
+  return { type, bezier: null, spring: { ...spring } }
+}
+
+/** A spring's position from 0 towards 1 over time, sampled at 120 Hz until it settles. */
+export function springSamples(spring: Spring): { duration: number; values: number[] } {
+  const step = 1 / 120
+  const values: number[] = []
+  let position = 0
+  let velocity = 0
+  let still = 0
+  for (let t = 0; t < 4; t += step) {
+    const force = -spring.stiffness * (position - 1) - spring.damping * velocity
+    velocity += (force / Math.max(spring.mass, 0.01)) * step
+    position += velocity * step
+    values.push(position)
+    still = Math.abs(position - 1) < 0.001 && Math.abs(velocity) < 0.01 ? still + 1 : 0
+    if (still > 6) break
+  }
+  values.push(1)
+  return { duration: values.length * step * 1000, values }
+}
+
 export const DEFAULT_PROTOTYPE_EASING: PrototypeEasing = {
   type: 'EASE_OUT',
   bezier: null,
