@@ -1,4 +1,9 @@
-import { layoutSizingInParent, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import {
+  getNodeWorldBounds,
+  layoutSizingInParent,
+  type SceneGraph,
+  type SceneNode
+} from '@kalka/scene-graph'
 import { hugs } from '@kalka/scene-graph/css-model'
 
 import type { DesignStyleDeclaration } from '../types'
@@ -121,20 +126,17 @@ function addOverflowingPadding(
 
 /**
  * Auto layout places a turned layer by the box around it, as it is drawn; a CSS transform leaves
- * the layer's space as it was. Margins grow that space to the turned box, which stays centered on
- * the layer as the layer turns about its center.
+ * the layer's space as it was. Margins grow that space to the turned box: on each side, how far
+ * the drawn layer reaches past its own box as it turns about its center, or a line about where
+ * it starts.
  */
 function addTurnedBox(node: SceneNode, margins: Margins): void {
-  if (node.rotation === 0 || node.type === 'LINE') return
-  const angle = (node.rotation * Math.PI) / 180
-  const cos = Math.abs(Math.cos(angle))
-  const sin = Math.abs(Math.sin(angle))
-  const horizontal = (node.width * cos + node.height * sin - node.width) / 2
-  const vertical = (node.width * sin + node.height * cos - node.height) / 2
-  margins.left += horizontal
-  margins.right += horizontal
-  margins.top += vertical
-  margins.bottom += vertical
+  if (node.rotation === 0) return
+  const turned = getNodeWorldBounds({ ...node, x: 0, y: 0 })
+  margins.left -= turned.x
+  margins.top -= turned.y
+  margins.right += turned.x + turned.width - node.width
+  margins.bottom += turned.y + turned.height - node.height
 }
 
 function round(value: number): number {

@@ -135,3 +135,65 @@ test('dragging a gap or a padding of the selected frame changes it, in one undo 
   expect((await getNodeById(page, frameId))?.itemSpacing).toBe(16)
   canvas.assertNoErrors()
 })
+
+test('Shift+A lays a turned line out by the box around it, and the model follows', async ({
+  page
+}) => {
+  const canvas = await start(page)
+  const ids = await page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const pageId = store.state.currentPageId
+    const text = store.graph.createNode('TEXT', pageId, {
+      x: 100,
+      y: 100,
+      text: 'Label',
+      fontSize: 16,
+      textAutoResize: 'WIDTH_AND_HEIGHT'
+    })
+    store.runLayoutForNode(text.id)
+    const line = store.graph.createNode('LINE', pageId, {
+      x: 200,
+      y: 100,
+      width: 100,
+      height: 0,
+      rotation: 21.8
+    })
+    const rect = store.graph.createNode('RECTANGLE', pageId, {
+      x: 320,
+      y: 100,
+      width: 40,
+      height: 20
+    })
+    store.select([text.id, line.id, rect.id])
+    return { text: text.id, line: line.id, rect: rect.id }
+  })
+  await canvas.waitForRender()
+  await canvas.pressKey('Shift+A')
+  await canvas.waitForRender()
+
+  // The line sits in the flow one gap from each neighbour, by the box around it as drawn, and
+  // the hugging frame holds that box rather than the line's own zero height.
+  const placed = () =>
+    page.evaluate((layers) => {
+      const graph = window.kalka?.getStore?.().graph
+      const [text, line, rect] = [layers.text, layers.line, layers.rect].map((id) =>
+        graph?.getNode(id)
+      )
+      const frame = line?.parentId ? graph?.getNode(line.parentId) : undefined
+      if (!text || !line || !rect || !frame) return null
+      const angle = (line.rotation * Math.PI) / 180
+      return {
+        gapBefore: Math.round(line.x - (text.x + text.width)),
+        gapAfter: Math.round(rect.x - (line.x + line.width * Math.cos(angle))),
+        holdsLine:
+          frame.height >=
+          line.width * Math.sin(angle) + frame.paddingTop + frame.paddingBottom - 0.1
+      }
+    }, ids)
+  await expect.poll(async () => (await placed())?.holdsLine).toBe(true)
+  const result = await placed()
+  expect(result?.gapBefore).toBeGreaterThan(0)
+  expect(result?.gapAfter).toBe(result?.gapBefore)
+  canvas.assertNoErrors()
+})
