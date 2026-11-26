@@ -121,6 +121,8 @@
   "versionsPreviewing": "{time} のバージョン",
   "versionsPreviewHint": "プレビューです。ここでの操作はファイルを変更しません。",
   "versionsRestoreThis": "このバージョンを復元",
+  "versionsServerHint": "このファイルが編集されている間、サーバーは30分ごとにバージョンを保存し、開けるすべての人が見られます。",
+  "versionsBy": "{time}、{name}",
   "versionsClosePreview": "プレビューを閉じる",
   "versionsBeforeRestoreAt": "{time} のバージョンを復元する前",
   "versionsRestoredAt": "{time} のバージョンを復元しました。",

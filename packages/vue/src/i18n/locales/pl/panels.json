@@ -125,6 +125,8 @@
   "versionsPreviewing": "Wersja z {time}",
   "versionsPreviewHint": "Podgląd: nic, co tu zrobisz, nie zmienia pliku.",
   "versionsRestoreThis": "Przywróć tę wersję",
+  "versionsServerHint": "Serwer zachowuje wersję tego pliku co pół godziny edycji, dla wszystkich, którzy mogą go otworzyć.",
+  "versionsBy": "{time}, {name}",
   "versionsClosePreview": "Zamknij podgląd",
   "versionsBeforeRestoreAt": "Przed przywróceniem wersji z {time}",
   "versionsRestoredAt": "Przywrócono wersję z {time}.",

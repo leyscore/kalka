@@ -25,7 +25,10 @@ const { serverRoomId, checkpoints } = useHistorySource(useEditorStore())
     <h3 :class="styles.heading()">{{ panels.versions }}</h3>
     <VersionsPanel v-if="available" />
     <template v-else>
-      <ServerBranches v-if="serverRoomId" :room-id="serverRoomId" />
+      <template v-if="serverRoomId">
+        <ServerBranches :room-id="serverRoomId" />
+        <CheckpointHistory :key="serverRoomId" :server-room-id="serverRoomId" />
+      </template>
       <CheckpointHistory v-else-if="checkpoints" />
       <p :class="styles.note()" data-test-id="folder-versions-desktop">
         {{ panels.folderVersionsDesktop }}

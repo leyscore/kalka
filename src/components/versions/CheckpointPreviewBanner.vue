@@ -20,7 +20,7 @@ import AppButton from '@/components/ui/button/AppButton.vue'
 const { store } = defineProps<{ store: EditorStore }>()
 const { panels } = useI18n()
 const preview = computed(() => previewOf(store))
-const time = computed(() => (preview.value ? checkpointTime(preview.value.checkpoint) : ''))
+const time = computed(() => (preview.value ? checkpointTime(preview.value) : ''))
 const restoring = ref(false)
 
 async function restore() {

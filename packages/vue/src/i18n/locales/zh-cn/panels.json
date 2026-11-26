@@ -121,6 +121,8 @@
   "versionsPreviewing": "{time} 的版本",
   "versionsPreviewHint": "这是预览：在这里的任何操作都不会更改文件。",
   "versionsRestoreThis": "恢复此版本",
+  "versionsServerHint": "编辑期间，服务器每半小时保存一个此文件的版本，所有能打开它的人都能看到。",
+  "versionsBy": "{time}，{name}",
   "versionsClosePreview": "关闭预览",
   "versionsBeforeRestoreAt": "恢复 {time} 的版本之前",
   "versionsRestoredAt": "已恢复 {time} 的版本。",

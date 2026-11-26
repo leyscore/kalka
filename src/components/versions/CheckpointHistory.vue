@@ -3,14 +3,12 @@ import { ref, useTemplateRef } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
-import type { CheckpointMeta } from '@/app/document/versions/checkpoints/store'
+import { checkpointTime } from '@/app/document/versions/checkpoints/use'
 import {
-  captureCheckpoint,
-  checkpointTime,
-  previewCheckpoint,
-  restoreCheckpoint,
-  useCheckpoints
-} from '@/app/document/versions/checkpoints/use'
+  useDeviceHistory,
+  useServerHistory,
+  type HistoryVersion
+} from '@/app/document/versions/history-source'
 import { useNamedVersionFocus } from '@/app/document/versions/save-request'
 import { useEditorStore } from '@/app/editor/active-store'
 import { toast } from '@/app/shell/ui'
@@ -21,11 +19,14 @@ import { versionTimeline } from '@/theme/panel/folder'
 
 /**
  * The version history of a document Git does not keep: versions kept while it is edited and
- * versions named here, each with a preview to look at first and a restore.
+ * versions named here, each with a preview to look at first and a restore. A server file's are
+ * the server's, shared by everyone who can open it; any other file's are kept on this device.
  */
+const { serverRoomId = null } = defineProps<{ serverRoomId?: string | null }>()
 const { panels } = useI18n()
 const store = useEditorStore()
-const { list } = useCheckpoints(store)
+const source = serverRoomId ? useServerHistory(store, () => serverRoomId) : useDeviceHistory(store)
+const { list } = source
 const timeline = versionTimeline()
 const name = ref('')
 const busy = ref<string | null>(null)
@@ -49,32 +50,35 @@ function saveNamed() {
   const label = name.value.trim()
   if (!label) return
   void act('name', async () => {
-    await captureCheckpoint(store, 'named', label)
+    await source.save(label)
     name.value = ''
   })
 }
 
-function title(checkpoint: CheckpointMeta): string {
-  if (checkpoint.kind === 'named' && checkpoint.label) return checkpoint.label
-  if (checkpoint.kind === 'restore' && checkpoint.label) return checkpoint.label
+function title(version: HistoryVersion): string {
+  if (version.kind !== 'auto' && version.label) return version.label
   return panels.value.versionsAutoSaved
 }
 
-function preview(checkpoint: CheckpointMeta) {
-  const time = checkpointTime(checkpoint)
-  void act(checkpoint.id, () =>
-    previewCheckpoint(
-      store,
-      checkpoint,
+function detail(version: HistoryVersion): string {
+  const time = checkpointTime(version)
+  return version.by ? panels.value.versionsBy({ time, name: version.by }) : time
+}
+
+function preview(version: HistoryVersion) {
+  const time = checkpointTime(version)
+  void act(version.id, () =>
+    source.preview(
+      version,
       `${store.state.documentName} (${panels.value.versionsPreviewing({ time })})`
     )
   )
 }
 
-function restore(checkpoint: CheckpointMeta) {
-  const time = checkpointTime(checkpoint)
-  void act(checkpoint.id, async () => {
-    await restoreCheckpoint(store, checkpoint, panels.value.versionsBeforeRestoreAt({ time }))
+function restore(version: HistoryVersion) {
+  const time = checkpointTime(version)
+  void act(version.id, async () => {
+    await source.restore(version, panels.value.versionsBeforeRestoreAt({ time }))
     toast.info(panels.value.versionsRestoredAt({ time }))
   })
 }
@@ -83,8 +87,15 @@ function restore(checkpoint: CheckpointMeta) {
 <template>
   <section class="flex min-h-0 flex-1 flex-col" data-test-id="checkpoint-history">
     <h3 class="px-4 pt-2 pb-1 text-[11px] font-semibold text-muted">{{ panels.versionsAuto }}</h3>
-    <p class="px-4 pb-2 text-[11px] leading-relaxed text-muted">{{ panels.versionsAutoHint }}</p>
-    <form ref="nameForm" class="flex gap-2 px-4 pb-3" @submit.prevent="saveNamed">
+    <p class="px-4 pb-2 text-[11px] leading-relaxed text-muted">
+      {{ source.where === 'server' ? panels.versionsServerHint : panels.versionsAutoHint }}
+    </p>
+    <form
+      v-if="!store.state.viewOnly"
+      ref="nameForm"
+      class="flex gap-2 px-4 pb-3"
+      @submit.prevent="saveNamed"
+    >
       <AppInput
         v-model="name"
         tone="panel"
@@ -123,7 +134,7 @@ function restore(checkpoint: CheckpointMeta) {
             >
               {{ title(checkpoint) }}
             </p>
-            <p :class="timeline.detail()">{{ checkpointTime(checkpoint) }}</p>
+            <p :class="timeline.detail()">{{ detail(checkpoint) }}</p>
           </div>
           <AppButton
             size="xs"
@@ -136,6 +147,7 @@ function restore(checkpoint: CheckpointMeta) {
             {{ panels.versionsPreview }}
           </AppButton>
           <AppButton
+            v-if="!store.state.viewOnly"
             size="xs"
             variant="ghost"
             class="shrink-0"

@@ -66,7 +66,10 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', tim
 
 <template>
   <div class="flex min-h-0 flex-1 flex-col" data-test-id="versions-panel">
-    <ServerBranches v-if="serverRoomId" :room-id="serverRoomId" />
+    <template v-if="serverRoomId">
+      <ServerBranches :room-id="serverRoomId" />
+      <CheckpointHistory :key="serverRoomId" :server-room-id="serverRoomId" />
+    </template>
     <div
       v-else-if="state === 'unsaved' || state === 'untracked'"
       class="flex flex-col gap-3 px-4 py-3"

@@ -125,6 +125,8 @@
   "versionsPreviewing": "Версия от {time}",
   "versionsPreviewHint": "Это просмотр: ничто здесь не меняет файл.",
   "versionsRestoreThis": "Восстановить эту версию",
+  "versionsServerHint": "Сервер сохраняет версию этого файла каждые полчаса, пока его редактируют, для всех, кто может его открыть.",
+  "versionsBy": "{time}, {name}",
   "versionsClosePreview": "Закрыть просмотр",
   "versionsBeforeRestoreAt": "Перед восстановлением версии от {time}",
   "versionsRestoredAt": "Версия от {time} восстановлена.",

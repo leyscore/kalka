@@ -31,10 +31,16 @@ import {
 export const CHECKPOINT_IDLE_MS = 30_000
 export const CHECKPOINT_INTERVAL_MS = 10 * 60 * 1000
 
+/** A version open to look at: the document it comes from, when it was kept, and its restore. */
+export interface VersionPreview {
+  source: EditorStore
+  createdAt: number
+  /** Puts the version back into `source`, keeping what is there now under `before`. */
+  restore: (before: string) => Promise<void>
+}
+
 /** Documents previewing a version, by the store of the tab that shows it. */
-const previews = shallowReactive(
-  new Map<EditorStore, { source: EditorStore; checkpoint: CheckpointMeta }>()
-)
+const previews = shallowReactive(new Map<EditorStore, VersionPreview>())
 
 /** Bumped whenever a version is kept, so open version lists read their document's again. */
 const written = ref(0)
@@ -101,18 +107,30 @@ export async function restoreCheckpoint(
   store.requestRender()
 }
 
-/** Opens a version to view only, in a tab of its own, named after it. */
+/** Opens a version, as read, to view only in a tab of its own, named after it. */
+export function openVersionPreview(
+  graph: Parameters<typeof createEditorStore>[0],
+  name: string,
+  entry: VersionPreview
+): void {
+  const preview = createEditorStore(graph)
+  preview.state.documentName = name
+  preview.setViewOnly(true)
+  previews.set(preview, entry)
+  createTab(preview)
+}
+
+/** Opens a version kept on this device to view only, in a tab of its own, named after it. */
 export async function previewCheckpoint(
   store: EditorStore,
   checkpoint: CheckpointMeta,
   name: string
 ): Promise<void> {
-  const graph = await readGraph(checkpoint)
-  const preview = createEditorStore(graph)
-  preview.state.documentName = name
-  preview.setViewOnly(true)
-  previews.set(preview, { source: store, checkpoint })
-  createTab(preview)
+  openVersionPreview(await readGraph(checkpoint), name, {
+    source: store,
+    createdAt: checkpoint.createdAt,
+    restore: (before) => restoreCheckpoint(store, checkpoint, before)
+  })
 }
 
 /** The version a tab previews, and the document it comes from; null for any other tab. */
@@ -134,7 +152,7 @@ export async function closePreview(preview: EditorStore): Promise<void> {
 export async function restorePreviewed(preview: EditorStore, before: string): Promise<void> {
   const entry = previews.get(preview)
   if (!entry) return
-  await restoreCheckpoint(entry.source, entry.checkpoint, before)
+  await entry.restore(before)
   await closePreview(preview)
 }
 

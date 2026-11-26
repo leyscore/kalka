@@ -48,6 +48,17 @@ export const serverDocumentSchema = v.object({
 })
 export type ServerDocument = v.InferOutput<typeof serverDocumentSchema>
 
+/** A version the server keeps of a file: every half hour it is saved, named, or before a restore. */
+export const serverVersionSchema = v.object({
+  id: v.string(),
+  createdAt: v.number(),
+  kind: v.picklist(['auto', 'named', 'restore']),
+  label: v.nullable(v.string()),
+  by: v.nullable(v.string()),
+  size: v.number()
+})
+export type ServerVersion = v.InferOutput<typeof serverVersionSchema>
+
 const ticketSchema = v.object({ url: v.string(), role: serverRoleSchema })
 const errorSchema = v.object({ error: v.string() })
 
@@ -131,21 +142,36 @@ export interface PendingVersion {
 }
 
 /** The waiting version of a document, or null when none waits. */
-async function pendingVersion(
-  base: string,
-  token: string,
-  id: string
-): Promise<PendingVersion | null> {
+/** A Kalka file the server sends as it is, or null when it has none. */
+async function serverBytes(base: string, token: string, path: string): Promise<Response | null> {
   let response: Response
   try {
-    response = await fetch(`${base}/api/documents/${id}/pending`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    response = await fetch(`${base}${path}`, { headers: { Authorization: `Bearer ${token}` } })
   } catch {
     throw new ServerRequestError(0, 'unreachable')
   }
   if (response.status === 404) return null
   if (!response.ok) throw new ServerRequestError(response.status, `HTTP ${response.status}`)
+  return response
+}
+
+async function versionFile(
+  base: string,
+  token: string,
+  id: string,
+  versionId: string
+): Promise<Uint8Array | null> {
+  const response = await serverBytes(base, token, `/api/documents/${id}/versions/${versionId}/file`)
+  return response ? new Uint8Array(await response.arrayBuffer()) : null
+}
+
+async function pendingVersion(
+  base: string,
+  token: string,
+  id: string
+): Promise<PendingVersion | null> {
+  const response = await serverBytes(base, token, `/api/documents/${id}/pending`)
+  if (!response) return null
   const data = new Uint8Array(await response.arrayBuffer())
   return { data, version: response.headers.get('X-Kalka-Version') ?? '' }
 }
@@ -220,6 +246,27 @@ export const serverAPI = {
       token,
       body: { force },
       schema: serverDocumentSchema
+    }),
+  versions: (base: string, token: string, id: string) =>
+    serverRequest(base, `/api/documents/${id}/versions`, {
+      token,
+      schema: v.array(serverVersionSchema)
+    }),
+  saveVersion: (base: string, token: string, id: string, label: string) =>
+    serverRequest(base, `/api/documents/${id}/versions`, {
+      method: 'POST',
+      token,
+      body: { label },
+      schema: serverVersionSchema
+    }),
+  versionFile,
+  /** Puts a version back, keeping the file as it is first under `before`. */
+  restoreVersion: (base: string, token: string, id: string, versionId: string, before: string) =>
+    serverRequest(base, `/api/documents/${id}/versions/${versionId}/restore`, {
+      method: 'POST',
+      token,
+      body: { before },
+      schema: v.object({ restored: v.boolean() })
     }),
   pending: pendingVersion,
   /** Dismisses a waiting version; `dismissed` is false when another window took it first. */

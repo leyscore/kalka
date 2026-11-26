@@ -123,6 +123,8 @@
   "versionsPreviewing": "Version du {time}",
   "versionsPreviewHint": "Un aperçu : rien de ce que vous faites ici ne modifie le fichier.",
   "versionsRestoreThis": "Restaurer cette version",
+  "versionsServerHint": "Le serveur garde une version de ce fichier toutes les demi-heures où il est modifié, pour tous ceux qui peuvent l’ouvrir.",
+  "versionsBy": "{time}, par {name}",
   "versionsClosePreview": "Fermer l’aperçu",
   "versionsBeforeRestoreAt": "Avant de restaurer la version du {time}",
   "versionsRestoredAt": "Version du {time} restaurée.",

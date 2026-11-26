@@ -134,6 +134,9 @@ export const panelMessageDefaults = {
   versionsPreviewing: params('Version of {time}'),
   versionsPreviewHint: 'A preview: nothing you do here changes the file.',
   versionsRestoreThis: 'Restore this version',
+  versionsServerHint:
+    'The server keeps a version of this file every half hour it is edited, for everyone who can open it.',
+  versionsBy: params('{time}, by {name}'),
   versionsClosePreview: 'Close preview',
   versionsBeforeRestoreAt: params('Before restoring the version of {time}'),
   versionsRestoredAt: params('Restored the version of {time}.'),
