@@ -28,6 +28,7 @@ export default defineConfig({
     gradient: './src/gradient.ts',
     guides: './src/guides.ts',
     'layout-guides': './src/layout-guides.ts',
+    diff: './src/diff/index.ts',
     resize: './src/resize.ts',
     'parse-path': './src/parse-path.ts',
     random: './src/random.ts',

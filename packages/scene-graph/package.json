@@ -83,6 +83,12 @@
       "import": "./dist/vector-network.js",
       "default": "./dist/vector-network.js"
     },
+    "./diff": {
+      "types": "./dist/diff.d.ts",
+      "bun": "./src/diff/index.ts",
+      "import": "./dist/diff.js",
+      "default": "./dist/diff.js"
+    },
     "./guides": {
       "types": "./dist/guides.d.ts",
       "bun": "./src/guides.ts",
