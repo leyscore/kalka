@@ -1,6 +1,6 @@
 import type { VectorNetwork } from '@kalka/scene-graph'
 
-import type { CubicPoints } from '../curve-math'
+import type { CubicPoints } from '#core/vector/curve-math'
 
 /** A segment as a chain walks it: forward from its start to its end, or backwards. */
 export interface ChainStep {

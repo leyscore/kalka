@@ -1,7 +1,8 @@
 import type { VectorNetwork, VectorSegment, VectorVertex } from '@kalka/scene-graph'
 import type { Vector } from '@kalka/scene-graph/primitives'
 
-import { isLineSegment, removeVertex } from '../bezier'
+import { isLineSegment, removeVertex } from '#core/vector/bezier'
+
 import { findChains, stepCurve, vertexDegrees } from './chains'
 import { unitVector } from './fit'
 import { curveEndDirection } from './simplify'

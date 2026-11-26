@@ -1,7 +1,8 @@
 import type { VectorNetwork, VectorRegion, VectorSegment, VectorVertex } from '@kalka/scene-graph'
 import type { Vector } from '@kalka/scene-graph/primitives'
 
-import { computeAccurateBounds, evalCubic, type CubicPoints } from '../curve-math'
+import { computeAccurateBounds, evalCubic, type CubicPoints } from '#core/vector/curve-math'
+
 import { findChains, stepCurve, type ChainStep, type PathChain } from './chains'
 import { fitCubics, unitVector } from './fit'
 

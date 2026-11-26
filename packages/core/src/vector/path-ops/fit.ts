@@ -1,6 +1,6 @@
 import type { Vector } from '@kalka/scene-graph/primitives'
 
-import type { CubicPoints } from '../curve-math'
+import type { CubicPoints } from '#core/vector/curve-math'
 
 /**
  * Least-squares fitting of cubic Béziers to a run of points, after Philip Schneider's method
