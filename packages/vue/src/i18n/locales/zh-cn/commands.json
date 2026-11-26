@@ -49,5 +49,17 @@
   "paletteSearchAriaLabel": "搜索命令",
   "paletteDescription": "搜索并运行 Kalka 命令。",
   "paletteNoCommands": "未找到命令。",
-  "paletteBack": "返回"
+  "paletteBack": "返回",
+  "createMultipleComponents": "创建多个组件",
+  "resetAllChanges": "重置所有更改",
+  "pushChangesToMainComponent": "将更改推送到主组件",
+  "restoreMainComponent": "恢复主组件",
+  "selectMatchingLayers": "选择匹配的图层",
+  "selectSameFill": "选择所有相同填充",
+  "selectSameStroke": "选择所有相同描边",
+  "selectSameEffect": "选择所有相同效果",
+  "selectSameText": "选择所有相同文本属性",
+  "selectSameFont": "选择所有相同字体",
+  "selectSameInstance": "选择所有相同实例",
+  "selectSameProperties": "选择所有相同属性"
 }

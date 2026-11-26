@@ -76,6 +76,9 @@ function componentItems({ commandMenuItem, selection }: CanvasMenuOptions): Menu
     selection.isComponent.value
       ? commandMenuItem('selection.createInstance')
       : commandMenuItem('selection.createComponent'),
+    ...(selection.selectedCount.value >= 2
+      ? [commandMenuItem('selection.createMultipleComponents')]
+      : []),
     ...(selection.canCreateSlot.value ? [commandMenuItem('selection.createSlot')] : [])
   ]
 }
@@ -87,9 +90,19 @@ function componentSetItems({ commandMenuItem, selection }: CanvasMenuOptions): M
 }
 
 function instanceItems({ commandMenuItem, selection }: CanvasMenuOptions): MenuEntry[] {
-  return selection.isInstance.value
-    ? [commandMenuItem('selection.goToMainComponent'), commandMenuItem('selection.detachInstance')]
-    : []
+  if (!selection.isInstance.value) return []
+  // An instance whose main component was deleted can only bring it back.
+  if (commandMenuItem('selection.restoreMainComponent').disabled !== true)
+    return [
+      commandMenuItem('selection.restoreMainComponent'),
+      commandMenuItem('selection.detachInstance')
+    ]
+  return [
+    commandMenuItem('selection.goToMainComponent'),
+    commandMenuItem('selection.pushChangesToMainComponent'),
+    commandMenuItem('selection.resetAllChanges'),
+    commandMenuItem('selection.detachInstance')
+  ]
 }
 
 function iconItems({ commandMenuItem, selection }: CanvasMenuOptions): MenuEntry[] {

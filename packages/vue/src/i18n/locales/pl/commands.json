@@ -49,5 +49,17 @@
   "paletteSearchAriaLabel": "Szukaj poleceń",
   "paletteDescription": "Wyszukuj i uruchamiaj polecenia Kalka.",
   "paletteNoCommands": "Nie znaleziono poleceń.",
-  "paletteBack": "Wstecz"
+  "paletteBack": "Wstecz",
+  "createMultipleComponents": "Utwórz wiele komponentów",
+  "resetAllChanges": "Zresetuj wszystkie zmiany",
+  "pushChangesToMainComponent": "Przenieś zmiany do komponentu głównego",
+  "restoreMainComponent": "Przywróć komponent główny",
+  "selectMatchingLayers": "Zaznacz pasujące warstwy",
+  "selectSameFill": "Zaznacz wszystko z tym samym wypełnieniem",
+  "selectSameStroke": "Zaznacz wszystko z tym samym obrysem",
+  "selectSameEffect": "Zaznacz wszystko z tym samym efektem",
+  "selectSameText": "Zaznacz wszystko z tymi samymi właściwościami tekstu",
+  "selectSameFont": "Zaznacz wszystko z tą samą czcionką",
+  "selectSameInstance": "Zaznacz wszystko z tą samą instancją",
+  "selectSameProperties": "Zaznacz wszystko z tymi samymi właściwościami"
 }

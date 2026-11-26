@@ -85,5 +85,6 @@
   "exportSelectionAsSVG": "将所选内容导出为 SVG",
   "exportSelectionAsPPTX": "将所选内容导出为 PPTX",
   "exportSelectionAsFig": "将所选内容导出为 .fig",
-  "togglePreview": "预览"
+  "togglePreview": "预览",
+  "selectAllWithSame": "选择所有相同的"
 }

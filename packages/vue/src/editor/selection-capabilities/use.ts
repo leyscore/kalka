@@ -72,7 +72,24 @@ export function useSelectionCapabilities() {
         )
       )
     }),
-    canGoToMainComponent: computed(() => selection.isInstance.value),
+    canGoToMainComponent: useSceneComputed(
+      () => selection.isInstance.value && !editor.canRestoreMainComponent()
+    ),
+    canCreateMultipleComponents: computed(() => selectedCount.value >= 2),
+    canResetAllChanges: useSceneComputed(() =>
+      editor
+        .getSelectedNodes()
+        .some(
+          (node) => node.type === 'INSTANCE' && editor.getInstanceOverrideGroups(node.id).length > 0
+        )
+    ),
+    canPushChangesToMainComponent: useSceneComputed(
+      () => selection.isInstance.value && editor.canPushInstanceChanges()
+    ),
+    canRestoreMainComponent: useSceneComputed(
+      () => selection.isInstance.value && editor.canRestoreMainComponent()
+    ),
+    canSelectMatching: computed(() => hasSelection.value),
     canCreateInstance: computed(() => selectedNode.value?.type === 'COMPONENT'),
     canCreateSlot: selection.canCreateSlot,
     canMoveToPage: useSceneComputed(() => hasSelection.value && editor.graph.getPages().length > 1),

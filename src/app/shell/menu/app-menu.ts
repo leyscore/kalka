@@ -123,6 +123,7 @@ export function useAppMenu() {
     'selection.rename': 'renameSelection',
     find: 'find',
     'selection.moveToPage': 'moveToPage',
+    'select-all-with-same': 'selectAllWithSame',
     language: 'language',
     preferences: 'preferences',
     settings: 'settings',

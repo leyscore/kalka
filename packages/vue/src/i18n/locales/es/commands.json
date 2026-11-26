@@ -49,5 +49,17 @@
   "paletteSearchAriaLabel": "Buscar comandos",
   "paletteDescription": "Busca y ejecuta comandos de Kalka.",
   "paletteNoCommands": "No se encontraron comandos.",
-  "paletteBack": "Atrás"
+  "paletteBack": "Atrás",
+  "createMultipleComponents": "Crear varios componentes",
+  "resetAllChanges": "Restablecer todos los cambios",
+  "pushChangesToMainComponent": "Enviar cambios al componente principal",
+  "restoreMainComponent": "Restaurar componente principal",
+  "selectMatchingLayers": "Seleccionar capas coincidentes",
+  "selectSameFill": "Seleccionar todo con el mismo relleno",
+  "selectSameStroke": "Seleccionar todo con el mismo trazo",
+  "selectSameEffect": "Seleccionar todo con el mismo efecto",
+  "selectSameText": "Seleccionar todo con las mismas propiedades de texto",
+  "selectSameFont": "Seleccionar todo con la misma fuente",
+  "selectSameInstance": "Seleccionar todo con la misma instancia",
+  "selectSameProperties": "Seleccionar todo con las mismas propiedades"
 }

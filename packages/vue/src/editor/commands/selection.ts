@@ -2,10 +2,15 @@ import { readIcon, type SceneNode } from '@kalka/scene-graph'
 
 import { withCanvasKit } from '#vue/canvas/surface/offscreen'
 
+import type { ComponentCommandId } from './components'
 import type { EditorCommandMapOptions } from './context'
+import type { MatchingCommandId } from './matching'
 import type { EditorCommand, EditorCommandId } from './types'
 
-type SelectionCommandId = Extract<EditorCommandId, `selection.${string}`>
+type SelectionCommandId = Exclude<
+  Extract<EditorCommandId, `selection.${string}`>,
+  ComponentCommandId | MatchingCommandId
+>
 
 function selectedMaskTarget(nodes: SceneNode[], editor: EditorCommandMapOptions['editor']) {
   if (nodes.length === 0) return null

@@ -10,6 +10,7 @@ import type { CanvasMenuOptions } from '#vue/editor/menu-model/canvas'
 function selection(overrides: Partial<CanvasMenuOptions['selection']> = {}) {
   return {
     hasSelection: ref(true),
+    selectedCount: ref(1),
     isGroup: ref(false),
     isComponent: ref(false),
     isInstance: ref(false),

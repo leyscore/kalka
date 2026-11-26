@@ -75,6 +75,7 @@ const MENU_ITEM_CATEGORY: Partial<Record<string, ShortcutCategory>> = {
   'view.zoomSelection': 'zoom',
   'selection.selectAll': 'selection',
   'selection.selectInverse': 'selection',
+  'selection.selectMatchingLayers': 'selection',
   'selection.toggleVisibility': 'selection',
   'selection.toggleLock': 'selection',
   'selection.flipHorizontal': 'transform',

@@ -147,7 +147,8 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
       'selection.toggleVisibility',
       'selection.toggleLock',
       'selection.flipHorizontal',
-      'selection.flipVertical'
+      'selection.flipVertical',
+      'selection.selectMatchingLayers'
     ),
     {
       id: 'copy-properties',

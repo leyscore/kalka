@@ -51,7 +51,19 @@ export const commandMessageDefaults = {
   paletteSearchAriaLabel: 'Search commands',
   paletteDescription: 'Search and run Kalka commands.',
   paletteNoCommands: 'No commands found.',
-  paletteBack: 'Back'
+  paletteBack: 'Back',
+  createMultipleComponents: 'Create multiple components',
+  resetAllChanges: 'Reset all changes',
+  pushChangesToMainComponent: 'Push changes to main component',
+  restoreMainComponent: 'Restore main component',
+  selectMatchingLayers: 'Select matching layers',
+  selectSameFill: 'Select all with same fill',
+  selectSameStroke: 'Select all with same stroke',
+  selectSameEffect: 'Select all with same effect',
+  selectSameText: 'Select all with same text properties',
+  selectSameFont: 'Select all with same font',
+  selectSameInstance: 'Select all with same instance',
+  selectSameProperties: 'Select all with same properties'
 } as const
 
 export const commandMessages = i18n('commands', commandMessageDefaults)

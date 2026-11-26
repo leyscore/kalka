@@ -159,6 +159,44 @@ export const APP_MENU_SCHEMA = [
         id: 'selection.selectInverse',
         label: 'Select Inverse',
         command: 'selection.selectInverse'
+      },
+      {
+        id: 'selection.selectMatchingLayers',
+        label: 'Select Matching Layers',
+        command: 'selection.selectMatchingLayers'
+      },
+      {
+        id: 'select-all-with-same',
+        label: 'Select All with Same',
+        sub: [
+          { id: 'selection.selectSameFill', label: 'Fill', command: 'selection.selectSameFill' },
+          {
+            id: 'selection.selectSameStroke',
+            label: 'Stroke',
+            command: 'selection.selectSameStroke'
+          },
+          {
+            id: 'selection.selectSameEffect',
+            label: 'Effect',
+            command: 'selection.selectSameEffect'
+          },
+          {
+            id: 'selection.selectSameText',
+            label: 'Text Properties',
+            command: 'selection.selectSameText'
+          },
+          { id: 'selection.selectSameFont', label: 'Font', command: 'selection.selectSameFont' },
+          {
+            id: 'selection.selectSameInstance',
+            label: 'Instance',
+            command: 'selection.selectSameInstance'
+          },
+          {
+            id: 'selection.selectSameProperties',
+            label: 'Properties',
+            command: 'selection.selectSameProperties'
+          }
+        ]
       }
     ]
   },
@@ -366,6 +404,11 @@ export const APP_MENU_SCHEMA = [
         command: 'selection.createComponent'
       },
       {
+        id: 'selection.createMultipleComponents',
+        label: 'Create Multiple Components',
+        command: 'selection.createMultipleComponents'
+      },
+      {
         id: 'selection.createComponentSet',
         label: 'Create Component Set',
         command: 'selection.createComponentSet'
@@ -384,6 +427,21 @@ export const APP_MENU_SCHEMA = [
         id: 'selection.goToMainComponent',
         label: 'Go to Main Component',
         command: 'selection.goToMainComponent'
+      },
+      {
+        id: 'selection.resetAllChanges',
+        label: 'Reset All Changes',
+        command: 'selection.resetAllChanges'
+      },
+      {
+        id: 'selection.pushChangesToMainComponent',
+        label: 'Push Changes to Main Component',
+        command: 'selection.pushChangesToMainComponent'
+      },
+      {
+        id: 'selection.restoreMainComponent',
+        label: 'Restore Main Component',
+        command: 'selection.restoreMainComponent'
       },
       {
         id: 'selection.detachInstance',

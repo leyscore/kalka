@@ -49,5 +49,17 @@
   "paletteSearchAriaLabel": "Befehle suchen",
   "paletteDescription": "Kalka-Befehle suchen und ausführen.",
   "paletteNoCommands": "Keine Befehle gefunden.",
-  "paletteBack": "Zurück"
+  "paletteBack": "Zurück",
+  "createMultipleComponents": "Mehrere Komponenten erstellen",
+  "resetAllChanges": "Alle Änderungen zurücksetzen",
+  "pushChangesToMainComponent": "Änderungen an Hauptkomponente übertragen",
+  "restoreMainComponent": "Hauptkomponente wiederherstellen",
+  "selectMatchingLayers": "Passende Ebenen auswählen",
+  "selectSameFill": "Alle mit gleicher Füllung auswählen",
+  "selectSameStroke": "Alle mit gleicher Kontur auswählen",
+  "selectSameEffect": "Alle mit gleichem Effekt auswählen",
+  "selectSameText": "Alle mit gleichen Texteigenschaften auswählen",
+  "selectSameFont": "Alle mit gleicher Schrift auswählen",
+  "selectSameInstance": "Alle mit gleicher Instanz auswählen",
+  "selectSameProperties": "Alle mit gleichen Eigenschaften auswählen"
 }

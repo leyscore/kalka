@@ -49,5 +49,17 @@
   "paletteSearchAriaLabel": "コマンドを検索",
   "paletteDescription": "Kalka のコマンドを検索して実行します。",
   "paletteNoCommands": "コマンドが見つかりません。",
-  "paletteBack": "戻る"
+  "paletteBack": "戻る",
+  "createMultipleComponents": "複数のコンポーネントを作成",
+  "resetAllChanges": "すべての変更をリセット",
+  "pushChangesToMainComponent": "変更をメインコンポーネントに反映",
+  "restoreMainComponent": "メインコンポーネントを復元",
+  "selectMatchingLayers": "一致するレイヤーを選択",
+  "selectSameFill": "同じ塗りをすべて選択",
+  "selectSameStroke": "同じ線をすべて選択",
+  "selectSameEffect": "同じエフェクトをすべて選択",
+  "selectSameText": "同じテキストプロパティをすべて選択",
+  "selectSameFont": "同じフォントをすべて選択",
+  "selectSameInstance": "同じインスタンスをすべて選択",
+  "selectSameProperties": "同じプロパティをすべて選択"
 }

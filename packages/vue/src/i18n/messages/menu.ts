@@ -93,7 +93,8 @@ export const menuMessageDefaults = {
   splitRight: 'Split right',
   splitDown: 'Split down',
   closeView: 'Close view',
-  removeGuide: 'Remove guide'
+  removeGuide: 'Remove guide',
+  selectAllWithSame: 'Select all with same'
 } as const
 
 export const menuMessages = i18n('menu', menuMessageDefaults)

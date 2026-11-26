@@ -85,5 +85,6 @@
   "exportSelectionAsSVG": "Auswahl als SVG exportieren",
   "exportSelectionAsPPTX": "Auswahl als PPTX exportieren",
   "exportSelectionAsFig": "Auswahl als .fig exportieren",
-  "togglePreview": "Vorschau"
+  "togglePreview": "Vorschau",
+  "selectAllWithSame": "Alle mit gleichem auswählen"
 }

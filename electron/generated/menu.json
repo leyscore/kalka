@@ -168,6 +168,45 @@
         "id": "selection.selectInverse",
         "label": "Select Inverse",
         "accelerator": "CmdOrCtrl+Shift+A"
+      },
+      {
+        "id": "selection.selectMatchingLayers",
+        "label": "Select Matching Layers",
+        "accelerator": "CmdOrCtrl+Alt+A"
+      },
+      {
+        "id": "select-all-with-same",
+        "label": "Select All with Same",
+        "sub": [
+          {
+            "id": "selection.selectSameFill",
+            "label": "Fill"
+          },
+          {
+            "id": "selection.selectSameStroke",
+            "label": "Stroke"
+          },
+          {
+            "id": "selection.selectSameEffect",
+            "label": "Effect"
+          },
+          {
+            "id": "selection.selectSameText",
+            "label": "Text Properties"
+          },
+          {
+            "id": "selection.selectSameFont",
+            "label": "Font"
+          },
+          {
+            "id": "selection.selectSameInstance",
+            "label": "Instance"
+          },
+          {
+            "id": "selection.selectSameProperties",
+            "label": "Properties"
+          }
+        ]
       }
     ]
   },
@@ -434,6 +473,10 @@
         "accelerator": "CmdOrCtrl+Alt+K"
       },
       {
+        "id": "selection.createMultipleComponents",
+        "label": "Create Multiple Components"
+      },
+      {
         "id": "selection.createComponentSet",
         "label": "Create Component Set",
         "accelerator": "CmdOrCtrl+Shift+K"
@@ -449,6 +492,18 @@
       {
         "id": "selection.goToMainComponent",
         "label": "Go to Main Component"
+      },
+      {
+        "id": "selection.resetAllChanges",
+        "label": "Reset All Changes"
+      },
+      {
+        "id": "selection.pushChangesToMainComponent",
+        "label": "Push Changes to Main Component"
+      },
+      {
+        "id": "selection.restoreMainComponent",
+        "label": "Restore Main Component"
       },
       {
         "id": "selection.detachInstance",
