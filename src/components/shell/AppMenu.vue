@@ -20,6 +20,7 @@ import { shortcutPlatform, useEditorCommands, useI18n, vTestId } from '@kalka/vu
 import { serverAccount } from '@/app/collab/server/account'
 import { isServerRoom } from '@/app/collab/server/documents'
 import { useCollabInjected } from '@/app/collab/use'
+import { useDocumentViewOnly } from '@/app/collab/view-only'
 import { useAppMenu } from '@/app/shell/menu/app-menu'
 import {
   hasMenuSubItems,
@@ -55,6 +56,9 @@ const documentServer = computed(() => {
   const roomId = collab?.state.value.roomId
   return roomId && isServerRoom(roomId) ? (serverAccount.value?.serverName ?? null) : null
 })
+
+/** Read-only by the account's role, or because the file is shared to view. */
+const viewOnly = useDocumentViewOnly()
 
 const { topMenus } = useAppMenu()
 // Undo and redo sit by the document's name, where people look for them first.
@@ -199,7 +203,7 @@ const { menu: menuMessages } = useI18n()
         v-if="documentServer"
         class="no-drag"
         :server-name="documentServer"
-        :view-only="serverAccount?.user.role === 'viewer'"
+        :view-only="viewOnly"
       />
       <IconButton
         :label="tip(undo.label)"

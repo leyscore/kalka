@@ -30,7 +30,7 @@ import {
   type YNodes
 } from '@/app/collab/shared-tree/fields'
 import type { JoinCollabRoom } from '@/app/collab/transport'
-import { isServerTransport } from '@/app/collab/transport/server'
+import { isServerTransport, type ServerRole } from '@/app/collab/transport/server'
 import type { RemotePeer } from '@/app/collab/types'
 import { bindVariableSync, type YRecords } from '@/app/collab/variables'
 import {
@@ -57,6 +57,12 @@ export interface RoomSession {
   readonly status: ComputedRef<RoomStatus>
   /** Whether the room's document has reached this tab, from a peer or the saved copy. */
   readonly hasDocument: Readonly<Ref<boolean>>
+  /**
+   * The role a Kalka server gave this person in the room, which may lower their account's when
+   * the file is shared to view; null in a live room, which has no access control, and until
+   * the server answers.
+   */
+  readonly serverRole: Readonly<Ref<ServerRole | null>>
   updateCursor(x: number, y: number, pageId: string): void
   updateSelection(ids: string[]): void
   /** Writes the tab's whole document into the room and makes its root the room's. */
@@ -143,6 +149,7 @@ export function openRoomSession({
   /** When the current stretch of being connected to the service that introduces peers began. */
   const connectedSince = ref<number | null>(null)
   const serverState = ref<ServerRoomState | null>(null)
+  const serverRole = ref<ServerRole | null>(null)
   let suppressYjsEvents = false
   let suppressGraphSync = false
   let disposed = false
@@ -302,6 +309,9 @@ export function openRoomSession({
     serverRoom.onSignInNeeded((needed) => {
       if (serverState.value) serverState.value.signInNeeded = needed
     })
+    serverRoom.onRole((role) => {
+      serverRole.value = role
+    })
   }
   const stopServerPeer = serverRoom
     ? bindServerPeer({
@@ -405,6 +415,7 @@ export function openRoomSession({
     peers,
     status,
     hasDocument,
+    serverRole,
     updateCursor(x, y, pageId) {
       awareness.setLocalStateField('cursor', { x, y, pageId, zoom: store.state.zoom })
     },

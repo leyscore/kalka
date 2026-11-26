@@ -63,6 +63,9 @@ const statusText = computed(() =>
     v-if="!collab.inServerRoom || collab.serverName"
     class="mb-1.5"
     :server="collab.inServerRoom ? (collab.serverName ?? undefined) : undefined"
+    :link-role="collab.linkRole"
+    :editable="collab.canChangeLinkRole"
+    @update:link-role="collab.setLinkRole"
   />
   <div v-if="!collab.inServerRoom" class="mb-3 flex items-center gap-1.5">
     <AppInput

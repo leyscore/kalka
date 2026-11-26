@@ -187,6 +187,15 @@ export const collaborationMessageDefaults = {
   sharePermissionServer: params(
     'Members of {server} open it with their account’s role: a Viewer can only look.'
   ),
+  shareLinkRoleLabel: 'Members with the link',
+  shareLinkCanEdit: 'Can edit',
+  shareLinkCanView: 'Can view',
+  sharePermissionServerView: params(
+    'Members of {server} open it read-only, except whoever made it and administrators.'
+  ),
+  sharePermissionRoomNoControl:
+    'Live rooms have no access control: to share read-only, save the file on a Kalka server.',
+  shareLinkRoleFailed: 'Couldn’t change how this file is shared.',
   serverSavedLinkCopied: params('Saved on {server}. Link copied.'),
   serverStatusLive: params('{count} people here, saved on {server}'),
   serverCopyFileLink: 'Copy link to this file',

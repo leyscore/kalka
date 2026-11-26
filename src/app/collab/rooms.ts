@@ -62,6 +62,7 @@ function openRoomSession(options: RoomSessionOptions): RoomSession {
     peers: computed(() => opened.value?.peers.value ?? []),
     status: computed(() => opened.value?.status.value ?? 'connecting'),
     hasDocument: computed(() => opened.value?.hasDocument.value ?? false),
+    serverRole: computed(() => opened.value?.serverRole.value ?? null),
     updateCursor: (x, y, pageId) => opened.value?.updateCursor(x, y, pageId),
     updateSelection: (ids) => opened.value?.updateSelection(ids),
     shareDocument: () => whenOpen((session) => session.shareDocument()),

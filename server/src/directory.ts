@@ -4,7 +4,7 @@ import enterprise from './ee/module'
 import type { EnterpriseHost } from './ee/types'
 import { enterpriseHost, serverUrl } from './enterprise'
 import { challengeOf, hashPassword, hashToken, randomId, randomToken, sameSecret, verifyPassword } from './crypto'
-import { withStoredSettings, type DocumentInfo, type Env, type Role, type TrashedDocument, type User } from './env'
+import { withStoredSettings, type DocumentInfo, type Env, type LinkRole, type Role, type TrashedDocument, type User } from './env'
 import { roomName } from './names'
 
 const DAY = 24 * 60 * 60 * 1000
@@ -59,6 +59,7 @@ type DocumentRow = {
   file_at: number | null
   pending_at: number | null
   pending_by: string | null
+  link_role: string | null
 }
 
 function toUser(row: UserRow): User {
@@ -86,7 +87,8 @@ function toDocument(row: DocumentRow): DocumentInfo {
     live: row.live ?? 0,
     fileSize: row.file_size ?? null,
     fileSavedAt: row.file_at ?? null,
-    pending: row.pending_at ? { at: row.pending_at, by: row.pending_by ?? '' } : null
+    pending: row.pending_at ? { at: row.pending_at, by: row.pending_by ?? '' } : null,
+    linkRole: row.link_role === 'view' ? 'view' : 'edit'
   }
 }
 
@@ -181,7 +183,8 @@ export class Directory extends DurableObject<Env> {
       'ALTER TABLE documents ADD COLUMN pending_at INTEGER',
       'ALTER TABLE documents ADD COLUMN pending_by TEXT',
       'ALTER TABLE users ADD COLUMN provisioned INTEGER NOT NULL DEFAULT 0',
-      'ALTER TABLE documents ADD COLUMN deleted_by TEXT'
+      'ALTER TABLE documents ADD COLUMN deleted_by TEXT',
+      "ALTER TABLE documents ADD COLUMN link_role TEXT NOT NULL DEFAULT 'edit'"
     ]) {
       try {
         this.sql.exec(column)
@@ -571,6 +574,16 @@ export class Directory extends DurableObject<Env> {
     return this.getDocument(id)
   }
 
+  /** Sets whether members open the document to edit it or only to look. */
+  setLinkRole(id: string, linkRole: LinkRole): DocumentInfo | null {
+    this.sql.exec(
+      'UPDATE documents SET link_role = ? WHERE id = ? AND deleted_at IS NULL',
+      linkRole,
+      id
+    )
+    return this.getDocument(id)
+  }
+
   /** Moves a document to the trash; its content stays, so it can be restored for a while. */
   deleteDocument(id: string, by?: string): boolean {
     const document = this.getDocument(id)
@@ -794,13 +807,16 @@ export class Directory extends DurableObject<Env> {
     return this.putSecret('ticket', JSON.stringify({ userId, documentId }), TICKET_MS)
   }
 
-  async consumeTicket(ticket: string): Promise<{ user: User; documentId: string } | null> {
+  async consumeTicket(
+    ticket: string
+  ): Promise<{ user: User; documentId: string; document: DocumentInfo } | null> {
     const value = await this.takeSecret('ticket', ticket)
     if (!value) return null
     const { userId, documentId } = JSON.parse(value) as { userId: string; documentId: string }
     const row = this.userById(userId)
-    if (!row || row.disabled || !this.getDocument(documentId)) return null
-    return { user: toUser(row), documentId }
+    const document = this.getDocument(documentId)
+    if (!row || row.disabled || !document) return null
+    return { user: toUser(row), documentId, document }
   }
 
   /** A short code the app trades for a session after signing in through a browser. */

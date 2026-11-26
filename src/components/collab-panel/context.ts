@@ -7,8 +7,17 @@ import { useI18n } from '@kalka/vue'
 import { useAvatar } from '@/app/collab/avatar'
 import { useJoinRoom } from '@/app/collab/join'
 import { serverAccount, serverSessionExpired } from '@/app/collab/server/account'
-import { isServerRoom, serverDocumentLink, shareToServer } from '@/app/collab/server/documents'
+import type { ServerDocument, ServerLinkRole } from '@/app/collab/server/api'
+import {
+  canChooseLinkRole,
+  fetchServerDocument,
+  isServerRoom,
+  serverDocumentLink,
+  setServerDocumentLinkRole,
+  shareToServer
+} from '@/app/collab/server/documents'
 import { DEFAULT_COLLAB_STATE, useCollabInjected } from '@/app/collab/use'
+import { useDocumentViewOnly } from '@/app/collab/view-only'
 import { useActiveEditorStoreRef } from '@/app/editor/active-store'
 import { useNotificationMessages } from '@/app/i18n/notifications'
 import { presenceOf, renameAgent } from '@/app/presence/registry'
@@ -85,7 +94,43 @@ function createCollabPanelContext() {
   const inServerRoom = computed(() =>
     state.value.roomId ? isServerRoom(state.value.roomId) : false
   )
-  const viewOnly = computed(() => inServerRoom.value && serverAccount.value?.user.role === 'viewer')
+  /** The room's role wins over the account's: a file shared to view makes an editor a viewer. */
+  const viewOnly = useDocumentViewOnly()
+  /** How a file about to go on the server will be shared, chosen before sharing it. */
+  const linkRoleDraft = ref<ServerLinkRole>('edit')
+  /** The open server file, as the server has it, read each time the panel opens. */
+  const serverDocument = ref<ServerDocument | null>(null)
+  const linkRole = computed<ServerLinkRole>(() => serverDocument.value?.linkRole ?? 'edit')
+  const canChangeLinkRole = computed(() =>
+    serverDocument.value ? canChooseLinkRole(serverDocument.value) : false
+  )
+  watch(
+    () => [popoverOpen.value, inServerRoom.value, state.value.roomId] as const,
+    ([open, inServer, roomId]) => {
+      if (!open || !inServer || !roomId) return
+      fetchServerDocument(roomId)
+        .then((document) => {
+          if (state.value.roomId === roomId) serverDocument.value = document
+          return undefined
+        })
+        .catch((error: unknown) => console.warn('[Kalka server] Could not read the file', error))
+    },
+    { immediate: true }
+  )
+
+  function setLinkRole(next: ServerLinkRole) {
+    const roomId = state.value.roomId
+    if (!roomId || !inServerRoom.value || next === linkRole.value) return
+    setServerDocumentLinkRole(roomId, next)
+      .then((document) => {
+        serverDocument.value = document
+        return undefined
+      })
+      .catch((error: unknown) => {
+        console.error('[Kalka server]', error)
+        toast.error(collaboration.value.shareLinkRoleFailed)
+      })
+  }
   /** The web address of the server document, to send to a teammate; null in the desktop app. */
   const serverLink = computed(() => {
     const roomId = state.value.roomId
@@ -105,7 +150,7 @@ function createCollabPanelContext() {
     if (!store || !server) return
     saveName()
     popoverOpen.value = false
-    shareToServer(store)
+    shareToServer(store, linkRoleDraft.value)
       .then((session) => {
         const link = serverDocumentLink(session.roomId, store.state.documentName)
         if (link) void copy(link)
@@ -171,6 +216,10 @@ function createCollabPanelContext() {
     serverLink,
     copyServerLink,
     shareOnServer,
+    linkRoleDraft,
+    linkRole,
+    canChangeLinkRole,
+    setLinkRole,
     join,
     clearJoinError,
     disconnect,

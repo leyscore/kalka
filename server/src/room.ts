@@ -363,6 +363,21 @@ export class DocumentRoom extends DurableObject<Env> {
     }
   }
 
+  /**
+   * How the document is shared changed: every connection closes as when a role changes, and
+   * reconnects with a ticket that gives the role the new setting allows.
+   */
+  reopenAll(): void {
+    for (const { ws } of this.sockets()) {
+      this.leave(ws)
+      try {
+        ws.close(CLOSE_ROLE_CHANGED, 'Sharing changed')
+      } catch {
+        // Already closed.
+      }
+    }
+  }
+
   /** Closes every connection, as when the document goes to the trash; its content stays. */
   closeAll(): void {
     for (const { ws } of this.sockets()) {

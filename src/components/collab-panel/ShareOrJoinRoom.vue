@@ -36,7 +36,12 @@ const JOIN_ERROR_ID = 'collab-join-error'
       {{ collab.messages.serverShareOn({ server: collab.serverName }) }}
     </AppButton>
     <p class="mt-1 text-[11px] text-muted">{{ collab.messages.serverShareOnDescription }}</p>
-    <SharePermission class="mt-1 mb-3" :server="collab.serverName" />
+    <SharePermission
+      v-model:link-role="collab.linkRoleDraft"
+      class="mt-1 mb-3"
+      :server="collab.serverName"
+      editable
+    />
   </template>
 
   <AppButton

@@ -26,12 +26,16 @@ import {
   type Actor
 } from './enterprise'
 import {
+  canChooseLinkRole,
+  documentRole,
   isRole,
+  LINK_ROLES,
   listSetting,
   ROLES,
   SERVER_VERSION,
   setting,
   withStoredSettings,
+  type DocumentInfo,
   type Env,
   type User
 } from './env'
@@ -84,6 +88,10 @@ const UserChange = v.object({
   disabled: v.optional(v.boolean())
 })
 const DocumentRequest = v.object({ name: v.pipe(v.string(), v.maxLength(200)) })
+const DocumentPatchRequest = v.object({
+  name: v.optional(v.pipe(v.string(), v.maxLength(200))),
+  linkRole: v.optional(v.picklist(LINK_ROLES))
+})
 const AppPasswordRequest = v.object({ name: v.pipe(v.string(), v.maxLength(80)) })
 
 function bearer(request: Request): string | null {
@@ -220,19 +228,39 @@ async function documentRoute(
   const log = (actor: Actor, action: string, detail?: Record<string, unknown>) =>
     emit(env, request, actor, action, documentId, detail)
   if (!isRoomId(documentId)) throw new HttpError(404, 'No such document.')
+  /** The person, who must be able to change this document as it is shared, and the document. */
+  const requireDocumentEditor = async (): Promise<{ user: User; document: DocumentInfo }> => {
+    const user = await requireUser(env, request, ['admin', 'editor'])
+    const document = await directory.getDocument(documentId)
+    if (!document) throw new HttpError(404, 'No such document.')
+    if (documentRole(user, document) === 'viewer') {
+      throw new HttpError(403, 'This file is shared to view only.')
+    }
+    return { user, document }
+  }
 
   if (rest === '' && method === 'PATCH') {
-    const user = await requireUser(env, request, ['admin', 'editor'])
-    const { name } = await body(request, DocumentRequest)
-    const before = await directory.getDocument(documentId)
-    const document = await directory.renameDocument(documentId, name)
+    const { user, document: before } = await requireDocumentEditor()
+    const { name, linkRole } = await body(request, DocumentPatchRequest)
+    let document: DocumentInfo | null = before
+    if (linkRole !== undefined && linkRole !== before.linkRole) {
+      if (!canChooseLinkRole(user, before)) {
+        throw new HttpError(403, 'Only the person who made this file, or an administrator, can change how it is shared.')
+      }
+      document = await directory.setLinkRole(documentId, linkRole)
+      // Everyone in the room reconnects, and takes the role the new setting gives them.
+      await roomOf(env, documentId).reopenAll()
+      await log(user, 'document.link_role_changed', { from: before.linkRole, to: linkRole })
+    }
+    if (name !== undefined) {
+      document = await directory.renameDocument(documentId, name)
+      await log(user, 'document.renamed', { from: before.name, to: document?.name })
+    }
     if (!document) throw new HttpError(404, 'No such document.')
-    await log(user, 'document.renamed', { from: before?.name, to: document.name })
     return json(document)
   }
   if (rest === '' && method === 'DELETE') {
-    const user = await requireUser(env, request, ['admin', 'editor'])
-    const before = await directory.getDocument(documentId)
+    const { user, document: before } = await requireDocumentEditor()
     if (!(await directory.deleteDocument(documentId, user.id))) throw new HttpError(404, 'No such document.')
     // To the trash: the people in it leave, its content stays until it is restored or erased.
     await roomOf(env, documentId).closeAll()
@@ -247,12 +275,13 @@ async function documentRoute(
   }
   if (rest === '/ticket' && method === 'POST') {
     const user = await requireUser(env, request)
-    if (!(await directory.getDocument(documentId))) throw new HttpError(404, 'No such document.')
+    const document = await directory.getDocument(documentId)
+    if (!document) throw new HttpError(404, 'No such document.')
     const ticket = await directory.createTicket(user.id, documentId)
     const url = new URL(`${publicUrl(env, request)}/rooms/${documentId}`)
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
     url.searchParams.set('ticket', ticket)
-    return json({ url: url.toString(), role: user.role })
+    return json({ url: url.toString(), role: documentRole(user, document) })
   }
   if (rest === '/file' && method === 'GET') {
     const user = await requireUser(env, request)
@@ -264,8 +293,7 @@ async function documentRoute(
     })
   }
   if (rest === '/file' && method === 'PUT') {
-    await requireUser(env, request, ['admin', 'editor'])
-    if (!(await directory.getDocument(documentId))) throw new HttpError(404, 'No such document.')
+    await requireDocumentEditor()
     const data = await request.arrayBuffer()
     if (data.byteLength > MAX_FILE_BYTES) throw new HttpError(413, 'This file is too large.')
     await roomOf(env, documentId).putFile(data, documentId, directoryName(tenantOf(env)))
@@ -289,8 +317,7 @@ async function documentRoute(
   // With `?version=`, only that version is dismissed: the Kalka window whose dismissal goes
   // through is the one that applies it.
   if (rest === '/pending' && method === 'DELETE') {
-    await requireUser(env, request, ['admin', 'editor'])
-    if (!(await directory.getDocument(documentId))) throw new HttpError(404, 'No such document.')
+    await requireDocumentEditor()
     const version = new URL(request.url).searchParams.get('version') ?? undefined
     const dismissed = await roomOf(env, documentId).clearPending(version)
     if (dismissed) await directory.setPending(documentId, null)
@@ -613,7 +640,7 @@ async function room(env: Env, request: Request, documentId: string): Promise<Res
     'X-Kalka-Directory': directoryName(tenantOf(env)),
     'X-Kalka-User': pass.user.id,
     'X-Kalka-Name': encodeURIComponent(pass.user.name),
-    'X-Kalka-Role': isRole(pass.user.role) ? pass.user.role : 'viewer'
+    'X-Kalka-Role': isRole(pass.user.role) ? documentRole(pass.user, pass.document) : 'viewer'
   })
   for (const name of ['Sec-WebSocket-Key', 'Sec-WebSocket-Version', 'Sec-WebSocket-Protocol']) {
     const value = request.headers.get(name)

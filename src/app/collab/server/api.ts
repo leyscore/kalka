@@ -29,12 +29,20 @@ export type ServerInfo = v.InferOutput<typeof serverInfoSchema>
 const sessionSchema = v.object({ token: v.string(), user: serverUserSchema })
 export type ServerSession = v.InferOutput<typeof sessionSchema>
 
+/** What members who open a server file by its link may do: change it, or only look. */
+export const serverLinkRoleSchema = v.picklist(['edit', 'view'])
+export type ServerLinkRole = v.InferOutput<typeof serverLinkRoleSchema>
+
 export const serverDocumentSchema = v.object({
   id: v.string(),
   name: v.string(),
   createdAt: v.number(),
   updatedAt: v.number(),
-  hasFile: v.boolean()
+  hasFile: v.boolean(),
+  /** Who made it; a server older than link roles may not say. */
+  createdBy: v.optional(v.string()),
+  /** A server older than link roles shares every file to edit. */
+  linkRole: v.optional(serverLinkRoleSchema, 'edit')
 })
 export type ServerDocument = v.InferOutput<typeof serverDocumentSchema>
 
@@ -173,6 +181,13 @@ export const serverAPI = {
       method: 'PATCH',
       token,
       body: { name },
+      schema: serverDocumentSchema
+    }),
+  setLinkRole: (base: string, token: string, id: string, linkRole: ServerLinkRole) =>
+    serverRequest(base, `/api/documents/${id}`, {
+      method: 'PATCH',
+      token,
+      body: { linkRole },
       schema: serverDocumentSchema
     }),
   ticket: (base: string, token: string, id: string) =>

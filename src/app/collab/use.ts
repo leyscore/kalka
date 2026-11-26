@@ -34,6 +34,7 @@ export function useCollab() {
       roomId: room?.roomId ?? null,
       status: room?.status.value ?? null,
       peers: room?.peers.value ?? [],
+      serverRole: room?.serverRole.value ?? null,
       localName: identity.name.value,
       localColor: identity.color,
       hasChosenName: identity.hasChosenName.value

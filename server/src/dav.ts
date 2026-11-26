@@ -2,7 +2,7 @@
 // (External storage), rclone and other sync clients. Sign-in is Basic auth with an email and an
 // app password. The server never opens an archive: every request stays a few database reads,
 // within the free Workers plan's CPU time.
-import type { DocumentInfo, Env, User } from './env'
+import { documentRole, type DocumentInfo, type Env, type User } from './env'
 import { clientIp, directoryOf, HttpError, MAX_FILE_BYTES, roomOf, tenantOf } from './http'
 import { directoryName } from './names'
 
@@ -163,6 +163,11 @@ function canEdit(user: User): boolean {
   return user.role === 'admin' || user.role === 'editor'
 }
 
+/** Whether someone may change a file that exists, as it is shared: to view, only its maker. */
+function canEditDocument(user: User, document: DocumentInfo): boolean {
+  return documentRole(user, document) !== 'viewer'
+}
+
 async function readBody(request: Request): Promise<ArrayBuffer> {
   const declared = Number(request.headers.get('Content-Length') ?? 0)
   if (declared > MAX_FILE_BYTES) throw new HttpError(413, 'This file is too large.')
@@ -284,6 +289,7 @@ export async function dav(env: Env, request: Request, path: string, hooks: DavHo
       if (name === '') return text(405, 'This is the folder.')
       if (!name.toLowerCase().endsWith(EXTENSION)) return text(403, 'Only .kalka files can be saved here.')
       if (entry && request.headers.get('If-None-Match') === '*') return text(412, 'This file already exists.')
+      if (entry && !canEditDocument(user, entry.doc)) return writeDenied()
       const data = await readBody(request)
       const directoryKey = directoryName(tenantOf(env))
       if (entry) {
@@ -309,6 +315,7 @@ export async function dav(env: Env, request: Request, path: string, hooks: DavHo
       if (sidecar) return new Response(null, { status: 204 })
       if (name === '') return text(403, 'The folder itself cannot be deleted.')
       if (!entry) return text(404, 'No such file.')
+      if (!canEditDocument(user, entry.doc)) return writeDenied()
       // Deleting over WebDAV moves the document to the trash, as in Kalka.
       await directory.deleteDocument(entry.doc.id, user.id)
       await roomOf(env, entry.doc.id).closeAll()
@@ -325,6 +332,8 @@ export async function dav(env: Env, request: Request, path: string, hooks: DavHo
       if (!entry) return text(404, 'No such file.')
       if (!target.toLowerCase().endsWith(EXTENSION)) return text(403, 'Only .kalka files can be saved here.')
       const existing = names.get(target.toLowerCase())
+      if (method === 'MOVE' && !canEditDocument(user, entry.doc)) return writeDenied()
+      if (existing && !canEditDocument(user, existing.doc)) return writeDenied()
       if (existing?.doc.id === entry.doc.id) {
         if (method === 'COPY') return text(403, 'A file cannot be copied onto itself.')
         await directory.renameDocument(entry.doc.id, stemOf(target))

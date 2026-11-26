@@ -46,6 +46,10 @@ export interface User {
   provisioned: boolean
 }
 
+/** What the members who open a document by its link may do with it: change it, or only look. */
+export type LinkRole = 'edit' | 'view'
+export const LINK_ROLES: readonly LinkRole[] = ['edit', 'view']
+
 export interface DocumentInfo {
   id: string
   name: string
@@ -61,6 +65,30 @@ export interface DocumentInfo {
   fileSavedAt: number | null
   /** A file uploaded outside Kalka (WebDAV, a restore), waiting for a Kalka client to apply it. */
   pending: { at: number; by: string } | null
+  /** Whether members open it to edit, or only to look; its maker and administrators always edit. */
+  linkRole: LinkRole
+}
+
+/**
+ * The role someone has in one document: their account's, lowered to viewer when the document
+ * is shared to view, except for administrators and whoever made it, who keep editing it and
+ * choose how it is shared.
+ */
+export function documentRole(
+  user: Pick<User, 'id' | 'role'>,
+  document: Pick<DocumentInfo, 'createdBy' | 'linkRole'>
+): Role {
+  if (user.role === 'viewer' || user.role === 'admin') return user.role
+  if (document.linkRole === 'view' && document.createdBy !== user.id) return 'viewer'
+  return user.role
+}
+
+/** Whether someone may choose how a document is shared: an administrator, or its maker if an editor. */
+export function canChooseLinkRole(
+  user: Pick<User, 'id' | 'role'>,
+  document: Pick<DocumentInfo, 'createdBy'>
+): boolean {
+  return user.role === 'admin' || (user.role === 'editor' && document.createdBy === user.id)
 }
 
 /** A document in the trash: when it was moved there, by whom, and when it goes for good. */

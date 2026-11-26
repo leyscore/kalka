@@ -1,6 +1,7 @@
 import type { Color } from '@kalka/scene-graph/primitives'
 
 import type { RoomStatus } from '@/app/collab/room/status'
+import type { ServerRole } from '@/app/collab/transport/server'
 import type { AgentPresence, PersonPoint } from '@/app/presence/types'
 
 export interface RemotePeer {
@@ -26,6 +27,8 @@ export interface CollabState {
   roomId: string | null
   status: RoomStatus | null
   peers: RemotePeer[]
+  /** The role a Kalka server gave this person in the room; null in a live room. */
+  serverRole: ServerRole | null
   localName: string
   localColor: Color
   /** Whether the person has set their own name rather than joining as a generated one. */
@@ -37,6 +40,7 @@ export const DEFAULT_COLLAB_STATE: CollabState = {
   roomId: null,
   status: null,
   peers: [],
+  serverRole: null,
   localName: '',
   localColor: { r: 0.5, g: 0.5, b: 0.5, a: 1 },
   hasChosenName: false

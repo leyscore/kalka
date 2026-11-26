@@ -12,7 +12,7 @@ import { addressPath, documentSlug } from '@/app/shell/address/path'
 import { IS_BROWSER, IS_TAURI } from '@/constants'
 
 import { refreshServerAccount, serverAccount, updateServerUser, withServerSession } from './account'
-import { serverAPI, type ServerDocument } from './api'
+import { serverAPI, type ServerDocument, type ServerLinkRole } from './api'
 import { trashAPI, type TrashedDocument } from './trash-api'
 
 /** Rooms this app opened through the server, so the room panel can say where they live. */
@@ -120,17 +120,55 @@ export function openServerDocumentById(
   return session
 }
 
-/** Puts a tab's document on the server: a new server document whose room it then shares. */
-export async function shareToServer(store: EditorStore): Promise<RoomSession> {
+/**
+ * Puts a tab's document on the server: a new server document whose room it then shares, to edit
+ * or, with `linkRole` view, read-only for the members who open it.
+ */
+export async function shareToServer(
+  store: EditorStore,
+  linkRole: ServerLinkRole = 'edit'
+): Promise<RoomSession> {
   const existing = roomForStore(store)
   if (existing) return existing
   const name = store.state.documentName || panelMessages.get().untitled
-  const document = await withServerSession((url, token) =>
-    serverAPI.createDocument(url, token, name)
-  )
+  const document = await withServerSession(async (url, token) => {
+    const created = await serverAPI.createDocument(url, token, name)
+    return linkRole === created.linkRole
+      ? created
+      : serverAPI.setLinkRole(url, token, created.id, linkRole)
+  })
   serverDocuments.value = [document, ...serverDocuments.value]
   markServerRoom(document.id)
   return shareDocument(store, document.id, serverTransport)
+}
+
+/** A server document as the server has it now, with how it is shared. */
+export function fetchServerDocument(roomId: string): Promise<ServerDocument> {
+  return withServerSession((url, token) => serverAPI.document(url, token, roomId))
+}
+
+/**
+ * Shares a server document to edit or to view. The server reconnects everyone in its room, who
+ * then take the role the new setting gives them.
+ */
+export async function setServerDocumentLinkRole(
+  roomId: string,
+  linkRole: ServerLinkRole
+): Promise<ServerDocument> {
+  const updated = await withServerSession((url, token) =>
+    serverAPI.setLinkRole(url, token, roomId, linkRole)
+  )
+  serverDocuments.value = serverDocuments.value.map((document) =>
+    document.id === updated.id ? updated : document
+  )
+  return updated
+}
+
+/** Whether someone may choose how a server document is shared: an administrator, or its maker. */
+export function canChooseLinkRole(document: ServerDocument): boolean {
+  const user = serverAccount.value?.user
+  if (!user) return false
+  return user.role === 'admin' || (user.role === 'editor' && document.createdBy === user.id)
 }
 
 /** Gives a server document a new name, on the server and in the list of its files. */

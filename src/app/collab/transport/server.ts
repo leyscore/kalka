@@ -29,6 +29,8 @@ export interface ServerRoomTransport extends CollabRoomTransport {
   readonly server: true
   /** The role the server gave this person in the room, once connected. */
   role(): ServerRole | null
+  /** Runs each time the server gives this person a role in the room, as when sharing changes. */
+  onRole(handler: (role: ServerRole) => void): void
   /** Runs once the server says the document does not exist, or no longer; it stops trying. */
   onGone(handler: () => void): void
   /** Runs when the room needs this person to sign in to the server, or no longer does. */
@@ -73,6 +75,7 @@ function joinServerRoom(
   const leaveHandlers: ((peerId: string) => void)[] = []
   const goneHandlers: (() => void)[] = []
   const signInHandlers: ((needed: boolean) => void)[] = []
+  const roleHandlers: ((role: ServerRole) => void)[] = []
   let gone = false
   let signInNeeded = false
   const peers = new Set<string>()
@@ -158,7 +161,10 @@ function joinServerRoom(
     }
     if (hasLeft()) return
     setSignInNeeded(false)
-    role = pass.role
+    if (role !== pass.role) {
+      role = pass.role
+      for (const handler of roleHandlers) handler(pass.role)
+    }
     const ws = new WebSocket(pass.url)
     ws.binaryType = 'arraybuffer'
     socket = ws
@@ -189,6 +195,7 @@ function joinServerRoom(
   return {
     server: true,
     role: () => role,
+    onRole: (handler) => void roleHandlers.push(handler),
     makeAction(namespace): CollabAction {
       return [
         (data, peerId) => send(namespace, data, peerId ?? ''),
@@ -216,6 +223,7 @@ function joinServerRoom(
       left = true
       goneHandlers.length = 0
       signInHandlers.length = 0
+      roleHandlers.length = 0
       clearTimeout(retryTimer)
       watchdog.pause()
       socket?.close(1000, 'Left')

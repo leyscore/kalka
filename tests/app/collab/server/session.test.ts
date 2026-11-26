@@ -76,6 +76,7 @@ function createServerRoom() {
     return {
       server: true,
       role: () => role,
+      onRole: (handler) => queueMicrotask(() => handler(role)),
       onGone: (handler) => void self.goneHandlers.push(handler),
       onSignInNeeded: (handler) => void self.signInHandlers.push(handler),
       retryNow: () => undefined,
@@ -287,6 +288,7 @@ describe('server documents', () => {
       const signedOut: ServerRoomTransport = {
         server: true,
         role: () => null,
+        onRole: () => undefined,
         onGone: () => undefined,
         onSignInNeeded: (handler) => {
           needSignIn = handler
@@ -340,6 +342,9 @@ describe('server documents', () => {
       await settle()
       const viewer = open('viewer')
       await settle()
+      // The role the room gives, which the editor shows as view only.
+      expect(viewer.session.serverRole.value).toBe('viewer')
+      expect(editor.session.serverRole.value).toBe('editor')
       const page = expectDefined(viewer.store.graph.getPages()[0], 'page')
       viewer.store.graph.createNode('RECTANGLE', page.id, { name: 'Viewer box' })
       const card = expectDefined(viewer.store.graph.getChildren(page.id)[0], 'card')

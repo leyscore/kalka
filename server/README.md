@@ -13,6 +13,7 @@ The self-hosted server for [Kalka](https://kalka.design), the design editor whos
 - **Shared files and real-time collaboration.** Each file is a room; Kalka windows edit it together and the server keeps it.
 - **A console in Kalka's style.** Files, people, invitations and settings (single sign-on, email, license) in one page, by day or by night.
 - **Accounts.** The first administrator, then people you invite by link or email, as administrators, editors or viewers. Password reset, profile, deactivation and deletion.
+- **Share to edit or to view.** Whoever made a file, or an administrator, chooses whether members who open it can edit it or only view it; the server turns their edits away, in open rooms and over WebDAV.
 - **A files folder over WebDAV.** Mount the server's files as `.kalka` archives in Finder, Windows, Nextcloud or rclone, with app passwords.
 - **Single sign-on** with OpenID Connect: Authentik, Keycloak, Authelia, Google Workspace, Microsoft Entra ID and any standard provider. Free for up to 5 people (Community); Business is $8 per editor per month, billed yearly.
 - **Business features** with a Business license: an audit log, managed backups to S3-compatible storage, and user provisioning with SCIM 2.0 (Okta, Microsoft Entra ID, Authentik).
