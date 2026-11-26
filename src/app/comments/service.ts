@@ -21,6 +21,7 @@ import {
 import { queueChatPrompt } from '@/app/ai/chat/queued-prompt'
 import { isConfigured } from '@/app/ai/chat/storage'
 import { useCollabIdentity } from '@/app/collab/identity'
+import { editHandoff } from '@/app/comments/handoff-undo'
 import { watchFrameReviews } from '@/app/comments/reviews'
 import type { EditorStore } from '@/app/editor/active-store'
 import { flyToNextCreation } from '@/app/presence/fly-to-work'
@@ -342,8 +343,12 @@ export function useComments(store: EditorStore) {
       moveCommentThread(store.graph, id, anchor)
       changed()
     },
+    /** An annotation or a measurement goes as an undoable step; a comment, as in Figma, does not. */
     remove(id: string) {
-      deleteCommentThread(store.graph, id)
+      const thread = findCommentThread(store.graph, id)
+      if (thread && isHandoffThread(thread))
+        editHandoff(store, 'Delete annotation', () => deleteCommentThread(store.graph, id))
+      else deleteCommentThread(store.graph, id)
       if (state.value.openThreadId === id) state.value = { ...state.value, openThreadId: null }
       changed()
     }

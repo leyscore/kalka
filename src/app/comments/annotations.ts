@@ -8,6 +8,7 @@ import {
   type MeasurementSide
 } from '@kalka/scene-graph'
 
+import { editHandoff } from '@/app/comments/handoff-undo'
 import { currentPersonName } from '@/app/comments/service'
 import type { EditorStore } from '@/app/editor/active-store'
 import { useLeftPanel } from '@/app/shell/left-panel/use'
@@ -32,7 +33,9 @@ function author() {
 export function annotateSelection(store: EditorStore): CommentThread | null {
   const [id] = store.state.selectedIds
   if (!id) return null
-  const thread = addAnnotation(store.graph, id, author(), {})
+  const thread = editHandoff(store, 'Add annotation', () =>
+    addAnnotation(store.graph, id, author(), {})
+  )
   if (!thread) return null
   annotationsVisible.value = true
   focusedAnnotation.value = thread.id
@@ -71,7 +74,9 @@ export function selectionMeasurement(
 export function measureSelection(store: EditorStore): CommentThread | null {
   const target = selectionMeasurement(store)
   if (!target) return null
-  const thread = addMeasurement(store.graph, target.from, author(), target.measurement)
+  const thread = editHandoff(store, 'Add measurement', () =>
+    addMeasurement(store.graph, target.from, author(), target.measurement)
+  )
   if (!thread) return null
   annotationsVisible.value = true
   store.requestRefresh()

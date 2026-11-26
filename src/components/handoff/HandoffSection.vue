@@ -16,6 +16,7 @@ import {
   focusedAnnotation,
   measureSelection
 } from '@/app/comments/annotations'
+import { editHandoff } from '@/app/comments/handoff-undo'
 import { currentPersonName, useComments } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
 import AppButton from '@/components/ui/button/AppButton.vue'
@@ -73,10 +74,11 @@ const statusOptions = computed(() => [
 function setStatus(next: Status) {
   const target = node.value
   if (!target) return
-  setFrameDevStatus(store.graph, target.id, next === 'none' ? null : next, currentPersonName(), {
-    description: review.value?.description
-  })
-  store.requestRefresh()
+  editHandoff(store, 'Change dev status', () =>
+    setFrameDevStatus(store.graph, target.id, next === 'none' ? null : next, currentPersonName(), {
+      description: review.value?.description
+    })
+  )
 }
 
 function measurementText(thread: CommentThread): string {

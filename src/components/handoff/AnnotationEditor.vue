@@ -16,6 +16,7 @@ import {
 import { useCommentsMessages } from '@kalka/vue'
 
 import { focusedAnnotation } from '@/app/comments/annotations'
+import { editHandoff } from '@/app/comments/handoff-undo'
 import type { CommentsController } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
 import IconButton from '@/components/ui/button/IconButton.vue'
@@ -45,8 +46,9 @@ watch(
 
 function commitLabel() {
   if (text.value.trim() === handoffLabel(thread)) return
-  updateAnnotation(store.graph, thread.id, { label: text.value })
-  store.requestRefresh()
+  editHandoff(store, 'Edit annotation', () =>
+    updateAnnotation(store.graph, thread.id, { label: text.value })
+  )
 }
 
 const CATEGORY_LABEL: Record<AnnotationCategory | 'none', () => string> = {
@@ -66,8 +68,9 @@ const categoryOptions = computed(() =>
 )
 
 function setCategory(value: AnnotationCategory | 'none') {
-  updateAnnotation(store.graph, thread.id, { category: value === 'none' ? null : value })
-  store.requestRefresh()
+  editHandoff(store, 'Edit annotation', () =>
+    updateAnnotation(store.graph, thread.id, { category: value === 'none' ? null : value })
+  )
 }
 
 const pinned = computed(() => {
@@ -88,8 +91,9 @@ const propertyOptions = computed(() => [
 ])
 
 function setProperties(properties: AnnotationProperty[]) {
-  updateAnnotation(store.graph, thread.id, { properties })
-  store.requestRefresh()
+  editHandoff(store, 'Edit annotation', () =>
+    updateAnnotation(store.graph, thread.id, { properties })
+  )
 }
 
 function pin(value: string) {

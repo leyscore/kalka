@@ -26,6 +26,7 @@ import type { EditorCommandId } from '@kalka/vue'
 
 import { askAboutSelection } from '@/app/ai/chat/ask-selection'
 import { annotateSelection } from '@/app/comments/annotations'
+import { editHandoff } from '@/app/comments/handoff-undo'
 import { currentPersonName, startCommentOn } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
 import { createCanvasMenuActions } from '@/app/editor/canvas/menu/actions'
@@ -69,8 +70,9 @@ const reviewTarget = computed(() => {
 function toggleReady() {
   const target = reviewTarget.value
   if (!target) return
-  setFrameReady(store.graph, target.id, target.ready ? null : currentPersonName())
-  store.requestRefresh()
+  editHandoff(store, 'Change dev status', () =>
+    setFrameReady(store.graph, target.id, target.ready ? null : currentPersonName())
+  )
 }
 
 /** Opens a new comment on the first selected layer, at its top-right corner. */
