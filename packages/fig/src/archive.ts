@@ -118,9 +118,7 @@ export function parseFigBuffer(
   }
 
   const metaBytes = archive['meta.json']
-  const images = Object.entries(archive)
-    .filter(([name]) => name.startsWith('images/') && name !== 'images/')
-    .map(([name, data]) => [name.slice('images/'.length), data] as [string, Uint8Array])
+  const images = mediaEntries(archive)
 
   return {
     ...decoded,
@@ -129,6 +127,17 @@ export function parseFigBuffer(
     thumbnailPNG: archive['thumbnail.png'] ?? null,
     metaJSON: Object.hasOwn(archive, 'meta.json') ? new TextDecoder().decode(metaBytes) : null
   }
+}
+
+/**
+ * The images an archive holds by name, and the clips of video paints: Figma names both by the
+ * SHA-1 of their bytes, and a local copy that carries video bytes keeps them under `videos/`.
+ */
+function mediaEntries(archive: Unzipped): Array<[string, Uint8Array]> {
+  return Object.entries(archive).flatMap(([name, data]): Array<[string, Uint8Array]> => {
+    const folder = ['images/', 'videos/'].find((prefix) => name.startsWith(prefix))
+    return folder && name !== folder ? [[name.slice(folder.length), data]] : []
+  })
 }
 
 /** A `.fig` file's parts with its Kiwi message still encoded, for copying records as bytes. */
@@ -170,9 +179,7 @@ export function readFigArchiveParts(buffer: ArrayBuffer): FigArchiveParts {
     throw new Error(
       `No canvas data found in .fig file. Entries: ${Object.keys(archive).join(', ')}`
     )
-  const images = Object.entries(archive)
-    .filter(([name]) => name.startsWith('images/') && name !== 'images/')
-    .map(([name, data]) => [name.slice('images/'.length), data] as [string, Uint8Array])
+  const images = mediaEntries(archive)
   return {
     ...canvasParts(canvasData),
     images,

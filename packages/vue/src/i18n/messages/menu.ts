@@ -138,7 +138,7 @@ export const menuMessageDefaults = {
   pasteOverSelection: 'Paste over selection',
   copyLinkToSelection: 'Copy link to selection',
   setDefaultProperties: 'Set default properties',
-  placeImage: 'Place image…',
+  placeImage: 'Place image/video…',
   copyAsCSS: 'Copy as CSS',
   pickColor: 'Pick color',
   keepToolSelected: 'Keep tool selected after use',

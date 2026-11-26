@@ -6,12 +6,13 @@ import type { Color } from '@kalka/scene-graph/primitives'
 import type { BindingState } from '#vue/controls/binding-provider/types'
 import type { BindableValueStateAttrs } from '#vue/primitives/BindableValue/types'
 
-export type FillCategory = 'SOLID' | 'GRADIENT' | 'IMAGE'
+export type FillCategory = 'SOLID' | 'GRADIENT' | 'IMAGE' | 'VIDEO'
 
 export interface FillActions {
   toSolid: () => void
   toGradient: () => void
   toImage: () => void
+  toVideo: () => void
 }
 
 export interface FillRootSlotProps {

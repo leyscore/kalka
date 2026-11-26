@@ -130,7 +130,7 @@
   "pasteOverSelection": "選択範囲の上にペースト",
   "copyLinkToSelection": "選択範囲へのリンクをコピー",
   "setDefaultProperties": "デフォルトのプロパティに設定",
-  "placeImage": "画像を配置…",
+  "placeImage": "画像/動画を配置…",
   "copyAsCSS": "CSSとしてコピー",
   "pickColor": "色を抽出",
   "keepToolSelected": "使用後もツールを選択したままにする",

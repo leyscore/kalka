@@ -10,6 +10,7 @@ import type {
 
 import { useEditor } from '#vue/editor/context'
 
+import type { PresentMediaEvent } from './media'
 import type { PresentScreens, ScreenInstance } from './screens'
 
 interface Hit {
@@ -195,6 +196,25 @@ export function usePresentTriggers(options: {
     }
   }
 
+  /**
+   * Video hits and Video ends, on the layer whose video it is: each Video hits whose time the
+   * video just played through runs, and Video ends each time it ends or a loop starts over.
+   */
+  function onMedia(key: string, event: PresentMediaEvent) {
+    const instance = instances.get(key)
+    const rootId = screens.rootOfKey(key)
+    if (!instance || !rootId) return
+    const graph = instance.graph()
+    const context = { graph, rootId, nodeIds: [event.nodeId], pathOf: instance.pathOf }
+    for (const reaction of graph.getNode(event.nodeId)?.reactions ?? []) {
+      const { type, mediaHitTime = 0 } = reaction.trigger
+      if (type !== event.type) continue
+      if (event.type === 'ON_MEDIA_HIT' && !(mediaHitTime > event.from && mediaHitTime <= event.to))
+        continue
+      runReaction(reaction, context)
+    }
+  }
+
   useEventListener(window, 'pointerup', onPointerUp)
   useEventListener(window, 'keydown', onKeyDown)
 
@@ -203,5 +223,14 @@ export function usePresentTriggers(options: {
     held = null
   }
 
-  return { runReaction, onPointerMove, onPointerLeave, onPointerDown, onClick, onOutside, reset }
+  return {
+    runReaction,
+    onPointerMove,
+    onPointerLeave,
+    onPointerDown,
+    onClick,
+    onOutside,
+    onMedia,
+    reset
+  }
 }

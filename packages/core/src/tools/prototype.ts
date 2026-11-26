@@ -12,7 +12,8 @@ import { defineTool } from '#core/tools/schema'
 const REACTIONS_HELP =
   'Interactions in the Figma Plugin API shape: [{ trigger: { type: "ON_CLICK" | "ON_HOVER" | ' +
   '"ON_PRESS" | "ON_DRAG" | "AFTER_TIMEOUT" (timeout s) | "MOUSE_ENTER" | "MOUSE_LEAVE" | ' +
-  '"MOUSE_DOWN" | "MOUSE_UP" (delay s) | "ON_KEY_DOWN" (keyCodes) }, actions: [...] }]. Actions: ' +
+  '"MOUSE_DOWN" | "MOUSE_UP" (delay s) | "ON_KEY_DOWN" (keyCodes) | "ON_MEDIA_HIT" ' +
+  '(mediaHitTime s, in the video of the layer) | "ON_MEDIA_END" }, actions: [...] }]. Actions: ' +
   '{ type: "NODE", destinationId, navigation: "NAVIGATE" | "OVERLAY" | "SWAP" | "SCROLL_TO" | ' +
   '"CHANGE_TO", transition: null | { type: "DISSOLVE" | "SMART_ANIMATE" | "MOVE_IN" | ' +
   '"MOVE_OUT" | "PUSH" | "SLIDE_IN" | "SLIDE_OUT", direction?, duration (s), easing: { type } } }, ' +

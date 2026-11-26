@@ -70,6 +70,22 @@ describe('prototype through the Plugin API', () => {
     ).rejects.toThrow('OBJECT_ANIMATION')
   })
 
+  test('Video hits and Video ends triggers keep their time', async () => {
+    const { graph, button } = setup()
+    await button.setReactionsAsync([
+      { trigger: { type: 'ON_MEDIA_HIT', mediaHitTime: 1.5 }, actions: [{ type: 'BACK' }] },
+      { trigger: { type: 'ON_MEDIA_END' }, actions: [{ type: 'BACK' }] }
+    ])
+    expect(graph.getNode(button.id)?.reactions.map((reaction) => reaction.trigger)).toEqual([
+      { type: 'ON_MEDIA_HIT', delay: 0, keyCodes: [], mediaHitTime: 1.5 },
+      { type: 'ON_MEDIA_END', delay: 0, keyCodes: [] }
+    ])
+    expect(button.reactions.map((reaction) => reaction.trigger)).toEqual([
+      { type: 'ON_MEDIA_HIT', mediaHitTime: 1.5 },
+      { type: 'ON_MEDIA_END' }
+    ])
+  })
+
   test('media actions play, pause, mute and skip through a video', async () => {
     const { graph, button, home } = setup()
     const actions = [

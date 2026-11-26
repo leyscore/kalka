@@ -1,6 +1,12 @@
 import { h, onScopeDispose, type VNode } from 'vue'
 
-import type { Fill, ImageScaleMode, PrototypeMediaAction, SceneGraph } from '@kalka/scene-graph'
+import {
+  videoPlaybackOf,
+  type Fill,
+  type ImageScaleMode,
+  type PrototypeMediaAction,
+  type SceneGraph
+} from '@kalka/scene-graph'
 
 const OBJECT_FIT: Readonly<Record<ImageScaleMode, string>> = {
   FILL: 'cover',
@@ -19,14 +25,26 @@ function videoPaint(graph: SceneGraph, nodeId: string): Fill | undefined {
   )
 }
 
+/** A presented video reached a point that a Video hits or Video ends trigger waits for. */
+export type PresentMediaEvent =
+  | { nodeId: string; type: 'ON_MEDIA_HIT'; from: number; to: number }
+  | { nodeId: string; type: 'ON_MEDIA_END' }
+
+/** How far back the time may jump while playing before it is a loop starting over, in seconds. */
+const LOOP_JUMP = 0.25
+
 /**
  * Video paints in a presented prototype: where canvases and exports draw a video paint's poster
- * frame, the presenter plays its clip over it, muted and looping as Figma's prototypes start
- * videos, behind the layer's own content. A paint whose clip the document does not hold keeps
- * its poster. Each clip gets one object URL, released with the presenter.
+ * frame, the presenter plays its clip over it, behind the layer's own content, as the layer's
+ * playback says (by default on its own, looping and muted, as Figma's prototypes start videos).
+ * A paint whose clip the document does not hold keeps its poster. Each clip gets one object URL,
+ * released with the presenter. `onMedia` hears the time a video plays through and its end,
+ * including each time a looping one starts over.
  */
-export function usePresentVideos() {
+export function usePresentVideos(onMedia?: (event: PresentMediaEvent) => void) {
   const urls = new Map<string, string>()
+  /** How far each video has played, which the next time update starts from. */
+  const played = new WeakMap<HTMLVideoElement, number>()
 
   function urlOf(graph: SceneGraph, hash: string): string | null {
     const known = urls.get(hash)
@@ -43,14 +61,33 @@ export function usePresentVideos() {
     const paint = videoPaint(graph, nodeId)
     const src = paint?.videoHash ? urlOf(graph, paint.videoHash) : null
     if (!paint || !src) return null
+    const playback = videoPlaybackOf(graph.getNode(nodeId) ?? { videoPlayback: null })
     return h('video', {
       key: `video:${paint.videoHash}`,
       'data-present-video': '',
       src,
-      autoplay: true,
-      muted: true,
-      loop: true,
+      autoplay: playback.autoplay,
+      muted: playback.muted,
+      loop: playback.loop,
       playsinline: true,
+      onTimeupdate: (event: Event) => {
+        const video = event.currentTarget
+        if (!(video instanceof HTMLVideoElement)) return
+        const last = played.get(video) ?? 0
+        const time = video.currentTime
+        if (time + LOOP_JUMP < last) onMedia?.({ nodeId, type: 'ON_MEDIA_END' })
+        else if (time > last) onMedia?.({ nodeId, type: 'ON_MEDIA_HIT', from: last, to: time })
+        played.set(video, time)
+      },
+      onSeeked: (event: Event) => {
+        const video = event.currentTarget
+        if (video instanceof HTMLVideoElement) played.set(video, video.currentTime)
+      },
+      onEnded: (event: Event) => {
+        const video = event.currentTarget
+        if (video instanceof HTMLVideoElement) played.set(video, 0)
+        onMedia?.({ nodeId, type: 'ON_MEDIA_END' })
+      },
       style: {
         position: 'absolute',
         inset: '0',

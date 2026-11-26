@@ -14,7 +14,8 @@ const FILL_CATEGORY: Partial<Record<Fill['type'], FillCategory>> = {
   GRADIENT_RADIAL: 'GRADIENT',
   GRADIENT_ANGULAR: 'GRADIENT',
   GRADIENT_DIAMOND: 'GRADIENT',
-  IMAGE: 'IMAGE'
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO'
 }
 
 function effectiveColor(color: Color, opacity: number): Color {
@@ -72,10 +73,17 @@ export function useFill(fill: Ref<Fill>, onUpdate: (fill: Fill) => void) {
 
   function toImage() {
     if (category.value === 'IMAGE') return
-    onUpdate({ ...fill.value, type: 'IMAGE' })
+    const { videoHash: _clip, ...rest } = fill.value
+    onUpdate({ ...rest, type: 'IMAGE' })
   }
 
-  const actions = { toSolid, toGradient, toImage }
+  /** A video paint keeps an image's picture as its poster until a clip is chosen. */
+  function toVideo() {
+    if (category.value === 'VIDEO') return
+    onUpdate({ ...fill.value, type: 'VIDEO' })
+  }
+
+  const actions = { toSolid, toGradient, toImage, toVideo }
 
   return {
     category,
@@ -84,6 +92,7 @@ export function useFill(fill: Ref<Fill>, onUpdate: (fill: Fill) => void) {
     actions,
     toSolid,
     toGradient,
-    toImage
+    toImage,
+    toVideo
   }
 }

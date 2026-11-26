@@ -19,7 +19,9 @@ export const PROTOTYPE_TRIGGER_TYPES = [
   'MOUSE_LEAVE',
   'MOUSE_DOWN',
   'MOUSE_UP',
-  'AFTER_TIMEOUT'
+  'AFTER_TIMEOUT',
+  'ON_MEDIA_HIT',
+  'ON_MEDIA_END'
 ] as const
 export type PrototypeTriggerType = (typeof PROTOTYPE_TRIGGER_TYPES)[number]
 
@@ -29,6 +31,29 @@ export interface PrototypeTrigger {
   delay: number
   /** Key/gamepad: the key codes pressed together, as `KeyboardEvent.keyCode` numbers. */
   keyCodes: number[]
+  /** Video hits a time: the time in the layer's video, in seconds. */
+  mediaHitTime?: number
+}
+
+/**
+ * How a layer's video plays when presented, as Figma's `videoPlayback`. A layer without its own
+ * (`null`) plays as Figma's prototypes start videos: on its own, looping and muted.
+ */
+export interface VideoPlayback {
+  autoplay: boolean
+  loop: boolean
+  muted: boolean
+}
+
+export const DEFAULT_VIDEO_PLAYBACK: Readonly<VideoPlayback> = {
+  autoplay: true,
+  loop: true,
+  muted: true
+}
+
+/** How a layer's video plays, its own settings or the defaults. */
+export function videoPlaybackOf(node: Pick<SceneNode, 'videoPlayback'>): VideoPlayback {
+  return { ...DEFAULT_VIDEO_PLAYBACK, ...node.videoPlayback }
 }
 
 /** How a Navigate-like action moves to its destination, as Figma's `navigation`. */
@@ -426,12 +451,14 @@ export function copyPrototypeFields(
   | 'prototypeStartingPoint'
   | 'prototypeDevice'
   | 'prototypeBackground'
+  | 'videoPlayback'
 > {
   return {
     reactions: structuredClone(src.reactions),
     overlayBackground: src.overlayBackground ? { ...src.overlayBackground } : null,
     prototypeStartingPoint: src.prototypeStartingPoint ? { ...src.prototypeStartingPoint } : null,
     prototypeDevice: src.prototypeDevice ? structuredClone(src.prototypeDevice) : null,
-    prototypeBackground: src.prototypeBackground ? { ...src.prototypeBackground } : null
+    prototypeBackground: src.prototypeBackground ? { ...src.prototypeBackground } : null,
+    videoPlayback: src.videoPlayback ? { ...src.videoPlayback } : null
   }
 }

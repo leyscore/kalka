@@ -85,7 +85,8 @@ const triggerSchema = v.object({
   type: v.picklist(PROTOTYPE_TRIGGER_TYPES),
   timeout: v.optional(v.pipe(v.number(), v.minValue(0))),
   delay: v.optional(v.pipe(v.number(), v.minValue(0))),
-  keyCodes: v.optional(v.array(v.number()))
+  keyCodes: v.optional(v.array(v.number())),
+  mediaHitTime: v.optional(v.pipe(v.number(), v.minValue(0)))
 })
 
 const reactionSchema = v.object({
@@ -188,6 +189,8 @@ function triggerToFigma(reaction: PrototypeReaction) {
       return { type, delay }
     case 'ON_KEY_DOWN':
       return { type, device: 'KEYBOARD', keyCodes: [...keyCodes] }
+    case 'ON_MEDIA_HIT':
+      return { type, mediaHitTime: reaction.trigger.mediaHitTime ?? 0 }
     default:
       return { type }
   }
@@ -264,7 +267,8 @@ export function reactionsFromFigma(value: unknown): PrototypeReaction[] {
         trigger: {
           type: trigger.type,
           delay: trigger.type === 'AFTER_TIMEOUT' ? (trigger.timeout ?? 0) : (trigger.delay ?? 0),
-          keyCodes: [...(trigger.keyCodes ?? [])]
+          keyCodes: [...(trigger.keyCodes ?? [])],
+          ...(trigger.type === 'ON_MEDIA_HIT' ? { mediaHitTime: trigger.mediaHitTime ?? 0 } : {})
         },
         actions: given.map(actionFromFigma)
       }

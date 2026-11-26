@@ -44,6 +44,7 @@ import {
   resolveVectorStyleOverrideFills
 } from './vector/geometry'
 import { decodeVectorNetworkBlob, type StyleOverride } from './vector/network'
+import { importVideoPlayback } from './video'
 
 export { convertEffects, convertFills, convertStrokes, setVariableColorResolver } from './paint'
 export { importStyleRuns } from './style/runs'
@@ -789,6 +790,7 @@ export function nodeChangeToProps(
     componentPropertyValues: extractComponentPropertyValues(nc),
     ...extractComponentMetadata(nc),
     ...importPrototypeFields(nc),
+    ...importVideoPlayback(nc),
     ...importDevResources(nc)
   }
 

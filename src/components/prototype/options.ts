@@ -35,7 +35,9 @@ export function triggerOptions(m: Messages): { value: PrototypeTriggerType; labe
     { value: 'MOUSE_LEAVE', label: m.mouseLeave },
     { value: 'MOUSE_DOWN', label: m.mouseDown },
     { value: 'MOUSE_UP', label: m.mouseUp },
-    { value: 'AFTER_TIMEOUT', label: m.afterDelay }
+    { value: 'AFTER_TIMEOUT', label: m.afterDelay },
+    { value: 'ON_MEDIA_HIT', label: m.videoHits },
+    { value: 'ON_MEDIA_END', label: m.videoEnds }
   ]
 }
 

@@ -71,7 +71,7 @@ const triggers = usePresentTriggers({
   later: timers.later,
   onMiss: () => flash(screens.shownFrameViews())
 })
-const { onPointerMove, onPointerLeave, onPointerDown, onClick, onOutside } = triggers
+const { onPointerMove, onPointerLeave, onPointerDown, onClick, onOutside, onMedia } = triggers
 
 // --- Scrolling and restarts -----------------------------------------------------------------
 
@@ -194,6 +194,7 @@ function overlayBackground(frameId: string): string {
                   :variables="present.variables"
                   class="absolute top-0 left-0"
                   :style="{ zIndex: 1 }"
+                  @media="onMedia(screen.key, $event)"
                 />
               </div>
               <div
@@ -212,6 +213,7 @@ function overlayBackground(frameId: string): string {
                   :variables="present.variables"
                   class="absolute"
                   :style="overlayStyle(overlay)"
+                  @media="onMedia(overlay.key, $event)"
                 />
               </div>
               <div

@@ -17,6 +17,7 @@ export function createClipboardBridge(clipboard: ClipboardActions, selection: Se
     storeImage: clipboard.storeImage,
     placeFiles: clipboard.placeFiles,
     placeImageFiles: clipboard.placeImageFiles,
+    placeVideos: clipboard.placeVideos,
     pasteSVG: clipboard.pasteSVG,
     loadFontsForNodes: clipboard.loadFontsForNodes,
     copySelectionAsText: clipboard.copySelectionAsText,

@@ -19,6 +19,7 @@ export { isEmptyDocumentChange, type DocumentChange } from './history/document-c
 export type { PageSnapshot } from './history/snapshot'
 export { graphFromDocumentChange, graphFromPageSnapshot } from './history/snapshot-graph'
 export type { ClipboardPayload, ClipboardSnapshot, CopyOptions } from './clipboard/copy'
+export type { PreparedVideo } from './clipboard/assets'
 export { pastedPropertyChanges } from './clipboard/paste/properties'
 export { defaultPropertiesOf, type DefaultLayerProperties } from './shapes/default-properties'
 export { resolvePasteTarget } from './clipboard/paste/target'

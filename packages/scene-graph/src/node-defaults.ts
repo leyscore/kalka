@@ -234,6 +234,7 @@ export function createDefaultNode(
     prototypeStartingPoint: null,
     prototypeDevice: null,
     prototypeBackground: null,
+    videoPlayback: null,
     ...overrides
   } satisfies CompleteNodeFields
 }

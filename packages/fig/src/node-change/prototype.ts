@@ -15,13 +15,13 @@ import {
   type PrototypeReaction,
   type PrototypeStartingPoint,
   type PrototypeTransition,
-  type PrototypeTriggerType,
   type SceneNode,
   type ScrollBehavior
 } from '@kalka/scene-graph'
 import { orderKeyBetween } from '@kalka/scene-graph/order-keys'
 import type { Color, GUID, Vector } from '@kalka/scene-graph/primitives'
 
+import { exportTrigger, importTrigger } from './prototype-triggers'
 import {
   exportVariableAction,
   importVariableAction,
@@ -83,34 +83,6 @@ function color(value: unknown): Color | null {
 
 function vector(value: unknown): Vector | null {
   return isRecord(value) ? { x: num(value.x, 0), y: num(value.y, 0) } : null
-}
-
-const TRIGGERS: Readonly<Partial<{ [type: string]: PrototypeTriggerType }>> = {
-  ON_CLICK: 'ON_CLICK',
-  DRAG: 'ON_DRAG',
-  ON_HOVER: 'ON_HOVER',
-  ON_PRESS: 'ON_PRESS',
-  ON_KEY_DOWN: 'ON_KEY_DOWN',
-  MOUSE_IN: 'MOUSE_ENTER',
-  MOUSE_ENTER: 'MOUSE_ENTER',
-  MOUSE_OUT: 'MOUSE_LEAVE',
-  MOUSE_LEAVE: 'MOUSE_LEAVE',
-  MOUSE_DOWN: 'MOUSE_DOWN',
-  MOUSE_UP: 'MOUSE_UP',
-  AFTER_TIMEOUT: 'AFTER_TIMEOUT'
-}
-
-const TRIGGER_EXPORT: { [type in PrototypeTriggerType]: string } = {
-  ON_CLICK: 'ON_CLICK',
-  ON_DRAG: 'DRAG',
-  ON_HOVER: 'ON_HOVER',
-  ON_PRESS: 'ON_PRESS',
-  ON_KEY_DOWN: 'ON_KEY_DOWN',
-  MOUSE_ENTER: 'MOUSE_IN',
-  MOUSE_LEAVE: 'MOUSE_OUT',
-  MOUSE_DOWN: 'MOUSE_DOWN',
-  MOUSE_UP: 'MOUSE_UP',
-  AFTER_TIMEOUT: 'AFTER_TIMEOUT'
 }
 
 const NAVIGATIONS: Readonly<Partial<{ [type: string]: PrototypeNavigation }>> = {
@@ -309,23 +281,13 @@ function importAction(action: unknown): PrototypeAction | null {
 function importReaction(interaction: unknown): PrototypeReaction | null {
   if (!isRecord(interaction) || interaction.isDeleted === true) return null
   const event = isRecord(interaction.event) ? interaction.event : {}
-  const type = TRIGGERS[str(event.interactionType) ?? '']
-  if (!type) return null
-  const keyTrigger = isRecord(event.keyTrigger) ? event.keyTrigger : {}
+  const trigger = importTrigger(event)
+  if (!trigger) return null
   const actions = (Array.isArray(interaction.actions) ? interaction.actions : [])
     .map(importAction)
     .filter((action): action is PrototypeAction => action !== null)
   if (actions.length === 0) return null
-  return {
-    trigger: {
-      type,
-      delay: seconds(event.transitionTimeout, type === 'AFTER_TIMEOUT' ? 0.8 : 0),
-      keyCodes: Array.isArray(keyTrigger.keyCodes)
-        ? keyTrigger.keyCodes.filter((code): code is number => typeof code === 'number')
-        : []
-    },
-    actions
-  }
+  return { trigger, actions }
 }
 
 /** The interactions Kalka plays among a record's `prototypeInteractions`. */
@@ -481,11 +443,7 @@ export function exportReactions(
       .map((action) => exportAction(action, refs))
       .filter((action): action is Obj => action !== null)
     if (actions.length === 0) continue
-    const event: Obj = { interactionType: TRIGGER_EXPORT[reaction.trigger.type] }
-    if (reaction.trigger.delay > 0) event.transitionTimeout = reaction.trigger.delay
-    if (reaction.trigger.type === 'ON_KEY_DOWN')
-      event.keyTrigger = { keyCodes: [...reaction.trigger.keyCodes], triggerDevice: 'KEYBOARD' }
-    interactions.push({ event, actions })
+    interactions.push({ event: exportTrigger(reaction.trigger), actions })
   }
   return interactions
 }

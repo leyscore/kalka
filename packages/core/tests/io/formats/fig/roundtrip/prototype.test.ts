@@ -456,6 +456,41 @@ describe('.fig prototype round trip', () => {
     ])
   })
 
+  test('writes and reads Video hits and Video ends triggers and video playback', async () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const next = graph.createNode('FRAME', page.id, { name: 'Next' })
+    const go = [createNodeAction(next.id)]
+    graph.createNode('RECTANGLE', page.id, {
+      name: 'Clip',
+      videoPlayback: { autoplay: false, loop: true, muted: false },
+      reactions: [
+        {
+          trigger: { type: 'ON_MEDIA_HIT', delay: 0, keyCodes: [], mediaHitTime: 2.5 },
+          actions: go
+        },
+        { trigger: { type: 'ON_MEDIA_END', delay: 0, keyCodes: [] }, actions: go }
+      ]
+    })
+    const bytes = (await exportFigFile(graph)).buffer as ArrayBuffer
+    const written = parseFigBuffer(bytes).nodeChanges.find((nc) => nc.name === 'Clip')
+    expect(written?.videoPlayback).toMatchObject({ autoplay: false, mediaLoop: true, muted: false })
+    const interactions = (written?.prototypeInteractions ?? []) as {
+      event: Record<string, unknown>
+    }[]
+    const events = interactions.map((interaction) => interaction.event)
+    expect(events).toMatchObject([
+      { interactionType: 'ON_MEDIA_HIT', mediaHitTime: 2.5 },
+      { interactionType: 'ON_MEDIA_END' }
+    ])
+    const clip = byName(await parseFigFile(bytes), 'Clip')
+    expect(clip.videoPlayback).toEqual({ autoplay: false, loop: true, muted: false })
+    expect(clip.reactions.map((reaction) => reaction.trigger)).toEqual([
+      { type: 'ON_MEDIA_HIT', delay: 0, keyCodes: [], mediaHitTime: 2.5 },
+      { type: 'ON_MEDIA_END', delay: 0, keyCodes: [] }
+    ])
+  })
+
   test("gives a copied layer's interactions GUIDs of their own", async () => {
     const interaction = {
       id: { sessionID: 1, localID: 90 },

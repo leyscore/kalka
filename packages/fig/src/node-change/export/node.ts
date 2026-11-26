@@ -40,6 +40,7 @@ import {
 import { exportPrototypeFields, uniqueInteractionIds } from '../prototype'
 import { exportStrokeWidthProfile } from '../stroke-width'
 import { effectWithVariableBindings, variableAlias } from '../variable/bindings'
+import { exportVideoPlayback } from '../video'
 import {
   applyColorVariableBinding,
   createFillPaints,
@@ -1088,6 +1089,7 @@ function applyPrototypeFields(
     context.assignedGuidValues?.add(`${guid.sessionID}:${guid.localID}`)
     return guid
   })
+  exportVideoPlayback(node.videoPlayback, nc)
 }
 
 /**

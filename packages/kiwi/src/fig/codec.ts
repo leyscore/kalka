@@ -466,6 +466,7 @@ export interface NodeChange {
   prototypeStartingPoint?: { name?: string; description?: string; position?: string }
   prototypeDevice?: unknown
   prototypeBackgroundColor?: Color
+  videoPlayback?: { autoplay?: boolean; mediaLoop?: boolean; muted?: boolean }
   /** On the document: the layer Figma's Set as thumbnail chose. */
   thumbnailInfo?: { nodeID?: GUID; thumbnailVersion?: string }
   // Handoff

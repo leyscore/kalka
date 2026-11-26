@@ -6,6 +6,8 @@ import type { Vector } from '@kalka/scene-graph/primitives'
 
 import { cycleSafeTarget, findMoveDropTarget } from '#vue/shared/input/drop-target'
 
+import { isVideoFile, placeCanvasFiles } from './video'
+
 const RASTER_IMAGE_TYPES = new Set([
   'image/png',
   'image/jpeg',
@@ -140,7 +142,7 @@ export function useCanvasDrop(
 
     const files = filterCanvasFiles(e.dataTransfer?.files ?? null)
     if (!files.length) return
-    void editor.placeFiles(files, point.x, point.y).catch((error: unknown) => {
+    void placeCanvasFiles(editor, files, point.x, point.y).catch((error: unknown) => {
       console.error('Failed to place dropped files', error)
     })
   })
@@ -160,7 +162,9 @@ function isSVGFile(file: File): boolean {
 
 export function filterCanvasFiles(files: ArrayLike<File> | Iterable<File> | null): File[] {
   if (!files) return []
-  return Array.from(files).filter((file) => RASTER_IMAGE_TYPES.has(file.type) || isSVGFile(file))
+  return Array.from(files).filter(
+    (file) => RASTER_IMAGE_TYPES.has(file.type) || isSVGFile(file) || isVideoFile(file)
+  )
 }
 
 export function extractImageFilesFromClipboard(e: ClipboardEvent): File[] {

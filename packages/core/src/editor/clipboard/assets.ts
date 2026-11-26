@@ -43,7 +43,23 @@ interface PreparedSVGAsset {
   height: number
 }
 
-type PreparedAsset = PreparedRasterAsset | PreparedSVGAsset
+/**
+ * A video file read by the browser, which Core cannot decode: its clip, the frame shown where
+ * it does not play, and its size.
+ */
+export interface PreparedVideo {
+  bytes: Uint8Array
+  poster: Uint8Array
+  name: string
+  width: number
+  height: number
+}
+
+interface PreparedVideoAsset extends PreparedVideo {
+  kind: 'video'
+}
+
+type PreparedAsset = PreparedRasterAsset | PreparedSVGAsset | PreparedVideoAsset
 
 type PushCreatedNodesUndo = (
   created: string[],
@@ -154,6 +170,39 @@ export function createClipboardAssetActions(
     }).id
   }
 
+  /** A layer the size of a video with its video paint, as Figma places a video. */
+  function createVideoNode(asset: PreparedVideo, parentId: string, x: number, y: number): string {
+    const fill: Fill = {
+      type: 'VIDEO',
+      videoHash: storeImage(asset.bytes),
+      imageHash: storeImage(asset.poster),
+      imageScaleMode: 'FILL',
+      color: TRANSPARENT,
+      opacity: 1,
+      visible: true
+    }
+    return ctx.graph.createNode('RECTANGLE', parentId, {
+      name: asset.name.replace(/\.[^.]+$/, ''),
+      x,
+      y,
+      width: asset.width,
+      height: asset.height,
+      fills: [fill]
+    }).id
+  }
+
+  function createAssetNode(asset: PreparedAsset, parentId: string, x: number, y: number) {
+    switch (asset.kind) {
+      case 'raster':
+        return createRasterNode(asset, parentId, x, y)
+      case 'video':
+        return createVideoNode(asset, parentId, x, y)
+      case 'svg':
+        return createSVGNodesFromImport(ctx.graph, parentId, asset.data, { name: asset.name, x, y })
+          ?.id
+    }
+  }
+
   function placeAssets(prepared: PreparedAsset[], cx: number, cy: number, label: string): boolean {
     if (prepared.length === 0) return false
 
@@ -169,14 +218,7 @@ export function createClipboardAssetActions(
 
     try {
       for (const asset of prepared) {
-        const id =
-          asset.kind === 'raster'
-            ? createRasterNode(asset, parentId, x, y)
-            : createSVGNodesFromImport(ctx.graph, parentId, asset.data, {
-                name: asset.name,
-                x,
-                y
-              })?.id
+        const id = createAssetNode(asset, parentId, x, y)
         if (id) created.push(id)
         x += asset.width + ASSET_GAP
       }
@@ -228,5 +270,15 @@ export function createClipboardAssetActions(
     )
   }
 
-  return { storeImage, placeFiles, placeImageFiles, pasteSVG }
+  /** Places videos the browser read, side by side around a canvas point, as dropped images are. */
+  function placeVideos(videos: PreparedVideo[], cx: number, cy: number): boolean {
+    return placeAssets(
+      videos.map((video) => ({ kind: 'video', ...video })),
+      cx,
+      cy,
+      'Place video'
+    )
+  }
+
+  return { storeImage, placeFiles, placeImageFiles, placeVideos, pasteSVG }
 }

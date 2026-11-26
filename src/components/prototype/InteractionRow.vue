@@ -39,9 +39,23 @@ const DELAYED = new Set<PrototypeTriggerType>([
 ])
 
 function setTrigger(type: PrototypeTriggerType) {
+  const { mediaHitTime: _time, ...trigger } = reaction.trigger
   emit('update', {
     ...reaction,
-    trigger: { ...reaction.trigger, type, delay: type === 'AFTER_TIMEOUT' ? 0.8 : 0 }
+    trigger: {
+      ...trigger,
+      type,
+      delay: type === 'AFTER_TIMEOUT' ? 0.8 : 0,
+      ...(type === 'ON_MEDIA_HIT' ? { mediaHitTime: 0 } : {})
+    }
+  })
+}
+
+/** Video hits: the time in the video that runs the interaction, in seconds. */
+function setMediaHitTime(seconds: number) {
+  emit('update', {
+    ...reaction,
+    trigger: { ...reaction.trigger, mediaHitTime: Math.max(0, seconds) }
   })
 }
 
@@ -131,6 +145,16 @@ function addAction() {
       data-property="prototype-delay"
       :model-value="Math.round(reaction.trigger.delay * 1000)"
       @commit="(value: number) => setDelay(value)"
+    />
+    <NumberField
+      v-if="reaction.trigger.type === 'ON_MEDIA_HIT'"
+      :aria-label="m.seconds"
+      suffix="s"
+      :min="0"
+      :step="0.1"
+      data-property="prototype-media-hit"
+      :model-value="reaction.trigger.mediaHitTime ?? 0"
+      @commit="(value: number) => setMediaHitTime(value)"
     />
     <AppInput
       v-if="reaction.trigger.type === 'ON_KEY_DOWN'"

@@ -10,7 +10,7 @@ import { useShadowContainer } from '#vue/canvas/islands/shadow'
 import { createIslandState, instanceStates } from '#vue/canvas/islands/state'
 import { useEditor } from '#vue/editor/context'
 
-import { usePresentVideos } from './media'
+import { usePresentVideos, type PresentMediaEvent } from './media'
 
 /**
  * One frame of a presented prototype, a screen or an overlay: its layers as live DOM in a shadow
@@ -27,11 +27,15 @@ const { rootId, revision, variants, variables } = defineProps<{
   /** Variables and modes the prototype set, which bound layers show. */
   variables?: PresentVariables
 }>()
+const emit = defineEmits<{
+  /** A video of this frame played through a time, or ended. */
+  media: [event: PresentMediaEvent]
+}>()
 const editor = useEditor()
 
 const SCREEN_CSS = ':host{all:initial;display:block}*,*::before,*::after{box-sizing:border-box}'
 const container = useShadowContainer(useTemplateRef<HTMLElement>('host'), SCREEN_CSS)
-const videos = usePresentVideos()
+const videos = usePresentVideos((event) => emit('media', event))
 
 const controls = computed(() => {
   void editor.state.sceneVersion

@@ -3,13 +3,20 @@ import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from 'reka
 import { tv } from 'tailwind-variants'
 
 import type { Fill } from '@kalka/scene-graph'
-import { applySolidFillColor, FillRoot, useI18n, useRetainedPopup } from '@kalka/vue'
+import {
+  applySolidFillColor,
+  FillRoot,
+  useI18n,
+  usePrototypeMessages,
+  useRetainedPopup
+} from '@kalka/vue'
 import type { OkHCLControls } from '@kalka/vue'
 
 import ColorPickerPanel from '@/components/color-picker-panel/ColorPickerPanel.vue'
 import { useCanvasGradientHandles } from '@/components/fill-picker/canvas-gradient'
 import GradientEditor from '@/components/fill-picker/GradientEditor.vue'
 import ImageFillPicker from '@/components/fill-picker/ImageFillPicker.vue'
+import VideoFillPicker from '@/components/fill-picker/VideoFillPicker.vue'
 import { usePopoverUI } from '@/components/ui/overlay/popover'
 import Tip from '@/components/ui/overlay/Tip.vue'
 import FillSwatch from '@/components/ui/paint/FillSwatch.vue'
@@ -56,6 +63,7 @@ const { activeStop, keepOpen } = useCanvasGradientHandles({
 })
 const cls = usePopoverUI({ content: 'w-60 p-2' })
 const { panels } = useI18n()
+const prototype = usePrototypeMessages()
 
 /** Escape closes the picker and keeps the paint, as in Figma; the selection stays. */
 function closeFromEscape(event: KeyboardEvent) {
@@ -124,6 +132,16 @@ function closeFromEscape(event: KeyboardEvent) {
                 <icon-hugeicons-image-01 class="size-3.5" />
               </button>
             </Tip>
+            <Tip :label="prototype.video">
+              <button
+                :data-active="root.category === 'VIDEO' || undefined"
+                :class="tabClass(root.category === 'VIDEO')"
+                data-test-id="fill-picker-tab-video"
+                @click="root.actions.toVideo"
+              >
+                <icon-hugeicons-video-01 class="size-3.5" />
+              </button>
+            </Tip>
           </div>
 
           <ColorPickerPanel
@@ -142,6 +160,12 @@ function closeFromEscape(event: KeyboardEvent) {
 
           <ImageFillPicker
             v-if="root.category === 'IMAGE'"
+            :fill="root.fill"
+            @update="emit('update', $event)"
+          />
+
+          <VideoFillPicker
+            v-if="root.category === 'VIDEO'"
             :fill="root.fill"
             @update="emit('update', $event)"
           />

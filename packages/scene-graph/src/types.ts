@@ -17,7 +17,8 @@ import type {
   PrototypeDevice,
   PrototypeReaction,
   PrototypeStartingPoint,
-  ScrollBehavior
+  ScrollBehavior,
+  VideoPlayback
 } from './prototype'
 import type { ShaderLayer } from './shader'
 
@@ -852,6 +853,8 @@ export interface SceneNode {
   prototypeDevice: PrototypeDevice | null
   /** On a page: the colour around the presented screen; null keeps the presenter's own. */
   prototypeBackground: Color | null
+  /** How the layer's video plays when presented; null plays it as Figma's defaults do. */
+  videoPlayback: VideoPlayback | null
 }
 
 export type ComponentPropertyType = 'VARIANT' | 'TEXT' | 'BOOLEAN' | 'INSTANCE_SWAP' | 'SLOT'
