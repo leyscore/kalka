@@ -190,7 +190,13 @@ export { useGradientStops } from '#vue/primitives/GradientEditor/useGradientStop
 export { useFontPicker } from '#vue/primitives/FontPicker/useFontPicker'
 
 /** Headless structural primitives and their local contexts. */
-export { CanvasRoot, CanvasSurface, PlayIslands, useCanvasContext } from '#vue/canvas'
+export {
+  CanvasRoot,
+  CanvasSurface,
+  PlayIslands,
+  PrototypePresenter,
+  useCanvasContext
+} from '#vue/canvas'
 export type { CanvasContext } from '#vue/canvas'
 export { ColorInputRoot, ColorPickerRoot } from '#vue/primitives/ColorPicker'
 export {

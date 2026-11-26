@@ -29,6 +29,7 @@ import { colorToCSS } from '@kalka/scene-graph/color'
 import {
   autoLayoutValueAnchor,
   PlayIslands,
+  PrototypePresenter,
   domSceneVectorElement,
   toolCursor,
   useCanvas,
@@ -65,6 +66,7 @@ import { floatingSurface } from '@/theme/overlay'
 import CanvasMenu from './canvas/CanvasMenu.vue'
 import CanvasLabelEditor from './canvas/labels/CanvasLabelEditor.vue'
 import { canvasLabelPresentation } from './canvas/labels/presentation'
+import AnnotationLayer from './comments/AnnotationLayer.vue'
 import CommentLayer from './comments/CommentLayer.vue'
 import FrameReviewBadges from './comments/FrameReviewBadges.vue'
 import NumberField from './inputs/NumberField.vue'
@@ -357,9 +359,22 @@ const cursor = computed(() =>
           :style="{ cursor }"
           class="absolute inset-0 block size-full touch-none outline-none"
         />
-        <PlayIslands :view="paneView" :drawn="drawnView" :canvas="canvasRef" />
+        <PlayIslands
+          v-if="!paneView.play?.present"
+          :view="paneView"
+          :drawn="drawnView"
+          :canvas="canvasRef"
+        />
+        <PrototypePresenter
+          v-if="paneView.play?.present"
+          class="z-10"
+          :page-id="paneView.currentPageId"
+          :start-id="paneView.play.present.startId"
+          :revision="paneView.play.revision"
+        />
         <AgentGhostFrames v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
         <FrameReviewBadges v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
+        <AnnotationLayer v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
         <CommentLayer v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
         <AppDropOverlay :visible="isDraggingOver" />
         <IssueMarkerTooltip :marker="hoveredIssueMarker" :canvas="canvasRef" />
