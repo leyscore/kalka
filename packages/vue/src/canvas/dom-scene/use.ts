@@ -11,8 +11,6 @@ import { bindSceneEvents, redrawAfter } from './events'
 import { GhostLayer, type DomScenePreview } from './ghosts'
 import { DomLayoutEngine } from './layout'
 import { LiveEdits } from './live'
-import { outlineCSS, outlineKey, outlineView } from './outlines'
-import { PixelPreview } from './pixel-preview'
 import { DomSceneProjector } from './projector'
 import type { RevealStep } from './reveal/plan'
 import { RevealPlayer } from './reveal/play'
@@ -20,6 +18,7 @@ import { ShaderLayers } from './shaders'
 import { DomTextEditor } from './text/editor'
 import { ArtboardTierWork, activeLayers } from './tier-work'
 import { CanvasTokens } from './tokens'
+import { ViewModes, viewModeDependencies } from './view-modes'
 
 export interface UseDomSceneOptions {
   /** The view drawn by this pane. Defaults to `editor.state`. */
@@ -56,11 +55,8 @@ export function useDomScene(
   let ghosts: GhostLayer | null = null
   let reveals: RevealPlayer | null = null
   let tiers: ArtboardTierWork | null = null
-  let pixels: PixelPreview | null = null
   const reflowed = new Set<string>()
   let presentedScene = -1
-  /** What the artboards' outline stylesheets were last written for. */
-  let outlinedFor = ''
   /** The page agent work was last drawn on; held layers show once the view leaves it. */
   let workPage: string | null = null
 
@@ -96,8 +92,7 @@ export function useDomScene(
     // Artboards wake near the screen and sleep far from it.
     const tiersLeft = tiers?.apply() ?? false
     const state = view()
-    syncOutlines(state)
-    pixels?.sync(state, pixelRatio())
+    modes.sync(state)
     drawAgentWork(state.currentPageId)
     shaders?.sync(state.sceneVersion)
     if (state.sceneVersion !== presentedScene) void tokens?.sync()
@@ -111,21 +106,9 @@ export function useDomScene(
     return projector.needsFlush || reflowed.size > 0 || (reveals?.busy ?? false) || tiersLeft
   }
 
-  const pixelRatio = () => host.value?.ownerDocument.defaultView?.devicePixelRatio ?? 1
-
-  /** Outline mode restyles the artboards when it, the selection it shows, or the scene changes. */
-  function syncOutlines(state: EditorState) {
-    const p = projector
-    if (!p) return
-    const outlines = outlineView(state, pixelRatio())
-    const key = outlineKey(outlines, state.sceneVersion)
-    if (key === outlinedFor) return
-    outlinedFor = key
-    p.setOutlines(outlines ? (id) => outlineCSS(p.graph, id, outlines) : null)
-  }
-
   const frames = createFrameRequest(tick)
   const redraw = () => frames.request()
+  const modes = new ViewModes(() => projector, options.vectorElement, redraw)
 
   // What the view shows: its pan, zoom and page, the graph's versions, a gesture's preview, and
   // what agents are still writing. Each change draws one frame; nothing does while none comes.
@@ -141,10 +124,7 @@ export function useDomScene(
         state.renderVersion,
         state.nodeEditState,
         state.rotationPreview,
-        state.outlineMode,
-        state.outlineObjectBounds,
-        state.pixelPreview,
-        state.outlineMode === 'selection' ? [...state.selectedIds].join(',') : '',
+        ...viewModeDependencies(state),
         options.previews?.()
       ]
     },
@@ -200,17 +180,6 @@ export function useDomScene(
       fontFallbacks: () => fontManager.fallbackFamilies()
     })
     reveals = new RevealPlayer(p)
-    pixels = new PixelPreview(
-      p,
-      (id) => ({
-        graph: editor.graph,
-        nodeId: id,
-        fonts: fontManager.browserFacesFor(editor.graph.interVersion),
-        vectorElement: options.vectorElement,
-        fontFallbacks: fontManager.fallbackFamilies()
-      }),
-      redraw
-    )
     const ghostLayer = ghosts
     // Text is edited in place, in the page, instead of by the canvas text engine.
     editor.setExternalTextEditor(new DomTextEditor(editor, p))
@@ -229,8 +198,6 @@ export function useDomScene(
     shaders = null
     reveals?.destroy()
     reveals = null
-    pixels?.destroy()
-    pixels = null
     ghosts?.destroy()
     ghosts = null
     tiers?.destroy()
@@ -241,7 +208,6 @@ export function useDomScene(
     engine = null
     reflowed.clear()
     presentedScene = -1
-    outlinedFor = ''
     workPage = null
   }
 

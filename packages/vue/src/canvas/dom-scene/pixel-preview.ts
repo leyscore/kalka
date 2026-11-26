@@ -111,7 +111,7 @@ export class PixelPreview {
       selectors.length > 0 ? `${selectors.join(',')}{opacity:0!important}` : ''
   }
 
-  /** Starts showing pictures: their layer over the artboards, and the rule hiding iframes. */
+  /** Starts showing pictures: their layer over the artboards, holding the rule hiding iframes. */
   start(): void {
     if (this.container) return
     const doc = this.projector.world.ownerDocument
@@ -119,8 +119,9 @@ export class PixelPreview {
     this.container.dataset.kalkaPixelPreview = ''
     this.container.style.cssText = 'position:absolute;left:0;top:0;pointer-events:none'
     this.projector.world.append(this.container)
+    // The rule lives in the world, so it goes with the projector's world.
     this.style = doc.createElement('style')
-    doc.head.append(this.style)
+    this.container.append(this.style)
   }
 
   clear(): void {
