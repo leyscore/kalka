@@ -182,3 +182,55 @@ test('set variable and conditional actions change what the presented prototype s
   expect(Object.values(saved ?? {})).toEqual([0])
   await page.keyboard.press('Escape')
 })
+
+test('a value typed as greeting[Dark] reads the variable in that mode while presenting', async () => {
+  const { page } = editor
+  const ids = await createCounter(page)
+  const lookup = await page.evaluate((messageId) => {
+    const store = window.kalka?.getStore?.()
+    const message = store?.graph.variables.get(messageId)
+    if (!store || !message) throw new Error('no variable')
+    const dark = store.graph.createMode(message.collectionId, 'Dark') ?? ''
+    const greeting = store.graph.createVariable('greeting', 'STRING', message.collectionId, 'Day')
+    greeting.valuesByMode[dark] = 'Night'
+    return { dark, greetingId: greeting.id }
+  }, ids.messageId)
+
+  await page.getByRole('tab', { name: 'Prototype' }).click()
+  const panel = page.getByTestId('prototype-panel')
+  await panel.getByRole('button', { name: 'Add interaction' }).click()
+  await panel.locator('[data-property="prototype-action"]').click()
+  await page.getByRole('option', { name: 'Set variable', exact: true }).click()
+  await panel.locator('[data-property="prototype-variable"]').click()
+  // The newest `message`, the one this test's label shows.
+  await page.getByRole('option', { name: 'message' }).last().click()
+  const value = panel.locator('[data-property="prototype-expression"]')
+  await value.fill('greeting[Dim]')
+  await value.blur()
+  await expect(panel.getByRole('alert')).toContainText('greeting[Dim]')
+  await value.fill('greeting[Dark]')
+  await value.blur()
+  await expect(panel.getByRole('alert')).toHaveCount(0)
+  await expect(value).toHaveValue('greeting[Dark]')
+  await expect
+    .poll(() =>
+      page.evaluate((id) => {
+        const action = window.kalka?.getStore?.().graph.getNode(id)?.reactions[0]?.actions[0]
+        return action?.type === 'SET_VARIABLE' ? action : null
+      }, ids.buttonId)
+    )
+    .toEqual({
+      type: 'SET_VARIABLE',
+      variableId: ids.messageId,
+      value: { type: 'VARIABLE', variableId: lookup.greetingId, modeId: lookup.dark }
+    })
+
+  await page.evaluate((id) => window.kalka?.getStore?.().select([id]), ids.homeId)
+  await page.getByTestId('canvas-element').focus()
+  await page.keyboard.press('ControlOrMeta+Alt+Enter')
+  const home = frame(page, ids.homeId)
+  await expect(home.locator('[data-layer="Label"]')).toContainText('Start')
+  await home.locator('[data-layer="Button"]').click()
+  await expect(home.locator('[data-layer="Label"]')).toContainText('Night')
+  await page.keyboard.press('Escape')
+})

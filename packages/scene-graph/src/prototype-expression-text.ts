@@ -4,7 +4,8 @@ import type { PrototypeExpression, PrototypeOperator } from './prototype-variabl
 /**
  * Prototype expressions written as text, as Figma's expression field takes them:
  * `count + 1`, `"Hi " + name`, `count >= 3 and not done`. Variables go by name, or in braces
- * for any name (`{Colors/Primary}`); values are numbers, `"text"`, `true`, `false` and `#RRGGBB`.
+ * for any name (`{Colors/Primary}`), and a mode's name in brackets reads the variable in that mode
+ * (`accent[Dark]`); values are numbers, `"text"`, `true`, `false` and `#RRGGBB`.
  */
 
 export type ExpressionParseResult =
@@ -17,6 +18,7 @@ type Token =
   | { kind: 'string'; value: string }
   | { kind: 'color'; value: Color }
   | { kind: 'name'; value: string; braced: boolean }
+  | { kind: 'mode'; value: string }
   | { kind: 'op'; value: string }
 
 const BARE_NAME = /^[\p{L}_][\p{L}\p{N}_/.]*$/u
@@ -79,6 +81,13 @@ function tokenize(text: string): Token[] | null {
       at = end + 1
       continue
     }
+    if (char === '[') {
+      const end = text.indexOf(']', at + 1)
+      if (end === -1) return null
+      tokens.push({ kind: 'mode', value: text.slice(at + 1, end).trim() })
+      at = end + 1
+      continue
+    }
     if (char === '#') {
       const match = /^#[0-9a-f]{6}(?:[0-9a-f]{2})?/i.exec(text.slice(at))
       const color = match ? hexColor(match[0]) : null
@@ -128,10 +137,14 @@ const COMPARISONS: Readonly<Record<string, PrototypeOperator>> = {
   '>=': 'GREATER_THAN_OR_EQUAL'
 }
 
-/** Parses an expression, finding each variable by name through `lookup`. */
+/**
+ * Parses an expression, finding each variable by name through `lookup` and the mode of a mode
+ * lookup by its name through `lookupMode`.
+ */
 export function parsePrototypeExpression(
   text: string,
-  lookup: (name: string) => string | undefined
+  lookup: (name: string) => string | undefined,
+  lookupMode: (variableId: string, name: string) => string | undefined = () => undefined
 ): ExpressionParseResult {
   const tokens = tokenize(text)
   if (!tokens || tokens.length === 0) return { error: 'syntax' }
@@ -156,6 +169,7 @@ export function parsePrototypeExpression(
     if (!token) throw new ParseError()
     if (token.kind === 'number' || token.kind === 'string' || token.kind === 'color')
       return { type: 'VALUE', value: token.value }
+    if (token.kind === 'mode') throw new ParseError()
     if (token.kind === 'op') {
       if (token.value !== '(') throw new ParseError()
       const inner = or()
@@ -167,7 +181,12 @@ export function parsePrototypeExpression(
       return { type: 'VALUE', value: token.value === 'true' }
     const variableId = lookup(token.value)
     if (!variableId) throw new ParseError(token.value)
-    return { type: 'VARIABLE', variableId }
+    const mode = peek()
+    if (mode?.kind !== 'mode') return { type: 'VARIABLE', variableId }
+    at++
+    const modeId = lookupMode(variableId, mode.value)
+    if (!modeId) throw new ParseError(`${token.value}[${mode.value}]`)
+    return { type: 'VARIABLE', variableId, modeId }
   }
   const unary = (): PrototypeExpression => {
     if (isOp('-')) {
@@ -287,10 +306,14 @@ function hex(value: Color): string {
   return `#${channel(value.r)}${channel(value.g)}${channel(value.b)}${alpha}`.toUpperCase()
 }
 
-/** An expression as text that parses back to it, naming each variable through `nameOf`. */
+/**
+ * An expression as text that parses back to it, naming each variable through `nameOf` and the
+ * mode of a mode lookup through `modeNameOf`.
+ */
 export function formatPrototypeExpression(
   expression: PrototypeExpression,
-  nameOf: (variableId: string) => string
+  nameOf: (variableId: string) => string,
+  modeNameOf: (variableId: string, modeId: string) => string = (_, modeId) => modeId
 ): string {
   const format = (node: PrototypeExpression, parent: number): string => {
     if (node.type === 'VALUE') {
@@ -302,7 +325,8 @@ export function formatPrototypeExpression(
     if (node.type === 'VARIABLE') {
       const name = nameOf(node.variableId)
       const reserved = ['and', 'or', 'not', 'true', 'false'].includes(name.toLowerCase())
-      return BARE_NAME.test(name) && !reserved ? name : `{${name}}`
+      const written = BARE_NAME.test(name) && !reserved ? name : `{${name}}`
+      return node.modeId ? `${written}[${modeNameOf(node.variableId, node.modeId)}]` : written
     }
     const own = PRECEDENCE[node.operator]
     const [a, b] = node.operands

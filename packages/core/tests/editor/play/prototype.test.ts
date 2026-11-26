@@ -222,4 +222,35 @@ describe('presenting a prototype', () => {
       )
     ).toBeNull()
   })
+  test('a mode lookup reads a variable in a given mode, whatever mode is chosen', () => {
+    const { graph, pageId, home, button } = screens()
+    const collection = graph.createCollection('Theme')
+    const dark = graph.createMode(collection.id, 'Dark') ?? ''
+    const label = graph.createVariable('label', 'STRING', collection.id, 'Light')
+    label.valuesByMode[dark] = 'Dark'
+    const copy = graph.createVariable('copy', 'STRING', collection.id, '')
+    const ctx = context(graph, home.id, button.id)
+    const setCopy = (modeId?: string): PrototypeAction => ({
+      type: 'SET_VARIABLE',
+      variableId: copy.id,
+      value: { type: 'VARIABLE', variableId: label.id, modeId }
+    })
+    const start = startPresentation(pageId, home.id)
+    expect(runAction(graph, start, setCopy(dark), ctx)?.state.variables.values[copy.id]).toBe(
+      'Dark'
+    )
+    expect(runAction(graph, start, setCopy(), ctx)?.state.variables.values[copy.id]).toBe('Light')
+    // In Dark mode, a lookup of the default mode still reads the default mode's value.
+    const inDark = runAction(
+      graph,
+      start,
+      { type: 'SET_VARIABLE_MODE', collectionId: collection.id, modeId: dark },
+      ctx
+    )
+    if (!inDark) throw new Error('the mode did not change')
+    const lookup = setCopy(collection.defaultModeId)
+    expect(runAction(graph, inDark.state, lookup, ctx)?.state.variables.values[copy.id]).toBe(
+      'Light'
+    )
+  })
 })

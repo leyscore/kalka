@@ -59,6 +59,19 @@ function literalFromFigma(value: unknown): PrototypeLiteral | null {
   return parsed.success ? { ...parsed.output, a: parsed.output.a ?? 1 } : null
 }
 
+/** `VAR_MODE_LOOKUP` over a variable alias and a mode id: the variable read in that mode. */
+function modeLookupFromFigma(args: unknown[], depth: number): PrototypeExpression {
+  const [variable, mode] = args.map((argument) => variableDataFromFigma(argument, depth + 1))
+  if (
+    args.length !== 2 ||
+    variable?.type !== 'VARIABLE' ||
+    mode?.type !== 'VALUE' ||
+    typeof mode.value !== 'string'
+  )
+    throw new Error('A variable mode lookup needs a variable alias and a mode id')
+  return { type: 'VARIABLE', variableId: variable.variableId, modeId: mode.value }
+}
+
 /** A `VariableData` given to the Plugin API as an expression; throws for one Kalka cannot play. */
 export function variableDataFromFigma(value: unknown, depth = 0): PrototypeExpression {
   if (depth > 64) throw new Error('The expression is nested too deeply')
@@ -73,6 +86,8 @@ export function variableDataFromFigma(value: unknown, depth = 0): PrototypeExpre
   if (data.type === 'EXPRESSION') {
     const expression = v.safeParse(expressionSchema, data.value)
     if (!expression.success) throw new Error('An expression needs a function and its arguments')
+    if (expression.output.expressionFunction === 'VAR_MODE_LOOKUP')
+      return modeLookupFromFigma(expression.output.expressionArguments, depth)
     const operator = OPERATOR_OF.get(expression.output.expressionFunction)
     if (!operator)
       throw new Error(`Kalka does not play ${expression.output.expressionFunction} expressions yet`)
@@ -115,8 +130,18 @@ export function variableDataToFigma(expression: PrototypeExpression): VariableDa
     const value = typeof expression.value === 'object' ? { ...expression.value } : expression.value
     return { type, resolvedType: type, value }
   }
-  if (expression.type === 'VARIABLE')
-    return { type: 'VARIABLE_ALIAS', value: { type: 'VARIABLE_ALIAS', id: expression.variableId } }
+  if (expression.type === 'VARIABLE') {
+    const alias: VariableData = {
+      type: 'VARIABLE_ALIAS',
+      value: { type: 'VARIABLE_ALIAS', id: expression.variableId }
+    }
+    if (!expression.modeId) return alias
+    const mode: VariableData = { type: 'STRING', resolvedType: 'STRING', value: expression.modeId }
+    return {
+      type: 'EXPRESSION',
+      value: { expressionFunction: 'VAR_MODE_LOOKUP', expressionArguments: [alias, mode] }
+    }
+  }
   return {
     type: 'EXPRESSION',
     ...(BOOLEAN_RESULTS.has(expression.operator) ? { resolvedType: 'BOOLEAN' } : {}),

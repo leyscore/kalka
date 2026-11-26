@@ -368,6 +368,52 @@ describe('.fig prototype round trip', () => {
     })
   })
 
+  test('reads and writes a variable mode lookup as VAR_MODE_LOOKUP', async () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const collection = graph.createCollection('Theme')
+    const dark = graph.createMode(collection.id, 'Dark') ?? ''
+    const label = graph.createVariable('label', 'STRING', collection.id, 'Light')
+    const copy = graph.createVariable('copy', 'STRING', collection.id, '')
+    graph.createNode('FRAME', page.id, {
+      name: 'Lookup',
+      reactions: [
+        {
+          trigger: { type: 'ON_CLICK', delay: 0, keyCodes: [] },
+          actions: [
+            {
+              type: 'SET_VARIABLE',
+              variableId: copy.id,
+              value: { type: 'VARIABLE', variableId: label.id, modeId: dark }
+            }
+          ]
+        }
+      ]
+    })
+
+    const bytes = (await exportFigFile(graph)).buffer as ArrayBuffer
+    const written = parseFigBuffer(bytes).nodeChanges.find((nc) => nc.name === 'Lookup')
+      ?.prototypeInteractions as {
+      actions: { targetVariableData?: { value?: { expressionValue?: unknown } } }[]
+    }[]
+    expect(written[0].actions[0].targetVariableData?.value?.expressionValue).toMatchObject({
+      expressionFunction: 'VAR_MODE_LOOKUP',
+      expressionArguments: [{ dataType: 'ALIAS' }, { dataType: 'STRING' }]
+    })
+
+    const reimported = await parseFigFile(bytes)
+    const labelBack = [...reimported.variables.values()].find((v) => v.name === 'label')
+    const darkBack = [...reimported.variableCollections.values()]
+      .find((c) => c.name === 'Theme')
+      ?.modes.find((mode) => mode.name === 'Dark')
+    const action = byName(reimported, 'Lookup').reactions[0].actions[0]
+    expect(action.type === 'SET_VARIABLE' && action.value).toEqual({
+      type: 'VARIABLE',
+      variableId: labelBack?.id ?? '',
+      modeId: darkBack?.modeId ?? ''
+    })
+  })
+
   test("gives a copied layer's interactions GUIDs of their own", async () => {
     const interaction = {
       id: { sessionID: 1, localID: 90 },

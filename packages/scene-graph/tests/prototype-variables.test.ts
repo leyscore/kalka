@@ -73,4 +73,31 @@ describe('prototype expressions', () => {
     }
     expect(formatPrototypeExpression(parsed('(count+1)*2'), nameOf)).toBe('(count + 1) * 2')
   })
+
+  test('a mode in brackets reads the variable in that mode, as accent[Dark] does', () => {
+    const modes: Record<string, string> = { light: 'Light', dark: 'Dark' }
+    const lookupMode = (id: string, name: string) =>
+      id === 'v4' ? Object.keys(modes).find((modeId) => modes[modeId] === name) : undefined
+    const result = parsePrototypeExpression('{Colors/Primary}[Dark] == #000000', lookup, lookupMode)
+    if (!('expression' in result)) throw new Error('did not parse')
+    expect(result.expression).toEqual({
+      type: 'EXPRESSION',
+      operator: 'EQUALS',
+      operands: [
+        { type: 'VARIABLE', variableId: 'v4', modeId: 'dark' },
+        { type: 'VALUE', value: { r: 0, g: 0, b: 0, a: 1 } }
+      ]
+    })
+    const inModes = (id: string, modeId?: string) =>
+      modeId === 'dark' ? { r: 0, g: 0, b: 0, a: 1 } : read(id)
+    expect(evaluatePrototypeExpression(result.expression, inModes)).toBe(true)
+    const formatted = formatPrototypeExpression(result.expression, nameOf, (_, id) => modes[id])
+    expect(formatted).toBe('Colors/Primary[Dark] == #000000')
+    expect(parsePrototypeExpression(formatted, lookup, lookupMode)).toEqual(result)
+    expect(parsePrototypeExpression('{Colors/Primary}[Dim]', lookup, lookupMode)).toEqual({
+      error: 'unknown',
+      name: 'Colors/Primary[Dim]'
+    })
+    expect(parsePrototypeExpression('[Dark]', lookup, lookupMode)).toEqual({ error: 'syntax' })
+  })
 })

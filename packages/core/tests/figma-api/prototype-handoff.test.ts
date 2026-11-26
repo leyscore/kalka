@@ -137,6 +137,34 @@ describe('prototype through the Plugin API', () => {
     expect(given?.actions?.[0] as unknown).toEqual(conditional)
   })
 
+  test('a variable mode lookup is VAR_MODE_LOOKUP over an alias and a mode id', async () => {
+    const { graph, button } = setup()
+    const collection = graph.createCollection('Theme')
+    const dark = graph.createMode(collection.id, 'Dark') ?? ''
+    const label = graph.createVariable('label', 'STRING', collection.id, 'Light')
+    const action = {
+      type: 'SET_VARIABLE',
+      variableId: label.id,
+      variableValue: {
+        type: 'EXPRESSION',
+        value: {
+          expressionFunction: 'VAR_MODE_LOOKUP',
+          expressionArguments: [
+            { type: 'VARIABLE_ALIAS', value: { type: 'VARIABLE_ALIAS', id: label.id } },
+            { type: 'STRING', resolvedType: 'STRING', value: dark }
+          ]
+        }
+      }
+    }
+    await button.setReactionsAsync([{ trigger: { type: 'ON_CLICK' }, actions: [action] }])
+    expect(graph.getNode(button.id)?.reactions[0].actions[0]).toEqual({
+      type: 'SET_VARIABLE',
+      variableId: label.id,
+      value: { type: 'VARIABLE', variableId: label.id, modeId: dark }
+    })
+    expect(button.reactions[0]?.actions?.[0] as unknown).toEqual(action)
+  })
+
   test("a page's flows are read and set by the frames they start at", () => {
     const { api, home, details } = setup()
     const page = api.currentPage

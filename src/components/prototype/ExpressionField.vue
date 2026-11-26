@@ -13,8 +13,9 @@ import AppInput from '@/components/ui/input/AppInput.vue'
 
 /**
  * A value or a condition typed as Figma's expression field takes it: `count + 1`,
- * `"Hi " + name`, `count >= 3 and not done`. Variables go by name (`{name}` for any name); what
- * does not parse stays in the field with why, and is set only once it parses.
+ * `"Hi " + name`, `count >= 3 and not done`. Variables go by name (`{name}` for any name), and
+ * `accent[Dark]` reads one in a mode of its collection; what does not parse stays in the field
+ * with why, and is set only once it parses.
  */
 const { expression, label, placeholder } = defineProps<{
   expression: PrototypeExpression | null
@@ -26,11 +27,22 @@ const store = useEditorStore()
 const m = usePrototypeMessages()
 
 const variables = useSceneComputed(() => [...store.graph.variables.values()])
+const collections = useSceneComputed(() => [...store.graph.variableCollections.values()])
+
+/** The modes of a variable's collection. */
+function modesOf(variableId: string) {
+  const variable = variables.value.find((candidate) => candidate.id === variableId)
+  return (
+    collections.value.find((collection) => collection.id === variable?.collectionId)?.modes ?? []
+  )
+}
+
 const text = computed(() =>
   expression
     ? formatPrototypeExpression(
         expression,
-        (id) => variables.value.find((variable) => variable.id === id)?.name ?? id
+        (id) => variables.value.find((variable) => variable.id === id)?.name ?? id,
+        (id, modeId) => modesOf(id).find((mode) => mode.modeId === modeId)?.name ?? modeId
       )
     : ''
 )
@@ -48,7 +60,8 @@ function commit() {
   }
   const result = parsePrototypeExpression(
     typed,
-    (name) => variables.value.find((variable) => variable.name === name)?.id
+    (name) => variables.value.find((variable) => variable.name === name)?.id,
+    (id, name) => modesOf(id).find((mode) => mode.name === name)?.modeId
   )
   if ('expression' in result) {
     draft.value = null

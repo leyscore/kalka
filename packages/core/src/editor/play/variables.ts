@@ -34,14 +34,16 @@ export function hasPresentVariables(variables: PresentVariables | undefined): bo
 
 /**
  * A variable's value while presenting, at a layer (whose modes it reads) or in the collection's
- * active mode: the value set while presenting, else its value in the mode chosen while
- * presenting or the layer's mode, aliases followed.
+ * active mode: the value set while presenting, else its value in `inMode` for a mode lookup, in
+ * the mode chosen while presenting or in the layer's mode, aliases followed in their own
+ * collection's mode.
  */
 export function presentVariableValue(
   graph: SceneGraph,
   variables: PresentVariables,
   variableId: string,
   nodeId?: string,
+  inMode?: string,
   seen: Set<string> = new Set()
 ): VariableValue | undefined {
   if (seen.has(variableId)) return undefined
@@ -50,7 +52,10 @@ export function presentVariableValue(
   const variable = graph.variables.get(variableId)
   if (!variable) return undefined
   const collection = graph.variableCollections.get(variable.collectionId)
+  const lookedUp =
+    inMode && collection?.modes.some((mode) => mode.modeId === inMode) ? inMode : undefined
   const modeId =
+    lookedUp ??
     variables.modes[variable.collectionId] ??
     (nodeId
       ? graph.getNodeVariableModeId(nodeId, variable.collectionId)
@@ -60,7 +65,7 @@ export function presentVariableValue(
     (collection ? variable.valuesByMode[collection.defaultModeId] : undefined) ??
     Object.values(variable.valuesByMode)[0]
   if (value && typeof value === 'object' && 'aliasId' in value)
-    return presentVariableValue(graph, variables, value.aliasId, nodeId, seen)
+    return presentVariableValue(graph, variables, value.aliasId, nodeId, undefined, seen)
   return value
 }
 
@@ -91,8 +96,8 @@ export function evaluatePresentExpression(
   expression: PrototypeExpression,
   nodeId?: string
 ): PrototypeLiteral | undefined {
-  return evaluatePrototypeExpression(expression, (id) =>
-    presentVariableValue(graph, variables, id, nodeId)
+  return evaluatePrototypeExpression(expression, (id, modeId) =>
+    presentVariableValue(graph, variables, id, nodeId, modeId)
   )
 }
 
@@ -128,7 +133,8 @@ export function conditionalActions(
   action: Extract<PrototypeAction, { type: 'CONDITIONAL' }>,
   nodeId?: string
 ): PrototypeAction[] {
-  const read = (id: string) => presentVariableValue(graph, variables, id, nodeId)
+  const read = (id: string, modeId?: string) =>
+    presentVariableValue(graph, variables, id, nodeId, modeId)
   return (
     action.blocks.find((block) => prototypeConditionHolds(block.condition, read))?.actions ?? []
   )

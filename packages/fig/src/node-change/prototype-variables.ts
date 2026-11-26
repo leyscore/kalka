@@ -42,8 +42,25 @@ function isOperator(value: unknown): value is PrototypeOperator {
   return typeof value === 'string' && OPERATORS.has(value)
 }
 
+/**
+ * Figma's variable mode lookup, `VAR_MODE_LOOKUP` over a variable and the id of one of its
+ * collection's modes as text (`accent[Dark]`): the variable read in that mode.
+ */
+function importModeLookup(args: unknown[]): PrototypeExpression | null {
+  const [variable, mode] = args
+  if (args.length !== 2 || !isRecord(variable) || !isRecord(mode)) return null
+  const alias = isRecord(variable.value) ? referenceOf(variable.value.alias) : null
+  const modeId = isRecord(mode.value) ? mode.value.textValue : undefined
+  if (!alias || typeof modeId !== 'string' || modeId === '') return null
+  return { type: 'VARIABLE', variableId: alias, modeId }
+}
+
 function importExpression(value: unknown, depth: number): PrototypeExpression | null {
   const expression = isRecord(value) ? value : {}
+  if (expression.expressionFunction === 'VAR_MODE_LOOKUP')
+    return importModeLookup(
+      Array.isArray(expression.expressionArguments) ? expression.expressionArguments : []
+    )
   const operator = expression.expressionFunction
   const operands = Array.isArray(expression.expressionArguments)
     ? expression.expressionArguments.map((argument) => importVariableData(argument, depth + 1))
@@ -127,10 +144,22 @@ export function exportVariableData(expression: PrototypeExpression, refs: Variab
   if (expression.type === 'VALUE') return literalData(expression.value)
   if (expression.type === 'VARIABLE') {
     const resolved = refs.variableType(expression.variableId)
-    return {
+    const alias = {
       dataType: 'ALIAS',
       ...(resolved ? { resolvedDataType: resolved } : {}),
       value: { alias: refs.variable(expression.variableId) }
+    }
+    const mode = expression.modeId ? refs.mode(expression.modeId) : undefined
+    if (!mode) return alias
+    return {
+      dataType: 'EXPRESSION',
+      ...(resolved ? { resolvedDataType: resolved } : {}),
+      value: {
+        expressionValue: {
+          expressionFunction: 'VAR_MODE_LOOKUP',
+          expressionArguments: [alias, literalData(guidToString(mode))]
+        }
+      }
     }
   }
   const operands = expression.operands.map((operand) => exportVariableData(operand, refs))

@@ -41,7 +41,11 @@ export const UNARY_PROTOTYPE_OPERATORS: ReadonlySet<PrototypeOperator> = new Set
 
 export type PrototypeExpression =
   | { type: 'VALUE'; value: PrototypeLiteral }
-  | { type: 'VARIABLE'; variableId: string }
+  /**
+   * A variable's value, in the mode where the interaction runs, or with `modeId` in that mode of
+   * its collection whatever mode is chosen: Figma's variable mode lookup, as `accent[Dark]`.
+   */
+  | { type: 'VARIABLE'; variableId: string; modeId?: string }
   | { type: 'EXPRESSION'; operator: PrototypeOperator; operands: PrototypeExpression[] }
 
 /** If a condition holds (or always, for Else, a null condition), run the actions. */
@@ -140,17 +144,23 @@ function logical(
   }
 }
 
+/** Reads a variable, in a given mode of its collection for a mode lookup. */
+export type PrototypeVariableReader = (
+  variableId: string,
+  modeId?: string
+) => VariableValue | undefined
+
 /**
  * The value of an expression, reading each variable through `read`; undefined when it reads a
  * variable that has no value or combines values that do not go together.
  */
 export function evaluatePrototypeExpression(
   expression: PrototypeExpression,
-  read: (variableId: string) => VariableValue | undefined
+  read: PrototypeVariableReader
 ): PrototypeLiteral | undefined {
   if (expression.type === 'VALUE') return expression.value
   if (expression.type === 'VARIABLE') {
-    const value = read(expression.variableId)
+    const value = read(expression.variableId, expression.modeId)
     return isPrototypeLiteral(value) ? value : undefined
   }
   const values = expression.operands.map((operand) => evaluatePrototypeExpression(operand, read))
@@ -182,7 +192,7 @@ export function evaluatePrototypeExpression(
 /** Whether a condition holds; an Else block, with no condition, always does. */
 export function prototypeConditionHolds(
   condition: PrototypeExpression | null,
-  read: (variableId: string) => VariableValue | undefined
+  read: PrototypeVariableReader
 ): boolean {
   return condition === null || truthy(evaluatePrototypeExpression(condition, read))
 }
