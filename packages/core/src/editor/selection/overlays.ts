@@ -117,6 +117,12 @@ export function createSelectionOverlayActions(ctx: EditorContext) {
     ctx.requestRepaint()
   }
 
+  function setBlurEdit(blurEdit: typeof ctx.state.blurEdit) {
+    if (isEqual(ctx.state.blurEdit, blurEdit)) return
+    ctx.state.blurEdit = blurEdit
+    ctx.requestRepaint()
+  }
+
   return {
     setMarquee,
     setSnapGuides,
@@ -133,6 +139,7 @@ export function createSelectionOverlayActions(ctx: EditorContext) {
     setLayoutInsertIndicator,
     setAutoLayoutHover,
     setCornerRadiusHandle,
-    setGradientEdit
+    setGradientEdit,
+    setBlurEdit
   }
 }

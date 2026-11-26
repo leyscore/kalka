@@ -55,6 +55,7 @@ export function overlaysFromEditorState(
     codeFocusNodeId: state.codeFocusNodeId,
     autoLayoutHover: state.autoLayoutHover,
     cornerRadiusHandle: previewing ? null : state.cornerRadiusHandle,
-    gradientEdit: previewing ? null : state.gradientEdit
+    gradientEdit: previewing ? null : state.gradientEdit,
+    blurEdit: previewing ? null : state.blurEdit
   }
 }

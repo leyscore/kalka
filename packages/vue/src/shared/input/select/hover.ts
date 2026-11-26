@@ -1,5 +1,6 @@
 import type { Editor } from '@kalka/core/editor'
 
+import { hoverBlurHandle } from '#vue/shared/input/blur'
 import { hoverCornerRadiusHandle } from '#vue/shared/input/corner-radius'
 import {
   buildResizeCursor,
@@ -89,6 +90,7 @@ export function updateHoverCursor(
 
   const cursor =
     hoverGradientHandle(editor, cx, cy) ??
+    hoverBlurHandle(editor, cx, cy) ??
     hoverCornerRadiusHandle(editor, cx, cy) ??
     getResizeCursorForSelection(cx, cy, editor) ??
     getRotationCursorForSelection(cx, cy, editor)

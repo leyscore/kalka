@@ -116,6 +116,45 @@ test('noise, glass and progressive blur are set from the effects panel and drawn
   await expect.poll(async () => (await effectsOf(page, node))?.[0].blurType).not.toBe('PROGRESSIVE')
 })
 
+test('a progressive blur shows its ends on the layer and moves them by dragging', async ({
+  page
+}) => {
+  const { node } = await setup(page)
+  const section = page.getByRole('region', { name: 'Effects', exact: true })
+  await section.getByRole('button', { name: 'Add effect' }).click()
+  await section.getByRole('combobox', { name: 'Effects', exact: true }).click()
+  await page.getByRole('option', { name: 'Layer blur', exact: true }).click()
+  if ((await section.locator('[data-slot="effect-settings"]').count()) === 0)
+    await section.getByRole('button', { name: 'Expand effect settings' }).click()
+  await section.getByRole('combobox', { name: 'Blur type' }).click()
+  await page.getByRole('option', { name: 'Progressive', exact: true }).click()
+  await expect
+    .poll(() => page.evaluate(() => window.kalka?.getStore?.().state.blurEdit?.index))
+    .toBe(0)
+
+  // The end sits at the middle of the card's bottom edge: (40 + 40 + 100, 40 + 40 + 120).
+  const toScreen = (x: number, y: number) =>
+    page.evaluate(
+      ([wx, wy]) => {
+        const state = window.kalka?.getStore?.().state
+        return state ? { x: wx * state.zoom + state.panX, y: wy * state.zoom + state.panY } : null
+      },
+      [x, y]
+    )
+  const end = await toScreen(180, 200)
+  const target = await toScreen(240, 200)
+  if (!end || !target) throw new Error('No viewport')
+  await new CanvasHelper(page).drag(end.x, end.y, target.x, target.y)
+  await expect
+    .poll(async () => (await effectsOf(page, node))?.[0].endOffset?.x ?? 0)
+    .toBeCloseTo(0.8, 1)
+
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+z' : 'Control+z')
+  await expect
+    .poll(async () => (await effectsOf(page, node))?.[0].endOffset)
+    .toEqual({ x: 0.5, y: 1 })
+})
+
 test('image adjustments filter the picture on the canvas', async ({ page }) => {
   const { frame, node } = await setup(page, true)
   await page.getByTestId('fill-picker-swatch').first().click()

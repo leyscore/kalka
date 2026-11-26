@@ -125,6 +125,8 @@ export interface RenderOverlays {
   cornerRadiusHandle?: CornerRadiusHandleState | null
   /** The gradient paint whose picker is open, which shows its handles on the layer. */
   gradientEdit?: GradientEditState | null
+  /** The progressive blur whose settings are open, which shows its ends on the layer. */
+  blurEdit?: BlurEditState | null
 }
 
 /**
@@ -145,6 +147,19 @@ export interface GradientEditState {
   activeStop: number
   /** The handle under the pointer or being dragged. */
   handle: GradientHandle | null
+  dragging: boolean
+}
+
+/**
+ * The progressive blur whose settings are open, which Figma draws on the layer as a line from its
+ * start point to its end point, each a handle that moves it.
+ */
+export interface BlurEditState {
+  nodeId: string
+  /** The effect's index in the layer's effects. */
+  index: number
+  /** The end under the pointer or being dragged. */
+  handle: 'start' | 'end' | null
   dragging: boolean
 }
 

@@ -21,6 +21,7 @@ import type { DesignIssueOverlay } from '#core/canvas/issues/types'
 import type { RulerTheme, SkiaRenderer } from '#core/canvas/renderer'
 import type {
   CornerRadiusHandleState,
+  BlurEditState,
   GradientEditState,
   MeasurementMode,
   OutlineMode,
@@ -163,6 +164,8 @@ export interface EditorViewState {
   cornerRadiusHandle: CornerRadiusHandleState | null
   /** The gradient paint whose picker is open, with its handles drawn on the layer. */
   gradientEdit: GradientEditState | null
+  /** The progressive blur whose settings are open, with its ends drawn on the layer. */
+  blurEdit: BlurEditState | null
   panX: number
   pageColor: Color
   panY: number

@@ -5,6 +5,7 @@ export { updateHoverCursor } from '#vue/shared/input/select/hover'
 import type { Editor } from '@kalka/core/editor'
 import type { SceneNode } from '@kalka/scene-graph'
 
+import { tryStartBlurHandle } from '#vue/shared/input/blur'
 import { tryStartCornerRadius } from '#vue/shared/input/corner-radius'
 import { tryStartGradientHandle } from '#vue/shared/input/gradient'
 import { tryStartResize } from '#vue/shared/input/resize'
@@ -44,7 +45,7 @@ function startHandleDrag(
   tryStartRotation: (cx: number, cy: number) => boolean,
   setDrag: (d: DragState) => void
 ): boolean {
-  const gradientDrag = tryStartGradientHandle(editor, cx, cy)
+  const gradientDrag = tryStartGradientHandle(editor, cx, cy) ?? tryStartBlurHandle(editor, cx, cy)
   if (gradientDrag) {
     setDrag(gradientDrag)
     return true

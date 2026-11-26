@@ -24,6 +24,7 @@ export function createDefaultEditorViewState(pageId: string): EditorViewState {
     autoLayoutHover: null,
     cornerRadiusHandle: null,
     gradientEdit: null,
+    blurEdit: null,
     panX: 0,
     pageColor: { ...CANVAS_BG_COLOR },
     panY: 0,
@@ -53,6 +54,7 @@ export function copyEditorViewState(source: EditorViewState): EditorViewState {
     autoLayoutHover: structuredClone(source.autoLayoutHover),
     cornerRadiusHandle: structuredClone(source.cornerRadiusHandle),
     gradientEdit: structuredClone(source.gradientEdit),
+    blurEdit: structuredClone(source.blurEdit),
     pageColor: { ...source.pageColor },
     navigation: { ...source.navigation },
     nodeEditState: structuredClone(source.nodeEditState)

@@ -2,6 +2,7 @@ import type { Editor, MoveOriginal, ScaleSession, Tool } from '@kalka/core/edito
 import type {
   CSSDeclarations,
   DerivedTextGlyph,
+  Effect,
   GeometryPath,
   NodeType,
   SceneNode,
@@ -64,6 +65,16 @@ export interface DragGradientHandle {
   handle: 'start' | 'end' | 'width' | number
   /** The layer's paints at the press. */
   original: Pick<SceneNode, 'fills' | 'strokes'>
+}
+
+export interface DragBlurHandle {
+  type: 'blur-handle'
+  nodeId: string
+  /** The blur's index in the layer's effects. */
+  index: number
+  handle: 'start' | 'end'
+  /** The layer's effects at the press. */
+  original: Effect[]
 }
 
 export interface DragDraw {
@@ -264,6 +275,7 @@ export type DragState =
   | DragGuide
   | DragCornerRadius
   | DragGradientHandle
+  | DragBlurHandle
   | DragAutoLayoutValue
   | DragPrototypeLink
 

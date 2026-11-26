@@ -11,6 +11,7 @@ import type { Color, Rect } from '@kalka/scene-graph/primitives'
 import { agentWorkLayer, type AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
 import { aiMarksLayer, type AIMarks } from '#vue/canvas/svg-overlay/layers/ai-marks'
 import { autoLayoutHoverLayer } from '#vue/canvas/svg-overlay/layers/auto-layout-hover'
+import { blurLayer } from '#vue/canvas/svg-overlay/layers/blur'
 import { cornerRadiusLayer } from '#vue/canvas/svg-overlay/layers/corner-radius'
 import { flashesLayer, type Flash } from '#vue/canvas/svg-overlay/layers/flashes'
 import { gradientLayer } from '#vue/canvas/svg-overlay/layers/gradient'
@@ -185,6 +186,7 @@ export function composeOverlay(input: ComposeInput): ComposedOverlay {
     ...insertIndicatorLayer(input),
     ...(isMeasuring ? [] : autoLayoutHoverLayer(input)),
     ...gradientLayer(input),
+    ...blurLayer(input),
     ...prototypeLayer(input, input.pageId),
     // On top.
     ...nodeEditLayer(input),

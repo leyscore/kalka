@@ -30,10 +30,11 @@ import {
 } from '#vue/shared/input/corner-radius'
 import { handleDrawMove } from '#vue/shared/input/draw'
 import {
-  cancelGradientHandle,
-  commitGradientHandle,
-  handleGradientHandleMove
-} from '#vue/shared/input/gradient'
+  cancelEditorHandle,
+  commitEditorHandle,
+  isEditorHandleDrag,
+  moveEditorHandle
+} from '#vue/shared/input/handle-drags'
 import { handleMoveMove, handleMoveUp } from '#vue/shared/input/move'
 import { setupPanZoom } from '#vue/shared/input/pan-zoom'
 import { applyResize, commitResizePreview } from '#vue/shared/input/resize'
@@ -363,8 +364,8 @@ export function useCanvasInput(
       return
     }
 
-    if (d.type === 'gradient-handle') {
-      handleGradientHandleMove(d, cx, cy, editor)
+    if (isEditorHandleDrag(d)) {
+      moveEditorHandle(d, cx, cy, editor)
       return
     }
 
@@ -409,7 +410,7 @@ export function useCanvasInput(
       if (editor.state.rotationPreview === preview) editor.setRotationPreview(null)
     } else if (d.type === 'draw') d.commit()
     else if (d.type === 'corner-radius') commitCornerRadius(d, editor)
-    else if (d.type === 'gradient-handle') commitGradientHandle(d, editor)
+    else if (isEditorHandleDrag(d)) commitEditorHandle(d, editor)
     else if (d.type === 'auto-layout-value') commitAutoLayoutValueDrag(d, editor)
     else if (d.type === 'marquee') finishMarquee(editor, d)
 
@@ -438,7 +439,7 @@ export function useCanvasInput(
     }
     endToolDrag(drag, editor, false)
     if (drag.value?.type === 'corner-radius') cancelCornerRadius(drag.value, editor)
-    if (drag.value?.type === 'gradient-handle') cancelGradientHandle(drag.value, editor)
+    if (isEditorHandleDrag(drag.value)) cancelEditorHandle(drag.value, editor)
     if (drag.value?.type === 'auto-layout-value') cancelAutoLayoutValueDrag(drag.value, editor)
     if (
       drag.value?.type === 'edit-node' ||
@@ -528,6 +529,8 @@ export function useCanvasInput(
       editor.setCornerRadiusHandle(null)
       const gradient = editor.state.gradientEdit
       if (gradient?.handle != null) editor.setGradientEdit({ ...gradient, handle: null })
+      const blur = editor.state.blurEdit
+      if (blur?.handle != null) editor.setBlurEdit({ ...blur, handle: null })
     }
   })
   useEventListener(

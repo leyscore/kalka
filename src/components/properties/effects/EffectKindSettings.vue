@@ -13,6 +13,8 @@ import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import AppCheckbox from '@/components/ui/toggle/AppCheckbox.vue'
 
+import { useCanvasBlurHandles } from './canvas-blur'
+
 /**
  * The settings of a blur, noise, texture or glass effect, under its row in the effects list.
  * `scrub` previews a value while it is dragged, `commit` ends the edit, `change` is a discrete
@@ -31,6 +33,7 @@ const clipId = useId()
 
 const isBlur = computed(() => effect.type.endsWith('_BLUR'))
 const progressive = computed(() => effect.blurType === 'PROGRESSIVE')
+useCanvasBlurHandles(() => (isBlur.value && progressive.value && nodeId ? { nodeId, index } : null))
 
 const blurTypeOptions = computed(() => [
   { value: 'NORMAL', label: labels.value.uniform },
