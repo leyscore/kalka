@@ -7,8 +7,8 @@ import type { useSharedStyles } from '@kalka/vue'
 import StyleRow from './StyleRow.vue'
 
 /**
- * One type's styles in Local styles, by folder. A style is edited from its row, renamed, moved by
- * dragging or from its menu, and deleted.
+ * One type's styles in Local styles, by folder. A style is edited from its row, renamed,
+ * duplicated, moved by dragging or from its menu, and deleted.
  */
 const { type, label, styles } = defineProps<{
   type: SharedStyleType
@@ -16,7 +16,7 @@ const { type, label, styles } = defineProps<{
   styles: ReturnType<typeof useSharedStyles>
 }>()
 const groups = computed(() => styles.groups.value)
-const { definition, rename, remove, move } = styles
+const { definition, rename, duplicate, remove, move } = styles
 const dragged = ref<string | null>(null)
 const drop = ref<{ nodeId: string; placement: 'before' | 'after' } | null>(null)
 const order = computed(() => groups.value.flatMap((group) => group.styles))
@@ -88,6 +88,7 @@ function dropPlacement(nodeId: string) {
           :first="order[0]?.nodeId === style.nodeId"
           :last="order[order.length - 1]?.nodeId === style.nodeId"
           @rename="rename(style.nodeId, $event)"
+          @duplicate="duplicate(style.nodeId)"
           @move="step(style.nodeId, $event)"
           @remove="remove(style.nodeId)"
         />

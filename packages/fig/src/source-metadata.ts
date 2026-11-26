@@ -96,6 +96,7 @@ const EDITED_RAW_FIELDS: Partial<Record<string, readonly string[]>> = {
   // A variant's specs are written from its values.
   componentPropertyValues: ['variantPropSpecs'],
   variantPropSpecs: ['variantPropSpecs'],
+  symbolDescription: ['description'],
   gridTemplateColumns: ['gridColumns', 'gridColumnsSizing'],
   gridTemplateRows: ['gridRows', 'gridRowsSizing'],
   gridColumnGap: ['gridColumnGap'],

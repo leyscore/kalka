@@ -712,7 +712,7 @@ function applyComponentMetadata(
     nc.isSymbolPublishable = node.isSymbolPublishable
   }
   if (node.isExposedInstance) nc.propsAreBubbled = true
-  if (node.symbolDescription) nc.symbolDescription = node.symbolDescription
+  applyDescription(node, nc)
   if (node.symbolLinks.length > 0) nc.symbolLinks = structuredClone(node.symbolLinks)
   const componentPropDefs = node.componentPropertyDefinitions.map((def) => {
     const record: Record<string, unknown> = {
@@ -1042,6 +1042,13 @@ export function overridableNodeFields(
   applyNodeVisualProps({ ...context, fontDigestMap: undefined }, node, nc)
   context.serializeLayoutProps(node, nc)
   return nc
+}
+
+/** Figma reads a style's description from `description`, a component's from both fields. */
+function applyDescription(node: SceneNode, nc: KiwiNodeChange): void {
+  if (!node.symbolDescription) return
+  nc.symbolDescription = node.symbolDescription
+  if (node.sharedStyleType) nc.description = node.symbolDescription
 }
 
 /**

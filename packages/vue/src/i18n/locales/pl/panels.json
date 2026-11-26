@@ -736,6 +736,8 @@
   "editGridStyle": "Edytuj styl siatki",
   "renameStyle": "Zmień nazwę stylu",
   "deleteStyle": "Usuń styl",
+  "duplicateStyle": "Duplikuj styl",
+  "styleDescription": "Opis",
   "noTextStyles": "Brak stylów tekstu",
   "noColorStyles": "Brak stylów kolorów",
   "noEffectStyles": "Brak stylów efektów",

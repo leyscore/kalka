@@ -60,6 +60,7 @@ export function useSharedStyles(kind: SharedStyleKind) {
     groups: computed(() => groupSharedStyles(styles.value)),
     definition,
     rename: (styleNodeId: string, name: string) => store.renameSharedStyle(styleNodeId, name),
+    duplicate: (styleNodeId: string) => store.duplicateSharedStyle(styleNodeId),
     remove: (styleNodeId: string) => store.deleteSharedStyle(styleNodeId),
     move: (styleNodeId: string, targetNodeId: string, placement: 'before' | 'after') =>
       store.moveSharedStyle(styleNodeId, targetNodeId, placement)

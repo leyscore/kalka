@@ -21,7 +21,7 @@ import { styleKindForType } from './kinds'
 import StyleEditPopover from './StyleEditPopover.vue'
 import StyleLabel from './StyleLabel.vue'
 
-/** One style in Local styles: a click edits it, its menu renames, moves or deletes it. */
+/** One style in Local styles: a click edits it, its menu renames, duplicates, moves or deletes it. */
 const { type, name, label, definition, first, last } = defineProps<{
   type: SharedStyleType
   name: string
@@ -32,6 +32,7 @@ const { type, name, label, definition, first, last } = defineProps<{
 }>()
 const emit = defineEmits<{
   rename: [name: string]
+  duplicate: []
   move: [direction: 'up' | 'down']
   remove: []
 }>()
@@ -96,6 +97,13 @@ function commitName() {
           <DropdownMenuContent side="bottom" align="end" :side-offset="4" :class="menuCls.content">
             <DropdownMenuItem :class="itemCls" @select="startRenaming">
               {{ panels.renameStyle }}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              :class="itemCls"
+              :data-test-id="`${kind}-style-duplicate`"
+              @select="emit('duplicate')"
+            >
+              {{ panels.duplicateStyle }}
             </DropdownMenuItem>
             <DropdownMenuItem :class="itemCls" :disabled="first" @select="emit('move', 'up')">
               {{ panels.moveStyleUp }}

@@ -727,6 +727,8 @@
   "editGridStyle": "Modifier le style de grille",
   "renameStyle": "Renommer le style",
   "deleteStyle": "Supprimer le style",
+  "duplicateStyle": "Dupliquer le style",
+  "styleDescription": "Description",
   "noTextStyles": "Aucun style de texte",
   "noColorStyles": "Aucun style de couleur",
   "noEffectStyles": "Aucun style d’effet",

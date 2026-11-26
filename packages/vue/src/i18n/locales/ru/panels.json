@@ -736,6 +736,8 @@
   "editGridStyle": "Изменить стиль сетки",
   "renameStyle": "Переименовать стиль",
   "deleteStyle": "Удалить стиль",
+  "duplicateStyle": "Дублировать стиль",
+  "styleDescription": "Описание",
   "noTextStyles": "Нет текстовых стилей",
   "noColorStyles": "Нет стилей цвета",
   "noEffectStyles": "Нет стилей эффектов",

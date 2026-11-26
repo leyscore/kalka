@@ -718,6 +718,8 @@
   "editGridStyle": "编辑网格样式",
   "renameStyle": "重命名样式",
   "deleteStyle": "删除样式",
+  "duplicateStyle": "复制样式",
+  "styleDescription": "描述",
   "noTextStyles": "没有文本样式",
   "noColorStyles": "没有颜色样式",
   "noEffectStyles": "没有效果样式",

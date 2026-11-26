@@ -279,6 +279,7 @@ fr:panels.shaderGrain
 fr:panels.shaderProportion
 fr:panels.slotDescription
 fr:panels.slots
+fr:panels.styleDescription
 fr:panels.variables
 fr:panels.versions
 fr:panels.versionsBurst

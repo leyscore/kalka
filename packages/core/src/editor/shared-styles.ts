@@ -169,6 +169,42 @@ export function createSharedStyleActions(ctx: EditorContext, nodes: NodeActions)
     nodes.updateNodeWithUndo(style.id, { name: trimmed }, 'Rename style')
   }
 
+  /** Sets a style's description, which Figma shows with the style and its libraries publish. */
+  function describeSharedStyle(styleNodeId: string, description: string) {
+    const style = styleDefinition(styleNodeId)
+    const next = description.trim()
+    if (!style || style.symbolDescription === next) return
+    nodes.updateNodeWithUndo(style.id, { symbolDescription: next }, 'Edit style description')
+  }
+
+  /**
+   * Makes a copy of a style with its name, description, values and variable bindings, listed
+   * right after it, as Figma's Duplicate style. Layers stay on the original.
+   */
+  function duplicateSharedStyle(styleNodeId: string): SharedStyle | null {
+    const style = styleDefinition(styleNodeId)
+    const type = style?.sharedStyleType
+    if (!style || !type) return null
+    return ctx.undo.runBatch('Duplicate style', () => {
+      const values = Object.fromEntries(
+        sharedStyleFields(type).map((field) => [field, structuredClone(style[field])])
+      ) as Partial<SceneNode>
+      const copy = addStyleNode(style.type, {
+        ...values,
+        ...(type === 'TEXT' ? { text: style.text } : {}),
+        boundVariables: { ...style.boundVariables },
+        symbolDescription: style.symbolDescription,
+        name: style.name,
+        sharedStyleType: type
+      })
+      const copyId = copy.source.id
+      if (!copyId) return null
+      moveSharedStyle(copy.id, style.id, 'after')
+      ctx.requestRender()
+      return { id: copyId, nodeId: copy.id, name: copy.name, type }
+    })
+  }
+
   /**
    * Deletes a style. Layers that used it keep the values it gave them and are detached from it,
    * all in one undo step.
@@ -252,6 +288,8 @@ export function createSharedStyleActions(ctx: EditorContext, nodes: NodeActions)
     updateSharedStyle,
     updateTextStyle,
     renameSharedStyle,
+    describeSharedStyle,
+    duplicateSharedStyle,
     deleteSharedStyle,
     moveSharedStyle
   }

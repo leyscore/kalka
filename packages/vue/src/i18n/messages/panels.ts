@@ -598,6 +598,8 @@ export const panelMessageDefaults = {
   editGridStyle: 'Edit grid style',
   renameStyle: 'Rename style',
   deleteStyle: 'Delete style',
+  duplicateStyle: 'Duplicate style',
+  styleDescription: 'Description',
   noTextStyles: 'No text styles',
   noColorStyles: 'No color styles',
   noEffectStyles: 'No effect styles',

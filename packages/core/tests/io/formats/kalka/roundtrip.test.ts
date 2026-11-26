@@ -111,8 +111,10 @@ describe('Kalka folder', () => {
     const effect = editor.createSharedStyle('effect', 'Elevation/1', [card.id])
     const grid = editor.createSharedStyle('grid', 'Grid/12', [card.id])
     if (!fill || !effect || !grid) throw new Error('No style')
+    editor.describeSharedStyle(fill.nodeId, 'Buttons and links')
 
     const read = readKalkaFolder(asMap(await writeKalkaFolder(graph)))
+    expect(read.getNode(fill.nodeId)?.symbolDescription).toBe('Buttons and links')
     expect(getSharedStyles(read, 'fill')).toEqual([fill])
     expect(getSharedStyles(read, 'effect')).toEqual([effect])
     expect(getSharedStyles(read, 'grid')).toEqual([grid])

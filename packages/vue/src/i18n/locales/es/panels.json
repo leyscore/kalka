@@ -727,6 +727,8 @@
   "editGridStyle": "Editar estilo de cuadrícula",
   "renameStyle": "Cambiar nombre del estilo",
   "deleteStyle": "Eliminar estilo",
+  "duplicateStyle": "Duplicar estilo",
+  "styleDescription": "Descripción",
   "noTextStyles": "No hay estilos de texto",
   "noColorStyles": "No hay estilos de color",
   "noEffectStyles": "No hay estilos de efecto",

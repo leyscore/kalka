@@ -718,6 +718,8 @@
   "editGridStyle": "グリッドスタイルを編集",
   "renameStyle": "スタイル名を変更",
   "deleteStyle": "スタイルを削除",
+  "duplicateStyle": "スタイルを複製",
+  "styleDescription": "説明",
   "noTextStyles": "テキストスタイルはありません",
   "noColorStyles": "カラースタイルはありません",
   "noEffectStyles": "エフェクトスタイルはありません",

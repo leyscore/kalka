@@ -727,6 +727,8 @@
   "editGridStyle": "Rasterstil bearbeiten",
   "renameStyle": "Stil umbenennen",
   "deleteStyle": "Stil löschen",
+  "duplicateStyle": "Stil duplizieren",
+  "styleDescription": "Beschreibung",
   "noTextStyles": "Keine Textstile",
   "noColorStyles": "Keine Farbstile",
   "noEffectStyles": "Keine Effektstile",

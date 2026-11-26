@@ -219,6 +219,33 @@ describe('shared colour, effect and grid styles', () => {
     expect(graph.getNode(badge.id)?.boundVariables).toEqual({ 'strokes/0/color': brand.id })
   })
 
+  test('describes and duplicates a style, each as one undo step', () => {
+    const { graph, editor, card } = setupLayers()
+    const style = editor.createSharedStyle('fill', 'Brand/Primary', [card.id])
+    if (!style) throw new Error('No style')
+    editor.describeSharedStyle(style.nodeId, '  Buttons and links  ')
+    expect(graph.getNode(style.nodeId)?.symbolDescription).toBe('Buttons and links')
+
+    const copy = editor.duplicateSharedStyle(style.nodeId)
+    if (!copy) throw new Error('No copy')
+    expect(getSharedStyles(graph, 'fill').map((listed) => listed.nodeId)).toEqual([
+      style.nodeId,
+      copy.nodeId
+    ])
+    expect(graph.getNode(copy.nodeId)).toMatchObject({
+      name: 'Brand/Primary',
+      symbolDescription: 'Buttons and links',
+      fills: [{ color: red }]
+    })
+    expect(copy.id).not.toBe(style.id)
+    expect(graph.getNode(card.id)?.fillStyleId).toBe(style.id)
+
+    editor.undo.undo()
+    expect(getSharedStyles(graph, 'fill')).toEqual([style])
+    editor.undo.undo()
+    expect(graph.getNode(style.nodeId)?.symbolDescription).toBe('')
+  })
+
   test('editing a colour style changes the fills and strokes using it, as one undo step', () => {
     const { graph, editor, card, badge } = setupLayers()
     const style = editor.createSharedStyle('fill', 'Brand/Primary', [card.id])

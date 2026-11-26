@@ -133,3 +133,27 @@ test('gives styles whose ids spell one GUID records of their own', async () => {
   })
   expect(new Set(guids).size).toBe(2)
 })
+
+test("writes a style's description where Figma keeps it and reads it back", async () => {
+  const graph = new SceneGraph()
+  const style = graph.createNode('RECTANGLE', graph.getPages()[0].id, {
+    name: 'Brand',
+    sharedStyleType: 'FILL',
+    internalOnly: true,
+    symbolDescription: 'Buttons and links'
+  })
+  style.source.id = 'style:a1b2c3d4e5f6'
+  graph.createNode('RECTANGLE', graph.getPages()[0].id, {
+    name: 'Styled',
+    fillStyleId: style.source.id
+  })
+
+  const bytes = await exportFigFile(graph)
+  const parsed = parseFigBuffer(bytes.slice().buffer as ArrayBuffer)
+  expect(parsed.nodeChanges.find((change) => change.name === 'Brand')?.description).toBe(
+    'Buttons and links'
+  )
+  const reopened = await parseFigFile(bytes.slice().buffer as ArrayBuffer)
+  const [listed] = getSharedStyles(reopened, 'fill')
+  expect(reopened.getNode(listed?.nodeId ?? '')?.symbolDescription).toBe('Buttons and links')
+})

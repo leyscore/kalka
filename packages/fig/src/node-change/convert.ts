@@ -1044,7 +1044,8 @@ function extractComponentMetadata(nc: NodeChange): ComponentMetadataProps {
     isPublishable: booleanOrFalse(nc.isPublishable),
     isSymbolPublishable: booleanOrFalse(nc.isSymbolPublishable),
     isExposedInstance: booleanOrFalse(nc.propsAreBubbled),
-    symbolDescription: stringOrEmpty(nc.symbolDescription),
+    // A style keeps its description as `description` only; a component keeps it in both.
+    symbolDescription: stringOrEmpty(nc.symbolDescription ?? nc.description),
     symbolLinks: symbolLinks
       .filter((link): link is SymbolLink => typeof link.uri === 'string')
       .map((link) => ({
