@@ -345,6 +345,11 @@ describe('server documents', () => {
       // The role the room gives, which the editor shows as view only.
       expect(viewer.session.serverRole.value).toBe('viewer')
       expect(editor.session.serverRole.value).toBe('editor')
+      // The viewer's editor is view only up front: its drawing tools are off.
+      expect(viewer.store.state.viewOnly).toBe(true)
+      expect(editor.store.state.viewOnly).toBeFalsy()
+      viewer.store.setTool('RECTANGLE')
+      expect(viewer.store.state.activeTool).toBe('SELECT')
       const page = expectDefined(viewer.store.graph.getPages()[0], 'page')
       viewer.store.graph.createNode('RECTANGLE', page.id, { name: 'Viewer box' })
       const card = expectDefined(viewer.store.graph.getChildren(page.id)[0], 'card')

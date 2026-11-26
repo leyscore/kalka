@@ -45,15 +45,33 @@ export type ShortcutDefinition = {
   global?: boolean
   /** Whether the shortcut also works while a canvas previews. */
   preview?: boolean
+  /** Whether it works in a document open to view only: it looks, selects or copies, never edits. */
+  viewing?: boolean
   /** Whether it works while text is being edited, as saving and opening do in Figma. */
   whileEditingText?: boolean
 }
+
+/** Commands that only look at or select layers, which a document open to view only keeps. */
+const VIEWING_COMMANDS: ReadonlySet<EditorCommandId> = new Set([
+  'view.zoom100',
+  'view.zoomFit',
+  'view.zoomSelection',
+  'selection.selectAll',
+  'selection.selectInverse',
+  'selection.selectMatchingLayers'
+])
 
 function commandShortcut(
   command: EditorCommandId,
   keys = editorCommandMetadata(command).keybinding
 ): ShortcutDefinition | null {
-  return keys ? { id: command, keys, run: ({ runCommand }) => runCommand(command) } : null
+  if (!keys) return null
+  return {
+    id: command,
+    keys,
+    run: ({ runCommand }) => runCommand(command),
+    viewing: VIEWING_COMMANDS.has(command)
+  }
 }
 
 function commandShortcuts(...commands: EditorCommandId[]): ShortcutDefinition[] {
@@ -157,6 +175,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     ),
     {
       id: 'copy-properties',
+      viewing: true,
       keys: appMenuTinykeysShortcut('copy-properties') ?? '$mod+Alt+KeyC',
       run: ({ store }) => void copySelectionProperties(store)
     },
@@ -168,17 +187,20 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     { id: 'pick-color', keys: 'KeyI', run: ({ store }) => void pickColorForSelection(store) },
     {
       id: 'copy-link',
+      viewing: true,
       keys: appMenuTinykeysShortcut('copy-link') ?? '$mod+KeyL',
       run: ({ store }) => void copySelectionLink(store)
     },
     {
       id: 'export-selection-png',
+      viewing: true,
       keys: appMenuTinykeysShortcut('export-selection') ?? '$mod+Shift+KeyE',
       run: ({ actions }) => actions.exportSelectionPNG(),
       whileEditingText: true
     },
     {
       id: 'save-as',
+      viewing: true,
       keys: appMenuTinykeysShortcut('save-as') ?? '$mod+Shift+KeyS',
       run: ({ store }) => void store.saveFigFileAs(),
       whileEditingText: true
@@ -186,12 +208,14 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     ...commandShortcuts('selection.ungroup', 'edit.redo'),
     {
       id: 'toggle-preview',
+      viewing: true,
       keys: appMenuTinykeysShortcut('toggle-preview') ?? '$mod+Alt+Enter',
       run: ({ actions }) => actions.togglePlay(),
       preview: true
     },
     {
       id: 'keyboard-shortcuts',
+      viewing: true,
       // Figma's ⌃⇧?, and ⌘/ which people try first.
       keys: ['Control+Shift+Slash', '$mod+Slash'],
       run: () => toggleShortcutsHelp(),
@@ -209,11 +233,13 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     },
     {
       id: 'toggle-comment-pins',
+      viewing: true,
       keys: 'Shift+KeyC',
       run: ({ store }) => toggleCommentPins(store)
     },
     {
       id: 'toggle-rulers',
+      viewing: true,
       keys: 'Shift+KeyR',
       run: ({ store }) => {
         store.state.showRulers = !store.state.showRulers
@@ -222,6 +248,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     },
     {
       id: 'toggle-multiplayer-cursors',
+      viewing: true,
       keys: '$mod+Alt+Backslash',
       run: ({ store }) => {
         store.state.showRemoteCursors = !store.state.showRemoteCursors
@@ -231,6 +258,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     // Figma's keys, matched by key position since Shift turns ' into ".
     {
       id: 'toggle-pixel-grid',
+      viewing: true,
       keys: 'Shift+Quote',
       run: ({ store }) => {
         store.state.showPixelGrid = store.state.showPixelGrid === false
@@ -239,6 +267,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     },
     {
       id: 'view-layout-grids',
+      viewing: true,
       keys: ['Control+Shift+Digit4', ...(shortcutPlatform() === 'mac' ? ['Control+KeyG'] : [])],
       run: ({ store }) => {
         store.state.showLayoutGrids = store.state.showLayoutGrids === false
@@ -247,12 +276,14 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     },
     {
       id: 'toggle-pixel-grid-snap',
+      viewing: true,
       keys: '$mod+Shift+Quote',
       run: ({ store }) =>
         setSnappingPreference('pixelGrid', !store.state.snappingPreferences.pixelGrid)
     },
     {
       id: 'toggle-ui',
+      viewing: true,
       keys: appMenuTinykeysShortcut('toggle-ui') ?? '$mod+Backslash',
       run: ({ actions }) => actions.toggleUI(),
       whileEditingText: true
@@ -260,48 +291,61 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     { id: 'toggle-ai', keys: '$mod+KeyJ', run: joinOrToggleAI },
     {
       id: 'open-settings',
+      viewing: true,
       keys: appMenuTinykeysShortcut('settings') ?? '$mod+Comma',
       run: () => openSettings(),
       global: true
     },
     {
       id: 'zoom-in',
+      viewing: true,
       keys: [appMenuTinykeysShortcut('zoom-in') ?? '$mod+Equal', '$mod+Shift+Equal'],
       run: zoomAtViewportCenter(-100),
       global: true
     },
     {
       id: 'zoom-out',
+      viewing: true,
       keys: appMenuTinykeysShortcut('zoom-out') ?? '$mod+Minus',
       run: zoomAtViewportCenter(100),
       global: true
     },
-    { id: 'zoom-next-frame', keys: 'KeyN', run: ({ store }) => store.zoomToAdjacentFrame(1) },
+    {
+      id: 'zoom-next-frame',
+      viewing: true,
+      keys: 'KeyN',
+      run: ({ store }) => store.zoomToAdjacentFrame(1)
+    },
     {
       id: 'zoom-previous-frame',
+      viewing: true,
       keys: 'Shift+KeyN',
       run: ({ store }) => store.zoomToAdjacentFrame(-1)
     },
-    { id: 'previous-page', keys: 'PageUp', run: () => showAdjacentPage(-1) },
-    { id: 'next-page', keys: 'PageDown', run: () => showAdjacentPage(1) },
+    { id: 'previous-page', viewing: true, keys: 'PageUp', run: () => showAdjacentPage(-1) },
+    { id: 'next-page', viewing: true, keys: 'PageDown', run: () => showAdjacentPage(1) },
     {
       id: 'zoom-in-unmodified',
+      viewing: true,
       keys: 'Shift+Equal',
       run: zoomAtViewportCenter(-100)
     },
     {
       id: 'zoom-out-unmodified',
+      viewing: true,
       keys: 'Minus',
       run: zoomAtViewportCenter(100)
     },
     {
       id: 'close-tab',
+      viewing: true,
       keys: appMenuTinykeysShortcut('close') ?? '$mod+KeyW',
       run: ({ closeActiveTab }) => closeActiveTab(),
       whileEditingText: true
     },
     {
       id: 'new-tab',
+      viewing: true,
       keys: ['$mod+KeyN', '$mod+KeyT'],
       run: ({ createTab }) => createTab(),
       whileEditingText: true
@@ -309,6 +353,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     // Figma's ⌘F wins over the browser's find, in text being edited and in fields too.
     {
       id: 'find',
+      viewing: true,
       keys: appMenuTinykeysShortcut('find') ?? '$mod+KeyF',
       run: () => {
         if (!hasOpenDismissableLayer()) openFind()
@@ -338,6 +383,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     },
     {
       id: 'open-file',
+      viewing: true,
       keys: appMenuTinykeysShortcut('open') ?? '$mod+KeyO',
       run: ({ openFileDialog }) => openFileDialog(),
       whileEditingText: true
@@ -386,6 +432,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     ),
     {
       id: 'collapse-layers',
+      viewing: true,
       // Option+L, by key position: Option turns the letter into another character on macOS.
       keys: 'Alt+KeyL',
       run: ({ store }) => store.collapseLayers()
@@ -402,6 +449,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     { id: 'enter', keys: 'Enter', run: ({ actions }) => actions.confirmOrEditSelection() },
     {
       id: 'select-parent',
+      viewing: true,
       keys: ['Shift+Enter', 'Backslash'],
       run: ({ actions }) => actions.selectParent()
     },
@@ -412,6 +460,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
       ] as const
     ).map(([keys, step]): ShortcutDefinition => ({
       id: `select-sibling-${step}`,
+      viewing: true,
       keys,
       run: ({ actions, keyEvent }) => {
         if (isCanvasKey(keyEvent) && actions.selectSibling(step)) keyEvent.preventDefault()
@@ -420,6 +469,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     })),
     {
       id: 'escape',
+      viewing: true,
       keys: 'Escape',
       // Comment mode and an open thread close before the selection does.
       run: ({ actions, store }) => {
@@ -452,6 +502,13 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
   const previewKeys = new Set(
     shortcuts.filter((shortcut) => shortcut.preview).flatMap((shortcut) => [shortcut.keys].flat())
   )
+  /** Keys a document open to view only keeps, with the tools' keys, which only select or pan. */
+  const viewingKeys = new Set([
+    ...Object.keys(TOOL_SHORTCUTS),
+    ...shortcuts
+      .filter((shortcut) => shortcut.viewing)
+      .flatMap((shortcut) => [shortcut.keys].flat())
+  ])
   bindToolShortcuts(bindings, runOptions(new KeyboardEvent('keydown')))
 
   for (const shortcut of shortcuts) {
@@ -470,6 +527,7 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
         (event: KeyboardEvent) => {
           if (shouldIgnoreShortcut(event, options, textEditingKeys.has(keys))) return
           if (options.store.state.play && !previewKeys.has(keys)) return
+          if (options.store.state.viewOnly && !viewingKeys.has(keys)) return
           handler(event)
         }
       ])

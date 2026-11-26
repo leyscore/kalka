@@ -166,6 +166,7 @@
   "serverEmptyDescription": "Sie öffnet sich hier, sobald eine Person mit Bearbeitungsrechten sie in Kalka öffnet.",
   "serverCloseFile": "Schließen",
   "serverViewOnlyEdit": "Sie können diese Datei nur ansehen, daher wurde Ihre Änderung rückgängig gemacht. Bitten Sie eine Administratorin oder einen Administrator um die Rolle Bearbeiter.",
+  "serverViewOnlyLinkEdit": "Diese Datei ist nur zum Ansehen freigegeben, daher wurde Ihre Änderung rückgängig gemacht. Bitten Sie die Person, die sie erstellt hat, oder eine Administratorin bzw. einen Administrator, sie zum Bearbeiten freizugeben.",
   "serverViewOnlyBadge": "Nur ansehen",
   "shareThisFileDescription": "Ein Live-Link, der funktioniert, solange Sie diese Datei geöffnet lassen.",
   "sharePermissionRoom": "Alle mit dem Link können bearbeiten.",

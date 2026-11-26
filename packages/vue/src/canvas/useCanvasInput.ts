@@ -190,7 +190,8 @@ export function useCanvasInput(
   } = createCanvasTransformInput(editor, setDrag)
 
   function onDblClick(e: MouseEvent) {
-    if (editor.state.play) return
+    // Double-clicks edit text, values and vectors, which neither a preview nor a viewer does.
+    if (editor.state.play || editor.state.viewOnly) return
     const { cx, cy } = getCoords(e)
     if (valueEdit.start(cx, cy)) {
       e.preventDefault()

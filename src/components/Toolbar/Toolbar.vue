@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import type { EditorToolDef } from '@kalka/core/editor'
 import {
   formatShortcut,
   ToolbarRoot,
@@ -72,6 +73,20 @@ const { editActions, arrangeActions } = useToolbarActions({ store, getCommand, m
 
 const { mobileCategory, slideDirection, hasPrev, hasNext, goPrev, goNext } = useToolbarState()
 
+/**
+ * A document open to view only keeps the tools that look: the move and hand tools, alone or in
+ * their group. Inserting and commenting go with the drawing tools.
+ */
+const viewOnly = computed(() => store.state.viewOnly === true)
+const VIEWING_TOOLS: ReadonlySet<Tool> = new Set(['SELECT', 'HAND'])
+function shownTools(tools: EditorToolDef[]): EditorToolDef[] {
+  if (!viewOnly.value) return tools
+  return tools.filter(
+    (tool) =>
+      VIEWING_TOOLS.has(tool.key) || tool.flyout?.some((key) => VIEWING_TOOLS.has(key)) === true
+  )
+}
+
 /** Picking a tool leaves comment mode, even the tool already picked under it. */
 function pickTool(setTool: (tool: Tool) => void, tool: Tool) {
   stopCommentPlacing(store)
@@ -88,7 +103,7 @@ function onActionTap(item: ToolbarActionItem) {
   <ToolbarRoot v-slot="{ tools, activeTool, flyoutSelections, actions }">
     <DesktopToolbar
       v-if="!isMobile"
-      :tools="tools"
+      :tools="shownTools(tools)"
       :active-tool="activeTool"
       :flyout-selections="flyoutSelections"
       :tool-icons="toolIcons"
@@ -98,7 +113,7 @@ function onActionTap(item: ToolbarActionItem) {
       :tools-idle="commentsPlacing"
       @set-tool="pickTool(actions.setTool, $event)"
     >
-      <template #end>
+      <template v-if="!viewOnly" #end>
         <InsertIconButton :ui="toolbarUI" />
         <CommentToolButton :ui="toolbarUI" />
       </template>
@@ -106,7 +121,7 @@ function onActionTap(item: ToolbarActionItem) {
 
     <MobileToolbar
       v-else
-      :tools="tools"
+      :tools="shownTools(tools)"
       :active-tool="activeTool"
       :flyout-selections="flyoutSelections"
       :tool-icons="toolIcons"
@@ -117,14 +132,14 @@ function onActionTap(item: ToolbarActionItem) {
       :slide-direction="slideDirection"
       :has-prev="hasPrev"
       :has-next="hasNext"
-      :edit-actions="editActions"
-      :arrange-actions="arrangeActions"
+      :edit-actions="viewOnly ? [] : editActions"
+      :arrange-actions="viewOnly ? [] : arrangeActions"
       @set-tool="pickTool(actions.setTool, $event)"
       @prev="goPrev"
       @next="goNext"
       @action="onActionTap"
     >
-      <template #end>
+      <template v-if="!viewOnly" #end>
         <InsertIconButton mobile :ui="toolbarUI" />
       </template>
     </MobileToolbar>

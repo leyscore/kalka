@@ -166,6 +166,7 @@
   "serverEmptyDescription": "編集者が Kalka で開くと、ここに表示されます。",
   "serverCloseFile": "閉じる",
   "serverViewOnlyEdit": "このファイルは閲覧のみのため、変更は取り消されました。管理者に編集者の役割を依頼してください。",
+  "serverViewOnlyLinkEdit": "このファイルは閲覧のみで共有されているため、変更は取り消されました。作成者または管理者に、編集可能で共有するよう依頼してください。",
   "serverViewOnlyBadge": "閲覧のみ",
   "shareThisFileDescription": "このファイルを開いている間だけ使えるライブリンクです。",
   "sharePermissionRoom": "リンクを知っている全員が編集できます。",

@@ -166,6 +166,7 @@
   "serverEmptyDescription": "Se abrirá aquí en cuanto un editor lo abra en Kalka.",
   "serverCloseFile": "Cerrar",
   "serverViewOnlyEdit": "Solo puedes ver este archivo, así que tu cambio se ha deshecho. Pide a un administrador el rol de editor.",
+  "serverViewOnlyLinkEdit": "Este archivo está compartido solo para ver, así que tu cambio se ha deshecho. Pide a quien lo creó, o a un administrador, que lo comparta para editar.",
   "serverViewOnlyBadge": "Solo lectura",
   "shareThisFileDescription": "Un enlace en vivo que funciona mientras mantengas este archivo abierto.",
   "sharePermissionRoom": "Cualquiera con el enlace puede editar.",

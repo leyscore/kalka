@@ -9,10 +9,13 @@ import { createFramePresetActions } from './shapes/frame-presets'
 import { createPenActions } from './shapes/pen'
 import { createPencilActions } from './shapes/pencil'
 import { defaultNodeName, nextNumberedName } from './structure/rename'
-import type { EditorContext } from './types'
+import type { EditorContext, Tool } from './types'
 export type { PenDragOptions } from './shapes/pen'
 
 /** Layers Figma numbers when drawn, as "Rectangle 1"; others keep their type's name. */
+/** The tools a document open to view only keeps: they look and select, and draw nothing. */
+const VIEW_ONLY_TOOLS: ReadonlySet<Tool> = new Set(['SELECT', 'HAND'])
+
 const NUMBERED_WHEN_DRAWN: ReadonlySet<NodeType> = new Set([
   'FRAME',
   'SECTION',
@@ -104,7 +107,15 @@ export function createShapeActions(ctx: EditorContext) {
   const framePresetActions = createFramePresetActions(ctx, createShape)
 
   function setTool(tool: typeof ctx.state.activeTool) {
+    if (ctx.state.viewOnly && !VIEW_ONLY_TOOLS.has(tool)) return
     ctx.setActiveTool(tool)
+  }
+
+  /** Opens the document to view only, or to edit again; viewing keeps the select or hand tool. */
+  function setViewOnly(viewOnly: boolean) {
+    if (Boolean(ctx.state.viewOnly) === viewOnly) return
+    ctx.state.viewOnly = viewOnly
+    if (viewOnly && !VIEW_ONLY_TOOLS.has(ctx.state.activeTool)) ctx.setActiveTool('SELECT')
   }
 
   return {
@@ -115,6 +126,7 @@ export function createShapeActions(ctx: EditorContext) {
     ...createPencilActions(ctx, createShape),
     ...framePresetActions,
     adoptCoveredLayers: (containerId: string) => adoptCoveredLayers(ctx, containerId),
-    setTool
+    setTool,
+    setViewOnly
   }
 }

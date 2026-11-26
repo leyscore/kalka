@@ -92,15 +92,20 @@ export function useCanvasDrop(
     )
   }
 
+  /** Layers and files drop here, except into a document open to view only. */
+  function accepts(e: DragEvent): boolean {
+    return !editor.state.viewOnly && (hasComponentData(e) || hasFileData(e))
+  }
+
   useEventListener(canvasRef, 'dragover', (e: DragEvent) => {
-    if (!hasComponentData(e) && !hasFileData(e)) return
+    if (!accepts(e)) return
     e.preventDefault()
     if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'
     isDraggingOver.value = true
   })
 
   useEventListener(canvasRef, 'dragenter', (e: DragEvent) => {
-    if (!hasComponentData(e) && !hasFileData(e)) return
+    if (!accepts(e)) return
     onActivate?.()
     e.preventDefault()
     isDraggingOver.value = true
@@ -116,7 +121,7 @@ export function useCanvasDrop(
     isDraggingOver.value = false
 
     const canvas = canvasRef.value
-    if (!canvas) return
+    if (!canvas || editor.state.viewOnly) return
     const point = dropPoint(e, canvas, editor)
 
     const componentId = e.dataTransfer?.getData(COMPONENT_MIME)

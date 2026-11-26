@@ -2,6 +2,7 @@
 import { tryOnScopeDispose, useObjectUrl } from '@vueuse/core'
 import { computed, onActivated, onDeactivated, ref, shallowRef, useId, watch } from 'vue'
 
+import type { ExportFormatId, ExportSetting } from '@kalka/scene-graph'
 import { useExport, useI18n, useRetainedActivity } from '@kalka/vue'
 
 import type { ExportOptions } from '@/app/document/export/types'
@@ -16,23 +17,71 @@ import AppSelect from '@/components/ui/select/AppSelect.vue'
 import AppCheckbox from '@/components/ui/toggle/AppCheckbox.vue'
 import { CHECKERBOARD_BACKGROUND } from '@/theme/paint/checkerboard'
 
+/**
+ * `viewOnly`: the document is open to view only. Export works as for anyone, from formats picked
+ * here and kept by this panel alone: the layers' own export settings stay as they are.
+ */
+const { viewOnly = false } = defineProps<{ viewOnly?: boolean }>()
+
 const editorStore = useEditorStore()
 const { panels } = useI18n()
+const exporter = useExport()
 const {
   activeTarget,
   activeName,
-  activeSettings,
   targetIds,
-  mixed,
-  addSetting,
-  removeSetting,
-  updateScale,
-  updateFormat,
   formatSupportsScale,
   formatOptions,
   scales,
   clampExportScale
-} = useExport()
+} = exporter
+
+/** A viewer's formats: the selection's own to start with, else PNG at 1x. */
+const viewerSettings = ref<ExportSetting[]>([])
+watch(
+  () => [viewOnly, targetIds.value.join(',')] as const,
+  () => {
+    if (!viewOnly) return
+    const own = exporter.activeSettings.value
+    viewerSettings.value = own.length > 0 ? structuredClone(own) : [{ scale: 1, format: 'png' }]
+  },
+  { immediate: true }
+)
+
+const activeSettings = computed(() =>
+  viewOnly ? viewerSettings.value : exporter.activeSettings.value
+)
+const mixed = computed(() => !viewOnly && exporter.mixed.value)
+
+function addSetting() {
+  if (!viewOnly) return exporter.addSetting()
+  const last = viewerSettings.value.at(-1)
+  viewerSettings.value = [
+    ...viewerSettings.value,
+    last
+      ? { scale: clampExportScale(last.scale * 2), format: last.format }
+      : { scale: 1, format: 'png' }
+  ]
+}
+
+function removeSetting(index: number) {
+  if (!viewOnly) return exporter.removeSetting(index)
+  viewerSettings.value = viewerSettings.value.filter((_, at) => at !== index)
+}
+
+function updateScale(index: number, scale: number) {
+  if (!viewOnly) return exporter.updateScale(index, scale)
+  viewerSettings.value = viewerSettings.value.map((setting, at) =>
+    at === index ? { ...setting, scale: clampExportScale(scale) } : setting
+  )
+}
+
+function updateFormat(index: number, format: ExportFormatId) {
+  if (!viewOnly) return exporter.updateFormat(index, format)
+  viewerSettings.value = viewerSettings.value.map((setting, at) =>
+    at === index ? { ...setting, format } : setting
+  )
+}
 
 const previewBlob = shallowRef<Blob | null>(null)
 const previewURL = useObjectUrl(previewBlob)

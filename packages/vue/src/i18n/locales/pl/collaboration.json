@@ -166,6 +166,7 @@
   "serverEmptyDescription": "Otworzy się tutaj, gdy tylko edytor otworzy go w Kalce.",
   "serverCloseFile": "Zamknij",
   "serverViewOnlyEdit": "Możesz tylko oglądać ten plik, więc zmiana została cofnięta. Poproś administratora o rolę edytora.",
+  "serverViewOnlyLinkEdit": "Ten plik jest udostępniony tylko do wyświetlania, więc zmiana została cofnięta. Poproś jego twórcę lub administratora, aby udostępnił go do edycji.",
   "serverViewOnlyBadge": "Tylko do odczytu",
   "shareThisFileDescription": "Link na żywo, który działa, dopóki ten plik jest otwarty.",
   "sharePermissionRoom": "Każdy, kto ma link, może edytować.",

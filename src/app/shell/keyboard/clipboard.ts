@@ -74,8 +74,9 @@ export function bindEditorClipboard(store: EditorStore) {
     void browserSystemClipboard.copy(store)
   })
 
+  // A document open to view only copies, as Figma's viewers do, but neither cuts nor pastes.
   useEventListener(window, 'cut', (e: ClipboardEvent) => {
-    if (isEditing(e)) return
+    if (isEditing(e) || store.state.viewOnly) return
     e.preventDefault()
     if (isTauri()) {
       const selectedIds = new Set(store.state.selectedIds)
@@ -100,7 +101,7 @@ export function bindEditorClipboard(store: EditorStore) {
   )
 
   useEventListener(window, 'paste', (e: ClipboardEvent) => {
-    if (isEditing(e)) return
+    if (isEditing(e) || store.state.viewOnly) return
     e.preventDefault()
 
     const over = overSelection ? selectionCenter(store) : undefined

@@ -65,6 +65,24 @@ function startHandleDrag(
   return valueDrag !== null
 }
 
+/** A press in a document open to view only: selects what is under it, or starts a marquee. */
+function selectToView(
+  e: MouseEvent,
+  cx: number,
+  cy: number,
+  editor: Editor,
+  fns: HitTestFns,
+  setDrag: (d: DragState) => void
+) {
+  const hit = resolveHit(cx, cy, editor, fns, e.metaKey || e.ctrlKey)
+  if (!hit) {
+    startMarquee(cx, cy, editor, setDrag)
+    return
+  }
+  if (e.shiftKey) editor.select([hit.id], true)
+  else if (!editor.state.selectedIds.has(hit.id)) editor.select([hit.id])
+}
+
 export function handleSelectDown(
   e: MouseEvent,
   cx: number,
@@ -77,6 +95,12 @@ export function handleSelectDown(
   handleTextEditClick: (cx: number, cy: number, shiftKey: boolean) => boolean,
   setDrag: (d: DragState) => void
 ) {
+  // A document open to view only selects and draws a marquee: nothing it starts moves a layer.
+  if (editor.state.viewOnly) {
+    selectToView(e, cx, cy, editor, fns, setDrag)
+    return
+  }
+
   // Node edit mode intercept
   if (getNodeEditState(editor)) {
     handleNodeEditDown(e, cx, cy, editor, setDrag)

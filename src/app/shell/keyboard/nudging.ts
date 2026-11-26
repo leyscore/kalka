@@ -19,7 +19,7 @@ export function bindNudgeKeys(store: EditorStore) {
     if (e.metaKey || e.ctrlKey || e.altKey) return
 
     const delta = NUDGE_DELTAS[e.code]
-    if (!delta || store.state.selectedIds.size === 0) return
+    if (!delta || store.state.selectedIds.size === 0 || store.state.viewOnly) return
 
     const { small, large } = appPreferences.value.editing.nudge
     const step = e.shiftKey ? large : small

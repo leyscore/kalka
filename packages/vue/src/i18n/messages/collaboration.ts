@@ -181,6 +181,8 @@ export const collaborationMessageDefaults = {
   serverCloseFile: 'Close',
   serverViewOnlyEdit:
     'You can view this file but not change it, so your change was undone. Ask an administrator for the Editor role.',
+  serverViewOnlyLinkEdit:
+    'This file is shared to view only, so your change was undone. Ask whoever made it, or an administrator, to share it to edit.',
   serverViewOnlyBadge: 'View only',
   shareThisFileDescription: 'A live link that works while you keep this file open.',
   sharePermissionRoom: 'Anyone with the link can edit.',

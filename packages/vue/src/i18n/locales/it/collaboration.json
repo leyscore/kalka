@@ -166,6 +166,7 @@
   "serverEmptyDescription": "Si aprirà qui non appena un editor lo apre in Kalka.",
   "serverCloseFile": "Chiudi",
   "serverViewOnlyEdit": "Puoi vedere questo file ma non modificarlo, quindi la modifica è stata annullata. Chiedi a un amministratore il ruolo di editor.",
+  "serverViewOnlyLinkEdit": "Questo file è condiviso in sola visualizzazione, quindi la modifica è stata annullata. Chiedi a chi l’ha creato, o a un amministratore, di condividerlo in modifica.",
   "serverViewOnlyBadge": "Sola lettura",
   "shareThisFileDescription": "Un link dal vivo che funziona finché tieni aperto questo file.",
   "sharePermissionRoom": "Chiunque abbia il link può modificare.",

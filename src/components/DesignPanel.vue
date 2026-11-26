@@ -127,7 +127,7 @@ const viewOnly = useDocumentViewOnly()
       <StrokeSection />
       <EffectsSection />
       <LayoutGridSection v-if="supportsLayoutGuides" />
-      <ExportSection />
+      <ExportSection v-if="!viewOnly" />
     </div>
 
     <!-- Single selection: retain one paused subtree while frame presets are shown. -->
@@ -218,7 +218,7 @@ const viewOnly = useDocumentViewOnly()
         <HTMLSection />
         <LayoutGridSection v-if="supportsLayoutGuides" />
 
-        <ExportSection />
+        <ExportSection v-if="!viewOnly" />
       </div>
     </RetainedPanel>
 
@@ -230,7 +230,15 @@ const viewOnly = useDocumentViewOnly()
       <PageSection />
       <VariablesSection @open-dialog="openVariablesDialog(store)" />
       <LocalStylesSection />
-      <ExportSection />
+      <ExportSection v-if="!viewOnly" />
     </div>
   </fieldset>
+  <!-- Viewers export too, as in Figma: with formats of their own, which the file never keeps. -->
+  <div
+    v-if="viewOnly"
+    class="scrollbar-thin max-h-1/2 shrink-0 overflow-y-auto border-t border-border pb-2"
+    data-test-id="design-panel-viewer-export"
+  >
+    <ExportSection view-only />
+  </div>
 </template>

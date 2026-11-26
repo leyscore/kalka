@@ -72,6 +72,11 @@ export interface EditorSharedState {
   showFrameOutlines?: boolean
   /** Figma's View › Pixel preview, off unless set. */
   pixelPreview?: PixelPreview | null
+  /**
+   * The document is open to view only, such as a server file shared to view: people look, select,
+   * inspect and export, and nothing they do edits it. Only the select and hand tools are offered.
+   */
+  viewOnly?: boolean
   presenceCursors: PresenceCursor[]
   documentName: string
   /** Design check markers and highlight, shared by every canvas pane. */

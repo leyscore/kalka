@@ -112,7 +112,14 @@ function noticeViewOnlyEdit() {
   const now = Date.now()
   if (now - lastViewOnlyNotice < VIEW_ONLY_NOTICE_MS) return
   lastViewOnlyNotice = now
-  toast.warning(collaborationMessages.get().serverViewOnlyEdit)
+  // A viewer by their account asks an administrator for the Editor role; anyone else opened a
+  // file shared to view, which only whoever made it or an administrator can share to edit.
+  const messages = collaborationMessages.get()
+  toast.warning(
+    serverAccount.value?.user.role === 'viewer'
+      ? messages.serverViewOnlyEdit
+      : messages.serverViewOnlyLinkEdit
+  )
 }
 
 type CursorState = { x: number; y: number; pageId: string; zoom: number }
@@ -311,6 +318,8 @@ export function openRoomSession({
     })
     serverRoom.onRole((role) => {
       serverRole.value = role
+      // A viewer's tools, gestures and keys stop before they edit, rather than being put back.
+      store.setViewOnly(role === 'viewer')
     })
   }
   const stopServerPeer = serverRoom
@@ -438,7 +447,10 @@ export function openRoomSession({
       stopAgentSync()
       stopAgentPreviews()
       stopServerPeer?.()
-      if (serverRoom) keepRecoveryElsewhere(store.state, false)
+      if (serverRoom) {
+        keepRecoveryElsewhere(store.state, false)
+        store.setViewOnly(false)
+      }
       meta.unobserve(refreshDocument)
       unregisterYjsObservers()
       // Destroying the awareness can emit a last change; nothing here should react to it.
