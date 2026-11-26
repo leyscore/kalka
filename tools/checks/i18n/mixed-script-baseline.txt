@@ -245,6 +245,8 @@ ja:panels.versionsRemoteHint
 ja:panels.versionsUntracked
 ja:panels.xAxis
 ja:panels.yAxis
+ja:prototype.conditionPlaceholder
+ja:prototype.valuePlaceholder
 ja:recovery.dialogDescription
 ja:rendering.documentPageColorDescription
 ja:rendering.reloadRequired
@@ -573,6 +575,8 @@ zh-cn:panels.versionsRemoteHint
 zh-cn:panels.versionsUntracked
 zh-cn:panels.xAxis
 zh-cn:panels.yAxis
+zh-cn:prototype.conditionPlaceholder
+zh-cn:prototype.valuePlaceholder
 zh-cn:recovery.dialogDescription
 zh-cn:rendering.documentPageColorDescription
 zh-cn:rendering.reloadRequired

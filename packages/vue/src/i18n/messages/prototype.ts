@@ -107,6 +107,25 @@ export const prototypeMessageDefaults = {
   restart: 'Restart',
   noInteractions:
     'Click + to make the selection do something in the prototype, or drag the handle on the canvas to a frame.',
+  setVariable: 'Set variable',
+  setVariableMode: 'Set variable mode',
+  conditional: 'Conditional',
+  variable: 'Variable',
+  collection: 'Collection',
+  mode: 'Mode',
+  value: 'Value',
+  valuePlaceholder: 'Value or expression, e.g. count + 1',
+  ifLabel: 'If',
+  elseIf: 'Else if',
+  elseLabel: 'Else',
+  addElseIf: 'Add else if',
+  addElse: 'Add else',
+  conditionPlaceholder: 'Condition, e.g. count >= 3',
+  addAction: 'Add action',
+  removeAction: 'Remove action',
+  removeBlock: 'Remove condition',
+  expressionSyntax: 'This expression is incomplete or not valid.',
+  expressionUnknown: params('No variable named {name}.'),
   flowName: params('Flow {count}')
 } as const
 

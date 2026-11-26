@@ -23,10 +23,13 @@ import {
   type ProxyThis
 } from '#core/figma-api/accessor-utils'
 
+import { variableActionFromFigma, variableActionToFigma } from './prototype-variables'
+
 /**
  * Prototyping through the Plugin API: a layer's `reactions` (read, set, and `setReactionsAsync`),
  * and a page's `flowStartingPoints`, in Figma's shapes. Kalka plays navigation, overlays, scroll
- * to, change to, back, close and links; a reaction with another action is refused with why.
+ * to, change to, back, close, links and variable actions; a reaction with another action (media)
+ * is refused with why.
  */
 
 const vector = v.object({ x: v.number(), y: v.number() })
@@ -116,8 +119,12 @@ function transitionToFigma(transition: PrototypeTransition) {
   return { ...common, direction: transition.direction, matchLayers: transition.matchLayers }
 }
 
-function actionToFigma(action: PrototypeAction) {
+function actionToFigma(action: PrototypeAction): unknown {
   switch (action.type) {
+    case 'SET_VARIABLE':
+    case 'SET_VARIABLE_MODE':
+    case 'CONDITIONAL':
+      return variableActionToFigma(action, actionToFigma)
     case 'BACK':
     case 'CLOSE':
       return { type: action.type }
@@ -165,12 +172,14 @@ export function reactionsToFigma(reactions: readonly PrototypeReaction[]) {
 }
 
 function actionFromFigma(value: unknown): PrototypeAction {
+  const variableAction = variableActionFromFigma(value, actionFromFigma)
+  if (variableAction) return variableAction
   const parsed = v.safeParse(actionSchema, value)
   if (!parsed.success) {
     const type = v.safeParse(v.object({ type: v.string() }), value)
     throw new Error(
       type.success
-        ? `Kalka does not play ${type.output.type} actions yet; it plays NODE, BACK, CLOSE and URL`
+        ? `Kalka does not play ${type.output.type} actions yet; it plays NODE, BACK, CLOSE, URL, SET_VARIABLE, SET_VARIABLE_MODE and CONDITIONAL`
         : 'An action needs a type'
     )
   }

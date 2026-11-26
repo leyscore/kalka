@@ -1,4 +1,5 @@
 import { symbolOverridesOf, type SymbolOverride } from '#fig/instance-overrides/types'
+import { prototypeVariableReferences } from '#fig/node-change/prototype-variables'
 import { variableConsumptionEntries } from '#fig/node-change/variable/bindings'
 import { visitVariableReferences } from '#fig/node-change/variable/expression'
 
@@ -67,6 +68,9 @@ function createRecordNormalizer(resolve: ReturnType<typeof createResourceResolve
         | undefined
       for (const entry of modeMap?.entries ?? []) {
         normalize(entry.variableSetID, 'variableModeBySetMap', path)
+      }
+      for (const reference of prototypeVariableReferences(node.prototypeInteractions)) {
+        normalize(reference, 'prototypeInteractions', path)
       }
       for (const field of STYLE_REFERENCE_FIELDS) {
         normalize(node[field] as NodeChange['variableSetID'], field, path)

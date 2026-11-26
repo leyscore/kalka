@@ -95,6 +95,7 @@ de:prototype.overlay
 de:prototype.position
 de:prototype.sticky
 de:prototype.url
+de:prototype.variable
 de:settings.mcp
 de:shortcuts.categoryText
 de:shortcuts.categoryZoom
@@ -168,6 +169,7 @@ es:prototype.horizontal
 es:prototype.manual
 es:prototype.smartAnimate
 es:prototype.url
+es:prototype.variable
 es:prototype.vertical
 es:rendering.experimental
 es:settings.general
@@ -289,16 +291,19 @@ fr:panels.versionsBranches
 fr:panels.versionsBurst
 fr:prototype.action
 fr:prototype.animation
+fr:prototype.collection
 fr:prototype.description
 fr:prototype.design
 fr:prototype.destination
 fr:prototype.direction
 fr:prototype.horizontal
 fr:prototype.interactions
+fr:prototype.mode
 fr:prototype.position
 fr:prototype.prototypeTab
 fr:prototype.smartAnimate
 fr:prototype.url
+fr:prototype.variable
 fr:prototype.vertical
 fr:settings.animations
 fr:settings.diagnostics

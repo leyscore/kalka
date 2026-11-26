@@ -9,6 +9,8 @@ import {
 import { extractPageContext, findPageId } from '#core/io/subgraph'
 import { computeAllLayouts } from '#core/layout'
 
+import { applyPresentVariables, type PresentVariables } from './variables'
+
 /** How one instance of an island is shown: the variant, properties, and layers it displays. */
 export interface InstanceState {
   /** Variant values by property name the instance must show. */
@@ -100,12 +102,14 @@ function applyState(
 /**
  * A private graph of the layer `rootId` with its instances shown in the given states, by layer
  * path below the root, and laid out again. Outer instances are applied before the layers inside
- * them, since a variant switch rebuilds what an instance contains. The document is untouched.
+ * them, since a variant switch rebuilds what an instance contains. A prototype's `variables`
+ * then give bound layers the values and modes it set. The document is untouched.
  */
 export function resolvePlayState(
   source: SceneGraph,
   rootId: string,
-  states: ReadonlyMap<string, InstanceState>
+  states: ReadonlyMap<string, InstanceState>,
+  variables?: PresentVariables
 ): SceneGraph {
   // The root's page context with every variant its instances can switch to, reading the
   // document's own variables and images, since a state never changes them.
@@ -119,6 +123,7 @@ export function resolvePlayState(
     const instance = findLayerByPath(graph, rootId, path)
     if (instance?.type === 'INSTANCE') applyState(graph, rootId, instance, state)
   }
+  if (variables) for (const id of applyPresentVariables(graph, rootId, variables)) reflow(graph, id)
   computeAllLayouts(graph, rootId)
   return graph
 }

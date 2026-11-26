@@ -2,7 +2,12 @@ import { beforeAll, describe, expect, test } from 'bun:test'
 
 import { exportFigFile, initCodec, parseFigFile, SceneGraph, type NodeChange } from '@kalka/core'
 import { materializeDocument, parseFigBuffer } from '@kalka/fig'
-import { createNodeAction, createPrototypeTransition, type SceneNode } from '@kalka/scene-graph'
+import {
+  createNodeAction,
+  createPrototypeTransition,
+  type GUID,
+  type SceneNode
+} from '@kalka/scene-graph'
 
 const IDENTITY = { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0 }
 
@@ -65,7 +70,7 @@ describe('.fig prototype round trip', () => {
           },
           {
             event: { interactionType: 'ON_CLICK' },
-            actions: [{ connectionType: 'SET_VARIABLE' }]
+            actions: [{ connectionType: 'UPDATE_MEDIA_RUNTIME', mediaAction: 'PLAY' }]
           }
         ]
       }),
@@ -182,7 +187,10 @@ describe('.fig prototype round trip', () => {
         name: 'Counter',
         size: { x: 100, y: 100 },
         prototypeInteractions: [
-          { event: { interactionType: 'ON_CLICK' }, actions: [{ connectionType: 'SET_VARIABLE' }] }
+          {
+            event: { interactionType: 'ON_CLICK' },
+            actions: [{ connectionType: 'UPDATE_MEDIA_RUNTIME', mediaAction: 'PLAY' }]
+          }
         ]
       })
     ]
@@ -234,5 +242,159 @@ describe('.fig prototype round trip', () => {
     const flows = materializeDocument(page(2, true)).graph
     expect(byName(flows, 'Home').prototypeStartingPoint).toBeNull()
     expect(byName(flows, 'Menu').prototypeStartingPoint?.name).toBe('Main')
+  })
+
+  test('reads and writes set variable, set variable mode and conditional actions', async () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const collection = graph.createCollection('Theme')
+    const dark = graph.createMode(collection.id, 'Dark')
+    const count = graph.createVariable('count', 'FLOAT', collection.id, 0)
+    const done = graph.createVariable('done', 'BOOLEAN', collection.id, false)
+    const next = graph.createNode('FRAME', page.id, { name: 'Next', x: 500 })
+    const reactions: SceneNode['reactions'] = [
+      {
+        trigger: { type: 'ON_CLICK', delay: 0, keyCodes: [] },
+        actions: [
+          {
+            type: 'SET_VARIABLE',
+            variableId: count.id,
+            value: {
+              type: 'EXPRESSION',
+              operator: 'ADDITION',
+              operands: [
+                { type: 'VARIABLE', variableId: count.id },
+                { type: 'VALUE', value: 1 }
+              ]
+            }
+          },
+          { type: 'SET_VARIABLE_MODE', collectionId: collection.id, modeId: dark ?? null },
+          {
+            type: 'CONDITIONAL',
+            blocks: [
+              {
+                condition: {
+                  type: 'EXPRESSION',
+                  operator: 'GREATER_THAN_OR_EQUAL',
+                  operands: [
+                    { type: 'VARIABLE', variableId: count.id },
+                    { type: 'VALUE', value: 3 }
+                  ]
+                },
+                actions: [createNodeAction(next.id)]
+              },
+              {
+                condition: null,
+                actions: [
+                  {
+                    type: 'SET_VARIABLE',
+                    variableId: done.id,
+                    value: { type: 'VALUE', value: true }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+    graph.createNode('FRAME', page.id, { name: 'Counter', reactions })
+
+    const written = parseFigBuffer((await exportFigFile(graph)).buffer as ArrayBuffer)
+    const interactions = written.nodeChanges.find((nc) => nc.name === 'Counter')
+      ?.prototypeInteractions as { id?: unknown; actions: { connectionType: string }[] }[]
+    expect(interactions[0].actions.map((action) => action.connectionType)).toEqual([
+      'SET_VARIABLE',
+      'SET_VARIABLE_MODE',
+      'CONDITIONAL'
+    ])
+    expect(interactions[0].id).toBeDefined()
+
+    const reimported = await parseFigFile((await exportFigFile(graph)).buffer as ArrayBuffer)
+    const back = byName(reimported, 'Counter').reactions[0].actions
+    const countBack = [...reimported.variables.values()].find((v) => v.name === 'count')
+    const doneBack = [...reimported.variables.values()].find((v) => v.name === 'done')
+    const nextBack = byName(reimported, 'Next')
+    const collectionBack = [...reimported.variableCollections.values()].find(
+      (c) => c.name === 'Theme'
+    )
+    expect(back[0]).toEqual({
+      type: 'SET_VARIABLE',
+      variableId: countBack?.id ?? '',
+      value: {
+        type: 'EXPRESSION',
+        operator: 'ADDITION',
+        operands: [
+          { type: 'VARIABLE', variableId: countBack?.id ?? '' },
+          { type: 'VALUE', value: 1 }
+        ]
+      }
+    })
+    expect(back[1]).toEqual({
+      type: 'SET_VARIABLE_MODE',
+      collectionId: collectionBack?.id ?? '',
+      modeId: collectionBack?.modes.find((mode) => mode.name === 'Dark')?.modeId ?? ''
+    })
+    expect(back[2]).toEqual({
+      type: 'CONDITIONAL',
+      blocks: [
+        {
+          condition: {
+            type: 'EXPRESSION',
+            operator: 'GREATER_THAN_OR_EQUAL',
+            operands: [
+              { type: 'VARIABLE', variableId: countBack?.id ?? '' },
+              { type: 'VALUE', value: 3 }
+            ]
+          },
+          actions: [createNodeAction(nextBack.id)]
+        },
+        {
+          condition: null,
+          actions: [
+            {
+              type: 'SET_VARIABLE',
+              variableId: doneBack?.id ?? '',
+              value: { type: 'VALUE', value: true }
+            }
+          ]
+        }
+      ]
+    })
+  })
+
+  test("gives a copied layer's interactions GUIDs of their own", async () => {
+    const interaction = {
+      id: { sessionID: 1, localID: 90 },
+      event: { interactionType: 'ON_CLICK' },
+      actions: [{ connectionType: 'UPDATE_MEDIA_RUNTIME', mediaAction: 'PLAY' }]
+    }
+    const { graph } = materializeDocument([
+      record({ guid: { sessionID: 0, localID: 0 }, type: 'DOCUMENT', name: 'Document' }),
+      record({
+        guid: { sessionID: 0, localID: 1 },
+        parentIndex: { guid: { sessionID: 0, localID: 0 }, position: '!' },
+        type: 'CANVAS',
+        name: 'Page 1'
+      }),
+      ...['A', 'B'].map((name, index) =>
+        record({
+          guid: { sessionID: 1, localID: 2 + index },
+          parentIndex: { guid: { sessionID: 0, localID: 1 }, position: index ? '"' : '!' },
+          type: 'FRAME',
+          name,
+          size: { x: 100, y: 100 },
+          prototypeInteractions: [structuredClone(interaction)]
+        })
+      )
+    ])
+    const written = parseFigBuffer((await exportFigFile(graph)).buffer as ArrayBuffer)
+    const ids = ['A', 'B'].map((name) => {
+      const interactions = written.nodeChanges.find((nc) => nc.name === name)
+        ?.prototypeInteractions as { id: GUID }[]
+      return `${interactions[0].id.sessionID}:${interactions[0].id.localID}`
+    })
+    expect(ids[0]).toBe('1:90')
+    expect(ids[1]).not.toBe('1:90')
   })
 })

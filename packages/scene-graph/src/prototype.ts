@@ -1,5 +1,6 @@
 import type { SceneGraph, SceneNode } from './index'
 import type { Vector } from './primitives'
+import type { PrototypeConditionalBlock, PrototypeExpression } from './prototype-variables'
 
 /**
  * Prototyping, as Figma models it: a layer's interactions (`reactions`, a trigger and the
@@ -120,11 +121,34 @@ export interface PrototypeNodeAction {
   overlayRelativePosition: Vector | null
 }
 
+/** Set variable: the variable takes the expression's value while the prototype plays. */
+export interface PrototypeSetVariableAction {
+  type: 'SET_VARIABLE'
+  variableId: string | null
+  value: PrototypeExpression | null
+}
+
+/** Set variable mode: the collection shows that mode while the prototype plays. */
+export interface PrototypeSetVariableModeAction {
+  type: 'SET_VARIABLE_MODE'
+  collectionId: string | null
+  modeId: string | null
+}
+
+/** Conditional: the first block whose condition holds runs its actions. */
+export interface PrototypeConditionalAction {
+  type: 'CONDITIONAL'
+  blocks: PrototypeConditionalBlock<PrototypeAction>[]
+}
+
 export type PrototypeAction =
   | { type: 'BACK' }
   | { type: 'CLOSE' }
   | { type: 'URL'; url: string; openInNewTab: boolean }
   | PrototypeNodeAction
+  | PrototypeSetVariableAction
+  | PrototypeSetVariableModeAction
+  | PrototypeConditionalAction
 
 export interface PrototypeReaction {
   trigger: PrototypeTrigger
@@ -296,6 +320,15 @@ export function isNodeAction(action: PrototypeAction): action is PrototypeNodeAc
   return action.type === 'NODE'
 }
 
+/** The actions an action runs: itself, and for a conditional every action of its blocks. */
+export function flattenPrototypeActions(actions: readonly PrototypeAction[]): PrototypeAction[] {
+  return actions.flatMap((action) =>
+    action.type === 'CONDITIONAL'
+      ? [action, ...flattenPrototypeActions(action.blocks.flatMap((block) => block.actions))]
+      : [action]
+  )
+}
+
 /** Every layer that names `nodeId` as a destination, with the reaction that does. */
 export function prototypeConnections(
   graph: SceneGraph,
@@ -309,7 +342,8 @@ export function prototypeConnections(
   }[] = []
   const visit = (node: SceneNode): void => {
     node.reactions.forEach((reaction, reactionIndex) =>
-      reaction.actions.forEach((action, actionIndex) => {
+      // A conditional's branches connect too; their index counts through the flattened actions.
+      flattenPrototypeActions(reaction.actions).forEach((action, actionIndex) => {
         if (action.type === 'NODE' && action.destinationId && graph.getNode(action.destinationId))
           connections.push({
             sourceId: node.id,

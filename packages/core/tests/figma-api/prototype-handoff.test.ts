@@ -62,9 +62,79 @@ describe('prototype through the Plugin API', () => {
     const { button } = setup()
     expect(
       button.setReactionsAsync([
-        { trigger: { type: 'ON_CLICK' }, actions: [{ type: 'SET_VARIABLE', variableId: null }] }
+        {
+          trigger: { type: 'ON_CLICK' },
+          actions: [{ type: 'UPDATE_MEDIA_RUNTIME', destinationId: null, mediaAction: 'PLAY' }]
+        }
       ])
-    ).rejects.toThrow('SET_VARIABLE')
+    ).rejects.toThrow('UPDATE_MEDIA_RUNTIME')
+  })
+
+  test("variable actions take and give Figma's VariableData", async () => {
+    const { graph, button } = setup()
+    const collection = graph.createCollection('State')
+    const show = graph.createVariable('show', 'BOOLEAN', collection.id, false)
+    const conditional = {
+      type: 'CONDITIONAL',
+      conditionalBlocks: [
+        {
+          condition: {
+            type: 'EXPRESSION',
+            resolvedType: 'BOOLEAN',
+            value: {
+              expressionFunction: 'EQUALS',
+              expressionArguments: [
+                { type: 'VARIABLE_ALIAS', value: { type: 'VARIABLE_ALIAS', id: show.id } },
+                { type: 'BOOLEAN', resolvedType: 'BOOLEAN', value: true }
+              ]
+            }
+          },
+          actions: [
+            {
+              type: 'SET_VARIABLE',
+              variableId: show.id,
+              variableValue: { type: 'BOOLEAN', resolvedType: 'BOOLEAN', value: false }
+            }
+          ]
+        },
+        {
+          actions: [
+            {
+              type: 'SET_VARIABLE',
+              variableId: show.id,
+              variableValue: { type: 'BOOLEAN', resolvedType: 'BOOLEAN', value: true }
+            }
+          ]
+        }
+      ]
+    }
+    await button.setReactionsAsync([{ trigger: { type: 'ON_CLICK' }, actions: [conditional] }])
+    expect(graph.getNode(button.id)?.reactions[0].actions[0]).toEqual({
+      type: 'CONDITIONAL',
+      blocks: [
+        {
+          condition: {
+            type: 'EXPRESSION',
+            operator: 'EQUALS',
+            operands: [
+              { type: 'VARIABLE', variableId: show.id },
+              { type: 'VALUE', value: true }
+            ]
+          },
+          actions: [
+            { type: 'SET_VARIABLE', variableId: show.id, value: { type: 'VALUE', value: false } }
+          ]
+        },
+        {
+          condition: null,
+          actions: [
+            { type: 'SET_VARIABLE', variableId: show.id, value: { type: 'VALUE', value: true } }
+          ]
+        }
+      ]
+    })
+    const [given] = button.reactions
+    expect(given?.actions?.[0] as unknown).toEqual(conditional)
   })
 
   test("a page's flows are read and set by the frames they start at", () => {

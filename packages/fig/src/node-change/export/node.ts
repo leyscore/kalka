@@ -37,9 +37,9 @@ import {
   mergePluginData,
   serializePluginRelaunchData
 } from '../plugin-data'
-import { exportPrototypeFields } from '../prototype'
+import { exportPrototypeFields, uniqueInteractionIds } from '../prototype'
 import { exportStrokeWidthProfile } from '../stroke-width'
-import { effectWithVariableBindings } from '../variable/bindings'
+import { effectWithVariableBindings, variableAlias } from '../variable/bindings'
 import {
   applyColorVariableBinding,
   createFillPaints,
@@ -1071,9 +1071,30 @@ function applyPrototypeFields(
     inherited ? { ...node, reactions: [] } : node,
     nc,
     effectiveFigmaRawNodeFields(node),
-    (id) => getOrCreateNodeGuid(context, id, localIdCounter)
+    {
+      node: (id) => getOrCreateNodeGuid(context, id, localIdCounter),
+      variable: (id) => variableAlias(context.graph, id, context.varIdToGuid),
+      variableType: (id) => context.graph.variables.get(id)?.type,
+      collection: (id) => context.varIdToGuid?.get(id) ?? parseGuidOrNull(id) ?? undefined,
+      mode: (id) => context.modeIdToGuid?.get(id) ?? parseGuidOrNull(id) ?? undefined
+    }
   )
+  const seen = interactionIds.get(context.propertyIdToGuid) ?? new Set<string>()
+  interactionIds.set(context.propertyIdToGuid, seen)
+  uniqueInteractionIds(nc, seen, () => {
+    let guid: GUID
+    do guid = { sessionID: 1, localID: localIdCounter.value++ }
+    while (context.assignedGuidValues?.has(`${guid.sessionID}:${guid.localID}`))
+    context.assignedGuidValues?.add(`${guid.sessionID}:${guid.localID}`)
+    return guid
+  })
 }
+
+/**
+ * The interaction GUIDs each export has written, so a copied layer's interactions get new ones;
+ * keyed by the export's property GUID table, which every record of one export shares.
+ */
+const interactionIds = new WeakMap<Map<string, GUID>, Set<string>>()
 
 export function sceneNodeToKiwiWithContext(
   source: SceneNode,

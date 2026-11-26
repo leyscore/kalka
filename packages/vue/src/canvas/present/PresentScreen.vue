@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, shallowRef, useTemplateRef, watch } from 'vue'
 
-import { resolvePlayState, type InstanceState } from '@kalka/core/editor'
+import { resolvePlayState, type InstanceState, type PresentVariables } from '@kalka/core/editor'
 import { behaviourControls, controlRoles, sceneNodeToDesignDocument } from '@kalka/dom-css/export'
 import { findLayerByPath, layerPath, type SceneGraph } from '@kalka/scene-graph'
 
@@ -16,12 +16,14 @@ import { useEditor } from '#vue/editor/context'
  * the prototype changed them to. Layers carry their layer path, which the presenter's triggers
  * and smart animate read.
  */
-const { rootId, revision, variants } = defineProps<{
+const { rootId, revision, variants, variables } = defineProps<{
   rootId: string
   /** Changing it starts every control again as designed. */
   revision: number
   /** Change to: variant values by the layer path of each changed instance. */
   variants?: Readonly<Record<string, Record<string, string>>>
+  /** Variables and modes the prototype set, which bound layers show. */
+  variables?: PresentVariables
 }>()
 const editor = useEditor()
 
@@ -47,7 +49,7 @@ const projection = computed(() => {
       ...states.get(path),
       variants: { ...states.get(path)?.variants, ...values }
     })
-  const graph = resolvePlayState(editor.graph, rootId, states)
+  const graph = resolvePlayState(editor.graph, rootId, states, variables)
   const [root] = sceneNodeToDesignDocument(graph, rootId).children
   return { graph, root }
 })

@@ -260,22 +260,33 @@ let busy: Promise<void> = Promise.resolve()
 
 /** Runs an action of an interaction; steps play one after another. */
 function apply(action: PrototypeAction, context: ActionContext) {
-  busy = busy.then(async () => {
-    const result = runAction(editor.graph, present.value, action, context)
-    if (!result) return
-    const { step, state } = result
-    if (step.kind === 'url') {
-      window.open(step.url, '_blank', 'noopener,noreferrer')
-      return
-    }
-    if (step.kind === 'scroll') return playScroll(step)
-    if (step.kind === 'screen') {
-      const keep = action.type === 'NODE' && action.preserveScrollPosition
-      return playScreen(step, state, keep)
-    }
-    if (step.kind === 'overlay') return playOverlay(step, state)
-    return playVariant(step, state)
-  })
+  busy = busy.then(() => play(action, context))
+}
+
+/** Plays one action, and a conditional's chosen actions in order before the next one. */
+async function play(action: PrototypeAction, context: ActionContext): Promise<void> {
+  const result = runAction(editor.graph, present.value, action, context)
+  if (!result) return
+  const { step, state } = result
+  if (step.kind === 'variables') {
+    present.value = state
+    return
+  }
+  if (step.kind === 'actions') {
+    for (const next of step.actions) await play(next, context)
+    return
+  }
+  if (step.kind === 'url') {
+    window.open(step.url, '_blank', 'noopener,noreferrer')
+    return
+  }
+  if (step.kind === 'scroll') return playScroll(step)
+  if (step.kind === 'screen') {
+    const keep = action.type === 'NODE' && action.preserveScrollPosition
+    return playScreen(step, state, keep)
+  }
+  if (step.kind === 'overlay') return playOverlay(step, state)
+  return playVariant(step, state)
 }
 
 // --- Triggers -------------------------------------------------------------------------------
@@ -601,6 +612,7 @@ function overlayBackground(frameId: string): string {
               :root-id="leaving.shown.rootId"
               :revision="revision"
               :variants="present.variants[leaving.shown.rootId]"
+              :variables="present.variables"
               class="absolute top-0 left-0"
               :style="{ zIndex: leaving.onTop ? 2 : 0 }"
             />
@@ -610,6 +622,7 @@ function overlayBackground(frameId: string): string {
               :root-id="screen.rootId"
               :revision="revision"
               :variants="present.variants[screen.rootId]"
+              :variables="present.variables"
               class="absolute top-0 left-0"
               :style="{ zIndex: 1 }"
             />
@@ -627,6 +640,7 @@ function overlayBackground(frameId: string): string {
               :root-id="overlay.frameId"
               :revision="revision"
               :variants="present.variants[overlay.frameId]"
+              :variables="present.variables"
               class="absolute"
               :style="overlayStyle(overlay)"
             />

@@ -4,6 +4,7 @@ import {
   createEditor,
   presentationStart,
   reactionFor,
+  resolvePlayState,
   runAction,
   startPresentation,
   type ActionContext
@@ -138,5 +139,87 @@ describe('presenting a prototype', () => {
     )
     expect(result?.step).toMatchObject({ kind: 'variant', rootId: home.id, path: 'State=Off' })
     expect(result?.state.variants[home.id]).toEqual({ 'State=Off': { State: 'On' } })
+  })
+
+  test('variable actions set values and modes that bound layers show, and conditionals branch', () => {
+    const { graph, pageId, home, details, button } = screens()
+    const collection = graph.createCollection('Theme')
+    const light = collection.defaultModeId
+    const dark = graph.createMode(collection.id, 'Dark') ?? ''
+    const count = graph.createVariable('count', 'FLOAT', collection.id, 0)
+    const label = graph.createVariable('label', 'STRING', collection.id, 'Light')
+    label.valuesByMode[dark] = 'Dark'
+    const text = graph.createNode('TEXT', home.id, { name: 'Label', text: 'Light' })
+    graph.bindVariable(text.id, 'text', label.id)
+
+    const increment: PrototypeAction = {
+      type: 'SET_VARIABLE',
+      variableId: count.id,
+      value: {
+        type: 'EXPRESSION',
+        operator: 'ADDITION',
+        operands: [
+          { type: 'VARIABLE', variableId: count.id },
+          { type: 'VALUE', value: 1 }
+        ]
+      }
+    }
+    const ctx = context(graph, home.id, button.id)
+    let state = startPresentation(pageId, home.id)
+    for (let i = 0; i < 3; i++) {
+      const result = runAction(graph, state, increment, ctx)
+      expect(result?.step).toEqual({ kind: 'variables' })
+      if (result) state = result.state
+    }
+    expect(state.variables.values[count.id]).toBe(3)
+
+    const branch: PrototypeAction = {
+      type: 'CONDITIONAL',
+      blocks: [
+        {
+          condition: {
+            type: 'EXPRESSION',
+            operator: 'GREATER_THAN_OR_EQUAL',
+            operands: [
+              { type: 'VARIABLE', variableId: count.id },
+              { type: 'VALUE', value: 3 }
+            ]
+          },
+          actions: [createNodeAction(details.id)]
+        },
+        { condition: null, actions: [{ type: 'BACK' }] }
+      ]
+    }
+    expect(runAction(graph, state, branch, ctx)?.step).toEqual({
+      kind: 'actions',
+      actions: [createNodeAction(details.id)]
+    })
+    expect(runAction(graph, startPresentation(pageId, home.id), branch, ctx)?.step).toEqual({
+      kind: 'actions',
+      actions: [{ type: 'BACK' }]
+    })
+
+    const mode = runAction(
+      graph,
+      state,
+      { type: 'SET_VARIABLE_MODE', collectionId: collection.id, modeId: dark },
+      ctx
+    )
+    expect(mode?.state.variables.modes).toEqual({ [collection.id]: dark })
+    const drawn = resolvePlayState(graph, home.id, new Map(), mode?.state.variables)
+    expect(drawn.getNode(text.id)?.text).toBe('Dark')
+    // The document keeps its own values and modes.
+    expect(graph.getNode(text.id)?.text).toBe('Light')
+    expect(graph.variables.get(count.id)?.valuesByMode[light]).toBe(0)
+
+    // A value the variable cannot hold changes nothing.
+    expect(
+      runAction(
+        graph,
+        state,
+        { type: 'SET_VARIABLE', variableId: count.id, value: { type: 'VALUE', value: 'many' } },
+        ctx
+      )
+    ).toBeNull()
   })
 })

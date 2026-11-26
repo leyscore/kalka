@@ -9,6 +9,15 @@ import {
 } from '@kalka/scene-graph'
 import type { Vector } from '@kalka/scene-graph/primitives'
 
+import {
+  conditionalActions,
+  NO_PRESENT_VARIABLES,
+  runVariableAction,
+  type PresentVariables
+} from './variables'
+
+export * from './variables'
+
 /**
  * Presenting a prototype, as Figma plays one: a screen (a top-level frame) with overlays over
  * it, a history to go back through, and instances changed to other variants. Interactions run
@@ -43,6 +52,8 @@ export interface PresentState {
    * and its layer path below it.
    */
   variants: Record<string, Record<string, Record<string, string>>>
+  /** Variables and modes set by the prototype's variable actions. */
+  variables: PresentVariables
 }
 
 /** What a step changed, for the presenter to animate. */
@@ -59,6 +70,10 @@ export type PresentStep =
   | { kind: 'variant'; rootId: string; path: string; transition: PrototypeTransition | null }
   | { kind: 'scroll'; nodeId: string; transition: PrototypeTransition | null }
   | { kind: 'url'; url: string; newTab: boolean }
+  /** Variables or modes changed: every shown frame draws them. */
+  | { kind: 'variables' }
+  /** A conditional's chosen actions, to run next in order. */
+  | { kind: 'actions'; actions: PrototypeAction[] }
 
 /** The top-level frame of the page that holds a layer. */
 export function screenOf(graph: SceneGraph, nodeId: string): SceneNode | undefined {
@@ -96,7 +111,15 @@ export function presentationStart(
 }
 
 export function startPresentation(pageId: string, startId: string): PresentState {
-  return { pageId, startId, screenId: startId, history: [], overlays: [], variants: {} }
+  return {
+    pageId,
+    startId,
+    screenId: startId,
+    history: [],
+    overlays: [],
+    variants: {},
+    variables: NO_PRESENT_VARIABLES
+  }
 }
 
 /** The frames shown, bottom to top: the screen, then its overlays. */
@@ -221,6 +244,20 @@ export function runAction(
     }
     case 'NODE':
       return runNodeAction(graph, state, action, context)
+    case 'SET_VARIABLE':
+    case 'SET_VARIABLE_MODE': {
+      const variables = runVariableAction(
+        context.graph,
+        state.variables,
+        action,
+        context.nodeIds[0]
+      )
+      return variables ? { state: { ...state, variables }, step: { kind: 'variables' } } : null
+    }
+    case 'CONDITIONAL': {
+      const actions = conditionalActions(context.graph, state.variables, action, context.nodeIds[0])
+      return actions.length > 0 ? { state, step: { kind: 'actions', actions } } : null
+    }
     default:
       return null
   }
@@ -313,7 +350,7 @@ function changeTo(
   return null
 }
 
-/** Restart: back to where the presentation started, as it was designed. */
+/** Restart: back to where the presentation started, as it was designed, variables included. */
 export function restartPresentation(state: PresentState): PresentState {
   return startPresentation(state.pageId, state.startId)
 }

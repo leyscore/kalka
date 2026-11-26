@@ -20,6 +20,12 @@ import type {
 import { orderKeyBetween } from '@kalka/scene-graph/order-keys'
 import type { Color, GUID, Vector } from '@kalka/scene-graph/primitives'
 
+import {
+  exportVariableAction,
+  importVariableAction,
+  type VariableRefs
+} from './prototype-variables'
+
 /**
  * Figma's prototype records (`prototypeInteractions`, scrolling, overlay and flow fields, and a
  * page's device) as the scene graph's prototype fields, both ways. Figma stores times in seconds
@@ -271,7 +277,7 @@ function importAction(action: unknown): PrototypeAction | null {
       }
     }
     default:
-      return null
+      return importVariableAction(action, importAction)
   }
 }
 
@@ -388,10 +394,12 @@ function exportTransition(transition: PrototypeTransition | null): Obj {
   return fields
 }
 
-function exportAction(
-  action: PrototypeAction,
-  guidFor: (id: string) => GUID | undefined
-): Obj | null {
+/** How exported interactions name layers (`node`), variables, collections and modes. */
+export interface PrototypeRefs extends VariableRefs {
+  node: (id: string) => GUID | undefined
+}
+
+function exportAction(action: PrototypeAction, refs: PrototypeRefs): Obj | null {
   switch (action.type) {
     case 'BACK':
     case 'CLOSE':
@@ -401,8 +409,12 @@ function exportAction(
       if (!action.openInNewTab) fields.openUrlInNewTab = false
       return fields
     }
+    case 'SET_VARIABLE':
+    case 'SET_VARIABLE_MODE':
+    case 'CONDITIONAL':
+      return exportVariableAction(action, refs, (nested) => exportAction(nested, refs))
     case 'NODE': {
-      const guid = action.destinationId ? guidFor(action.destinationId) : undefined
+      const guid = action.destinationId ? refs.node(action.destinationId) : undefined
       if (!guid) return null
       const fields: Obj = {
         connectionType: 'INTERNAL_NODE',
@@ -419,15 +431,15 @@ function exportAction(
   }
 }
 
-/** `prototypeInteractions` for a layer's reactions; GUIDs for their destinations come from `guidFor`. */
+/** `prototypeInteractions` for a layer's reactions, naming what they reach through `refs`. */
 export function exportReactions(
   reactions: readonly PrototypeReaction[],
-  guidFor: (id: string) => GUID | undefined
+  refs: PrototypeRefs
 ): Obj[] {
   const interactions: Obj[] = []
   for (const reaction of reactions) {
     const actions = reaction.actions
-      .map((action) => exportAction(action, guidFor))
+      .map((action) => exportAction(action, refs))
       .filter((action): action is Obj => action !== null)
     if (actions.length === 0) continue
     const event: Obj = { interactionType: TRIGGER_EXPORT[reaction.trigger.type] }
@@ -446,13 +458,13 @@ function exportColor(value: Color): Obj {
 /**
  * Writes a layer's prototype fields onto its record. A file's own interactions, until the layer's
  * are edited (`rawNodeFields` leaves them out then), are written as the file held them, which keeps
- * what Kalka does not play (variables, conditions, media) and the interactions' GUIDs.
+ * what Kalka does not play (media, variable mode lookups) and the interactions' GUIDs.
  */
 export function exportPrototypeFields(
   node: SceneNode,
   nc: Obj,
   rawNodeFields: Readonly<Obj>,
-  guidFor: (id: string) => GUID | undefined
+  refs: PrototypeRefs
 ): void {
   const raw = rawNodeFields.prototypeInteractions
   if (
@@ -461,7 +473,7 @@ export function exportPrototypeFields(
   ) {
     nc.prototypeInteractions = structuredClone(raw)
   } else if (node.reactions.length > 0) {
-    nc.prototypeInteractions = exportReactions(node.reactions, guidFor)
+    nc.prototypeInteractions = exportReactions(node.reactions, refs)
   }
   if (node.overflowDirection !== 'NONE') nc.scrollDirection = node.overflowDirection
   if (node.scrollBehavior !== 'SCROLLS')
@@ -477,6 +489,26 @@ export function exportPrototypeFields(
     }
   if (node.prototypeStartingPoint) nc.prototypeStartingPoint = { ...node.prototypeStartingPoint }
   exportPageSettings(node, nc)
+}
+
+/**
+ * Gives each written interaction an `id` of its own, as Figma names every interaction: a copied
+ * layer carries its original's interactions with their GUIDs, so a repeated or missing one gets
+ * a new GUID from `mint`. `seen` holds the interaction GUIDs written so far in the file.
+ */
+export function uniqueInteractionIds(nc: Obj, seen: Set<string>, mint: () => GUID): void {
+  if (!Array.isArray(nc.prototypeInteractions)) return
+  for (const interaction of nc.prototypeInteractions) {
+    if (!isRecord(interaction)) continue
+    const id = guidOf(interaction.id)
+    if (id && !seen.has(id)) {
+      seen.add(id)
+      continue
+    }
+    const guid = mint()
+    seen.add(guidToString(guid))
+    interaction.id = guid
+  }
 }
 
 /** A page's device and background, onto its canvas record. */

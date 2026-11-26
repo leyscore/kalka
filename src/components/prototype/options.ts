@@ -13,7 +13,14 @@ import type { usePrototypeMessages } from '@kalka/vue'
 type Messages = ReturnType<typeof usePrototypeMessages>['value']
 
 /** What an action does, as Figma's action menu lists it. */
-export type ActionKind = PrototypeNavigation | 'BACK' | 'CLOSE' | 'URL'
+export type ActionKind =
+  | PrototypeNavigation
+  | 'BACK'
+  | 'CLOSE'
+  | 'URL'
+  | 'SET_VARIABLE'
+  | 'SET_VARIABLE_MODE'
+  | 'CONDITIONAL'
 
 export function triggerOptions(m: Messages): { value: PrototypeTriggerType; label: string }[] {
   return [
@@ -39,7 +46,10 @@ export function actionOptions(m: Messages): { value: ActionKind; label: string }
     { value: 'URL', label: m.openLink },
     { value: 'OVERLAY', label: m.openOverlay },
     { value: 'SWAP', label: m.swapOverlay },
-    { value: 'CLOSE', label: m.closeOverlay }
+    { value: 'CLOSE', label: m.closeOverlay },
+    { value: 'SET_VARIABLE', label: m.setVariable },
+    { value: 'SET_VARIABLE_MODE', label: m.setVariableMode },
+    { value: 'CONDITIONAL', label: m.conditional }
   ]
 }
 
