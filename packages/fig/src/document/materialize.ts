@@ -26,6 +26,7 @@ import {
   type MaterializedComponentOccurrence
 } from '../instance-overrides/source-children'
 import { nodeChangeToProps } from '../node-change'
+import { applyGridAnchors } from '../node-change/grid'
 import { embeddedImages } from '../node-change/images'
 import { readNodeChangePluginData } from '../node-change/plugin-data'
 import { figArchiveRecordInfo, type FigArchiveRecordInfo } from '../record-patch'
@@ -574,6 +575,7 @@ function materializeReaderInto(
     applyDocumentLayoutBindings(graph, savedSizeNodes, materialized, layoutScales)
     applyDocumentPaintBindings(graph, materialized)
     applyDocumentValueBindings(graph, materialized)
+    applyGridAnchors(graph, materialized)
   })
   return state
 }

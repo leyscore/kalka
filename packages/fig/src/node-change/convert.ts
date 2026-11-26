@@ -17,6 +17,7 @@ import { savedTextLayout } from './derived-text/data'
 import { convertFigmaDerivedTextGlyphs } from './derived-text/glyphs'
 import { convertFontFeatures } from './font/features'
 import { convertFontVariations } from './font/variations'
+import { convertGridContainer, mapGridChildAlign } from './grid'
 import { convertEffects, convertFills, convertStrokeAlign, convertStrokes } from './paint'
 import { expandPathTextLayoutBox } from './path/text-layout'
 import {
@@ -152,6 +153,8 @@ function mapStackMode(mode?: string): LayoutMode {
       return 'HORIZONTAL'
     case 'VERTICAL':
       return 'VERTICAL'
+    case 'GRID':
+      return 'GRID'
     default:
       return 'NONE'
   }
@@ -517,7 +520,11 @@ function convertLayoutProps(
   | 'itemReverseZIndex'
   | 'strokesIncludedInLayout'
   | 'layoutDirection'
+  | 'gridChildHorizontalAlign'
 > &
+  Partial<
+    Pick<SceneNode, 'gridTemplateColumns' | 'gridTemplateRows' | 'gridColumnGap' | 'gridRowGap'>
+  > &
   Partial<Pick<SceneNode, 'derivedLayout'>> {
   const layoutMode = mapStackMode(nc.stackMode)
   const primaryAxisSizing =
@@ -548,7 +555,13 @@ function convertLayoutProps(
       : (nc.stackCounterSpacing ?? 0),
     layoutPositioning: nc.stackPositioning === 'ABSOLUTE' ? 'ABSOLUTE' : 'AUTO',
     layoutGrow: nc.stackChildPrimaryGrow ?? 0,
-    layoutAlignSelf: mapAlignSelf(nc.stackChildAlignSelf),
+    // A grid child's place down its cell is its `align-self`.
+    layoutAlignSelf:
+      mapGridChildAlign(nc.gridChildVerticalAlign) === 'AUTO'
+        ? mapAlignSelf(nc.stackChildAlignSelf)
+        : mapGridChildAlign(nc.gridChildVerticalAlign),
+    gridChildHorizontalAlign: mapGridChildAlign(nc.gridChildHorizontalAlign),
+    ...convertGridContainer(nc, layoutMode),
     counterAxisAlignContent:
       (nc.stackCounterAlignContent as string) === 'SPACE_BETWEEN' ? 'SPACE_BETWEEN' : 'AUTO',
     itemReverseZIndex: (nc.stackReverseZIndex ?? false) as boolean,
@@ -1201,6 +1214,8 @@ export const FIGMA_RAW_NODE_FIELD_KEYS = [
   'gridColumns',
   'gridRowAnchor',
   'gridColumnAnchor',
+  'gridRowSpan',
+  'gridColumnSpan',
   'gridColumnsSizing',
   'gridRowsSizing',
   'gridChildVerticalAlign',
