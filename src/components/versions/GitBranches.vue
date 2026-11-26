@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
@@ -36,8 +36,20 @@ function merge(branch: string) {
 const store = useEditorStore()
 const comparing = ref(false)
 
-/** Reviews the branch layer by layer, then merges it keeping only the ticked changes. */
-async function compare(branch: string) {
+/**
+ * The branch the others start from, which Update from main brings into the one open: `main`, or
+ * `master` in an older repository.
+ */
+const mainBranch = computed(() => {
+  const names = branches.value?.branches ?? []
+  return names.find((branch) => branch === 'main') ?? names.find((branch) => branch === 'master')
+})
+
+/**
+ * Reviews the branch change by change, then merges it keeping only the ticked changes; an update
+ * from main does the same with the main branch.
+ */
+async function compare(branch: string, kind: 'merge' | 'update' = 'merge') {
   const documentPath = versions.path.value
   if (!documentPath || comparing.value) return
   comparing.value = true
@@ -48,6 +60,7 @@ async function compare(branch: string) {
       branch,
       current: store.graph,
       labels: { branch, current: branches.value?.current ?? '' },
+      kind,
       merge: async () => {
         await versions.mergeBranch(branch, panels.value.versionsBeforeMerge({ branch }))
         if (versions.error.value) throw new Error(versions.error.value)
@@ -77,9 +90,20 @@ async function compare(branch: string) {
       >
         <icon-hugeicons-git-branch class="size-3.5 shrink-0 text-muted" aria-hidden="true" />
         <span class="min-w-0 flex-1 truncate text-surface">{{ branch }}</span>
-        <span v-if="branch === branches.current" class="text-[11px] text-muted">
-          {{ panels.versionsBranchCurrent }}
-        </span>
+        <template v-if="branch === branches.current">
+          <AppButton
+            v-if="mainBranch && branch !== mainBranch"
+            size="xs"
+            variant="ghost"
+            :disabled="running !== null"
+            :loading="comparing"
+            data-test-id="git-branch-update"
+            @click="compare(mainBranch, 'update')"
+          >
+            {{ panels.versionsServerBranchUpdate }}
+          </AppButton>
+          <span class="text-[11px] text-muted">{{ panels.versionsBranchCurrent }}</span>
+        </template>
         <template v-else>
           <AppButton size="xs" variant="ghost" :disabled="running !== null" @click="open(branch)">
             {{ panels.versionsBranchSwitch }}

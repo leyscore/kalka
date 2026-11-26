@@ -57,6 +57,8 @@ interface GitBranchReview {
   branch: string
   current: SceneGraph
   labels: { branch: string; current: string }
+  /** `update` brings the main branch into the one open, which the dialog names as such. */
+  kind?: 'merge' | 'update'
   /** Merges the branch as Git does, then opens the folder as it is after. */
   merge: () => Promise<void>
   /** The document on screen after the merge. */
@@ -86,7 +88,7 @@ export async function reviewGitBranch(review: GitBranchReview): Promise<void> {
     incomingLabel: review.labels.branch,
     afterIsOpen: false,
     merge: {
-      kind: 'merge',
+      kind: review.kind ?? 'merge',
       otherSide: review.labels.current,
       apply: async (changes) => {
         const taken = new Set([...changes.layers, ...changes.variables].map((change) => change.id))
