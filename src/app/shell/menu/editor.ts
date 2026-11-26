@@ -4,8 +4,10 @@ import { useEditorCommands } from '@kalka/vue'
 import type { EditorCommandId } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
+import { openFind } from '@/app/editor/find/state'
 import { clearRecentFiles, forgetRecentFile, recentLocalFileAt } from '@/app/recent-files'
 import { appPreferences } from '@/app/settings/preferences/store'
+import { openShortcutsHelp } from '@/app/shell/keyboard/help'
 import { changedChecks, menuChecks } from '@/app/shell/menu/checked'
 import { createSharedEditorMenuActions } from '@/app/shell/menu/editor-actions'
 import {
@@ -103,6 +105,8 @@ export function useEditorMenu() {
     autosave: () => {
       store.state.autosaveEnabled = !store.state.autosaveEnabled
     },
+    find: openFind,
+    'keyboard-shortcuts': openShortcutsHelp,
     ...createSelectionMenuActions(store),
     ...createSharedEditorMenuActions(setTheme)
   }
