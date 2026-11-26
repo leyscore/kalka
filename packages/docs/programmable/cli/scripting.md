@@ -206,6 +206,8 @@ Common node properties are readable/writable through the proxy, including:
 - Text: `characters`, `fontSize`, `fontName`, `fontWeight`, alignment, line height, letter spacing, style-run helpers. `lineHeight` and `letterSpacing` take Figma's `{ unit, value }` as well as pixels (a percentage is of the current font size) and read back in pixels; `getStyledTextSegments(fields)` splits the text by `fontName`, `fontSize`, `fontWeight`, `fills`, `letterSpacing`, `lineHeight`, `textDecoration`, or `textCase`
 - Auto-layout: `layoutMode`, `primaryAxisAlignItems`, `counterAxisAlignItems`, `itemSpacing`, padding, sizing, and layout positioning fields
 - Stroke helpers: `strokeWeight`, `strokeAlign`, `dashPattern`
+- Prototype: `reactions` and `setReactionsAsync(reactions)` in Figma's shapes (navigate, change to, scroll to, overlays, back, close and links; other actions are refused with why), and a page's `flowStartingPoints`
+- Handoff: `annotations` (`categoryId` names one of Kalka's categories, such as `accessibility`), `devStatus` on top-level frames and sections, and `getDevResourcesAsync`, `addDevResourceAsync`, `editDevResourceAsync` and `deleteDevResourceAsync`
 
 ### Utilities
 

@@ -36,10 +36,12 @@ import {
 import { installVisualNodeProxyAccessors } from './accessors/visual'
 import { installComponentPropertyAccessors } from './components'
 import type { FigmaFontName } from './fonts'
+import { installHandoffAccessors } from './handoff'
 import type { FigmaFrameNode, FigmaInstanceNode } from './node-types'
 import { installInstanceOverrideAccessors, type FigmaInstanceOverride } from './overrides'
 import { getPageBackgrounds, setPageBackgrounds } from './page-backgrounds'
 import * as PluginData from './plugin-data'
+import { installPrototypeAccessors } from './prototype'
 import { nodeProxyToJSON } from './serialization'
 import { installSlotAccessors, prepareSlotMove, prepareSlotRemoval } from './slots'
 import * as TextProxy from './text'
@@ -162,6 +164,21 @@ export class FigmaNodeProxy {
   ) => void
   declare readonly overrides: FigmaInstanceOverride[] | undefined
   declare resetOverrides: () => void
+
+  declare reactions: readonly unknown[]
+  declare setReactionsAsync: (reactions: readonly unknown[]) => Promise<void>
+  declare flowStartingPoints: readonly { nodeId: string; name: string }[] | undefined
+  declare annotations: readonly unknown[]
+  declare devStatus: { type: 'READY_FOR_DEV' | 'COMPLETED'; description?: string } | null
+  declare getDevResourcesAsync: (options?: {
+    includeChildren?: boolean
+  }) => Promise<{ name: string; url: string; nodeId: string; inheritedNodeId?: string }[]>
+  declare addDevResourceAsync: (url: string, name?: string) => Promise<void>
+  declare editDevResourceAsync: (
+    currentURL: string,
+    next: { name?: string; url?: string }
+  ) => Promise<void>
+  declare deleteDevResourceAsync: (url: string) => Promise<void>
 
   declare strokeWeight: number
   declare strokeAlign: string
@@ -540,3 +557,5 @@ installVariableModeNodeProxyAccessors(FigmaNodeProxy.prototype, proxyInternals)
 installComponentPropertyAccessors(FigmaNodeProxy.prototype, proxyInternals)
 installInstanceOverrideAccessors(FigmaNodeProxy.prototype, proxyInternals)
 installSlotAccessors(FigmaNodeProxy.prototype, proxyInternals)
+installPrototypeAccessors(FigmaNodeProxy.prototype, proxyInternals)
+installHandoffAccessors(FigmaNodeProxy.prototype, proxyInternals)
