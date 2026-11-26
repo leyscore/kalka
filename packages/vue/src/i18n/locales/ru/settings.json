@@ -76,5 +76,13 @@
   "workflowFocusDesignDescription": "Простой редактор дизайна. Агент, его чат и все функции ИИ скрыты.",
   "workflowFocusBalanced": "Сбалансированный",
   "workflowFocusBalancedDescription": "Вы работаете вручную и зовёте агента, когда нужно. Документ открывается на слоях.",
-  "workflowFocusAIDescription": "Агент на первом месте. Документ открывается на чате, готовом к запросу."
+  "workflowFocusAIDescription": "Агент на первом месте. Документ открывается на чате, готовом к запросу.",
+  "keepToolSelected": "Не сбрасывать инструмент после использования",
+  "keepToolSelectedDescription": "Рисуйте несколько фигур подряд, не выбирая инструмент заново.",
+  "renameDuplicatedLayers": "Переименовывать дубликаты слоёв",
+  "renameDuplicatedLayersDescription": "Дубликат получает следующий номер: за «Прямоугольник 1» идёт «Прямоугольник 2».",
+  "nudgeAmount": "Шаг сдвига",
+  "nudgeAmountDescription": "На сколько стрелки сдвигают слои, и с зажатым Shift.",
+  "smallNudge": "Малый сдвиг",
+  "bigNudge": "Большой сдвиг"
 }

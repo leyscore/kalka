@@ -76,5 +76,13 @@
   "workflowFocusDesignDescription": "シンプルなデザインエディターです。エージェント、チャット、すべての AI 機能を隠します。",
   "workflowFocusBalanced": "バランス",
   "workflowFocusBalancedDescription": "手で作業し、必要なときにエージェントを呼び出します。ドキュメントはレイヤーで開きます。",
-  "workflowFocusAIDescription": "エージェントが主役です。ドキュメントはチャットで開き、すぐに依頼できます。"
+  "workflowFocusAIDescription": "エージェントが主役です。ドキュメントはチャットで開き、すぐに依頼できます。",
+  "keepToolSelected": "使用後もツールを選択したままにする",
+  "keepToolSelectedDescription": "ツールを選び直さずに図形を続けて描けます。",
+  "renameDuplicatedLayers": "複製したレイヤーの名前を変更",
+  "renameDuplicatedLayersDescription": "複製には次の番号が付きます（Rectangle 1 の次は Rectangle 2）。",
+  "nudgeAmount": "微調整量",
+  "nudgeAmountDescription": "矢印キーでレイヤーを動かす距離と、Shift を押したときの距離。",
+  "smallNudge": "小さい微調整",
+  "bigNudge": "大きい微調整"
 }

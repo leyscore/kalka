@@ -116,5 +116,8 @@
   "setDefaultProperties": "设为默认属性",
   "placeImage": "置入图片…",
   "copyAsCSS": "复制为 CSS",
-  "pickColor": "吸取颜色"
+  "pickColor": "吸取颜色",
+  "keepToolSelected": "使用后保持工具选中",
+  "renameDuplicatedLayers": "重命名复制的图层",
+  "nudgeAmount": "微移量…"
 }

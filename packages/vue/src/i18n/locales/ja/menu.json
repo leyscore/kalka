@@ -116,5 +116,8 @@
   "setDefaultProperties": "デフォルトのプロパティに設定",
   "placeImage": "画像を配置…",
   "copyAsCSS": "CSSとしてコピー",
-  "pickColor": "色を抽出"
+  "pickColor": "色を抽出",
+  "keepToolSelected": "使用後もツールを選択したままにする",
+  "renameDuplicatedLayers": "複製したレイヤーの名前を変更",
+  "nudgeAmount": "微調整量…"
 }

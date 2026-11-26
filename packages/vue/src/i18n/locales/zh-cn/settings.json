@@ -76,5 +76,13 @@
   "workflowFocusDesignDescription": "一个简洁的设计编辑器。智能体、对话和所有 AI 功能都会隐藏。",
   "workflowFocusBalanced": "均衡",
   "workflowFocusBalancedDescription": "手动设计，需要时再叫智能体。文档打开后显示图层。",
-  "workflowFocusAIDescription": "智能体优先。文档打开后显示对话，可以直接提出需求。"
+  "workflowFocusAIDescription": "智能体优先。文档打开后显示对话，可以直接提出需求。",
+  "keepToolSelected": "使用后保持工具选中",
+  "keepToolSelectedDescription": "连续绘制多个形状，无需重新选择工具。",
+  "renameDuplicatedLayers": "重命名复制的图层",
+  "renameDuplicatedLayersDescription": "副本会使用下一个编号：矩形 1 之后是矩形 2。",
+  "nudgeAmount": "微移量",
+  "nudgeAmountDescription": "方向键移动图层的距离，以及按住 Shift 时的距离。",
+  "smallNudge": "小微移",
+  "bigNudge": "大微移"
 }

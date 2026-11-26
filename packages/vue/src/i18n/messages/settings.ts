@@ -88,7 +88,16 @@ export const settingsMessageDefaults = {
   discard: 'Discard',
   storage: 'Cloud storage',
   mobilePanelNavigation: 'Mobile panel navigation',
-  notifications: 'Notifications'
+  notifications: 'Notifications',
+  keepToolSelected: 'Keep tool selected after use',
+  keepToolSelectedDescription: 'Draw several shapes in a row without picking the tool again.',
+  renameDuplicatedLayers: 'Rename duplicated layers',
+  renameDuplicatedLayersDescription:
+    'A duplicate takes the next number, so Rectangle 1 is followed by Rectangle 2.',
+  nudgeAmount: 'Nudge amount',
+  nudgeAmountDescription: 'How far the arrow keys move layers, and with Shift held.',
+  smallNudge: 'Small nudge',
+  bigNudge: 'Big nudge'
 } as const
 
 export const settingsMessages = i18n('settings', settingsMessageDefaults)

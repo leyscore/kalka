@@ -76,5 +76,13 @@
   "workflowFocusDesignDescription": "Un semplice editor di design. L'agente, la sua chat e tutte le funzioni IA sono nascosti.",
   "workflowFocusBalanced": "Bilanciato",
   "workflowFocusBalancedDescription": "Disegni a mano e chiami l'agente quando vuoi. Un documento si apre sui livelli.",
-  "workflowFocusAIDescription": "L'agente viene per primo. Un documento si apre sulla chat, pronto per una richiesta."
+  "workflowFocusAIDescription": "L'agente viene per primo. Un documento si apre sulla chat, pronto per una richiesta.",
+  "keepToolSelected": "Mantieni lo strumento dopo l’uso",
+  "keepToolSelectedDescription": "Disegna più forme di seguito senza riscegliere lo strumento.",
+  "renameDuplicatedLayers": "Rinomina i livelli duplicati",
+  "renameDuplicatedLayersDescription": "Un duplicato prende il numero successivo: Rettangolo 1 è seguito da Rettangolo 2.",
+  "nudgeAmount": "Entità dello spostamento",
+  "nudgeAmountDescription": "Di quanto i tasti freccia spostano i livelli, e con Maiusc premuto.",
+  "smallNudge": "Spostamento piccolo",
+  "bigNudge": "Spostamento grande"
 }

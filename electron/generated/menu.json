@@ -387,6 +387,23 @@
             "type": "separator"
           },
           {
+            "id": "keep-tool-selected",
+            "label": "Keep Tool Selected After Use",
+            "checkbox": true
+          },
+          {
+            "id": "rename-duplicated-layers",
+            "label": "Rename Duplicated Layers",
+            "checkbox": true
+          },
+          {
+            "id": "nudge-amount",
+            "label": "Nudge Amount…"
+          },
+          {
+            "type": "separator"
+          },
+          {
             "id": "settings",
             "label": "Settings…",
             "accelerator": "CmdOrCtrl+,"

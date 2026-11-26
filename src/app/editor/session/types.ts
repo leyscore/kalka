@@ -13,6 +13,8 @@ export function createInitialAppEditorState(pageId: string): AppEditorState {
     // New pages and sections take their colors from the interface theme, as in Figma.
     theme: resolvedAppTheme.value,
     snappingPreferences: { ...appPreferences.value.editing.snapping },
+    keepToolSelected: appPreferences.value.editing.keepToolSelected,
+    renameDuplicates: appPreferences.value.editing.renameDuplicates,
     showUI: true,
     showRulers: true,
     showRemoteCursors: true,

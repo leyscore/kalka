@@ -13,6 +13,7 @@ import {
 import { animationPreference } from '@/app/shell/motion'
 import { useAppTheme } from '@/app/shell/theme'
 import CredentialSettingsSection from '@/components/settings/credentials/CredentialSettingsSection.vue'
+import EditingPreferencesGroup from '@/components/settings/general/EditingPreferencesGroup.vue'
 import ThemePicker from '@/components/settings/general/ThemePicker.vue'
 import WorkflowFocusRule from '@/components/settings/general/WorkflowFocusRule.vue'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
@@ -179,6 +180,8 @@ const snapToPixelGrid = computed({
       </SettingsGroup>
 
       <p class="text-[11px] text-muted">{{ settings.temporaryDisableSnappingHint }}</p>
+
+      <EditingPreferencesGroup />
     </SettingsSection>
 
     <SettingsSection>

@@ -2,7 +2,11 @@ import type { SceneNode } from '@kalka/scene-graph'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { placeImage } from '@/app/editor/clipboard/place-image'
-import { setDesignIssuesOnCanvas, setSnappingPreference } from '@/app/settings/preferences/apply'
+import {
+  setDesignIssuesOnCanvas,
+  setEditingPreference,
+  setSnappingPreference
+} from '@/app/settings/preferences/apply'
 import { appPreferences } from '@/app/settings/preferences/store'
 import { createTextMenuActions } from '@/app/shell/menu/text-actions'
 
@@ -93,6 +97,10 @@ export function createSharedEditorMenuActions(
       setSnappingPreference('objects', !store.state.snappingPreferences.objects),
     'snap-pixel-grid': () =>
       setSnappingPreference('pixelGrid', !store.state.snappingPreferences.pixelGrid),
+    'keep-tool-selected': () =>
+      setEditingPreference('keepToolSelected', !appPreferences.value.editing.keepToolSelected),
+    'rename-duplicated-layers': () =>
+      setEditingPreference('renameDuplicates', !appPreferences.value.editing.renameDuplicates),
     'toggle-ui': () => {
       store.state.showUI = !store.state.showUI
     },

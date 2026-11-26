@@ -1,5 +1,5 @@
 import { CommittedGraphEventError, cycleSafeParent } from '@kalka/scene-graph'
-import type { SceneNode } from '@kalka/scene-graph'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 import { getAxisAlignedBoundsInParent, getNodeLocalMatrix } from '@kalka/scene-graph/coordinate'
 import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
@@ -24,6 +24,7 @@ import {
 import { createClipboardPlacementActions } from './clipboard/placement'
 import { acceptsChildren, prepareSlotEdits } from './components/slots'
 import { collectSubtrees, restoreSubtree, snapshotSubtree } from './history/subtree'
+import { nextNumberedName } from './structure/rename'
 import type { EditorContext } from './types'
 
 type PasteOptions = {
@@ -45,6 +46,16 @@ export function duplicateNode(
     return ctx.graph.createInstance(node.id, parentId, { name: node.name, ...position })
   }
   return ctx.graph.cloneTree(node.id, parentId, { name: node.name, ...position })
+}
+
+/**
+ * The name Figma's Rename duplicated layers gives a copy: the next number after the highest one
+ * the page has for the name, so Rectangle 1 is followed by Rectangle 2.
+ */
+export function duplicateName(graph: SceneGraph, parentId: string, name: string): string {
+  const base = name.replace(/ \d+$/, '')
+  const next = nextNumberedName(graph, parentId, base)
+  return next === `${base} 1` && name === base ? `${base} 2` : next
 }
 
 /** The copies the last duplicate made, each with its original and where the copy was put. */
@@ -103,6 +114,8 @@ export function createClipboardActions(ctx: EditorContext) {
       else if (topLevel.length === 1) position = placementActions.duplicatePosition(node, placed)
       const clone = duplicateNode(ctx, node, parentId, position)
       if (!clone) continue
+      if (ctx.state.renameDuplicates)
+        ctx.graph.updateNode(clone.id, { name: duplicateName(ctx.graph, parentId, node.name) })
       placed.push(getAxisAlignedBoundsInParent([clone], parentId, ctx.graph))
       newRootIds.push(clone.id)
       record.push({ sourceId: node.id, copyId: clone.id, parentId, at: { x: clone.x, y: clone.y } })

@@ -116,5 +116,8 @@
   "setDefaultProperties": "Сделать свойствами по умолчанию",
   "placeImage": "Поместить изображение…",
   "copyAsCSS": "Копировать как CSS",
-  "pickColor": "Пипетка"
+  "pickColor": "Пипетка",
+  "keepToolSelected": "Не сбрасывать инструмент после использования",
+  "renameDuplicatedLayers": "Переименовывать дубликаты слоёв",
+  "nudgeAmount": "Шаг сдвига…"
 }

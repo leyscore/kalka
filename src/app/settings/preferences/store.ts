@@ -100,6 +100,12 @@ export type DefaultCodeSource = (typeof CODE_SOURCES)[number]
 export const WORKFLOW_FOCUSES = ['design', 'balanced', 'ai'] as const
 export type WorkflowFocus = (typeof WORKFLOW_FOCUSES)[number]
 
+/** Figma's Nudge amount: the arrow keys' step, and the step with Shift, in pixels. */
+export interface NudgePreferences {
+  small: number
+  large: number
+}
+
 export interface AppPreferences {
   workflow: {
     focus: WorkflowFocus
@@ -122,6 +128,12 @@ export interface AppPreferences {
   }
   editing: {
     snapping: SnappingPreferences
+    /** How far the arrow keys move layers, and with Shift, as Figma's Nudge amount. */
+    nudge: NudgePreferences
+    /** Figma's Keep tool selected after use: drawing does not go back to Move. */
+    keepToolSelected: boolean
+    /** Figma's Rename duplicated layers: a duplicate takes the next number. */
+    renameDuplicates: boolean
   }
   rendering: {
     canvasMode: CanvasRenderingMode
@@ -152,7 +164,10 @@ export const DEFAULT_APP_PREFERENCES: Readonly<AppPreferences> = {
   version: 1,
   recovery: { enabled: true },
   editing: {
-    snapping: { ...DEFAULT_SNAPPING_PREFERENCES }
+    snapping: { ...DEFAULT_SNAPPING_PREFERENCES },
+    nudge: { small: 1, large: 10 },
+    keepToolSelected: false,
+    renameDuplicates: false
   },
   rendering: { canvasMode: 'retained', canvasBackground: 'kalka' },
   // Markers on the canvas are the person's choice, from the View menu: off until they ask.
@@ -178,6 +193,7 @@ function section<TEntries extends v.ObjectEntries>(entries: TEntries) {
 
 const defaults = DEFAULT_APP_PREFERENCES
 const snapping = defaults.editing.snapping
+const nudgeAmountSchema = v.pipe(v.number(), v.finite(), v.minValue(0.01), v.maxValue(1000))
 
 /** Stored preferences, read field by field so one bad value keeps the rest. */
 const appPreferencesSchema = section({
@@ -207,7 +223,13 @@ const appPreferencesSchema = section({
       geometry: v.fallback(v.boolean(), snapping.geometry),
       objects: v.fallback(v.boolean(), snapping.objects),
       pixelGrid: v.fallback(v.boolean(), snapping.pixelGrid)
-    })
+    }),
+    nudge: section({
+      small: v.fallback(nudgeAmountSchema, defaults.editing.nudge.small),
+      large: v.fallback(nudgeAmountSchema, defaults.editing.nudge.large)
+    }),
+    keepToolSelected: v.fallback(v.boolean(), defaults.editing.keepToolSelected),
+    renameDuplicates: v.fallback(v.boolean(), defaults.editing.renameDuplicates)
   }),
   rendering: section({
     canvasMode: v.fallback(v.picklist(CANVAS_RENDERING_MODES), defaults.rendering.canvasMode),
@@ -357,6 +379,16 @@ export function updateCanvasBackground(canvasBackground: CanvasBackground): void
 export function updateSnappingPreferences(changes: Partial<SnappingPreferences>): void {
   editPreferences((draft) => {
     Object.assign(draft.editing.snapping, changes)
+  })
+}
+
+export function updateEditingPreferences(
+  changes: Partial<Omit<AppPreferences['editing'], 'snapping'>>
+): void {
+  editPreferences((draft) => {
+    const { nudge, ...rest } = changes
+    Object.assign(draft.editing, rest)
+    if (nudge) draft.editing.nudge = { ...nudge }
   })
 }
 

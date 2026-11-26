@@ -10,6 +10,8 @@ export interface MenuCheckSource {
     showPixelGrid?: boolean
     showRemoteCursors: boolean
     snappingPreferences: SnappingPreferences
+    keepToolSelected?: boolean
+    renameDuplicates?: boolean
   }
   theme: string
   designIssuesOnCanvas: boolean
@@ -38,6 +40,10 @@ export function appMenuChecked(id: string, source: MenuCheckSource): boolean | u
       return state.snappingPreferences.objects
     case 'snap-pixel-grid':
       return state.snappingPreferences.pixelGrid
+    case 'keep-tool-selected':
+      return state.keepToolSelected === true
+    case 'rename-duplicated-layers':
+      return state.renameDuplicates === true
     case 'theme-light':
       return source.theme === 'light'
     case 'theme-dark':

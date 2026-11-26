@@ -187,7 +187,8 @@ function createDraw(
       editor.undo.rollbackBatch()
       throw error
     }
-    editor.setTool('SELECT')
+    // Figma's Keep tool selected after use leaves the tool on, except for text, which is edited.
+    if (!editor.state.keepToolSelected || node?.type === 'TEXT') editor.setTool('SELECT')
     if (node?.type === 'TEXT') editor.startTextEditing(node.id)
   }
 

@@ -76,5 +76,13 @@
   "workflowFocusDesignDescription": "Prosty edytor projektów. Agent, jego czat i wszystkie funkcje AI są ukryte.",
   "workflowFocusBalanced": "Zrównoważony",
   "workflowFocusBalancedDescription": "Projektujesz ręcznie i wołasz agenta, kiedy chcesz. Dokument otwiera się na warstwach.",
-  "workflowFocusAIDescription": "Agent jest na pierwszym miejscu. Dokument otwiera się na czacie, gotowy na polecenie."
+  "workflowFocusAIDescription": "Agent jest na pierwszym miejscu. Dokument otwiera się na czacie, gotowy na polecenie.",
+  "keepToolSelected": "Zachowaj narzędzie po użyciu",
+  "keepToolSelectedDescription": "Rysuj kilka kształtów z rzędu bez ponownego wybierania narzędzia.",
+  "renameDuplicatedLayers": "Zmieniaj nazwy zduplikowanych warstw",
+  "renameDuplicatedLayersDescription": "Duplikat dostaje kolejny numer: po Prostokąt 1 następuje Prostokąt 2.",
+  "nudgeAmount": "Wielkość przesunięcia",
+  "nudgeAmountDescription": "O ile klawisze strzałek przesuwają warstwy, także z wciśniętym Shift.",
+  "smallNudge": "Małe przesunięcie",
+  "bigNudge": "Duże przesunięcie"
 }

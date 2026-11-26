@@ -76,5 +76,13 @@
   "workflowFocusDesignDescription": "Un éditeur de design simple. L'agent, sa discussion et toutes les fonctions IA sont cachés.",
   "workflowFocusBalanced": "Modéré",
   "workflowFocusBalancedDescription": "Vous dessinez à la main et appelez l'agent quand vous voulez. Un document s'ouvre sur ses calques.",
-  "workflowFocusAIDescription": "L'agent passe en premier. Un document s'ouvre sur la discussion, prêt pour une demande."
+  "workflowFocusAIDescription": "L'agent passe en premier. Un document s'ouvre sur la discussion, prêt pour une demande.",
+  "keepToolSelected": "Garder l’outil après usage",
+  "keepToolSelectedDescription": "Dessinez plusieurs formes à la suite sans reprendre l’outil.",
+  "renameDuplicatedLayers": "Renommer les calques dupliqués",
+  "renameDuplicatedLayersDescription": "Un doublon prend le numéro suivant : Rectangle 1 est suivi de Rectangle 2.",
+  "nudgeAmount": "Quantité de déplacement",
+  "nudgeAmountDescription": "La distance dont les flèches déplacent les calques, et avec Maj enfoncée.",
+  "smallNudge": "Petit déplacement",
+  "bigNudge": "Grand déplacement"
 }

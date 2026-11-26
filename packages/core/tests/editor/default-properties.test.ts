@@ -39,3 +39,21 @@ describe('Set default properties', () => {
     expect(editor.setDefaultPropertiesFromSelection()).toBe(false)
   })
 })
+
+describe('Rename duplicated layers', () => {
+  test('numbers a duplicate when on, and keeps the name when off', () => {
+    const editor = createEditor()
+    const pageId = editor.state.currentPageId
+    const node = editor.graph.createNode('RECTANGLE', pageId, { name: 'Rectangle 1' })
+    editor.select([node.id])
+    editor.duplicateSelected()
+    const [kept] = editor.state.selectedIds
+    expect(kept ? editor.graph.getNode(kept)?.name : null).toBe('Rectangle 1')
+
+    editor.state.renameDuplicates = true
+    editor.select([node.id])
+    editor.duplicateSelected()
+    const [renamed] = editor.state.selectedIds
+    expect(renamed ? editor.graph.getNode(renamed)?.name : null).toBe('Rectangle 2')
+  })
+})

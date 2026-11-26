@@ -1,6 +1,7 @@
 import { useEventListener } from '@vueuse/core'
 
 import type { EditorStore } from '@/app/editor/active-store'
+import { appPreferences } from '@/app/settings/preferences/store'
 import { isEditing } from '@/app/shell/keyboard/focus'
 import { isReservedModShortcut } from '@/app/shell/keyboard/reserved'
 
@@ -20,7 +21,8 @@ export function bindNudgeKeys(store: EditorStore) {
     const delta = NUDGE_DELTAS[e.code]
     if (!delta || store.state.selectedIds.size === 0) return
 
-    const step = e.shiftKey ? 10 : 1
+    const { small, large } = appPreferences.value.editing.nudge
+    const step = e.shiftKey ? large : small
     store.nudgeSelected(delta[0] * step, delta[1] * step)
     e.preventDefault()
   })

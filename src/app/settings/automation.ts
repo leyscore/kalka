@@ -120,7 +120,11 @@ export function readAutomationSettings(): AutomationSettings {
       animations: preferences.appearance.animations,
       reduceAgentAnimations: preferences.appearance.reduceAgentAnimations
     },
-    editing: { snapping: { ...preferences.editing.snapping } },
+    editing: {
+      ...preferences.editing,
+      snapping: { ...preferences.editing.snapping },
+      nudge: { ...preferences.editing.nudge }
+    },
     rendering: { ...preferences.rendering },
     recovery: { ...preferences.recovery },
     chat: { ...preferences.chat },

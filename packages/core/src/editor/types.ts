@@ -60,6 +60,10 @@ export interface EditorSharedState {
   /** The layer of the code element around the cursor in a code editor, shown in every pane. */
   codeFocusNodeId: string | null
   rulerTheme?: RulerTheme
+  /** Figma's Keep tool selected after use: a drawing tool stays active after it draws. */
+  keepToolSelected?: boolean
+  /** Figma's Rename duplicated layers: Duplicate numbers the copy, Rectangle 1 then 2. */
+  renameDuplicates?: boolean
   /** The look new shapes and texts take, set by Figma's Set default properties. */
   defaultLayerProperties?: DefaultLayerProperties
   /** The interface theme new sections take their fill from; light when unset. */

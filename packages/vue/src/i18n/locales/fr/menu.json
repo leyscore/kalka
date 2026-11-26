@@ -116,5 +116,8 @@
   "setDefaultProperties": "Définir les propriétés par défaut",
   "placeImage": "Placer une image…",
   "copyAsCSS": "Copier en CSS",
-  "pickColor": "Pipette"
+  "pickColor": "Pipette",
+  "keepToolSelected": "Garder l’outil après usage",
+  "renameDuplicatedLayers": "Renommer les calques dupliqués",
+  "nudgeAmount": "Quantité de déplacement…"
 }

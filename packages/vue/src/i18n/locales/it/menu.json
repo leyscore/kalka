@@ -116,5 +116,8 @@
   "setDefaultProperties": "Imposta proprietà predefinite",
   "placeImage": "Posiziona immagine…",
   "copyAsCSS": "Copia come CSS",
-  "pickColor": "Preleva colore"
+  "pickColor": "Preleva colore",
+  "keepToolSelected": "Mantieni lo strumento dopo l’uso",
+  "renameDuplicatedLayers": "Rinomina i livelli duplicati",
+  "nudgeAmount": "Entità dello spostamento…"
 }

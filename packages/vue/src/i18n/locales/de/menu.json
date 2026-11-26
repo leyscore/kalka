@@ -116,5 +116,8 @@
   "setDefaultProperties": "Standardeigenschaften festlegen",
   "placeImage": "Bild platzieren…",
   "copyAsCSS": "Als CSS kopieren",
-  "pickColor": "Farbe aufnehmen"
+  "pickColor": "Farbe aufnehmen",
+  "keepToolSelected": "Werkzeug nach Verwendung beibehalten",
+  "renameDuplicatedLayers": "Duplizierte Ebenen umbenennen",
+  "nudgeAmount": "Verschiebeweite…"
 }

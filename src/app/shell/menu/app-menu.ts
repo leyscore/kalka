@@ -25,7 +25,11 @@ import { useEditorStore } from '@/app/editor/active-store'
 import { openFind } from '@/app/editor/find/state'
 import { openVariablesDialog } from '@/app/editor/tokens/dialog'
 import { openSettings } from '@/app/settings/open'
-import { setDesignIssuesOnCanvas, setSnappingPreference } from '@/app/settings/preferences/apply'
+import {
+  setDesignIssuesOnCanvas,
+  setEditingPreference,
+  setSnappingPreference
+} from '@/app/settings/preferences/apply'
 import { appPreferences } from '@/app/settings/preferences/store'
 import { openShortcutsHelp } from '@/app/shell/keyboard/help'
 import { appMenuChecked } from '@/app/shell/menu/checked'
@@ -144,6 +148,9 @@ export function useAppMenu() {
     'snap-geometry': 'snapToGeometry',
     'snap-objects': 'snapToObjects',
     'snap-pixel-grid': 'snapToPixelGrid',
+    'keep-tool-selected': 'keepToolSelected',
+    'rename-duplicated-layers': 'renameDuplicatedLayers',
+    'nudge-amount': 'nudgeAmount',
     profiler: 'profiler',
     'toggle-ui': 'toggleUI',
     'toggle-preview': 'togglePreview',
@@ -220,6 +227,7 @@ export function useAppMenu() {
       if (activeTab.value) void closeTab(activeTab.value.id)
     },
     settings: openSettings,
+    'nudge-amount': openSettings,
     documentation: () => void openExternalLink(docsURL(locale.value)),
     'keyboard-shortcuts': openShortcutsHelp,
     variables: () => openVariablesDialog(store),
@@ -277,6 +285,10 @@ export function useAppMenu() {
         return (value: boolean) => setSnappingPreference('objects', value)
       case 'snap-pixel-grid':
         return (value: boolean) => setSnappingPreference('pixelGrid', value)
+      case 'keep-tool-selected':
+        return (value: boolean) => setEditingPreference('keepToolSelected', value)
+      case 'rename-duplicated-layers':
+        return (value: boolean) => setEditingPreference('renameDuplicates', value)
       case 'theme-light':
       case 'theme-dark':
       case 'theme-auto':

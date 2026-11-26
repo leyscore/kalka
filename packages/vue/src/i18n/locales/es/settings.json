@@ -76,5 +76,13 @@
   "workflowFocusDesignDescription": "Un editor de diseño sencillo. El agente, su chat y todas las funciones de IA quedan ocultos.",
   "workflowFocusBalanced": "Equilibrado",
   "workflowFocusBalancedDescription": "Diseñas a mano y llamas al agente cuando quieres. Un documento se abre en sus capas.",
-  "workflowFocusAIDescription": "El agente va primero. Un documento se abre en el chat, listo para una petición."
+  "workflowFocusAIDescription": "El agente va primero. Un documento se abre en el chat, listo para una petición.",
+  "keepToolSelected": "Mantener la herramienta tras usarla",
+  "keepToolSelectedDescription": "Dibuja varias formas seguidas sin volver a elegir la herramienta.",
+  "renameDuplicatedLayers": "Renombrar capas duplicadas",
+  "renameDuplicatedLayersDescription": "Un duplicado toma el número siguiente: a Rectángulo 1 le sigue Rectángulo 2.",
+  "nudgeAmount": "Distancia de desplazamiento",
+  "nudgeAmountDescription": "Cuánto mueven las flechas las capas, y con Mayús pulsada.",
+  "smallNudge": "Desplazamiento pequeño",
+  "bigNudge": "Desplazamiento grande"
 }

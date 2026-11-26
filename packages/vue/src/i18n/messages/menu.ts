@@ -124,7 +124,10 @@ export const menuMessageDefaults = {
   setDefaultProperties: 'Set default properties',
   placeImage: 'Place image…',
   copyAsCSS: 'Copy as CSS',
-  pickColor: 'Pick color'
+  pickColor: 'Pick color',
+  keepToolSelected: 'Keep tool selected after use',
+  renameDuplicatedLayers: 'Rename duplicated layers',
+  nudgeAmount: 'Nudge amount…'
 } as const
 
 export const menuMessages = i18n('menu', menuMessageDefaults)

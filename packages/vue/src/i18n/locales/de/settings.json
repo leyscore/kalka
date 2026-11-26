@@ -76,5 +76,13 @@
   "workflowFocusDesignDescription": "Ein schlichter Design-Editor. Der Agent, sein Chat und alle KI-Funktionen sind ausgeblendet.",
   "workflowFocusBalanced": "Ausgewogen",
   "workflowFocusBalancedDescription": "Sie gestalten von Hand und rufen den Agenten, wenn Sie ihn brauchen. Ein Dokument öffnet sich bei den Ebenen.",
-  "workflowFocusAIDescription": "Der Agent steht an erster Stelle. Ein Dokument öffnet sich im Chat, bereit für eine Anfrage."
+  "workflowFocusAIDescription": "Der Agent steht an erster Stelle. Ein Dokument öffnet sich im Chat, bereit für eine Anfrage.",
+  "keepToolSelected": "Werkzeug nach Verwendung beibehalten",
+  "keepToolSelectedDescription": "Mehrere Formen nacheinander zeichnen, ohne das Werkzeug neu zu wählen.",
+  "renameDuplicatedLayers": "Duplizierte Ebenen umbenennen",
+  "renameDuplicatedLayersDescription": "Ein Duplikat erhält die nächste Nummer: Auf Rechteck 1 folgt Rechteck 2.",
+  "nudgeAmount": "Verschiebeweite",
+  "nudgeAmountDescription": "Wie weit die Pfeiltasten Ebenen verschieben, und mit gedrückter Umschalttaste.",
+  "smallNudge": "Kleine Verschiebung",
+  "bigNudge": "Große Verschiebung"
 }

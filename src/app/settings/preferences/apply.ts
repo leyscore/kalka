@@ -6,6 +6,7 @@ import { syncNativeDesignIssuesMenu, syncNativeSnappingMenu } from './native-men
 import {
   appPreferences,
   updateDesignCheckPreferences,
+  updateEditingPreferences,
   updateSnappingPreferences,
   type DesignCheckPreset
 } from './store'
@@ -27,6 +28,15 @@ export function applySnappingPreferences(changes: Partial<SnappingPreferences>):
   void syncNativeSnappingMenu(snapping).catch((error: unknown) => {
     console.error('[Settings] Failed to synchronize native snapping preferences:', error)
   })
+}
+
+/** Stores an editing preference and gives it to every open editor. */
+export function setEditingPreference(
+  preference: 'keepToolSelected' | 'renameDuplicates',
+  enabled: boolean
+): void {
+  updateEditingPreferences({ [preference]: enabled })
+  for (const tab of getTabsSnapshot()) tab.store.state[preference] = enabled
 }
 
 export function setDesignIssuesOnCanvas(showOnCanvas: boolean): void {

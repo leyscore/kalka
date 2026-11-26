@@ -2,7 +2,11 @@ import { locale, useI18n } from '@kalka/vue'
 
 import { requestAppExit } from '@/app/document/close/exit'
 import { openSettings } from '@/app/settings/open'
-import { setDesignIssuesOnCanvas, setSnappingPreference } from '@/app/settings/preferences/apply'
+import {
+  setDesignIssuesOnCanvas,
+  setEditingPreference,
+  setSnappingPreference
+} from '@/app/settings/preferences/apply'
 import {
   syncNativeDesignIssuesMenu,
   syncNativeSnappingMenu
@@ -51,6 +55,11 @@ export function useShellMenu() {
       void import('@/router').then(({ default: router }) => openStorageWorkspace(router))
     },
     settings: openSettings,
+    'nudge-amount': openSettings,
+    'keep-tool-selected': () =>
+      setEditingPreference('keepToolSelected', !appPreferences.value.editing.keepToolSelected),
+    'rename-duplicated-layers': () =>
+      setEditingPreference('renameDuplicates', !appPreferences.value.editing.renameDuplicates),
     documentation: () => void openExternalLink(docsURL(locale.get())),
     'snap-geometry': () => {
       const current = appPreferences.value.editing.snapping.geometry
