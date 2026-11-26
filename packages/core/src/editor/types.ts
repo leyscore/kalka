@@ -167,6 +167,8 @@ export interface EditorEvents extends SceneGraphEvents {
     previous: { panX: number; panY: number; zoom: number }
   ) => void
   'navigation:changed': (navigation: NavigationState, previous: NavigationState) => void
+  /** Figma's Collapse layers (Option+L): the layers panel folds every layer. */
+  'layers:collapse-requested': () => void
 }
 
 export type EditorEventName = keyof EditorEvents

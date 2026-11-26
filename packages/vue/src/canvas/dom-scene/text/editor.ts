@@ -219,6 +219,12 @@ export class DomTextEditor implements ExternalTextEditor {
             'NONE',
             (decoration) => decoration === 'UNDERLINE'
           ),
+          'Shift-Mod-x': toggle(
+            'textDecoration',
+            'STRIKETHROUGH',
+            'NONE',
+            (decoration) => decoration === 'STRIKETHROUGH'
+          ),
           Escape: () => {
             this.editor.commitTextEdit()
             return true

@@ -61,5 +61,14 @@
   "selectSameText": "Alle mit gleichen Texteigenschaften auswählen",
   "selectSameFont": "Alle mit gleicher Schrift auswählen",
   "selectSameInstance": "Alle mit gleicher Instanz auswählen",
-  "selectSameProperties": "Alle mit gleichen Eigenschaften auswählen"
+  "selectSameProperties": "Alle mit gleichen Eigenschaften auswählen",
+  "removeFrame": "Rahmen entfernen",
+  "resizeToFit": "Größe an Inhalt anpassen",
+  "rotate180": "Um 180° drehen",
+  "rotateLeft": "Um 90° nach links drehen",
+  "rotateRight": "Um 90° nach rechts drehen",
+  "swapFillAndStroke": "Füllung und Kontur tauschen",
+  "removeFill": "Füllung entfernen",
+  "removeStroke": "Kontur entfernen",
+  "hideOtherLayers": "Andere Ebenen ausblenden"
 }

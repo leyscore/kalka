@@ -5,11 +5,12 @@ import { withCanvasKit } from '#vue/canvas/surface/offscreen'
 import type { ComponentCommandId } from './components'
 import type { EditorCommandMapOptions } from './context'
 import type { MatchingCommandId } from './matching'
+import type { ObjectCommandId } from './object'
 import type { EditorCommand, EditorCommandId } from './types'
 
 type SelectionCommandId = Exclude<
   Extract<EditorCommandId, `selection.${string}`>,
-  ComponentCommandId | MatchingCommandId
+  ComponentCommandId | MatchingCommandId | ObjectCommandId
 >
 
 function selectedMaskTarget(nodes: SceneNode[], editor: EditorCommandMapOptions['editor']) {

@@ -147,7 +147,11 @@ const unsubscribe = [
   editor.onEditorEvent('node:reparented', scheduleTreeRebuild),
   editor.onEditorEvent('node:reordered', scheduleTreeRebuild),
   editor.onEditorEvent('node:updated', patchTreeNode),
-  editor.onEditorEvent('selection:changed', onSelectionChanged)
+  editor.onEditorEvent('selection:changed', onSelectionChanged),
+  // Figma's Collapse layers folds every layer, the selected ones too.
+  editor.onEditorEvent('layers:collapse-requested', () => {
+    expanded.value = []
+  })
 ]
 
 onScopeDispose(() => {

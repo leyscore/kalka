@@ -15,6 +15,7 @@ import {
 } from './structure/flatten'
 import { ungroupSelected as ungroupImpl } from './structure/group'
 import { createLayerTypeActions } from './structure/layer-type'
+import { createObjectCommandActions } from './structure/object-commands'
 import {
   defaultNodeName,
   previewRenamedNodes,
@@ -197,6 +198,7 @@ export function createStructureActions(ctx: EditorContext) {
     outlineTextSelected,
     outlineStrokeSelected,
     ...stateActions,
+    ...createObjectCommandActions(ctx),
     moveToPage,
     previewRenameSelected,
     renameSelected,

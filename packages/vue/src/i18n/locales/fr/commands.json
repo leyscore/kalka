@@ -61,5 +61,14 @@
   "selectSameText": "Sélectionner tout avec les mêmes propriétés de texte",
   "selectSameFont": "Sélectionner tout avec la même police",
   "selectSameInstance": "Sélectionner tout avec la même instance",
-  "selectSameProperties": "Sélectionner tout avec les mêmes propriétés"
+  "selectSameProperties": "Sélectionner tout avec les mêmes propriétés",
+  "removeFrame": "Retirer le cadre",
+  "resizeToFit": "Redimensionner pour ajuster",
+  "rotate180": "Rotation de 180°",
+  "rotateLeft": "Rotation de 90° à gauche",
+  "rotateRight": "Rotation de 90° à droite",
+  "swapFillAndStroke": "Échanger remplissage et contour",
+  "removeFill": "Retirer le remplissage",
+  "removeStroke": "Retirer le contour",
+  "hideOtherLayers": "Masquer les autres calques"
 }

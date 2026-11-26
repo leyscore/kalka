@@ -328,6 +328,8 @@ export const APP_MENU_SCHEMA = [
         label: 'Ungroup Selection',
         command: 'selection.ungroup'
       },
+      { id: 'selection.removeFrame', label: 'Remove Frame', command: 'selection.removeFrame' },
+      { id: 'selection.resizeToFit', label: 'Resize to Fit', command: 'selection.resizeToFit' },
       { type: 'separator' },
       {
         id: 'insert-icon',
@@ -350,6 +352,12 @@ export const APP_MENU_SCHEMA = [
         label: 'Lock/Unlock',
         command: 'selection.toggleLock'
       },
+      {
+        id: 'selection.hideOtherLayers',
+        label: 'Hide Other Layers',
+        command: 'selection.hideOtherLayers'
+      },
+      { id: 'collapse-layers', label: 'Collapse Layers', shortcut: 'ALT+L' },
       { type: 'separator' },
       {
         id: 'selection.flipHorizontal',
@@ -361,6 +369,17 @@ export const APP_MENU_SCHEMA = [
         label: 'Flip Vertical',
         command: 'selection.flipVertical'
       },
+      { id: 'selection.rotate180', label: 'Rotate 180°', command: 'selection.rotate180' },
+      { id: 'selection.rotateLeft', label: 'Rotate 90° Left', command: 'selection.rotateLeft' },
+      { id: 'selection.rotateRight', label: 'Rotate 90° Right', command: 'selection.rotateRight' },
+      { type: 'separator' },
+      {
+        id: 'selection.swapFillAndStroke',
+        label: 'Swap Fill and Stroke',
+        command: 'selection.swapFillAndStroke'
+      },
+      { id: 'selection.removeFill', label: 'Remove Fill', command: 'selection.removeFill' },
+      { id: 'selection.removeStroke', label: 'Remove Stroke', command: 'selection.removeStroke' },
       { type: 'separator' },
       {
         id: 'selection.booleanUnion',
@@ -488,7 +507,37 @@ export const APP_MENU_SCHEMA = [
     items: [
       { id: 'text.bold', label: 'Bold', shortcut: 'MOD+B' },
       { id: 'text.italic', label: 'Italic', shortcut: 'MOD+I' },
-      { id: 'text.underline', label: 'Underline', shortcut: 'MOD+U' }
+      { id: 'text.underline', label: 'Underline', shortcut: 'MOD+U' },
+      { id: 'text.strikethrough', label: 'Strikethrough', shortcut: 'MOD+SHIFT+X' },
+      { type: 'separator' },
+      { id: 'text.list-bulleted', label: 'Bulleted List', shortcut: 'MOD+SHIFT+8' },
+      { id: 'text.list-numbered', label: 'Numbered List', shortcut: 'MOD+SHIFT+7' },
+      { type: 'separator' },
+      {
+        id: 'text.alignment',
+        label: 'Alignment',
+        sub: [
+          { id: 'text.align-left', label: 'Text Align Left', shortcut: 'MOD+ALT+L' },
+          { id: 'text.align-center', label: 'Text Align Center', shortcut: 'MOD+ALT+T' },
+          { id: 'text.align-right', label: 'Text Align Right', shortcut: 'MOD+ALT+R' },
+          { id: 'text.align-justified', label: 'Text Align Justified', shortcut: 'MOD+ALT+J' }
+        ]
+      },
+      // Figma's > and < keys, which are Shift with . and , on the keyboards it names them on.
+      {
+        id: 'text.adjust',
+        label: 'Adjust',
+        sub: [
+          { id: 'text.font-size-up', label: 'Increase Font Size', shortcut: 'MOD+SHIFT+.' },
+          { id: 'text.font-size-down', label: 'Decrease Font Size', shortcut: 'MOD+SHIFT+,' },
+          { id: 'text.font-weight-up', label: 'Increase Font Weight', shortcut: 'MOD+ALT+.' },
+          { id: 'text.font-weight-down', label: 'Decrease Font Weight', shortcut: 'MOD+ALT+,' },
+          { id: 'text.line-height-up', label: 'Increase Line Height', shortcut: 'ALT+SHIFT+.' },
+          { id: 'text.line-height-down', label: 'Decrease Line Height', shortcut: 'ALT+SHIFT+,' },
+          { id: 'text.letter-spacing-up', label: 'Increase Letter Spacing', shortcut: 'ALT+.' },
+          { id: 'text.letter-spacing-down', label: 'Decrease Letter Spacing', shortcut: 'ALT+,' }
+        ]
+      }
     ]
   },
   {

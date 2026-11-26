@@ -94,7 +94,25 @@ export const menuMessageDefaults = {
   splitDown: 'Split down',
   closeView: 'Close view',
   removeGuide: 'Remove guide',
-  selectAllWithSame: 'Select all with same'
+  selectAllWithSame: 'Select all with same',
+  bulletedList: 'Bulleted list',
+  numberedList: 'Numbered list',
+  textAlignment: 'Alignment',
+  textAlignLeft: 'Text align left',
+  textAlignCenter: 'Text align center',
+  textAlignRight: 'Text align right',
+  textAlignJustified: 'Text align justified',
+  textAdjust: 'Adjust',
+  increaseFontSize: 'Increase font size',
+  decreaseFontSize: 'Decrease font size',
+  increaseFontWeight: 'Increase font weight',
+  decreaseFontWeight: 'Decrease font weight',
+  increaseLineHeight: 'Increase line height',
+  decreaseLineHeight: 'Decrease line height',
+  increaseLetterSpacing: 'Increase letter spacing',
+  decreaseLetterSpacing: 'Decrease letter spacing',
+  collapseLayers: 'Collapse layers',
+  rotate: 'Rotate'
 } as const
 
 export const menuMessages = i18n('menu', menuMessageDefaults)

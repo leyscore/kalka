@@ -24,6 +24,7 @@ import { setSnappingPreference } from '@/app/settings/preferences/apply'
 import { isButtonActivation, isCanvasKey, isEditing } from '@/app/shell/keyboard/focus'
 import { markShortcutUsed, toggleShortcutsHelp } from '@/app/shell/keyboard/help'
 import { bindSpaceHandTool } from '@/app/shell/keyboard/space-tool'
+import { textShortcutDefinitions } from '@/app/shell/keyboard/text-shortcuts'
 import type {
   KeyboardShortcutOptions,
   KeyboardShortcutRunOptions
@@ -343,10 +344,23 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
       keys,
       run: ({ store }) => store.alignNodes([...store.state.selectedIds], axis, align)
     })),
+    ...textShortcutDefinitions(),
     {
       id: 'toggle-auto-layout',
       keys: 'Shift+KeyA',
       run: ({ actions }) => actions.toggleAutoLayout()
+    },
+    ...commandShortcuts(
+      'selection.resizeToFit',
+      'selection.swapFillAndStroke',
+      'selection.removeFill',
+      'selection.removeStroke'
+    ),
+    {
+      id: 'collapse-layers',
+      // Option+L, by key position: Option turns the letter into another character on macOS.
+      keys: 'Alt+KeyL',
+      run: ({ store }) => store.collapseLayers()
     },
     ...commandShortcuts(
       'selection.bringForward',

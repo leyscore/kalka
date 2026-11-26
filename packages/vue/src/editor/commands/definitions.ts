@@ -2,6 +2,7 @@ import { createComponentCommands } from './components'
 import type { EditorCommandMapOptions } from './context'
 import { createEditCommands } from './edit'
 import { createMatchingCommands } from './matching'
+import { createObjectCommands } from './object'
 import { createSelectionCommands } from './selection'
 import type { EditorCommand, EditorCommandId } from './types'
 import { createViewCommands } from './view'
@@ -14,6 +15,7 @@ export function createEditorCommandMap(
     ...createSelectionCommands(options),
     ...createComponentCommands(options),
     ...createMatchingCommands(options),
+    ...createObjectCommands(options),
     ...createViewCommands(options)
   }
 }

@@ -3,6 +3,7 @@ import type { SceneNode } from '@kalka/scene-graph'
 import { useEditorStore } from '@/app/editor/active-store'
 import { setDesignIssuesOnCanvas, setSnappingPreference } from '@/app/settings/preferences/apply'
 import { appPreferences } from '@/app/settings/preferences/store'
+import { createTextMenuActions } from '@/app/shell/menu/text-actions'
 
 type TextFormatUpdates = {
   fontWeight?: number
@@ -80,12 +81,14 @@ export function createSharedEditorMenuActions(
       store.state.showUI = !store.state.showUI
     },
     'toggle-preview': () => store.togglePlay(),
+    'collapse-layers': () => store.collapseLayers(),
     'theme-light': () => setTheme('light'),
     'theme-dark': () => setTheme('dark'),
     'theme-auto': () => setTheme('auto'),
     'text.bold': toggleSelectedTextBold,
     'text.italic': toggleSelectedTextItalic,
     'text.underline': toggleSelectedTextUnderline,
+    ...createTextMenuActions(store),
     'arrange.align-left': () => alignSelected('horizontal', 'min'),
     'arrange.align-center': () => alignSelected('horizontal', 'center'),
     'arrange.align-right': () => alignSelected('horizontal', 'max'),

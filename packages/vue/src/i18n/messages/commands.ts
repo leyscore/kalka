@@ -63,7 +63,16 @@ export const commandMessageDefaults = {
   selectSameText: 'Select all with same text properties',
   selectSameFont: 'Select all with same font',
   selectSameInstance: 'Select all with same instance',
-  selectSameProperties: 'Select all with same properties'
+  selectSameProperties: 'Select all with same properties',
+  removeFrame: 'Remove frame',
+  resizeToFit: 'Resize to fit',
+  rotate180: 'Rotate 180°',
+  rotateLeft: 'Rotate 90° left',
+  rotateRight: 'Rotate 90° right',
+  swapFillAndStroke: 'Swap fill and stroke',
+  removeFill: 'Remove fill',
+  removeStroke: 'Remove stroke',
+  hideOtherLayers: 'Hide other layers'
 } as const
 
 export const commandMessages = i18n('commands', commandMessageDefaults)

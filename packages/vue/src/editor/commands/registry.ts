@@ -129,6 +129,16 @@ export const EDITOR_COMMAND_METADATA = {
     contextTestId: 'context-outline-stroke'
   },
   'selection.moveToPage': {},
+  'selection.removeFrame': {},
+  'selection.resizeToFit': { shortcut: 'MOD+ALT+SHIFT+R', keybinding: '$mod+Alt+Shift+KeyR' },
+  'selection.rotate180': {},
+  'selection.rotateLeft': {},
+  'selection.rotateRight': {},
+  'selection.swapFillAndStroke': { shortcut: 'SHIFT+X', keybinding: 'Shift+KeyX' },
+  // Figma's ⌥/ and ⇧/, matched by key position: Option and Shift change what / types.
+  'selection.removeFill': { shortcut: 'ALT+/', keybinding: 'Alt+Slash' },
+  'selection.removeStroke': { shortcut: 'SHIFT+/', keybinding: 'Shift+Slash' },
+  'selection.hideOtherLayers': {},
   'selection.setOpacity': { shortcut: '1-9, 0' },
   'view.zoom100': { shortcut: 'SHIFT+0', keybinding: ['$mod+Digit0', 'Shift+Digit0'] },
   'view.zoomFit': { shortcut: 'SHIFT+1', keybinding: ['$mod+Digit1', 'Shift+Digit1'] },

@@ -390,6 +390,15 @@
         "accelerator": "CmdOrCtrl+Shift+G"
       },
       {
+        "id": "selection.removeFrame",
+        "label": "Remove Frame"
+      },
+      {
+        "id": "selection.resizeToFit",
+        "label": "Resize to Fit",
+        "accelerator": "CmdOrCtrl+Alt+Shift+R"
+      },
+      {
         "type": "separator"
       },
       {
@@ -415,6 +424,15 @@
         "accelerator": "CmdOrCtrl+Shift+L"
       },
       {
+        "id": "selection.hideOtherLayers",
+        "label": "Hide Other Layers"
+      },
+      {
+        "id": "collapse-layers",
+        "label": "Collapse Layers",
+        "accelerator": "Alt+L"
+      },
+      {
         "type": "separator"
       },
       {
@@ -426,6 +444,36 @@
         "id": "selection.flipVertical",
         "label": "Flip Vertical",
         "accelerator": "Shift+V"
+      },
+      {
+        "id": "selection.rotate180",
+        "label": "Rotate 180°"
+      },
+      {
+        "id": "selection.rotateLeft",
+        "label": "Rotate 90° Left"
+      },
+      {
+        "id": "selection.rotateRight",
+        "label": "Rotate 90° Right"
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "id": "selection.swapFillAndStroke",
+        "label": "Swap Fill and Stroke",
+        "accelerator": "Shift+X"
+      },
+      {
+        "id": "selection.removeFill",
+        "label": "Remove Fill",
+        "accelerator": "Alt+/"
+      },
+      {
+        "id": "selection.removeStroke",
+        "label": "Remove Stroke",
+        "accelerator": "Shift+/"
       },
       {
         "type": "separator"
@@ -556,6 +604,99 @@
         "id": "text.underline",
         "label": "Underline",
         "accelerator": "CmdOrCtrl+U"
+      },
+      {
+        "id": "text.strikethrough",
+        "label": "Strikethrough",
+        "accelerator": "CmdOrCtrl+Shift+X"
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "id": "text.list-bulleted",
+        "label": "Bulleted List",
+        "accelerator": "CmdOrCtrl+Shift+8"
+      },
+      {
+        "id": "text.list-numbered",
+        "label": "Numbered List",
+        "accelerator": "CmdOrCtrl+Shift+7"
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "id": "text.alignment",
+        "label": "Alignment",
+        "sub": [
+          {
+            "id": "text.align-left",
+            "label": "Text Align Left",
+            "accelerator": "CmdOrCtrl+Alt+L"
+          },
+          {
+            "id": "text.align-center",
+            "label": "Text Align Center",
+            "accelerator": "CmdOrCtrl+Alt+T"
+          },
+          {
+            "id": "text.align-right",
+            "label": "Text Align Right",
+            "accelerator": "CmdOrCtrl+Alt+R"
+          },
+          {
+            "id": "text.align-justified",
+            "label": "Text Align Justified",
+            "accelerator": "CmdOrCtrl+Alt+J"
+          }
+        ]
+      },
+      {
+        "id": "text.adjust",
+        "label": "Adjust",
+        "sub": [
+          {
+            "id": "text.font-size-up",
+            "label": "Increase Font Size",
+            "accelerator": "CmdOrCtrl+Shift+."
+          },
+          {
+            "id": "text.font-size-down",
+            "label": "Decrease Font Size",
+            "accelerator": "CmdOrCtrl+Shift+,"
+          },
+          {
+            "id": "text.font-weight-up",
+            "label": "Increase Font Weight",
+            "accelerator": "CmdOrCtrl+Alt+."
+          },
+          {
+            "id": "text.font-weight-down",
+            "label": "Decrease Font Weight",
+            "accelerator": "CmdOrCtrl+Alt+,"
+          },
+          {
+            "id": "text.line-height-up",
+            "label": "Increase Line Height",
+            "accelerator": "Alt+Shift+."
+          },
+          {
+            "id": "text.line-height-down",
+            "label": "Decrease Line Height",
+            "accelerator": "Alt+Shift+,"
+          },
+          {
+            "id": "text.letter-spacing-up",
+            "label": "Increase Letter Spacing",
+            "accelerator": "Alt+."
+          },
+          {
+            "id": "text.letter-spacing-down",
+            "label": "Decrease Letter Spacing",
+            "accelerator": "Alt+,"
+          }
+        ]
       }
     ]
   },

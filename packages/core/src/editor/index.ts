@@ -38,6 +38,13 @@ export {
 export { SELECT_SAME_KINDS, type SelectSameKind } from './selection/matching'
 export { createGuideActions } from './guides'
 export { createTextActions } from './text'
+export {
+  steppedFontSize,
+  steppedFontWeight,
+  steppedLetterSpacing,
+  steppedLineHeight,
+  type TextStep
+} from './text/format-steps'
 export { opacityFromBuffer } from './nodes'
 export { layerTypeOptions, type LayerType } from './structure/layer-type'
 export type { NodePreview } from './node-preview'

@@ -61,5 +61,14 @@
   "selectSameText": "同じテキストプロパティをすべて選択",
   "selectSameFont": "同じフォントをすべて選択",
   "selectSameInstance": "同じインスタンスをすべて選択",
-  "selectSameProperties": "同じプロパティをすべて選択"
+  "selectSameProperties": "同じプロパティをすべて選択",
+  "removeFrame": "フレームを削除",
+  "resizeToFit": "内容に合わせてサイズ変更",
+  "rotate180": "180°回転",
+  "rotateLeft": "左に90°回転",
+  "rotateRight": "右に90°回転",
+  "swapFillAndStroke": "塗りと線を入れ替え",
+  "removeFill": "塗りを削除",
+  "removeStroke": "線を削除",
+  "hideOtherLayers": "他のレイヤーを非表示"
 }

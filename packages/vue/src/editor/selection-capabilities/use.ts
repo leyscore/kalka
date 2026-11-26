@@ -51,6 +51,8 @@ export function useSelectionCapabilities() {
     canToggleVisibility: computed(() => hasSelection.value),
     canToggleLock: computed(() => hasSelection.value),
     canFlip: computed(() => hasSelection.value),
+    canRemoveFrame: useSceneComputed(() => hasSelection.value && editor.canRemoveFrame()),
+    canResizeToFit: useSceneComputed(() => hasSelection.value && editor.canResizeToFit()),
     canDistribute: useSceneComputed(() => editor.canDistributeNodes([...editor.state.selectedIds])),
     canBooleanOperation: computed(() => selectedCount.value >= 2 && selectedNodesCanFlatten.value),
     canFlatten: computed(() => selectedNodesCanFlatten.value),

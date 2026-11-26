@@ -61,5 +61,14 @@
   "selectSameText": "Выбрать всё с такими же свойствами текста",
   "selectSameFont": "Выбрать всё с таким же шрифтом",
   "selectSameInstance": "Выбрать всё с таким же экземпляром",
-  "selectSameProperties": "Выбрать всё с такими же свойствами"
+  "selectSameProperties": "Выбрать всё с такими же свойствами",
+  "removeFrame": "Удалить фрейм",
+  "resizeToFit": "Подогнать размер",
+  "rotate180": "Повернуть на 180°",
+  "rotateLeft": "Повернуть на 90° влево",
+  "rotateRight": "Повернуть на 90° вправо",
+  "swapFillAndStroke": "Поменять заливку и обводку",
+  "removeFill": "Удалить заливку",
+  "removeStroke": "Удалить обводку",
+  "hideOtherLayers": "Скрыть другие слои"
 }

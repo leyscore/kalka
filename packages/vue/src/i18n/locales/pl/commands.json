@@ -61,5 +61,14 @@
   "selectSameText": "Zaznacz wszystko z tymi samymi właściwościami tekstu",
   "selectSameFont": "Zaznacz wszystko z tą samą czcionką",
   "selectSameInstance": "Zaznacz wszystko z tą samą instancją",
-  "selectSameProperties": "Zaznacz wszystko z tymi samymi właściwościami"
+  "selectSameProperties": "Zaznacz wszystko z tymi samymi właściwościami",
+  "removeFrame": "Usuń ramkę",
+  "resizeToFit": "Dopasuj rozmiar",
+  "rotate180": "Obróć o 180°",
+  "rotateLeft": "Obróć o 90° w lewo",
+  "rotateRight": "Obróć o 90° w prawo",
+  "swapFillAndStroke": "Zamień wypełnienie i obrys",
+  "removeFill": "Usuń wypełnienie",
+  "removeStroke": "Usuń obrys",
+  "hideOtherLayers": "Ukryj pozostałe warstwy"
 }
