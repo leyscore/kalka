@@ -9,7 +9,8 @@ import {
   type PrototypeAction,
   type PrototypeEasingType,
   type PrototypeExpression,
-  type PrototypeTransition
+  type PrototypeTransition,
+  type Vector
 } from '@kalka/scene-graph'
 import { usePrototypeMessages, useSceneComputed } from '@kalka/vue'
 
@@ -98,6 +99,25 @@ function setKind(kind: ActionKind) {
     destinations(kind).some((option) => option.value === action.destinationId)
   node.destinationId = keep && action.type === 'NODE' ? action.destinationId : null
   emit('update', node)
+}
+
+/** An overlay that opens where it is told: Figma's Manual position, from the triggering layer. */
+function manualOverlay(current: PrototypeAction): boolean {
+  if (current.type !== 'NODE' || current.navigation !== 'OVERLAY' || !current.destinationId)
+    return false
+  return store.graph.getNode(current.destinationId)?.overlayPositionType === 'MANUAL'
+}
+
+/** The triggering layer's height: a manual overlay opens just below it until moved. */
+const triggerHeight = computed(() => {
+  const [id] = store.state.selectedIds
+  return (id ? store.graph.getNode(id)?.height : undefined) ?? 0
+})
+
+function setOffset(change: Partial<Vector>) {
+  if (action.type !== 'NODE') return
+  const current = action.overlayRelativePosition ?? { x: 0, y: triggerHeight.value }
+  emit('update', { ...action, overlayRelativePosition: { ...current, ...change } })
 }
 
 /** The link being typed, set on change so typing is one undo step. */
@@ -380,6 +400,20 @@ function addBlockAction(blockIndex: number) {
         data-property="prototype-destination"
         @update:model-value="emit('update', { ...action, destinationId: $event || null })"
       />
+      <PanelItemRow v-if="manualOverlay(action)" data-property="prototype-overlay-offset">
+        <NumberField
+          label="X"
+          :aria-label="`${m.position} X`"
+          :model-value="Math.round(action.overlayRelativePosition?.x ?? 0)"
+          @commit="(x: number) => setOffset({ x })"
+        />
+        <NumberField
+          label="Y"
+          :aria-label="`${m.position} Y`"
+          :model-value="Math.round(action.overlayRelativePosition?.y ?? triggerHeight)"
+          @commit="(y: number) => setOffset({ y })"
+        />
+      </PanelItemRow>
       <label
         v-if="action.navigation === 'NAVIGATE'"
         class="flex cursor-pointer items-center gap-2 py-1 text-[11px] text-muted"

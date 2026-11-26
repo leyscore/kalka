@@ -105,3 +105,51 @@ test('dragging a connection to the canvas edge pans towards frames out of view',
   await page.waitForTimeout(100)
   expect(await page.evaluate(() => window.kalka?.getStore?.().state.panX ?? 0)).toBe(panned)
 })
+
+test('a manual overlay takes its position from the triggering layer', async () => {
+  const { page } = editor
+  const { buttonId, farId } = await createScreens(page)
+  await page.evaluate(
+    ({ buttonId, farId }) => {
+      const store = window.kalka?.getStore?.()
+      store?.graph.updateNode(farId, { overlayPositionType: 'MANUAL' })
+      store?.setReactions(buttonId, [
+        {
+          trigger: { type: 'ON_CLICK', delay: 0, keyCodes: [] },
+          actions: [
+            {
+              type: 'NODE',
+              destinationId: farId,
+              navigation: 'OVERLAY',
+              transition: null,
+              preserveScrollPosition: false,
+              resetScrollPosition: false,
+              overlayRelativePosition: null
+            }
+          ]
+        }
+      ])
+      store?.select([buttonId])
+    },
+    { buttonId, farId }
+  )
+  await page.getByRole('tab', { name: 'Prototype' }).click()
+  const offset = page
+    .getByTestId('prototype-panel')
+    .locator('[data-property="prototype-overlay-offset"]')
+  await expect(offset).toBeVisible()
+  const field = offset.getByRole('spinbutton', { name: 'Position X' })
+  await field.click()
+  // The field turns into its input when clicked.
+  const x = offset.getByRole('spinbutton', { name: 'Position X' })
+  await x.fill('24')
+  await x.press('Enter')
+  await expect
+    .poll(() =>
+      page.evaluate((id) => {
+        const action = window.kalka?.getStore?.().graph.getNode(id)?.reactions[0]?.actions[0]
+        return action?.type === 'NODE' ? action.overlayRelativePosition : null
+      }, buttonId)
+    )
+    .toEqual({ x: 24, y: 40 })
+})
