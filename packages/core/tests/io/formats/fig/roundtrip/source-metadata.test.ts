@@ -12,11 +12,11 @@ interface RawLayoutGrid {
   color?: { a?: number }
 }
 
-interface RawNoiseEffect {
+interface RawRepeatEffect {
   type?: string
-  noiseType?: string
-  noiseSize?: Vector
-  density?: number
+  count?: number
+  repeatType?: string
+  axis?: string
 }
 
 interface RawVectorData {
@@ -327,7 +327,7 @@ describe('fig roundtrip source metadata', () => {
     const graph = new SceneGraph()
     const page = graph.getPages()[0]
     const rect = graph.createNode('RECTANGLE', page.id, {
-      name: 'Noise effect metadata',
+      name: 'Repeat effect metadata',
       effects: [
         {
           type: 'DROP_SHADOW',
@@ -343,15 +343,14 @@ describe('fig roundtrip source metadata', () => {
     rect.source.id = '4:503'
     rect.source.fig.rawNodeFields.effects = [
       {
-        type: 'NOISE',
+        type: 'REPEAT',
         visible: true,
-        offset: { x: 0, y: 0 },
+        offset: { x: 24, y: 0 },
         radius: 0,
         spread: 0,
-        noiseSize: { x: 0.5, y: 0.5 },
-        noiseType: 'MONOTONE',
-        color: { r: 0, g: 0, b: 0, a: 1 },
-        density: 0.4
+        count: 3,
+        repeatType: 'LINEAR',
+        axis: 'X'
       }
     ]
 
@@ -360,11 +359,11 @@ describe('fig roundtrip source metadata', () => {
       (nodeChange) => nodeChange.guid && guidToString(nodeChange.guid) === '4:503'
     )
 
-    const noise = exported?.effects?.[0] as RawNoiseEffect | undefined
-    expect(noise?.type).toBe('NOISE')
-    expect(noise?.noiseType).toBe('MONOTONE')
-    expect(noise?.noiseSize).toEqual({ x: 0.5, y: 0.5 })
-    expect(noise?.density).toBeCloseTo(0.4)
+    const repeat = exported?.effects?.[0] as RawRepeatEffect | undefined
+    expect(repeat?.type).toBe('REPEAT')
+    expect(repeat?.count).toBe(3)
+    expect(repeat?.repeatType).toBe('LINEAR')
+    expect(repeat?.axis).toBe('X')
   })
 
   test('ignores raw unsupported effects when normalized effects are edited', () => {

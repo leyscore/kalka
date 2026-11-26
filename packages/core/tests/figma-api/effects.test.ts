@@ -184,7 +184,7 @@ describe('node.effects', () => {
         visible: true,
         boundVariables: {}
       }
-    ]
+    ] as const
     const rect = assign(effects)
     expect(rect.effects).toEqual(effects)
   })
