@@ -302,21 +302,31 @@ export function createPageActions(ctx: EditorContext) {
     const page = ctx.graph.addPage(pageName)
     setDefaultPageBackground(ctx.graph, page, ctx.state.theme)
     const index = ctx.graph.getPages().findIndex((candidate) => candidate.id === page.id)
-    const subtree = snapshotSubtree(ctx.graph, page.id)
+    return showNewPage('Add page', page.id, index, previousPageId)
+  }
+
+  /** Shows a page just made at `index`, as one undo step that takes it away again. */
+  function showNewPage(
+    label: string,
+    pageId: string,
+    index: number,
+    previousPageId: string
+  ): string {
+    const subtree = snapshotSubtree(ctx.graph, pageId)
     ctx.undo.push({
-      label: 'Add page',
+      label,
       forward: () => {
-        restorePage(page.id, index, subtree)
-        void switchPage(page.id)
+        restorePage(pageId, index, subtree)
+        void switchPage(pageId)
       },
       inverse: () => {
-        if (ctx.state.currentPageId === page.id && ctx.graph.getNode(previousPageId))
+        if (ctx.state.currentPageId === pageId && ctx.graph.getNode(previousPageId))
           void switchPage(previousPageId)
-        removePage(page.id)
+        removePage(pageId)
       }
     })
-    void switchPage(page.id)
-    return page.id
+    void switchPage(pageId)
+    return pageId
   }
 
   /**
@@ -333,21 +343,7 @@ export function createPageActions(ctx: EditorContext) {
     const root = ctx.graph.getChildren(ctx.graph.rootId)
     ctx.graph.reorderChild(page.id, ctx.graph.rootId, root.findIndex(({ id }) => id === pageId) + 1)
     const index = ctx.graph.getChildren(ctx.graph.rootId).findIndex(({ id }) => id === page.id)
-    const subtree = snapshotSubtree(ctx.graph, page.id)
-    ctx.undo.push({
-      label: 'Duplicate page',
-      forward: () => {
-        restorePage(page.id, index, subtree)
-        void switchPage(page.id)
-      },
-      inverse: () => {
-        if (ctx.state.currentPageId === page.id && ctx.graph.getNode(previousPageId))
-          void switchPage(previousPageId)
-        removePage(page.id)
-      }
-    })
-    void switchPage(page.id)
-    return page.id
+    return showNewPage('Duplicate page', page.id, index, previousPageId)
   }
 
   /** Deletes a page and its layers as one undo step, which brings both back where they were. */

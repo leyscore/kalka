@@ -151,28 +151,19 @@ export function createClipboardAssetActions(
     x: number,
     y: number
   ): string {
-    const hash = storeImage(asset.bytes)
-    const fill: Fill = {
+    return createPaintedRectangle(asset, parentId, x, y, {
       type: 'IMAGE',
-      imageHash: hash,
+      imageHash: storeImage(asset.bytes),
       imageScaleMode: 'FILL',
       color: TRANSPARENT,
       opacity: 1,
       visible: true
-    }
-    return ctx.graph.createNode('RECTANGLE', parentId, {
-      name: asset.name.replace(/\.[^.]+$/, ''),
-      x,
-      y,
-      width: asset.width,
-      height: asset.height,
-      fills: [fill]
-    }).id
+    })
   }
 
   /** A layer the size of a video with its video paint, as Figma places a video. */
   function createVideoNode(asset: PreparedVideo, parentId: string, x: number, y: number): string {
-    const fill: Fill = {
+    return createPaintedRectangle(asset, parentId, x, y, {
       type: 'VIDEO',
       videoHash: storeImage(asset.bytes),
       imageHash: storeImage(asset.poster),
@@ -180,7 +171,17 @@ export function createClipboardAssetActions(
       color: TRANSPARENT,
       opacity: 1,
       visible: true
-    }
+    })
+  }
+
+  /** A layer the size of a placed file, named after it, painted with `fill`. */
+  function createPaintedRectangle(
+    asset: { name: string; width: number; height: number },
+    parentId: string,
+    x: number,
+    y: number,
+    fill: Fill
+  ): string {
     return ctx.graph.createNode('RECTANGLE', parentId, {
       name: asset.name.replace(/\.[^.]+$/, ''),
       x,
@@ -200,6 +201,10 @@ export function createClipboardAssetActions(
       case 'svg':
         return createSVGNodesFromImport(ctx.graph, parentId, asset.data, { name: asset.name, x, y })
           ?.id
+      default: {
+        const exhaustive: never = asset
+        return exhaustive
+      }
     }
   }
 

@@ -49,11 +49,17 @@ export const KeyboardSearch: Story = {
   }
 }
 
+/** Opens the variable picker of the story; the story and the page it opens in, to query. */
+async function openVariablePicker(canvasElement: HTMLElement) {
+  const canvas = within(canvasElement)
+  const page = within(canvasElement.ownerDocument.body)
+  await userEvent.click(canvas.getByRole('button', { name: 'Apply variable' }))
+  return { canvas, page }
+}
+
 export const CompactWithFooter: Story = {
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const page = within(canvasElement.ownerDocument.body)
-    await userEvent.click(canvas.getByRole('button', { name: 'Apply variable' }))
+    const { page } = await openVariablePicker(canvasElement)
     await waitFor(() =>
       expect(page.getByRole('button', { name: /Create number variable/ })).toBeVisible()
     )
@@ -63,9 +69,7 @@ export const CompactWithFooter: Story = {
 /** Opening highlights the first variable for the keys without previewing it; the keys do. */
 export const PreviewOnlyWhenChosen: Story = {
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const page = within(canvasElement.ownerDocument.body)
-    await userEvent.click(canvas.getByRole('button', { name: 'Apply variable' }))
+    const { canvas, page } = await openVariablePicker(canvasElement)
     const search = await page.findByPlaceholderText('Search variables')
     await waitFor(() => expect(search).toHaveFocus())
     await expect(canvas.getByText(/^Previewing:/)).toHaveTextContent('Previewing: —')

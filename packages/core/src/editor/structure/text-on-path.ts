@@ -5,7 +5,7 @@ import { createDefaultNode } from '@kalka/scene-graph/node-defaults'
 import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { getNodeEditCapability } from '#core/editor/capabilities'
-import { captureDocumentChange, restoreDocumentChange } from '#core/editor/history/document-change'
+import { captureDocumentChange, pushDocumentChange } from '#core/editor/history/document-change'
 import { newLayerDefaults } from '#core/editor/shapes/defaults'
 import type { EditorContext } from '#core/editor/types'
 import { fontManager, weightToStyle } from '#core/text/fonts'
@@ -112,17 +112,7 @@ export function createTextOnPathActions(ctx: EditorContext) {
     const change = finish()
     const selected = new Set([text.id])
     ctx.setSelectedIds(selected)
-    ctx.undo.push({
-      label: 'Text on path',
-      forward: () => {
-        restoreDocumentChange(ctx, change, 'after')
-        ctx.setSelectedIds(new Set(selected))
-      },
-      inverse: () => {
-        restoreDocumentChange(ctx, change, 'before')
-        ctx.setSelectedIds(new Set(before))
-      }
-    })
+    pushDocumentChange(ctx, 'Text on path', change, before, selected)
     ctx.requestRender()
     return text.id
   }

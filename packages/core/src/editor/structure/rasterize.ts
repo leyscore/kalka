@@ -1,22 +1,15 @@
 import type { Fill, SceneNode } from '@kalka/scene-graph'
 import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
+import type { VisualBounds } from '@kalka/scene-graph/geometry'
 import Matrix from '@kalka/scene-graph/matrix'
 
 import { TRANSPARENT } from '#core/constants'
 import { getNodeEditCapability } from '#core/editor/capabilities'
-import { captureDocumentChange, restoreDocumentChange } from '#core/editor/history/document-change'
+import { captureDocumentChange, pushDocumentChange } from '#core/editor/history/document-change'
 import type { EditorContext } from '#core/editor/types'
 import { computeImageHash } from '#core/figma-api'
 
 import { selectedNodesInSharedParent } from './selection'
-
-/** A region of the page, in page coordinates, as image export draws it. */
-export interface RasterBounds {
-  minX: number
-  minY: number
-  maxX: number
-  maxY: number
-}
 
 /**
  * Figma's Rasterize selection, once the selection has been drawn: the selected layers give way
@@ -27,7 +20,7 @@ export interface RasterBounds {
 export function replaceSelectionWithImage(
   ctx: EditorContext,
   bytes: Uint8Array,
-  bounds: RasterBounds
+  bounds: VisualBounds
 ): string | null {
   const nodes = [...ctx.state.selectedIds]
     .map((id) => ctx.graph.getNode(id))
@@ -70,17 +63,7 @@ export function replaceSelectionWithImage(
   const change = finish()
   const after = new Set([image.id])
   ctx.setSelectedIds(new Set(after))
-  ctx.undo.push({
-    label: 'Rasterize selection',
-    forward: () => {
-      restoreDocumentChange(ctx, change, 'after')
-      ctx.setSelectedIds(new Set(after))
-    },
-    inverse: () => {
-      restoreDocumentChange(ctx, change, 'before')
-      ctx.setSelectedIds(new Set(before))
-    }
-  })
+  pushDocumentChange(ctx, 'Rasterize selection', change, before, after)
   ctx.requestRender()
   return image.id
 }

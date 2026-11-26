@@ -1,4 +1,5 @@
 import { createsComponentCycle, type SceneNode } from '@kalka/scene-graph'
+import type { VisualBounds } from '@kalka/scene-graph/geometry'
 
 import { acceptingParent, acceptsChildren, prepareSlotEdits } from '#core/editor/components/slots'
 import { fitEnclosingGroupsWithUndo } from '#core/editor/structure/group-bounds'
@@ -16,7 +17,7 @@ import {
 import { ungroupSelected as ungroupImpl } from './structure/group'
 import { createLayerTypeActions } from './structure/layer-type'
 import { createObjectCommandActions } from './structure/object-commands'
-import { replaceSelectionWithImage, type RasterBounds } from './structure/rasterize'
+import { replaceSelectionWithImage } from './structure/rasterize'
 import {
   defaultNodeName,
   previewRenamedNodes,
@@ -204,7 +205,7 @@ export function createStructureActions(ctx: EditorContext) {
     outlineStrokeSelected,
     ...stateActions,
     ...createObjectCommandActions(ctx),
-    replaceSelectionWithImage: (bytes: Uint8Array, bounds: RasterBounds) =>
+    replaceSelectionWithImage: (bytes: Uint8Array, bounds: VisualBounds) =>
       replaceSelectionWithImage(ctx, bytes, bounds),
     ...createVectorPathActions(ctx),
     ...createScaleActions(ctx),

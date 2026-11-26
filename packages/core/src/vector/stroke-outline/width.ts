@@ -1,4 +1,4 @@
-import type { StrokeWidthPoint } from '@kalka/scene-graph'
+import { sortedWidthProfile, type StrokeWidthPoint } from '@kalka/scene-graph'
 
 /** How far a stroke reaches on each side of its path, in pixels. */
 export interface SideWidths {
@@ -71,18 +71,6 @@ export function matchStrokeWidthPreset(
       )
     }) ?? null
   )
-}
-
-/** A profile's points in order along the path, within the path. */
-export function sortedWidthProfile(profile: readonly StrokeWidthPoint[]): StrokeWidthPoint[] {
-  return profile
-    .filter((point) => Number.isFinite(point.position))
-    .map((point) => ({
-      position: Math.max(0, Math.min(1, point.position)),
-      ascent: Math.max(0, point.ascent),
-      descent: Math.max(0, point.descent)
-    }))
-    .sort((a, b) => a.position - b.position)
 }
 
 /**

@@ -17,7 +17,6 @@ export { outlineCenterline, polygonsToSVGPath, type OutlinePolygon } from './out
 export {
   hasWidthProfile,
   matchStrokeWidthPreset,
-  sortedWidthProfile,
   STROKE_WIDTH_PRESET_IDS,
   strokeWidthPreset,
   widthProfileFunction,

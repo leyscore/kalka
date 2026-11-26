@@ -272,9 +272,17 @@ function toSceneEffect(effect: ParsedEffect): Effect {
   }
   const blur: Effect = { ...base, type: effect.type, radius: effect.radius }
   if (effect.blurType !== 'PROGRESSIVE') return blur
+  return { ...blur, ...progressiveBlurFields(effect) }
+}
+
+/** A progressive blur's start and end, with Figma's defaults for what is left out. */
+function progressiveBlurFields(effect: {
+  startRadius?: number
+  startOffset?: Vector
+  endOffset?: Vector
+}) {
   return {
-    ...blur,
-    blurType: 'PROGRESSIVE',
+    blurType: 'PROGRESSIVE' as const,
     startRadius: effect.startRadius ?? 0,
     startOffset: { ...(effect.startOffset ?? { x: 0.5, y: 0 }) },
     endOffset: { ...(effect.endOffset ?? { x: 0.5, y: 1 }) }
@@ -318,13 +326,7 @@ function toFigmaBlur(effect: Effect, bindings: FigmaEffectBindings): FigmaEffect
     boundVariables: bindings.radius ? { radius: bindings.radius } : {}
   } as const
   if (effect.blurType !== 'PROGRESSIVE') return { ...blur, blurType: 'NORMAL' }
-  return {
-    ...blur,
-    blurType: 'PROGRESSIVE',
-    startRadius: effect.startRadius ?? 0,
-    startOffset: { ...(effect.startOffset ?? { x: 0.5, y: 0 }) },
-    endOffset: { ...(effect.endOffset ?? { x: 0.5, y: 1 }) }
-  }
+  return { ...blur, ...progressiveBlurFields(effect) }
 }
 
 function toFigmaNoise(effect: Effect): FigmaEffect {

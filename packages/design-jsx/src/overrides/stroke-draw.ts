@@ -1,6 +1,11 @@
 import * as v from 'valibot'
 
-import type { SceneNode, StrokeBrush, StrokeWidthPoint } from '@kalka/scene-graph'
+import {
+  sortedWidthProfile,
+  type SceneNode,
+  type StrokeBrush,
+  type StrokeWidthPoint
+} from '@kalka/scene-graph'
 
 /**
  * Figma Draw's stroke settings as props: `strokeWidthProfile` is the stroke's width along its
@@ -46,13 +51,7 @@ function brushDefaults(type: StrokeBrush['type']): Omit<StrokeBrush, 'type' | 'i
 function widthProfile(value: unknown): StrokeWidthPoint[] | null {
   const parsed = v.safeParse(v.array(WidthPoint), value)
   if (!parsed.success) return null
-  return parsed.output
-    .map((point) => ({
-      position: Math.max(0, Math.min(1, point.position)),
-      ascent: Math.max(0, point.ascent),
-      descent: Math.max(0, point.descent)
-    }))
-    .sort((a, b) => a.position - b.position)
+  return sortedWidthProfile(parsed.output)
 }
 
 function brush(value: unknown): StrokeBrush | null | undefined {

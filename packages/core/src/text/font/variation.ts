@@ -71,6 +71,18 @@ function fontName(view: DataView, name: TableRange, nameId: number): string | nu
   return fallback
 }
 
+/** Where a font's `fvar` table keeps its axes, or null for a font without one. */
+function fvarAxes(view: DataView) {
+  const fvar = sfntTable(view, 'fvar')
+  if (!fvar || fvar.length < FVAR_HEADER_SIZE) return null
+  return {
+    fvar,
+    axesOffset: fvar.offset + view.getUint16(fvar.offset + 4),
+    axisCount: view.getUint16(fvar.offset + 8),
+    axisSize: view.getUint16(fvar.offset + 10)
+  }
+}
+
 /**
  * Returns the axis coordinates a variable font needs to render `style`, preferring the named
  * instance with that name (for example SF Pro `Medium` is `wght` 510) and otherwise clamping the
@@ -78,12 +90,9 @@ function fontName(view: DataView, name: TableRange, nameId: number): string | nu
  */
 export function namedInstanceVariations(data: ArrayBuffer, style: string): FontVariation[] | null {
   const view = new DataView(data)
-  const fvar = sfntTable(view, 'fvar')
-  if (!fvar || fvar.length < FVAR_HEADER_SIZE) return null
-
-  const axesOffset = fvar.offset + view.getUint16(fvar.offset + 4)
-  const axisCount = view.getUint16(fvar.offset + 8)
-  const axisSize = view.getUint16(fvar.offset + 10)
+  const header = fvarAxes(view)
+  if (!header) return null
+  const { fvar, axesOffset, axisCount, axisSize } = header
   const instanceCount = view.getUint16(fvar.offset + 12)
   const instanceSize = view.getUint16(fvar.offset + 14)
   if (axisSize < AXIS_RECORD_SIZE || instanceSize < 4 + axisCount * 4) return null
@@ -139,11 +148,9 @@ const ITALIC_BIT = 1
 
 /** A variable font's weight range, such as `100 900`, from its `wght` axis. */
 function weightRange(view: DataView): string | null {
-  const fvar = sfntTable(view, 'fvar')
-  if (!fvar || fvar.length < FVAR_HEADER_SIZE) return null
-  const axesOffset = fvar.offset + view.getUint16(fvar.offset + 4)
-  const axisCount = view.getUint16(fvar.offset + 8)
-  const axisSize = view.getUint16(fvar.offset + 10)
+  const header = fvarAxes(view)
+  if (!header) return null
+  const { fvar, axesOffset, axisCount, axisSize } = header
   for (let index = 0; index < axisCount; index++) {
     const axis = axesOffset + index * axisSize
     if (axis + AXIS_RECORD_SIZE > fvar.offset + fvar.length) return null

@@ -3,8 +3,7 @@ import { getNodeLocalMatrix } from '@kalka/scene-graph/coordinate'
 import Matrix from '@kalka/scene-graph/matrix'
 
 import { canOffsetNode, offsetNodeToVectorProps, type OffsetPathOptions } from '#core/canvas/offset'
-import { getNodeEditCapability } from '#core/editor/capabilities'
-import { captureDocumentChange, restoreDocumentChange } from '#core/editor/history/document-change'
+import { editableSelection, recordSelectionEdit } from '#core/editor/structure/selection-edit'
 import type { EditorContext } from '#core/editor/types'
 import {
   computeAccurateBounds,
@@ -44,46 +43,14 @@ export function vectorNetworkChanges(node: SceneNode, network: VectorNetwork): P
  * Offset path. Each is one undo step over the selection.
  */
 export function createVectorPathActions(ctx: EditorContext) {
-  function selection(): SceneNode[] {
-    return [...ctx.state.selectedIds]
-      .map((id) => ctx.graph.getNode(id))
-      .filter(
-        (node): node is SceneNode =>
-          node !== undefined && getNodeEditCapability(ctx.graph, node.id).editable
-      )
-  }
+  const selection = () => editableSelection(ctx)
 
   function selectedVectors(): SceneNode[] {
     return selection().filter((node) => node.type === 'VECTOR' && node.vectorNetwork)
   }
 
-  function record(label: string, edit: () => Set<string> | null): boolean {
-    const before = new Set(ctx.state.selectedIds)
-    const finish = captureDocumentChange(ctx.graph, ctx.state.currentPageId)
-    let after: Set<string> | null = null
-    try {
-      after = edit()
-    } finally {
-      const change = finish()
-      if (after) {
-        const selected = after
-        ctx.setSelectedIds(new Set(selected))
-        ctx.undo.push({
-          label,
-          forward: () => {
-            restoreDocumentChange(ctx, change, 'after')
-            ctx.setSelectedIds(new Set(selected))
-          },
-          inverse: () => {
-            restoreDocumentChange(ctx, change, 'before')
-            ctx.setSelectedIds(new Set(before))
-          }
-        })
-        ctx.requestRender()
-      }
-    }
-    return after !== null
-  }
+  const record = (label: string, edit: () => Set<string> | null) =>
+    recordSelectionEdit(ctx, label, edit)
 
   function rewritePaths(label: string, rewrite: (network: VectorNetwork) => VectorNetwork) {
     const vectors = selectedVectors()

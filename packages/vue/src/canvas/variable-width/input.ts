@@ -4,12 +4,11 @@ import type { Editor, WidthHandle } from '@kalka/core/editor'
 import {
   nearestOnCenterline,
   pointAtLength,
-  sortedWidthProfile,
   strokeCenterlines,
   widthProfileFunction,
   type Centerline
 } from '@kalka/core/vector'
-import type { SceneNode, StrokeWidthPoint } from '@kalka/scene-graph'
+import { sortedWidthProfile, type SceneNode, type StrokeWidthPoint } from '@kalka/scene-graph'
 import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
 import Matrix from '@kalka/scene-graph/matrix'
 import type { Vector } from '@kalka/scene-graph/primitives'

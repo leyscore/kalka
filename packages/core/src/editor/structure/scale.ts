@@ -9,7 +9,7 @@ import Matrix from '@kalka/scene-graph/matrix'
 import type { Vector } from '@kalka/scene-graph/primitives'
 
 import { getNodeEditCapability } from '#core/editor/capabilities'
-import { captureDocumentChange, restoreDocumentChange } from '#core/editor/history/document-change'
+import { captureDocumentChange, pushDocumentChange } from '#core/editor/history/document-change'
 import type { EditorContext } from '#core/editor/types'
 
 /** The smallest factor a drag can reach, as `rescale()` allows. */
@@ -96,18 +96,7 @@ export function createScaleActions(ctx: EditorContext) {
         done = true
         const change = finish()
         if (current === 1) return
-        const selected = new Set(ids)
-        ctx.undo.push({
-          label: 'Scale',
-          forward: () => {
-            restoreDocumentChange(ctx, change, 'after')
-            ctx.setSelectedIds(new Set(selected))
-          },
-          inverse: () => {
-            restoreDocumentChange(ctx, change, 'before')
-            ctx.setSelectedIds(new Set(before))
-          }
-        })
+        pushDocumentChange(ctx, 'Scale', change, before, new Set(ids))
       },
       cancel() {
         if (done) return

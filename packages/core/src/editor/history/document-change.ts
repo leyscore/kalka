@@ -369,3 +369,27 @@ export function restoreDocumentChange(
   }
   ctx.requestRender()
 }
+
+/**
+ * Records `change` as one undo step: redo applies it and selects `after`, undo puts it back and
+ * selects `before`.
+ */
+export function pushDocumentChange(
+  ctx: EditorContext,
+  label: string,
+  change: DocumentChange,
+  before: ReadonlySet<string>,
+  after: ReadonlySet<string>
+): void {
+  ctx.undo.push({
+    label,
+    forward: () => {
+      restoreDocumentChange(ctx, change, 'after')
+      ctx.setSelectedIds(new Set(after))
+    },
+    inverse: () => {
+      restoreDocumentChange(ctx, change, 'before')
+      ctx.setSelectedIds(new Set(before))
+    }
+  })
+}

@@ -126,6 +126,7 @@ import { normalizeVectorNetwork } from './vector-network'
 export type { GUID, Color, Size, Vector } from './primitives'
 export * from './types'
 export * from './hyperlinks'
+export { sortedWidthProfile } from './stroke-width'
 
 import {
   getAbsolutePosition,

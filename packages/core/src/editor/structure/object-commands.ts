@@ -5,9 +5,8 @@ import {
   type Stroke
 } from '@kalka/scene-graph'
 
-import { getNodeEditCapability } from '#core/editor/capabilities'
-import { captureDocumentChange, restoreDocumentChange } from '#core/editor/history/document-change'
 import { ungroupNode } from '#core/editor/structure/group'
+import { editableSelection, recordSelectionEdit } from '#core/editor/structure/selection-edit'
 import type { EditorContext } from '#core/editor/types'
 
 /** Types Figma's Remove frame turns into their children. */
@@ -72,44 +71,10 @@ export function swappedPaints(node: SceneNode): Partial<SceneNode> {
  * one undo step that brings the selection back with it.
  */
 export function createObjectCommandActions(ctx: EditorContext) {
-  function selection(): SceneNode[] {
-    return [...ctx.state.selectedIds]
-      .map((id) => ctx.graph.getNode(id))
-      .filter(
-        (node): node is SceneNode =>
-          node !== undefined && getNodeEditCapability(ctx.graph, node.id).editable
-      )
-  }
+  const selection = () => editableSelection(ctx)
 
-  /** Runs `edit` as one undo step; it returns the selection to show after it, or null for none. */
-  function record(label: string, edit: () => Set<string> | null): boolean {
-    const pageId = ctx.state.currentPageId
-    const before = new Set(ctx.state.selectedIds)
-    const finish = captureDocumentChange(ctx.graph, pageId)
-    let after: Set<string> | null = null
-    try {
-      after = edit()
-    } finally {
-      const change = finish()
-      if (after) {
-        const selected = after
-        ctx.setSelectedIds(new Set(selected))
-        ctx.undo.push({
-          label,
-          forward: () => {
-            restoreDocumentChange(ctx, change, 'after')
-            ctx.setSelectedIds(new Set(selected))
-          },
-          inverse: () => {
-            restoreDocumentChange(ctx, change, 'before')
-            ctx.setSelectedIds(new Set(before))
-          }
-        })
-        ctx.requestRender()
-      }
-    }
-    return after !== null
-  }
+  const record = (label: string, edit: () => Set<string> | null) =>
+    recordSelectionEdit(ctx, label, edit)
 
   function canRemoveFrame(nodes = selection()): boolean {
     return nodes.some(

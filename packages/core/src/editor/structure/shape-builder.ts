@@ -16,7 +16,7 @@ import {
   type ShapeBuilderPart
 } from '#core/canvas/shape-builder'
 import { getNodeEditCapability } from '#core/editor/capabilities'
-import { captureDocumentChange, restoreDocumentChange } from '#core/editor/history/document-change'
+import { captureDocumentChange, pushDocumentChange } from '#core/editor/history/document-change'
 import type { EditorContext } from '#core/editor/types'
 
 export type ShapeBuilderMode = 'merge' | 'remove'
@@ -262,17 +262,7 @@ export function createShapeBuilderActions(ctx: EditorContext) {
       ids = next
       const selected = new Set(ids)
       ctx.setSelectedIds(new Set(selected))
-      ctx.undo.push({
-        label: 'Shape builder',
-        forward: () => {
-          restoreDocumentChange(ctx, change, 'after')
-          ctx.setSelectedIds(new Set(selected))
-        },
-        inverse: () => {
-          restoreDocumentChange(ctx, change, 'before')
-          ctx.setSelectedIds(new Set(before))
-        }
-      })
+      pushDocumentChange(ctx, 'Shape builder', change, before, selected)
       rebuild()
       ctx.requestRender()
       return true
