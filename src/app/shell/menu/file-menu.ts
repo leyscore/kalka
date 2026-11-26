@@ -14,7 +14,7 @@ export const FILE_MENU = {
     { id: 'open-storage-workspace', label: 'Open Storage Workspace…', handler: 'shell' },
     { id: 'import-claude-design', label: 'Import Claude Design Project…' },
     // Figma's ⇧⌘K is Create component set here.
-    { id: 'place-image', label: 'Place Image…' },
+    { id: 'place-image', label: 'Place Image/Video…' },
     { type: 'separator' },
     { id: 'save', label: 'Save', shortcut: 'MOD+S' },
     { id: 'save-as', label: 'Save As…', shortcut: 'MOD+SHIFT+S' },
