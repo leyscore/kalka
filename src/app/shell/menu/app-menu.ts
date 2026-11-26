@@ -139,6 +139,7 @@ export function useAppMenu() {
     'selection.moveToPage': 'moveToPage',
     'select-all-with-same': 'selectAllWithSame',
     'collapse-layers': 'collapseLayers',
+    'rasterize-selection': 'rasterizeSelection',
     language: 'language',
     preferences: 'preferences',
     settings: 'settings',

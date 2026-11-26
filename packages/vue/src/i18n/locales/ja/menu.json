@@ -118,6 +118,7 @@
   "increaseLetterSpacing": "文字間隔を広げる",
   "decreaseLetterSpacing": "文字間隔を狭める",
   "collapseLayers": "レイヤーを折りたたむ",
+  "rasterizeSelection": "選択範囲をラスタライズ",
   "rotate": "回転",
   "zoomTo50": "50%にズーム",
   "zoomTo200": "200%にズーム",

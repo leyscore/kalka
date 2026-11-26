@@ -16,6 +16,7 @@ import {
 import { ungroupSelected as ungroupImpl } from './structure/group'
 import { createLayerTypeActions } from './structure/layer-type'
 import { createObjectCommandActions } from './structure/object-commands'
+import { replaceSelectionWithImage, type RasterBounds } from './structure/rasterize'
 import {
   defaultNodeName,
   previewRenamedNodes,
@@ -202,6 +203,8 @@ export function createStructureActions(ctx: EditorContext) {
     outlineStrokeSelected,
     ...stateActions,
     ...createObjectCommandActions(ctx),
+    replaceSelectionWithImage: (bytes: Uint8Array, bounds: RasterBounds) =>
+      replaceSelectionWithImage(ctx, bytes, bounds),
     ...createVectorPathActions(ctx),
     ...createScaleActions(ctx),
     ...createShapeBuilderActions(ctx),

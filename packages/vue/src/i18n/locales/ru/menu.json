@@ -118,6 +118,7 @@
   "increaseLetterSpacing": "Увеличить межбуквенный интервал",
   "decreaseLetterSpacing": "Уменьшить межбуквенный интервал",
   "collapseLayers": "Свернуть слои",
+  "rasterizeSelection": "Растрировать выделение",
   "rotate": "Повернуть",
   "zoomTo50": "Масштаб 50%",
   "zoomTo200": "Масштаб 200%",

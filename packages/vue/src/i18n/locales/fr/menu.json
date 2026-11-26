@@ -118,6 +118,7 @@
   "increaseLetterSpacing": "Augmenter l’espacement des lettres",
   "decreaseLetterSpacing": "Diminuer l’espacement des lettres",
   "collapseLayers": "Replier les calques",
+  "rasterizeSelection": "Rastériser la sélection",
   "rotate": "Rotation",
   "zoomTo50": "Zoom à 50 %",
   "zoomTo200": "Zoom à 200 %",

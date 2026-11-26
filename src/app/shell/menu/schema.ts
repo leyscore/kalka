@@ -430,6 +430,7 @@ export const APP_MENU_SCHEMA = [
         label: 'Outline stroke',
         command: 'selection.outlineStroke'
       },
+      { id: 'rasterize-selection', label: 'Rasterize Selection', shortcut: 'MOD+E' },
       { type: 'separator' },
       {
         id: 'selection.createComponent',

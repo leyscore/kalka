@@ -126,6 +126,7 @@ export const menuMessageDefaults = {
   increaseLetterSpacing: 'Increase letter spacing',
   decreaseLetterSpacing: 'Decrease letter spacing',
   collapseLayers: 'Collapse layers',
+  rasterizeSelection: 'Rasterize selection',
   rotate: 'Rotate',
   zoomTo50: 'Zoom to 50%',
   zoomTo200: 'Zoom to 200%',

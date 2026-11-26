@@ -5,6 +5,7 @@ import { duplicateDocument } from '@/app/document/io/duplicate'
 import { revertToSaved } from '@/app/document/io/revert'
 import { useEditorStore } from '@/app/editor/active-store'
 import { placeImage } from '@/app/editor/clipboard/place-image'
+import { rasterizeSelection } from '@/app/editor/selection/rasterize'
 import {
   setDesignIssuesOnCanvas,
   setEditingPreference,
@@ -125,6 +126,7 @@ export function createSharedEditorMenuActions(
     },
     'toggle-preview': () => store.togglePlay(),
     'collapse-layers': () => store.collapseLayers(),
+    'rasterize-selection': () => void rasterizeSelection(store),
     'theme-light': () => setTheme('light'),
     'theme-dark': () => setTheme('dark'),
     'theme-auto': () => setTheme('auto'),

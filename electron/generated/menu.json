@@ -693,6 +693,11 @@
         "accelerator": "CmdOrCtrl+Alt+O"
       },
       {
+        "id": "rasterize-selection",
+        "label": "Rasterize Selection",
+        "accelerator": "CmdOrCtrl+E"
+      },
+      {
         "type": "separator"
       },
       {
