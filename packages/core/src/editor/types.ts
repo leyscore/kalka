@@ -133,6 +133,8 @@ export interface ShapeBuilderOverlay {
   picked: number[]
   /** The picked regions are being removed (Option/Alt), not merged. */
   removing: boolean
+  /** What letting go would make: the merged or removed area, and the merged shape's color. */
+  preview: { d: string; color: Color | null } | null
 }
 
 export interface EditorViewState {

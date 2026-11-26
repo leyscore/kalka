@@ -47,12 +47,17 @@ function currentSession(editor: Editor): ShapeBuilderSession | null {
     outlines: session.outlines(),
     hovered: null,
     picked: [],
-    removing: false
+    removing: false,
+    preview: null
   }
   editor.requestRepaint()
   return session
 }
 
+/**
+ * Marks the hovered and picked regions, with what letting go would make: the picked ones merged
+ * into one shape in its paint, or cut away.
+ */
 function showFaces(editor: Editor, hovered: number | null, picked: number[], removing: boolean) {
   const overlay = editor.state.shapeBuilder
   if (!overlay) return
@@ -63,7 +68,13 @@ function showFaces(editor: Editor, hovered: number | null, picked: number[], rem
   ) {
     return
   }
-  editor.state.shapeBuilder = { ...overlay, hovered, picked: [...picked], removing }
+  const session = sessions.get(editor)?.session
+  let preview = overlay.preview
+  if (overlay.picked.length !== picked.length || overlay.removing !== removing) {
+    const mode = removing ? 'remove' : 'merge'
+    preview = picked.length > 0 && session ? session.preview(picked, mode) : null
+  }
+  editor.state.shapeBuilder = { ...overlay, hovered, picked: [...picked], removing, preview }
   editor.requestRepaint()
 }
 
@@ -127,7 +138,8 @@ export function finishShapeBuilderDrag(drag: DragShapeBuilder, editor: Editor, c
       outlines: live.session.outlines(),
       hovered: null,
       picked: [],
-      removing: drag.remove
+      removing: drag.remove,
+      preview: null
     }
     editor.requestRepaint()
     return

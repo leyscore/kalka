@@ -52,7 +52,11 @@ export { opacityFromBuffer } from './nodes'
 export { layerTypeOptions, type LayerType } from './structure/layer-type'
 export type { NodePreview } from './node-preview'
 export type { ScaleSession } from './structure/scale'
-export type { ShapeBuilderMode, ShapeBuilderSession } from './structure/shape-builder'
+export type {
+  ShapeBuilderMode,
+  ShapeBuilderPreview,
+  ShapeBuilderSession
+} from './structure/shape-builder'
 export { EDITOR_TOOLS, TOOL_SHORTCUTS } from './tool-registry'
 export type { RenameSelectionOptions, RenameSelectionPreview } from './structure/rename'
 export {

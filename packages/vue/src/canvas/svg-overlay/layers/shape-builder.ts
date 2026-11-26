@@ -9,7 +9,8 @@ const REMOVE_COLOR: Color = { r: 0.949, g: 0.282, b: 0.133, a: 1 }
 
 /**
  * The Shape builder: every region outlined with a dashed line, the hovered one tinted, and those a
- * drag has picked filled, in blue to merge or red to remove.
+ * drag has picked filled, in blue to merge or red to remove. While a drag merges, the regions it
+ * has picked show as the one shape they will make, in its paint.
  */
 export function shapeBuilderLayer(context: OverlayContext): OverlayShape[] {
   const state = context.overlays.shapeBuilder
@@ -28,5 +29,16 @@ export function shapeBuilderLayer(context: OverlayContext): OverlayShape[] {
     }
     return marked ? { ...outline, fill: css(color, picked ? 0.35 : 0.18) } : outline
   })
+  const preview = state.preview
+  if (preview) {
+    children.push({
+      type: 'path',
+      d: preview.d,
+      fill:
+        preview.color && !state.removing ? css(preview.color, preview.color.a) : css(color, 0.35),
+      stroke: css(color, 1),
+      strokeWidth: 1
+    })
+  }
   return [{ type: 'group', matrix: [zoom, 0, panX, 0, zoom, panY, 0, 0, 1], children }]
 }

@@ -106,6 +106,7 @@ export interface RenderOverlays {
     hovered: number | null
     picked: number[]
     removing: boolean
+    preview: { d: string; color: Color | null } | null
   } | null
   nodeEditState?: {
     nodeId: string

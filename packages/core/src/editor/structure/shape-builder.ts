@@ -1,23 +1,33 @@
 import type { Path } from 'canvaskit-wasm'
-import { pick } from 'es-toolkit/object'
+import { omit, pick } from 'es-toolkit/object'
 
 import { PAINT_FIELDS, STROKE_FIELDS, type SceneNode } from '@kalka/scene-graph'
 import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
 import Matrix from '@kalka/scene-graph/matrix'
 import { parseSVGPath } from '@kalka/scene-graph/parse-path'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import type { SkiaRenderer } from '#core/canvas/renderer'
 import {
   canBuildShapeFrom,
-  pageShapePath,
+  pageShapeParts,
   shapeBuilderFaces,
-  type ShapeBuilderFace
+  type ShapeBuilderFace,
+  type ShapeBuilderPart
 } from '#core/canvas/shape-builder'
 import { getNodeEditCapability } from '#core/editor/capabilities'
 import { captureDocumentChange, restoreDocumentChange } from '#core/editor/history/document-change'
 import type { EditorContext } from '#core/editor/types'
 
 export type ShapeBuilderMode = 'merge' | 'remove'
+
+/** What a drag over regions would make: the merged or removed area, and the merged shape's color. */
+export interface ShapeBuilderPreview {
+  /** SVG path data on the page. */
+  d: string
+  /** The first solid paint the merged shape takes; null when removing or not solid. */
+  color: Color | null
+}
 
 export interface ShapeBuilderSession {
   /** The region under a page point, or null. */
@@ -29,13 +39,17 @@ export interface ShapeBuilderSession {
    * the regions are cut again from the shapes as they now are. Whether anything changed.
    */
   apply: (faces: readonly number[], mode: ShapeBuilderMode) => boolean
+  /** The outcome of applying the regions, for the drag to show before it lets go. */
+  preview: (faces: readonly number[], mode: ShapeBuilderMode) => ShapeBuilderPreview | null
   dispose: () => void
 }
 
 /**
  * Figma's Shape builder (Shift+M) over the selected shapes. Merging regions makes one new vector
  * with the paints of the top shape under the first region, and cuts it out of the shapes it came
- * from; removing cuts the regions out. A shape that changes becomes a vector with its paints.
+ * from; removing cuts the regions out. A shape that changes becomes a vector with its paints. A
+ * stroke is its own region: what is left of a stroked shape becomes a vector of its fill and one
+ * of its stroke, as Outline stroke makes it, and a region of a stroke merges in the stroke's paint.
  */
 export function createShapeBuilderActions(ctx: EditorContext) {
   function shapeIds(ids: Iterable<string>): string[] {
@@ -80,21 +94,42 @@ export function createShapeBuilderActions(ctx: EditorContext) {
     }
   }
 
-  /** Puts a vector with `source`'s paints and the path's shape at `index` in its parent. */
+  /**
+   * The paints a part of `source` keeps: a fill part its fills (and its strokes when they are not
+   * a part of their own), a stroke part its strokes as fills.
+   */
+  function partPaints(
+    source: SceneNode,
+    stroke: boolean,
+    strokeSplit: boolean
+  ): Partial<SceneNode> {
+    const paints = structuredClone(pick(source, [...PAINT_FIELDS, ...STROKE_FIELDS]))
+    if (stroke) {
+      const fills = source.strokes
+        .filter((item) => item.visible)
+        .map((item) =>
+          omit(structuredClone(item), ['weight', 'align', 'cap', 'join', 'dashPattern'])
+        )
+      return { ...paints, fills, strokes: [] }
+    }
+    return strokeSplit ? { ...paints, strokes: [] } : paints
+  }
+
+  /** Puts a vector with a part of `source`'s paints and the path's shape at `index` in its parent. */
   function placeVector(
     r: SkiaRenderer,
     source: SceneNode,
     path: Path,
     index: number,
-    name = source.name
+    paints: Partial<SceneNode>
   ): string | null {
     const parentId = source.parentId
     const fields = parentId ? vectorFields(r, path, parentId) : null
     if (!parentId || !fields) return null
     const vector = ctx.graph.createNode('VECTOR', parentId, {
-      ...structuredClone(pick(source, [...PAINT_FIELDS, ...STROKE_FIELDS])),
+      ...paints,
       ...fields,
-      name
+      name: source.name
     })
     ctx.graph.insertChildAt(vector.id, parentId, index)
     return vector.id
@@ -110,7 +145,7 @@ export function createShapeBuilderActions(ctx: EditorContext) {
     let ids = shapeIds(ctx.state.selectedIds)
     if (!r || ids.length === 0) return null
     const renderer = r
-    let shapes: { id: string; path: Path }[] = []
+    let shapes: ShapeBuilderPart[] = []
     let faces: ShapeBuilderFace[] = []
 
     function release() {
@@ -124,10 +159,10 @@ export function createShapeBuilderActions(ctx: EditorContext) {
       release()
       shapes = ids.flatMap((id) => {
         const node = ctx.graph.getNode(id)
-        const path = node ? pageShapePath(renderer, ctx.graph, node) : null
-        return path ? [{ id, path }] : []
+        return node ? pageShapeParts(renderer, ctx.graph, node) : []
       })
-      // Bottom to top, so a region's last owner is the shape drawn over the others there.
+      // Bottom to top, so a region's last owner is the shape drawn over the others there; the
+      // sort keeps a layer's fill under its stroke.
       shapes.sort((a, b) => stackOrder(a.id) - stackOrder(b.id))
       faces = shapeBuilderFaces(renderer, shapes)
     }
@@ -137,11 +172,13 @@ export function createShapeBuilderActions(ctx: EditorContext) {
       return node ? indexInParent(node) : 0
     }
 
-    function apply(chosen: readonly number[], mode: ShapeBuilderMode): boolean {
-      const picked = [...new Set(chosen)].flatMap((i) => (faces[i] ? [faces[i]] : []))
-      if (picked.length === 0) return false
-      // The regions touch along shared edges; a union makes them one outline.
-      let united: Path | null = picked[0].path.copy()
+    function pickedFaces(chosen: readonly number[]): ShapeBuilderFace[] {
+      return [...new Set(chosen)].flatMap((i) => (faces[i] ? [faces[i]] : []))
+    }
+
+    /** The regions as one outline: they touch along shared edges. The caller deletes it. */
+    function unite(picked: readonly ShapeBuilderFace[]): Path | null {
+      let united: Path | null = picked.length > 0 ? picked[0].path.copy() : null
       for (const face of picked.slice(1)) {
         if (!united) break
         const next: Path | null = renderer.ck.Path.MakeFromOp(
@@ -152,27 +189,72 @@ export function createShapeBuilderActions(ctx: EditorContext) {
         united.delete()
         united = next
       }
+      return united
+    }
+
+    function hasStrokePart(id: string): boolean {
+      return shapes.some((shape) => shape.id === id && shape.stroke)
+    }
+
+    /** The node a merge takes its paints from, and whether from its stroke. */
+    function mergeSource(face: ShapeBuilderFace) {
+      const node = ctx.graph.getNode(face.owners[face.owners.length - 1])
+      return node ? { node, stroke: face.topStroke } : null
+    }
+
+    function preview(
+      chosen: readonly number[],
+      mode: ShapeBuilderMode
+    ): ShapeBuilderPreview | null {
+      const picked = pickedFaces(chosen)
+      const united = unite(picked)
+      if (!united) return null
+      const d = united.toSVGString()
+      united.delete()
+      const source = mode === 'merge' ? mergeSource(picked[0]) : null
+      const paints = source ? (source.stroke ? source.node.strokes : source.node.fills) : []
+      const solid = paints.find((paint) => paint.visible && paint.type === 'SOLID')
+      return {
+        d,
+        color: solid ? { ...solid.color, a: solid.color.a * solid.opacity } : null
+      }
+    }
+
+    function apply(chosen: readonly number[], mode: ShapeBuilderMode): boolean {
+      const picked = pickedFaces(chosen)
+      const united = unite(picked)
       if (!united) return false
 
       const before = new Set(ctx.state.selectedIds)
       const finish = captureDocumentChange(ctx.graph, ctx.state.currentPageId)
       const touched = new Set(picked.flatMap((face) => face.owners))
       const next = ids.filter((id) => !touched.has(id))
-      const topOwner = ctx.graph.getNode(picked[0].owners[picked[0].owners.length - 1])
-      if (mode === 'merge' && topOwner) {
-        const merged = placeVector(renderer, topOwner, united, indexInParent(topOwner) + 1)
+      const source = mode === 'merge' ? mergeSource(picked[0]) : null
+      if (source) {
+        const paints = partPaints(source.node, source.stroke, hasStrokePart(source.node.id))
+        const index = indexInParent(source.node) + 1
+        const merged = placeVector(renderer, source.node, united, index, paints)
         if (merged) next.push(merged)
       }
-      for (const shape of shapes) {
-        if (!touched.has(shape.id)) continue
-        const node = ctx.graph.getNode(shape.id)
-        const left = renderer.ck.Path.MakeFromOp(shape.path, united, renderer.ck.PathOp.Difference)
-        if (node && left && !left.isEmpty()) {
-          const replaced = placeVector(renderer, node, left, indexInParent(node))
-          if (replaced) next.push(replaced)
+      for (const id of touched) {
+        const node = ctx.graph.getNode(id)
+        if (!node) continue
+        const split = hasStrokePart(id)
+        let index = indexInParent(node)
+        for (const part of shapes.filter((shape) => shape.id === id)) {
+          const op = renderer.ck.PathOp.Difference
+          const left = renderer.ck.Path.MakeFromOp(part.path, united, op)
+          if (left && !left.isEmpty()) {
+            const paints = partPaints(node, part.stroke, split)
+            const replaced = placeVector(renderer, node, left, index, paints)
+            if (replaced) {
+              next.push(replaced)
+              index++
+            }
+          }
+          left?.delete()
         }
-        left?.delete()
-        ctx.graph.deleteNode(shape.id)
+        ctx.graph.deleteNode(id)
       }
       united.delete()
 
@@ -205,6 +287,7 @@ export function createShapeBuilderActions(ctx: EditorContext) {
       },
       outlines: () => faces.map((face) => face.path.toSVGString()),
       apply,
+      preview,
       dispose: release
     }
   }
