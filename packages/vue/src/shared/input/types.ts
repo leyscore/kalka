@@ -16,6 +16,27 @@ export type HandlePosition = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
 
 export type CornerPosition = 'nw' | 'ne' | 'se' | 'sw'
 
+export type CornerKey =
+  | 'topLeftRadius'
+  | 'topRightRadius'
+  | 'bottomRightRadius'
+  | 'bottomLeftRadius'
+
+export type CornerRadii = Pick<SceneNode, CornerKey | 'cornerRadius' | 'independentCorners'>
+
+/** A corner radius handle being dragged. */
+export interface DragCornerRadius {
+  type: 'corner-radius'
+  nodeId: string
+  corner: CornerPosition
+  /** Option/Alt at the press: only this corner changes. */
+  single: boolean
+  /** How far into the layer the handle sat at the press. */
+  startDepth: number
+  startRadius: number
+  original: CornerRadii
+}
+
 export interface DragDraw {
   type: 'draw'
   /** Start point in the parent's axes. */
@@ -182,6 +203,7 @@ export type DragState =
   | DragEditHandle
   | DragBendHandle
   | DragGuide
+  | DragCornerRadius
 
 export const TOOL_TO_NODE: Partial<Record<Tool, NodeType>> = {
   FRAME: 'FRAME',

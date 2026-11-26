@@ -5,6 +5,7 @@ export { updateHoverCursor } from '#vue/shared/input/select/hover'
 import type { Editor } from '@kalka/core/editor'
 import type { SceneNode } from '@kalka/scene-graph'
 
+import { tryStartCornerRadius } from '#vue/shared/input/corner-radius'
 import { tryStartResize } from '#vue/shared/input/resize'
 import {
   createSelectionMoveDrag,
@@ -29,6 +30,26 @@ function startMarquee(cx: number, cy: number, editor: Editor, setDrag: (d: DragS
   setDrag({ type: 'marquee', startX: cx, startY: cy, containerId: container?.id })
 }
 
+/** Starts dragging a handle of the selection: a corner radius, the rotation, or a resize. */
+function startHandleDrag(
+  e: MouseEvent,
+  cx: number,
+  cy: number,
+  editor: Editor,
+  tryStartRotation: (cx: number, cy: number) => boolean,
+  setDrag: (d: DragState) => void
+): boolean {
+  const radiusDrag = tryStartCornerRadius(editor, cx, cy, e.altKey)
+  if (radiusDrag) {
+    setDrag(radiusDrag)
+    return true
+  }
+  if (tryStartRotation(cx, cy)) return true
+  const resizeDrag = tryStartResize(cx, cy, editor)
+  if (resizeDrag) setDrag(resizeDrag)
+  return resizeDrag !== null
+}
+
 export function handleSelectDown(
   e: MouseEvent,
   cx: number,
@@ -51,13 +72,7 @@ export function handleSelectDown(
 
   if (editor.state.editingTextId) editor.commitTextEdit()
 
-  if (tryStartRotation(cx, cy)) return
-
-  const resizeDrag = tryStartResize(cx, cy, editor)
-  if (resizeDrag) {
-    setDrag(resizeDrag)
-    return
-  }
+  if (startHandleDrag(e, cx, cy, editor, tryStartRotation, setDrag)) return
 
   const hit = resolveHit(cx, cy, editor, fns, e.metaKey || e.ctrlKey)
   if (!hit) {

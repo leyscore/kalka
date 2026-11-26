@@ -94,6 +94,19 @@ export interface RenderOverlays {
   presenceCursors?: PresenceCursor[]
   designIssues?: DesignIssueOverlay | null
   codeFocusNodeId?: string | null
+  /** The selected layer under the pointer, with the corner radius handle hovered or dragged. */
+  cornerRadiusHandle?: CornerRadiusHandleState | null
+}
+
+/**
+ * The pointer over the selected layer, which shows its corner radius handles as in Figma: the
+ * handle it is on, if any, and whether that handle is being dragged.
+ */
+export interface CornerRadiusHandleState {
+  nodeId: string
+  corner: 'nw' | 'ne' | 'se' | 'sw' | null
+  /** Being dragged, which shows the radius in a label. */
+  dragging: boolean
 }
 
 /**

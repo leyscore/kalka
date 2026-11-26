@@ -1,5 +1,6 @@
 import type { Editor } from '@kalka/core/editor'
 
+import { hoverCornerRadiusHandle } from '#vue/shared/input/corner-radius'
 import {
   buildResizeCursor,
   cornerRotationCursor,
@@ -81,11 +82,14 @@ export function updateHoverCursor(
 ): string | null {
   if (getNodeEditState(editor)) {
     editor.setHoveredNode(null)
+    editor.setCornerRadiusHandle(null)
     return null
   }
 
   const cursor =
-    getResizeCursorForSelection(cx, cy, editor) ?? getRotationCursorForSelection(cx, cy, editor)
+    hoverCornerRadiusHandle(editor, cx, cy) ??
+    getResizeCursorForSelection(cx, cy, editor) ??
+    getRotationCursorForSelection(cx, cy, editor)
   updateHoveredNode(cx, cy, editor, fns, deep)
   return cursor
 }

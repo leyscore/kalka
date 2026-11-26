@@ -42,6 +42,7 @@ export function overlaysFromEditorState(
     presenceCursors: state.presenceCursors,
     designIssues: state.designIssues,
     codeFocusNodeId: state.codeFocusNodeId,
-    autoLayoutHover: state.autoLayoutHover
+    autoLayoutHover: state.autoLayoutHover,
+    cornerRadiusHandle: previewing ? null : state.cornerRadiusHandle
   }
 }

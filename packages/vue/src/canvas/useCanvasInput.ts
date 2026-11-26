@@ -20,6 +20,11 @@ import {
 } from '#vue/canvas/vector-input/input'
 import { resolveAutoLayoutHover } from '#vue/shared/input/auto-layout-hover'
 import { createClickCounter } from '#vue/shared/input/click-count'
+import {
+  cancelCornerRadius,
+  commitCornerRadius,
+  handleCornerRadiusMove
+} from '#vue/shared/input/corner-radius'
 import { handleDrawMove } from '#vue/shared/input/draw'
 import { handleMoveMove, handleMoveUp } from '#vue/shared/input/move'
 import { setupPanZoom } from '#vue/shared/input/pan-zoom'
@@ -315,6 +320,11 @@ export function useCanvasInput(
       return
     }
 
+    if (d.type === 'corner-radius') {
+      handleCornerRadiusMove(d, cx, cy, editor)
+      return
+    }
+
     handleMarqueeMove(d, cx, cy)
   }
 
@@ -350,6 +360,7 @@ export function useCanvasInput(
       }
       if (editor.state.rotationPreview === preview) editor.setRotationPreview(null)
     } else if (d.type === 'draw') d.commit()
+    else if (d.type === 'corner-radius') commitCornerRadius(d, editor)
     else if (d.type === 'marquee') finishMarquee(editor, d)
 
     drag.value = null
@@ -375,6 +386,7 @@ export function useCanvasInput(
       drag.value = null
       drawing.cancel()
     }
+    if (drag.value?.type === 'corner-radius') cancelCornerRadius(drag.value, editor)
     if (
       drag.value?.type === 'edit-node' ||
       drag.value?.type === 'edit-handle' ||
@@ -459,6 +471,7 @@ export function useCanvasInput(
     if (!drag.value) {
       editor.setHoveredNode(null)
       editor.setHoveredGuide(null)
+      editor.setCornerRadiusHandle(null)
     }
   })
   useEventListener(

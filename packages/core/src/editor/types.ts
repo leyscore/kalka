@@ -17,7 +17,12 @@ import type { UndoManager } from '@kalka/scene-graph/undo'
 import type { GuideOverlayState } from '#core/canvas/guides/types'
 import type { DesignIssueOverlay } from '#core/canvas/issues/types'
 import type { RulerTheme, SkiaRenderer } from '#core/canvas/renderer'
-import type { MeasurementMode, PresenceCursor, RenderOverlays } from '#core/canvas/renderer/types'
+import type {
+  CornerRadiusHandleState,
+  MeasurementMode,
+  PresenceCursor,
+  RenderOverlays
+} from '#core/canvas/renderer/types'
 import type { InterfaceTheme } from '#core/constants'
 import type { PlayState } from '#core/editor/play/actions'
 import type { SnappingPreferences } from '#core/editor/preferences'
@@ -103,6 +108,8 @@ export interface EditorViewState {
     index?: number
     side?: 'top' | 'right' | 'bottom' | 'left'
   } | null
+  /** The selected layer under the pointer, with the corner radius handle hovered or dragged. */
+  cornerRadiusHandle: CornerRadiusHandleState | null
   panX: number
   pageColor: Color
   panY: number

@@ -96,6 +96,19 @@ export function createSelectionOverlayActions(ctx: EditorContext) {
     ctx.requestRepaint()
   }
 
+  function setCornerRadiusHandle(handle: typeof ctx.state.cornerRadiusHandle) {
+    const current = ctx.state.cornerRadiusHandle
+    if (
+      current?.nodeId === handle?.nodeId &&
+      current?.corner === handle?.corner &&
+      current?.dragging === handle?.dragging
+    ) {
+      return
+    }
+    ctx.state.cornerRadiusHandle = handle
+    ctx.requestRepaint()
+  }
+
   return {
     setMarquee,
     setSnapGuides,
@@ -110,6 +123,7 @@ export function createSelectionOverlayActions(ctx: EditorContext) {
     setMeasurementMode,
     setDropTarget,
     setLayoutInsertIndicator,
-    setAutoLayoutHover
+    setAutoLayoutHover,
+    setCornerRadiusHandle
   }
 }
