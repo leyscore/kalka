@@ -29,6 +29,7 @@ de:diagnostics.categoryRenderer
 de:diagnostics.durationMs
 de:files.dashboard
 de:find.kindText
+de:menu.aboutVersion
 de:menu.text
 de:panels.alpha
 de:panels.behaviourMax
@@ -192,6 +193,7 @@ fr:find.kindInstance
 fr:find.kindSection
 fr:fonts.documentSource
 fr:fonts.variable
+fr:menu.aboutVersion
 fr:menu.documentation
 fr:menu.variables
 fr:pages.pageName
