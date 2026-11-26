@@ -198,6 +198,13 @@ test("a manual overlay's preview on the canvas drags where it opens", async () =
     x: (box?.x ?? 0) + x * view.zoom + view.panX,
     y: (box?.y ?? 0) + y * view.zoom + view.panY
   })
+  const setSnapping = (objects: boolean) =>
+    page.evaluate((on) => {
+      const state = window.kalka?.getStore?.().state
+      if (state) state.snappingPreferences = { ...state.snappingPreferences, objects: on }
+    }, objects)
+  // Moved freely first; snapping is checked below.
+  await setSnapping(false)
   const start = screen(140, 140)
   const end = screen(190, 170)
   await page.mouse.move(start.x, start.y)
@@ -228,6 +235,18 @@ test("a manual overlay's preview on the canvas drags where it opens", async () =
   await page.keyboard.press('Escape')
   await page.mouse.up()
   expect(await offsetOf()).toEqual(before)
+
+  // With snapping, the overlay's left edge dropped near the button's right edge meets it.
+  await setSnapping(true)
+  await page.evaluate((id) => window.kalka?.getStore?.().select([id]), buttonId)
+  const near = screen(190 + 73, 170)
+  await page.mouse.move(end.x, end.y)
+  await page.mouse.down()
+  await page.mouse.move((end.x + near.x) / 2, near.y)
+  await page.mouse.move(near.x, near.y)
+  await page.mouse.up()
+  await expect.poll(async () => (await offsetOf())?.x).toBe(120)
+  await editor.canvas.undo()
 
   await editor.canvas.undo()
   await expect.poll(offsetOf).toBeNull()

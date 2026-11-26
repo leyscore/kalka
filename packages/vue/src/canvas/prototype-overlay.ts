@@ -1,9 +1,11 @@
 import { markRaw, type Ref } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
-import type { PrototypeNodeAction, SceneGraph } from '@kalka/scene-graph'
+import type { PrototypeNodeAction, SceneGraph, SceneNode } from '@kalka/scene-graph'
 import type { Rect, Vector } from '@kalka/scene-graph/primitives'
+import { computeSnap } from '@kalka/scene-graph/snap'
 
+import { snappingThreshold } from '#vue/shared/input/snap'
 import type { DragPrototypeOverlay, DragState } from '#vue/shared/input/types'
 
 /** An Open overlay action of a layer whose overlay is placed by hand, and where it opens. */
@@ -102,11 +104,51 @@ function withOffset(drag: DragPrototypeOverlay, offset: Vector) {
   return reactions
 }
 
-function offsetAt(drag: DragPrototypeOverlay, cx: number, cy: number): Vector {
-  return {
-    x: Math.round(drag.origin.x + cx - drag.startX),
-    y: Math.round(drag.origin.y + cy - drag.startY)
+/**
+ * What a dragged overlay snaps to, as Figma snaps its preview: the layer that opens it, the
+ * screen around that layer and the screen's layers, in canvas coordinates.
+ */
+function snapTargets(graph: SceneGraph, sourceId: string): SceneNode[] {
+  const source = graph.getNode(sourceId)
+  if (!source) return []
+  const screen = graph.closest(sourceId, (node) => {
+    const parent = node.parentId ? graph.getNode(node.parentId) : undefined
+    return parent?.type === 'CANVAS'
+  })
+  const nodes = screen ? [screen, ...graph.getChildren(screen.id)] : [source]
+  if (!nodes.some((node) => node.id === source.id)) nodes.push(source)
+  return nodes.map((node) => {
+    const bounds = graph.getAbsoluteBounds(node.id)
+    return { ...node, ...bounds, rotation: 0 }
+  })
+}
+
+function offsetAt(editor: Editor, drag: DragPrototypeOverlay, cx: number, cy: number): Vector {
+  const offset = {
+    x: drag.origin.x + cx - drag.startX,
+    y: drag.origin.y + cy - drag.startY
   }
+  const destination = manualOverlays(editor.graph, drag.sourceId).find(
+    (overlay) => overlay.reaction === drag.reaction && overlay.action === drag.action
+  )
+  const frame = destination ? editor.graph.getNode(destination.frameId) : undefined
+  if (frame && editor.state.snappingPreferences.objects) {
+    const source = editor.graph.getAbsoluteBounds(drag.sourceId)
+    const moving = { x: source.x + offset.x, y: source.y + offset.y, ...frameSize(frame) }
+    const snap = computeSnap(
+      new Set([frame.id]),
+      moving,
+      snapTargets(editor.graph, drag.sourceId),
+      snappingThreshold(editor)
+    )
+    offset.x += snap.dx
+    offset.y += snap.dy
+  }
+  return { x: Math.round(offset.x), y: Math.round(offset.y) }
+}
+
+function frameSize(frame: SceneNode) {
+  return { width: frame.width, height: frame.height }
 }
 
 /** The overlay follows the pointer; the drag is one undo step when it ends. */
@@ -116,7 +158,7 @@ export function moveManualOverlay(
   cx: number,
   cy: number
 ): void {
-  drag.offset = offsetAt(drag, cx, cy)
+  drag.offset = offsetAt(editor, drag, cx, cy)
   editor.graph.updateNode(drag.sourceId, { reactions: withOffset(drag, drag.offset) })
   editor.requestRepaint()
 }
