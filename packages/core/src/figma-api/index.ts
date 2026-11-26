@@ -3,25 +3,20 @@ import { fromUint8Array, isValid, toUint8Array } from 'js-base64'
 import type {
   GroupFitOptions,
   SceneGraph,
-  SceneNode as CoreSceneNode,
   NodeType,
   Variable,
   VariableCollection,
   VariableType,
   VariableValue
 } from '@kalka/scene-graph'
-import { computeBounds } from '@kalka/scene-graph/geometry'
 import { computeImageHash } from '@kalka/scene-graph/images'
-import type { Rect, Vector } from '@kalka/scene-graph/primitives'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import type { SkiaRenderer } from '#core/canvas'
 import { groupFitOptions } from '#core/canvas/boolean'
-import { IS_BROWSER, type InterfaceTheme } from '#core/constants'
-import { newLayerDefaults } from '#core/editor/shapes/defaults'
-import { booleanOperationPaints, createBooleanOperation } from '#core/editor/structure/boolean'
+import type { InterfaceTheme } from '#core/constants'
 import { wrapNodes } from '#core/editor/structure/container-wrap'
 import { ungroupNode } from '#core/editor/structure/group'
-import { textAutoResizeChanges } from '#core/editor/text/auto-resize'
 import { setDefaultPageBackground } from '#core/figma-api/page-backgrounds'
 import { iconify, type IconProvider } from '#core/icons'
 import type { RasterCodec } from '#core/io/formats/raster'
@@ -30,8 +25,9 @@ import { reconcileVariableLayouts } from '#core/layout/variables'
 import { documentFontStatus, type DocumentFontStatus } from '#core/text/font/status'
 import { loadDocumentFont } from '#core/text/prepare'
 
+import type { AgentAnswer, AgentQuestion, PlannedSection } from './agent'
 import { combineComponentsAsVariants, componentFromNode, exposeInstanceSwap } from './components'
-import { flattenedVector } from './flatten'
+import { createPluginLayer } from './create'
 import type {
   FigmaBooleanOperationNode,
   FigmaComponentNode,
@@ -47,6 +43,13 @@ import type {
   FigmaTextNode,
   FigmaVectorNode
 } from './node-types'
+import {
+  booleanOperationOf,
+  flattenOf,
+  nodeIdOf,
+  rawNodeOf,
+  type BooleanOperationType
+} from './operations'
 import { startPendingLayout } from './pending-layout'
 import {
   FigmaNodeProxy,
@@ -59,31 +62,24 @@ import {
 import { FigmaStylesAPI } from './styles'
 import type { ExportImageOptions } from './types'
 import { FigmaVariablesAPI } from './variables'
+import { figmaViewport, type FigmaViewport, type ViewportState } from './viewport'
 
 const noop = () => undefined
 
 export { FigmaNodeProxy } from './proxy'
+export type {
+  AgentAnswer,
+  AgentAnswerImage,
+  AgentQuestion,
+  AgentQuestionImage,
+  PlannedSection
+} from './agent'
 export { UNSUPPORTED_PLUGIN_API, type UnsupportedPluginAPIMember } from './unsupported'
 export { flushPendingLayout } from './pending-layout'
 export type { FigmaEffect } from './effects'
 export type { ExportImageOptions } from './types'
-export type {
-  FigmaBooleanOperationNode,
-  FigmaComponentNode,
-  FigmaComponentSetNode,
-  FigmaEllipseNode,
-  FigmaFrameNode,
-  FigmaGroupNode,
-  FigmaInstanceNode,
-  FigmaLineNode,
-  FigmaPolygonNode,
-  FigmaRectangleNode,
-  FigmaSectionNode,
-  FigmaSlotNode,
-  FigmaStarNode,
-  FigmaTextNode,
-  FigmaVectorNode
-} from './node-types'
+// Every Figma node type over Kalka's proxy, as `figma.create*` returns them.
+export type * from './node-types'
 export type { FigmaFont, FigmaFontName } from './proxy'
 export type {
   FigmaVariable,
@@ -194,13 +190,7 @@ export class FigmaAPI implements NodeProxyHost {
 
   /** New layers start as the editor's tools make them, which is how Figma's plugin API makes them. */
   private _createNode(type: NodeType): FigmaNodeProxy {
-    const defaults = newLayerDefaults(type, this.theme)
-    // Figma's plugin API makes a line with no height, a 496 px section, and a hugging frame.
-    if (type === 'LINE') defaults.height = 0
-    if (type === 'SECTION') Object.assign(defaults, { width: 496, height: 496 })
-    if (type === 'FRAME' || type === 'COMPONENT') defaults.primaryAxisSizing = 'HUG'
-    const node = this.graph.createNode(type, this._currentPageId, defaults)
-    return this.wrapNode(node.id)
+    return this.wrapNode(createPluginLayer(this.graph, type, this._currentPageId, this.theme))
   }
 
   createFrame(): FigmaFrameNode {
@@ -216,13 +206,7 @@ export class FigmaAPI implements NodeProxyHost {
   }
 
   createText(): FigmaTextNode {
-    const text = this._createNode('TEXT') as FigmaTextNode
-    // Figma's plugin text starts empty at 12px and sizes itself to its content: no width, one
-    // line tall.
-    const node = this.graph.getNode(text.id)
-    const defaults = { fontSize: 12, textAutoResize: 'WIDTH_AND_HEIGHT' as const, width: 0 }
-    this.graph.updateNode(text.id, { ...defaults, ...textAutoResizeChanges(node, defaults) })
-    return text
+    return this._createNode('TEXT') as FigmaTextNode
   }
 
   createLine(): FigmaLineNode {
@@ -265,17 +249,6 @@ export class FigmaAPI implements NodeProxyHost {
 
   // --- Grouping ---
 
-  private _nodeId(node: BaseNode | FigmaNodeProxy): string {
-    return (node as BaseNode & { [INTERNAL_ID]: string })[INTERNAL_ID]
-  }
-
-  private _rawNode(node: BaseNode | FigmaNodeProxy): CoreSceneNode {
-    const id = this._nodeId(node)
-    const raw = this.graph.getNode(id)
-    if (!raw) throw new Error(`Node ${id} not found`)
-    return raw
-  }
-
   group(
     nodes: ReadonlyArray<FigmaNodeProxy>,
     parent: FigmaNodeProxy,
@@ -287,8 +260,8 @@ export class FigmaAPI implements NodeProxyHost {
     parent: (BaseNode & ChildrenMixin) | FigmaNodeProxy,
     index?: number
   ): FigmaGroupNode {
-    const parentId = this._nodeId(parent)
-    const members = nodes.map((node) => this._rawNode(node))
+    const parentId = nodeIdOf(parent)
+    const members = nodes.map((node) => rawNodeOf(this.graph, node))
     const groupNode = wrapNodes(this.graph, 'GROUP', members, parentId, index)
     return this.wrapNode(groupNode.id) as FigmaGroupNode
   }
@@ -296,7 +269,7 @@ export class FigmaAPI implements NodeProxyHost {
   ungroup(node: FigmaNodeProxy): FigmaNodeProxy[]
   ungroup(node: SceneNode & ChildrenMixin): Array<SceneNode>
   ungroup(node: (SceneNode & ChildrenMixin) | FigmaNodeProxy): Array<SceneNode> | FigmaNodeProxy[] {
-    const children = ungroupNode(this.graph, this._nodeId(node)) ?? []
+    const children = ungroupNode(this.graph, nodeIdOf(node)) ?? []
     return children.map((id) => this.wrapNode(id))
   }
 
@@ -323,8 +296,8 @@ export class FigmaAPI implements NodeProxyHost {
   ): FigmaComponentSetNode {
     const componentSet = combineComponentsAsVariants(
       this.graph,
-      nodes.map((node) => this._nodeId(node)),
-      this._nodeId(parent),
+      nodes.map((node) => nodeIdOf(node)),
+      nodeIdOf(parent),
       index
     )
     return this.wrapNode(componentSet.id) as FigmaComponentSetNode
@@ -433,24 +406,14 @@ export class FigmaAPI implements NodeProxyHost {
   // --- Boolean Operations ---
 
   private _booleanOperation(
-    operation: 'UNION' | 'SUBTRACT' | 'INTERSECT' | 'EXCLUDE',
+    operation: BooleanOperationType,
     nodes: ReadonlyArray<BaseNode | FigmaNodeProxy>,
     parent: (BaseNode & ChildrenMixin) | FigmaNodeProxy,
     index?: number
   ): FigmaBooleanOperationNode {
-    if (nodes.length < 2) throw new Error('Need at least 2 nodes for boolean operation')
-    const parentId = this._nodeId(parent)
-    const members = nodes.map((node) => this._rawNode(node))
-    const { node: group } = createBooleanOperation(
-      this.graph,
-      members,
-      parentId,
-      operation,
-      index,
-      booleanOperationPaints(operation, members, 'script'),
-      this.groupFitOptions
-    )
-    return this.wrapNode(group.id) as FigmaBooleanOperationNode
+    const fit = this.groupFitOptions
+    const id = booleanOperationOf(this.graph, operation, nodes, nodeIdOf(parent), index, fit)
+    return this.wrapNode(id) as FigmaBooleanOperationNode
   }
 
   private _nodesById(nodeIds: string[]) {
@@ -461,10 +424,7 @@ export class FigmaAPI implements NodeProxyHost {
     })
   }
 
-  booleanOperation(
-    operation: 'UNION' | 'SUBTRACT' | 'INTERSECT' | 'EXCLUDE',
-    nodeIds: string[]
-  ): FigmaBooleanOperationNode {
+  booleanOperation(operation: BooleanOperationType, nodeIds: string[]): FigmaBooleanOperationNode {
     const first = this.graph.getNode(nodeIds[0])
     const parent = this.wrapNode(first?.parentId ?? this._currentPageId)
     return this._booleanOperation(operation, this._nodesById(nodeIds), parent)
@@ -519,20 +479,9 @@ export class FigmaAPI implements NodeProxyHost {
     parent?: (BaseNode & ChildrenMixin) | FigmaNodeProxy,
     index?: number
   ): FigmaVectorNode {
-    if (nodes.length === 0) throw new Error('Need at least 1 node to flatten')
-    const parentId = this._nodeId(parent ?? this.currentPage)
-    const sourceNodes: CoreSceneNode[] = []
-    for (const node of nodes) {
-      const raw = this.graph.getNode(this._nodeId(node))
-      if (!raw) throw new Error('Node not found')
-      sourceNodes.push(raw)
-    }
-    const vector = flattenedVector(this.graph, this._renderer, sourceNodes, parentId)
-    if (index != null) this.graph.reorderChild(vector.id, parentId, index)
-    for (const node of nodes) {
-      this.graph.deleteNode(this._nodeId(node))
-    }
-    return this.wrapNode(vector.id) as FigmaVectorNode
+    const parentId = nodeIdOf(parent ?? this.currentPage)
+    const id = flattenOf(this.graph, this._renderer, nodes, parentId, index)
+    return this.wrapNode(id) as FigmaVectorNode
   }
 
   flattenNode(nodeIds: string[]): FigmaVectorNode {
@@ -543,29 +492,12 @@ export class FigmaAPI implements NodeProxyHost {
 
   // --- Viewport ---
 
-  private _viewport = { x: 0, y: 0, zoom: 1 }
+  private _viewport: ViewportState = { x: 0, y: 0, zoom: 1 }
 
-  get viewport(): {
-    center: Vector
-    zoom: number
-    scrollAndZoomIntoView: (nodes: readonly { absoluteBoundingBox: Rect }[]) => void
-  } {
-    return {
-      center: { x: this._viewport.x, y: this._viewport.y },
-      zoom: this._viewport.zoom,
-      scrollAndZoomIntoView: (nodes) => {
-        const b = computeBounds(nodes.map((n) => n.absoluteBoundingBox))
-        if (b.width === 0 && b.height === 0 && nodes.length === 0) return
-
-        const padding = 80
-        const contentW = b.width + padding * 2
-        const contentH = b.height + padding * 2
-        const viewW = IS_BROWSER ? window.innerWidth : 1280
-        const viewH = IS_BROWSER ? window.innerHeight : 720
-        const zoom = Math.min(viewW / contentW, viewH / contentH, 1)
-        this._viewport = { x: b.x + b.width / 2, y: b.y + b.height / 2, zoom }
-      }
-    }
+  get viewport(): FigmaViewport {
+    return figmaViewport(this._viewport, (next) => {
+      this._viewport = next
+    })
   }
 
   set viewport(v: { center: Vector; zoom: number }) {
@@ -580,15 +512,15 @@ export class FigmaAPI implements NodeProxyHost {
 
   // --- Stubs ---
 
-  /**
-   * Loads the font so text measures and draws with it from then on. Hosts with their own font
-   * sources replace this; a font that cannot load is skipped, where Figma would reject.
-   */
   /** Kalka's brushes are built in, so they are always loaded. */
   loadBrushesAsync(_brushType: 'STRETCH' | 'SCATTER'): Promise<void> {
     return Promise.resolve()
   }
 
+  /**
+   * Loads the font so text measures and draws with it from then on. Hosts with their own font
+   * sources replace this; a font that cannot load is skipped, where Figma would reject.
+   */
   async loadFontAsync(fontName: FigmaFontName): Promise<void> {
     await loadDocumentFont(this.graph, fontName.family, fontName.style).catch(() => null)
   }
@@ -654,54 +586,4 @@ export class FigmaAPI implements NodeProxyHost {
   askUser?: (questions: AgentQuestion[]) => Promise<AgentAnswer[] | null>
   /** The name the calling agent's comment replies carry, when the host knows it. */
   commentAuthorName?: string
-}
-
-/** A section an agent says it will build: what it is called and roughly how tall it will be. */
-export interface PlannedSection {
-  name: string
-  /** In pixels; an estimate until the section exists. */
-  height: number
-}
-
-/** A question an agent asks the person, with answers they can pick in one click. */
-export interface AgentQuestion {
-  question: string
-  /** Suggested answers, shown as buttons; the person can always type their own. */
-  options?: string[]
-  /** Whether several options can be picked together. */
-  multiple?: boolean
-  /** A hint for the typed answer. */
-  placeholder?: string
-  /**
-   * Pictures the person picks from, such as visual references; a question with pictures also
-   * lets them send a picture of their own.
-   */
-  images?: AgentQuestionImage[]
-}
-
-/** A picture offered as an answer: its HTTPS address, what it shows, and where it comes from. */
-export interface AgentQuestionImage {
-  url: string
-  label: string
-  /** The page the picture comes from. */
-  link?: string
-  /** Who made it and under which licence. */
-  credit?: string
-}
-
-/** A picture the person sent with an answer, as Base64 bytes. */
-export interface AgentAnswerImage {
-  name: string
-  mimeType: string
-  base64: string
-}
-
-/** The person's answer to one question: the options they picked and what they typed. */
-export interface AgentAnswer {
-  question: string
-  answer: string
-  /** A picture of their own, when the question offered pictures. */
-  image?: AgentAnswerImage
-  /** The offered pictures the person picked, as bytes, for those the host could download. */
-  references?: AgentAnswerImage[]
 }
