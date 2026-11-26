@@ -1,16 +1,17 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 
-import { renderNodesToImage, SceneGraph, SkiaRenderer } from '@kalka/core'
-import type { Effect, Fill } from '@kalka/scene-graph'
+import { expectDefined } from '#core-tests/helpers/assert'
 
-import { initCanvasKit } from '#cli/headless'
+import { SceneGraph, type Effect, type Fill } from '@kalka/scene-graph'
 
-import { expectDefined } from '#tests/helpers/assert'
+import { SkiaRenderer } from '#core/canvas/renderer'
+import { getCanvasKit } from '#core/canvaskit'
+import { renderNodesToImage } from '#core/io/formats/raster/render'
 
-let ck: Awaited<ReturnType<typeof initCanvasKit>>
+let ck: Awaited<ReturnType<typeof getCanvasKit>>
 
 beforeAll(async () => {
-  ck = await initCanvasKit()
+  ck = await getCanvasKit()
 })
 
 const solid = (value: number): Fill => ({

@@ -272,7 +272,13 @@ describe('MCP runtime service', () => {
       spawn: async () => {
         spawns++
         healthy = true
-        return { authToken: 'token', managed: true, disconnect: () => calls.push('kill') }
+        return {
+          authToken: 'token',
+          managed: true,
+          disconnect: () => {
+            calls.push('kill')
+          }
+        }
       }
     })
     await service.start(getStore)

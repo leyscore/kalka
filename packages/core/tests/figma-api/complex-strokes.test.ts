@@ -89,12 +89,13 @@ describe('variable width strokes and brushes in the Plugin API', () => {
       angularJitter: 90
     })
 
-    line.complexStrokeProperties = {
+    // Kalka's own brush names go beyond the names Figma's typings list.
+    Reflect.set(line, 'complexStrokeProperties', {
       type: 'BRUSH',
       brushType: 'STRETCH',
       brushName: 'ink',
       direction: 'BACKWARD'
-    }
+    })
     expect(node().strokeBrush).toMatchObject({ type: 'STRETCH', id: 'ink', reverse: true })
 
     line.complexStrokeProperties = { type: 'BASIC' }

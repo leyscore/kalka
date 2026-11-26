@@ -1,9 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { nodeChangeToProps } from '@kalka/fig/node-change'
-import { SceneGraph, type StrokeBrush } from '@kalka/scene-graph'
+import { nodeChangeToProps, sceneNodeToKiwi } from '#fig/node-change/index'
 
-import { sceneNodeToKiwi } from '#core/kiwi/fig/node-change/serialize'
+import { SceneGraph, type StrokeBrush } from '@kalka/scene-graph'
 
 const brush: StrokeBrush = {
   type: 'SCATTER',
