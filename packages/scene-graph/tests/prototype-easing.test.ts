@@ -35,4 +35,11 @@ describe('prototype easing', () => {
     expect(easingSpring({ type: 'LINEAR', bezier: null, spring: null })).toBeNull()
     expect(easingCurve({ type: 'QUICK', bezier: null, spring: null })).toBeNull()
   })
+
+  test("a spring's initial velocity starts it moving", () => {
+    const resting = springSamples({ mass: 1, stiffness: 100, damping: 15 })
+    const thrown = springSamples({ mass: 1, stiffness: 100, damping: 15, initialVelocity: 20 })
+    expect(thrown.values[0]).toBeGreaterThan(resting.values[0])
+    expect(Math.max(...thrown.values)).toBeGreaterThan(Math.max(...resting.values))
+  })
 })

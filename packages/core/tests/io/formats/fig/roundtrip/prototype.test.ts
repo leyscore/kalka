@@ -136,6 +136,11 @@ describe('.fig prototype round trip', () => {
     const second = graph.createNode('FRAME', page.id, { name: 'Second', x: 500 })
     const smart = createNodeAction(second.id)
     smart.transition = { ...createPrototypeTransition('SMART_ANIMATE'), duration: 0.6 }
+    smart.transition.easing = {
+      type: 'CUSTOM_SPRING',
+      bezier: null,
+      spring: { mass: 1, stiffness: 200, damping: 12, initialVelocity: 4 }
+    }
     const first = graph.createNode('FRAME', page.id, {
       name: 'First',
       overflowDirection: 'BOTH',

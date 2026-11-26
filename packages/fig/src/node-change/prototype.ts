@@ -233,7 +233,13 @@ function importEasing(action: Obj): PrototypeEasing {
         : null,
     spring:
       type === 'CUSTOM_SPRING' && values.length >= 3
-        ? { mass: values[0], stiffness: values[1], damping: values[2] }
+        ? {
+            mass: values[0],
+            stiffness: values[1],
+            damping: values[2],
+            // The spring's start speed, when the file gives one.
+            ...(values[3] ? { initialVelocity: values[3] } : {})
+          }
         : null
   }
 }
@@ -390,7 +396,9 @@ function exportTransition(transition: PrototypeTransition | null): Obj {
   if (transition.easing.type === 'CUSTOM_CUBIC_BEZIER' && bezier)
     fields.easingFunction = [bezier.x1, bezier.y1, bezier.x2, bezier.y2]
   if (transition.easing.type === 'CUSTOM_SPRING' && spring)
-    fields.easingFunction = [spring.mass, spring.stiffness, spring.damping]
+    fields.easingFunction = spring.initialVelocity
+      ? [spring.mass, spring.stiffness, spring.damping, spring.initialVelocity]
+      : [spring.mass, spring.stiffness, spring.damping]
   return fields
 }
 

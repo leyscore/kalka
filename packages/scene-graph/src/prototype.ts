@@ -69,6 +69,8 @@ export interface Spring {
   mass: number
   stiffness: number
   damping: number
+  /** The speed the motion starts at, in progress per second; 0 starts at rest, as presets do. */
+  initialVelocity?: number
 }
 
 export interface PrototypeEasing {
@@ -260,7 +262,7 @@ export function springSamples(spring: Spring): { duration: number; values: numbe
   const step = 1 / 120
   const values: number[] = []
   let position = 0
-  let velocity = 0
+  let velocity = spring.initialVelocity ?? 0
   let still = 0
   for (let t = 0; t < 4; t += step) {
     const force = -spring.stiffness * (position - 1) - spring.damping * velocity

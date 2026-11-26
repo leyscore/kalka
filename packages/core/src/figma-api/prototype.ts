@@ -96,7 +96,12 @@ function easingFromFigma(easing: FigmaEasing): PrototypeEasing {
     bezier: easing.type === 'CUSTOM_CUBIC_BEZIER' && bezier ? { ...bezier } : null,
     spring:
       easing.type === 'CUSTOM_SPRING' && spring
-        ? { mass: spring.mass, stiffness: spring.stiffness, damping: spring.damping }
+        ? {
+            mass: spring.mass,
+            stiffness: spring.stiffness,
+            damping: spring.damping,
+            ...(spring.initialVelocity ? { initialVelocity: spring.initialVelocity } : {})
+          }
         : null
   }
 }
@@ -105,7 +110,13 @@ function easingToFigma(easing: PrototypeEasing) {
   if (easing.type === 'CUSTOM_CUBIC_BEZIER' && easing.bezier)
     return { type: easing.type, easingFunctionCubicBezier: { ...easing.bezier } }
   if (easing.type === 'CUSTOM_SPRING' && easing.spring)
-    return { type: easing.type, easingFunctionSpring: { ...easing.spring, initialVelocity: 0 } }
+    return {
+      type: easing.type,
+      easingFunctionSpring: {
+        ...easing.spring,
+        initialVelocity: easing.spring.initialVelocity ?? 0
+      }
+    }
   return { type: easing.type }
 }
 
