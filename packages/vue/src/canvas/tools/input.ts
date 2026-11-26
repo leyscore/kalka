@@ -5,6 +5,7 @@ import type { Editor } from '@kalka/core/editor'
 import { startPenInput } from '#vue/canvas/pen/input'
 import { tryStartScale } from '#vue/canvas/scale/input'
 import { startShapeBuilderDrag } from '#vue/canvas/shape-builder/input'
+import { tryStartTextOnPath } from '#vue/canvas/text-on-path/input'
 import { startVariableWidthDrag } from '#vue/canvas/variable-width/input'
 import { startShapeDraw, startTextDraw } from '#vue/shared/input/draw'
 import { startPanDrag } from '#vue/shared/input/pan'
@@ -105,6 +106,7 @@ export function handleToolMouseDown({
   }
 
   if (tool === 'TEXT') {
+    if (tryStartTextOnPath(cx, cy, editor, hitFns)) return
     startTextDraw(cx, cy, editor, setDrag)
     return
   }

@@ -26,6 +26,7 @@ import { createStructureReorderActions } from './structure/reorder'
 import { createScaleActions } from './structure/scale'
 import { createShapeBuilderActions } from './structure/shape-builder'
 import { createStructureStateActions } from './structure/state'
+import { createTextOnPathActions } from './structure/text-on-path'
 import { createVectorPathActions } from './structure/vector-paths'
 import type { EditorContext } from './types'
 
@@ -208,6 +209,7 @@ export function createStructureActions(ctx: EditorContext) {
     ...createVectorPathActions(ctx),
     ...createScaleActions(ctx),
     ...createShapeBuilderActions(ctx),
+    ...createTextOnPathActions(ctx),
     moveToPage,
     previewRenameSelected,
     renameSelected,
