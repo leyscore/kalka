@@ -29,6 +29,29 @@ async function gitEnv(extra: Record<string, string>): Promise<NodeJS.ProcessEnv>
   return { ...process.env, ...(path ? { PATH: path } : {}), ...extra }
 }
 
+/** A file's bytes as git holds them, for files that may not be text. */
+export async function gitBytes(cwd: string, args: string[]): Promise<Uint8Array> {
+  const env = await gitEnv({ GIT_TERMINAL_PROMPT: '0', LC_ALL: 'C' })
+  return new Promise((resolve, reject) => {
+    execFile(
+      'git',
+      args,
+      {
+        cwd,
+        env,
+        timeout: TIMEOUT_MS,
+        maxBuffer: MAX_OUTPUT * 4,
+        encoding: 'buffer',
+        windowsHide: true
+      },
+      (error, stdout, stderr) => {
+        if (!error) return resolve(new Uint8Array(stdout))
+        reject(new GitError(stderr.toString().trim().split('\n').at(-1) || error.message))
+      }
+    )
+  })
+}
+
 export async function git(cwd: string, args: string[], timeout = TIMEOUT_MS): Promise<string> {
   const env = await gitEnv({ GIT_TERMINAL_PROMPT: '0', LC_ALL: 'C' })
   return new Promise((resolve, reject) => {
@@ -201,7 +224,7 @@ export async function requireRepository(documentPath: unknown): Promise<string> 
  * The paths a document's versions hold: a Kalka folder's whole folder, a document file alone,
  * so a `.fig` kept in a repository never records or restores the files beside it.
  */
-async function documentScope(root: string, documentPath: unknown): Promise<string> {
+export async function documentScope(root: string, documentPath: unknown): Promise<string> {
   const path = v.parse(AbsolutePath, documentPath)
   const folder = await folderOf(path)
   // Git names the repository by its real path; a folder reached through a link, such as macOS's

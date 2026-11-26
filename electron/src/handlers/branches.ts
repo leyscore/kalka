@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { git, GitError, requireRepository } from './git-operations'
+import { documentScope, git, gitBytes, GitError, requireRepository } from './git-operations'
 
 /**
  * Branches of a Kalka folder's repository: try changes on a branch, look at what it changed,
@@ -17,6 +17,17 @@ const BranchName = v.pipe(
   v.maxLength(100),
   v.check((name) => !name.startsWith('-'), 'A branch name cannot start with a dash')
 )
+
+/** A commit to read: a full or abbreviated hash. */
+const CommitHash = v.pipe(v.string(), v.regex(/^[0-9a-f]{7,40}$/i, 'Expected a commit hash'))
+
+/**
+ * A document as a version holds it, to compare layer by layer: a Kalka folder's files by their
+ * path inside the folder, or a document file's bytes.
+ */
+export type GitDocumentAt =
+  | { kind: 'folder'; files: Record<string, Uint8Array> }
+  | { kind: 'file'; data: Uint8Array }
 
 export interface GitBranches {
   /** The branch checked out, or null on a detached commit. */
@@ -97,6 +108,40 @@ export const gitBranchHandlers = {
       index += renamed ? 3 : 2
     }
     return changes
+  },
+  /** The version a branch and the current one last shared, which a branch review starts from. */
+  async mergeBase(_context: unknown, documentPath: unknown, name: unknown): Promise<string> {
+    const root = await requireRepository(documentPath)
+    const branch = await existingBranch(root, name)
+    return (await git(root, ['merge-base', 'HEAD', branch])).trim()
+  },
+  /** The document as a commit, or a branch's latest one, holds it. */
+  async readAt(
+    _context: unknown,
+    documentPath: unknown,
+    revision: unknown
+  ): Promise<GitDocumentAt> {
+    const root = await requireRepository(documentPath)
+    const commit = v.is(CommitHash, revision) ? revision : await existingBranch(root, revision)
+    const scope = await documentScope(root, documentPath)
+    const listed = await git(root, ['ls-tree', '-r', '-z', '--name-only', commit, '--', scope])
+    const paths = listed.split('\0').filter((path) => path.length > 0)
+    const prefix = scope === '.' ? '' : `${scope}/`
+    if (paths.length === 1 && paths[0] === scope) {
+      return {
+        kind: 'file',
+        data: await gitBytes(root, ['cat-file', 'blob', `${commit}:${scope}`])
+      }
+    }
+    const files: Record<string, Uint8Array> = {}
+    for (const path of paths) {
+      files[path.slice(prefix.length)] = await gitBytes(root, [
+        'cat-file',
+        'blob',
+        `${commit}:${path}`
+      ])
+    }
+    return { kind: 'folder', files }
   },
   /**
    * Merges a branch into the current one as one version. When changes meet, the merge is

@@ -3,7 +3,9 @@ import { ref } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
+import { reviewGitBranch } from '@/app/document/versions/git-compare'
 import type { DocumentVersions } from '@/app/document/versions/use'
+import { useEditorStore } from '@/app/editor/active-store'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 
@@ -29,6 +31,34 @@ function open(branch: string) {
 
 function merge(branch: string) {
   void versions.mergeBranch(branch, panels.value.versionsBeforeMerge({ branch }))
+}
+
+const store = useEditorStore()
+const comparing = ref(false)
+
+/** Reviews the branch layer by layer, then merges it keeping only the ticked changes. */
+async function compare(branch: string) {
+  const documentPath = versions.path.value
+  if (!documentPath || comparing.value) return
+  comparing.value = true
+  versions.error.value = ''
+  try {
+    await reviewGitBranch({
+      documentPath,
+      branch,
+      current: store.graph,
+      labels: { branch, current: branches.value?.current ?? '' },
+      merge: async () => {
+        await versions.mergeBranch(branch, panels.value.versionsBeforeMerge({ branch }))
+        if (versions.error.value) throw new Error(versions.error.value)
+      },
+      merged: () => store.graph
+    })
+  } catch (cause) {
+    versions.error.value = cause instanceof Error ? cause.message : String(cause)
+  } finally {
+    comparing.value = false
+  }
 }
 </script>
 
@@ -88,6 +118,16 @@ function merge(branch: string) {
       <div class="flex items-center gap-1">
         <AppButton size="xs" variant="ghost" @click="versions.closeReview()">
           {{ panels.versionsCancel }}
+        </AppButton>
+        <AppButton
+          size="xs"
+          variant="ghost"
+          :disabled="!review.changes.length || running !== null"
+          :loading="comparing"
+          data-test-id="git-branch-compare"
+          @click="compare(review.branch)"
+        >
+          {{ panels.compareAction }}
         </AppButton>
         <AppButton
           size="xs"

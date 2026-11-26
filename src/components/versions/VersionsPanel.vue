@@ -5,6 +5,7 @@ import { useI18n } from '@kalka/vue'
 
 import { useHistorySource } from '@/app/document/versions/checkpoints/use'
 import { changeKind, type GitCommit } from '@/app/document/versions/git'
+import { compareGitVersion } from '@/app/document/versions/git-compare'
 import { useNamedVersionFocus } from '@/app/document/versions/save-request'
 import { useDocumentVersions, type DocumentVersions } from '@/app/document/versions/use'
 import { useEditorStore } from '@/app/editor/active-store'
@@ -41,6 +42,19 @@ function restore(commit: GitCommit): void {
   void versions.restore(commit, {
     before: panels.value.versionsBeforeRestore({ subject: commit.subject }),
     restored: panels.value.versionsRestored({ subject: commit.subject })
+  })
+}
+
+/** Compares a version with what is on screen, layer by layer. */
+function compare(commit: GitCommit): void {
+  const documentPath = versions.path.value
+  if (!documentPath) return
+  error.value = ''
+  compareGitVersion(documentPath, commit.hash, store.graph, {
+    before: commit.subject,
+    after: panels.value.compareNow
+  }).catch((cause: unknown) => {
+    error.value = cause instanceof Error ? cause.message : String(cause)
   })
 }
 
@@ -285,6 +299,16 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', tim
                     <p :class="timeline.subject()">{{ commit.subject }}</p>
                     <p :class="timeline.detail()">{{ dateFormat.format(commit.time * 1000) }}</p>
                   </div>
+                  <AppButton
+                    size="xs"
+                    variant="ghost"
+                    class="shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                    data-slot="version-compare"
+                    :disabled="running !== null"
+                    @click="compare(commit)"
+                  >
+                    {{ panels.compareAction }}
+                  </AppButton>
                   <AppButton
                     v-if="commit.hash !== history[0]?.hash"
                     size="xs"
