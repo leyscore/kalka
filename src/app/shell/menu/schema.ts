@@ -220,7 +220,7 @@ export const APP_MENU_SCHEMA = [
           { id: 'view-outlines-selection', label: 'Show Outlines for Selection', checkbox: true },
           { type: 'separator' },
           { id: 'view-outlines-hidden', label: 'Include Hidden Layers', checkbox: true },
-          { id: 'view-outlines-bounds', label: 'Show Object Bounds', checkbox: true }
+          { id: 'view-outlines-bounds', label: 'Include Object Bounds', checkbox: true }
         ]
       },
       { id: 'view-mask-outlines', label: 'Mask Outlines', checkbox: true },
@@ -535,7 +535,8 @@ export const APP_MENU_SCHEMA = [
         id: 'selection.distributeVertical',
         label: 'Distribute Vertical Spacing',
         command: 'selection.distributeVertical'
-      }
+      },
+      { id: 'selection.tidyUp', label: 'Tidy Up', command: 'selection.tidyUp' }
     ]
   }
 ] satisfies AppMenuGroupSchema[]

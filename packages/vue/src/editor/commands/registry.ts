@@ -97,6 +97,8 @@ export const EDITOR_COMMAND_METADATA = {
   // Figma's ⌥⇧H and ⌥⇧V, matched by key position: Option turns the letter into another character.
   'selection.distributeHorizontal': { shortcut: 'ALT+SHIFT+H', keybinding: 'Alt+Shift+KeyH' },
   'selection.distributeVertical': { shortcut: 'ALT+SHIFT+V', keybinding: 'Alt+Shift+KeyV' },
+  // Figma's ⌃⌥T. Off macOS Ctrl is the modifier, and Ctrl+Alt+T aligns text to the centre.
+  'selection.tidyUp': { shortcut: 'CTRL+ALT+T', keybinding: 'Control+Alt+KeyT' },
   'selection.booleanUnion': {
     shortcut: 'ALT+SHIFT+U',
     keybinding: 'Alt+Shift+KeyU',

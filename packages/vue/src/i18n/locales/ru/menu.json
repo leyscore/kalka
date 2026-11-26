@@ -68,7 +68,7 @@
   "showOutlines": "Показать контуры",
   "showOutlinesForSelection": "Показать контуры выделения",
   "includeHiddenLayers": "Включать скрытые слои",
-  "showObjectBounds": "Показать границы объектов",
+  "includeObjectBounds": "Включать границы объектов",
   "maskOutlines": "Контуры масок",
   "frameOutlines": "Контуры фреймов",
   "preferences": "Настройки",

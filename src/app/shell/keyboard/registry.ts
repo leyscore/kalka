@@ -352,7 +352,8 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
       'selection.flatten',
       'selection.outlineStroke',
       'selection.distributeHorizontal',
-      'selection.distributeVertical'
+      'selection.distributeVertical',
+      ...(shortcutPlatform() === 'mac' ? (['selection.tidyUp'] as const) : [])
     ),
     // Figma's Option+A, H, D, W, V and S, which the Arrange menu shows. Matched by key position:
     // Option turns the letter into another character on macOS.

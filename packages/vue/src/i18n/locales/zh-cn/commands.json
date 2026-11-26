@@ -42,6 +42,7 @@
   "bringForward": "上移一层",
   "distributeHorizontal": "水平等距分布",
   "distributeVertical": "垂直等距分布",
+  "tidyUp": "整理",
   "selectInverse": "反向选择",
   "sendBackward": "下移一层",
   "paletteSearchPlaceholder": "输入命令或搜索…",

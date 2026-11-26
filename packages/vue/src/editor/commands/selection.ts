@@ -266,6 +266,14 @@ export function createSelectionCommands({
       enabled: capabilities.canDistribute,
       run: () => editor.distributeNodes([...selection.selectedIds.value], 'vertical')
     },
+    'selection.tidyUp': {
+      id: 'selection.tidyUp',
+      get label() {
+        return t.value.tidyUp
+      },
+      enabled: capabilities.canTidy,
+      run: () => editor.tidyNodes([...selection.selectedIds.value])
+    },
     'selection.booleanUnion': {
       id: 'selection.booleanUnion',
       get label() {

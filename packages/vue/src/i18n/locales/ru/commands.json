@@ -42,6 +42,7 @@
   "bringForward": "Переместить вперёд",
   "distributeHorizontal": "Распределить интервалы по горизонтали",
   "distributeVertical": "Распределить интервалы по вертикали",
+  "tidyUp": "Упорядочить",
   "selectInverse": "Инвертировать выделение",
   "sendBackward": "Переместить назад",
   "paletteSearchPlaceholder": "Введите команду или выполните поиск…",

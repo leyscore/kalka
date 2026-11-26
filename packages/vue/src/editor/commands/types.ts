@@ -41,6 +41,7 @@ export type EditorCommandId =
   | 'selection.flipVertical'
   | 'selection.distributeHorizontal'
   | 'selection.distributeVertical'
+  | 'selection.tidyUp'
   | 'selection.booleanUnion'
   | 'selection.booleanSubtract'
   | 'selection.booleanIntersect'

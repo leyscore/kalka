@@ -159,7 +159,7 @@ export function useAppMenu() {
     'view-outlines-all': 'showOutlines',
     'view-outlines-selection': 'showOutlinesForSelection',
     'view-outlines-hidden': 'includeHiddenLayers',
-    'view-outlines-bounds': 'showObjectBounds',
+    'view-outlines-bounds': 'includeObjectBounds',
     'view-mask-outlines': 'maskOutlines',
     'view-frame-outlines': 'frameOutlines',
     'snap-geometry': 'snapToGeometry',

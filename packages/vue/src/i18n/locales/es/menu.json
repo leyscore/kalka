@@ -68,7 +68,7 @@
   "showOutlines": "Mostrar contornos",
   "showOutlinesForSelection": "Mostrar contornos de la selección",
   "includeHiddenLayers": "Incluir capas ocultas",
-  "showObjectBounds": "Mostrar límites de objetos",
+  "includeObjectBounds": "Incluir límites de objetos",
   "maskOutlines": "Contornos de máscaras",
   "frameOutlines": "Contornos de marcos",
   "preferences": "Preferencias",

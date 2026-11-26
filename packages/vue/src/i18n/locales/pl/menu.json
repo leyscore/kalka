@@ -68,7 +68,7 @@
   "showOutlines": "Pokaż kontury",
   "showOutlinesForSelection": "Pokaż kontury zaznaczenia",
   "includeHiddenLayers": "Uwzględnij ukryte warstwy",
-  "showObjectBounds": "Pokaż obwiednie obiektów",
+  "includeObjectBounds": "Uwzględnij obwiednie obiektów",
   "maskOutlines": "Kontury masek",
   "frameOutlines": "Kontury ramek",
   "preferences": "Preferencje",

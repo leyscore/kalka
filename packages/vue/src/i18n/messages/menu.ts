@@ -47,7 +47,7 @@ export const menuMessageDefaults = {
   showOutlines: 'Show outlines',
   showOutlinesForSelection: 'Show outlines for selection',
   includeHiddenLayers: 'Include hidden layers',
-  showObjectBounds: 'Show object bounds',
+  includeObjectBounds: 'Include object bounds',
   maskOutlines: 'Mask outlines',
   frameOutlines: 'Frame outlines',
   preferences: 'Preferences',

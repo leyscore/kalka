@@ -5,6 +5,7 @@ import Matrix from '@kalka/scene-graph/matrix'
 import type { Vector } from '@kalka/scene-graph/primitives'
 
 import { createFlipRotateActions } from '#core/editor/alignment/flip-rotate'
+import { tidyPositions } from '#core/editor/alignment/tidy'
 
 import { collectNodePositions, pushPositionUndo } from './history/position'
 import type { EditorContext } from './types'
@@ -176,7 +177,58 @@ export function createAlignmentActions(ctx: EditorContext) {
     ctx.requestRender()
   }
 
+  function canTidyNodes(nodeIds: string[]): boolean {
+    const nodes = nodeIds
+      .map((id) => ctx.graph.getNode(id))
+      .filter((node): node is SceneNode => node != null)
+    return nodes.length >= 2 && nodes.every((node) => canPositionNode(ctx, node))
+  }
+
+  /** Figma's Tidy up: the layers in an evenly spaced grid of the rows and columns they form. */
+  function tidyNodes(nodeIds: string[]) {
+    if (!canTidyNodes(nodeIds)) return
+    const nodes = nodeIds
+      .map((id) => ctx.graph.getNode(id))
+      .filter((node): node is SceneNode => node != null)
+    const bounds = new Map(nodes.map((node) => [node.id, getAbsolutePositionFull(node, ctx.graph)]))
+    const targets = tidyPositions(
+      nodes.flatMap((node) => {
+        const box = bounds.get(node.id)
+        return box
+          ? [{ id: node.id, x: box.boundX, y: box.boundY, width: box.width, height: box.height }]
+          : []
+      })
+    )
+    const originals = collectNodePositions(
+      ctx,
+      nodes.map((node) => node.id)
+    )
+    for (const node of nodes) {
+      const box = bounds.get(node.id)
+      const target = targets.get(node.id)
+      if (!box || !target) continue
+      const delta = parentLocalDelta(ctx, node, {
+        x: target.x - box.boundX,
+        y: target.y - box.boundY
+      })
+      if (delta) ctx.graph.updateNode(node.id, { x: node.x + delta.x, y: node.y + delta.y })
+    }
+    const finals = collectNodePositions(ctx, originals.keys())
+    pushPositionUndo(ctx, 'Tidy up', originals, finals)
+
+    for (const id of nodeIds) ctx.runLayoutForNode(id)
+    ctx.requestRender()
+  }
+
   const { flipNodes, rotateNodes } = createFlipRotateActions(ctx)
 
-  return { alignNodes, canDistributeNodes, distributeNodes, flipNodes, rotateNodes }
+  return {
+    alignNodes,
+    canDistributeNodes,
+    canTidyNodes,
+    distributeNodes,
+    flipNodes,
+    rotateNodes,
+    tidyNodes
+  }
 }

@@ -68,7 +68,7 @@
   "showOutlines": "Konturen anzeigen",
   "showOutlinesForSelection": "Konturen der Auswahl anzeigen",
   "includeHiddenLayers": "Ausgeblendete Ebenen einbeziehen",
-  "showObjectBounds": "Objektgrenzen anzeigen",
+  "includeObjectBounds": "Objektgrenzen einbeziehen",
   "maskOutlines": "Maskenkonturen",
   "frameOutlines": "Rahmenkonturen",
   "preferences": "Einstellungen",

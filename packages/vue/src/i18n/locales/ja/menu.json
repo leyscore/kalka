@@ -68,7 +68,7 @@
   "showOutlines": "アウトラインを表示",
   "showOutlinesForSelection": "選択範囲のアウトラインを表示",
   "includeHiddenLayers": "非表示レイヤーを含める",
-  "showObjectBounds": "オブジェクトの境界を表示",
+  "includeObjectBounds": "オブジェクトの境界を含める",
   "maskOutlines": "マスクのアウトライン",
   "frameOutlines": "フレームのアウトライン",
   "preferences": "環境設定",

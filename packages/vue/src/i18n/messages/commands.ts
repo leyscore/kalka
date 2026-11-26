@@ -39,6 +39,7 @@ export const commandMessageDefaults = {
   flipVertical: 'Flip vertical',
   distributeHorizontal: 'Distribute horizontal spacing',
   distributeVertical: 'Distribute vertical spacing',
+  tidyUp: 'Tidy up',
   moveToPage: 'Move to page',
   setOpacity: 'Set opacity',
   zoomTo50: 'Zoom to 50%',
