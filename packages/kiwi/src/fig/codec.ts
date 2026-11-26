@@ -17,7 +17,7 @@ import type {
 } from './handoff'
 import { isZstdCompressed, getKiwiMessageType } from './protocol'
 import figmaSchema from './schema'
-import type { Color, GUID, Matrix, Vector } from './types'
+import type { Color, GUID, KiwiVideoPlayback, Matrix, Vector } from './types'
 
 interface CompiledSchema {
   encodeMessage(message: unknown): Uint8Array
@@ -466,7 +466,7 @@ export interface NodeChange {
   prototypeStartingPoint?: { name?: string; description?: string; position?: string }
   prototypeDevice?: unknown
   prototypeBackgroundColor?: Color
-  videoPlayback?: { autoplay?: boolean; mediaLoop?: boolean; muted?: boolean }
+  videoPlayback?: KiwiVideoPlayback
   /** On the document: the layer Figma's Set as thumbnail chose. */
   thumbnailInfo?: { nodeID?: GUID; thumbnailVersion?: string }
   // Handoff

@@ -15,10 +15,13 @@ import AppButton from '@/components/ui/button/AppButton.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import AppCheckbox from '@/components/ui/toggle/AppCheckbox.vue'
 
+import VideoTimeline from './VideoTimeline.vue'
+
 /**
  * A video paint, as Figma's video fill: the clip and its poster frame, how it fits the layer,
- * and how it plays in prototypes (Autoplay, Loop, Muted), which Figma keeps on the layer.
- * Canvases and exports draw the poster; the presenter plays the clip.
+ * and how it plays in prototypes (Autoplay, Loop, Muted, Show controls and the trimmed part),
+ * which Figma keeps on the layer. Canvases and exports draw the poster; the presenter plays the
+ * clip.
  */
 const SCALE_MODES: { value: ImageScaleMode; label: string }[] = [
   { value: 'FILL', label: 'Fill' },
@@ -84,37 +87,40 @@ const layers = useSceneComputed(() =>
 )
 const playback = computed(() => videoPlaybackOf(layers.value[0] ?? { videoPlayback: null }))
 
-function setPlayback(key: keyof VideoPlayback, value: boolean) {
+function setPlayback(change: Partial<VideoPlayback>) {
   for (const node of layers.value)
     store.updateNodeWithUndo(
       node.id,
-      { videoPlayback: { ...videoPlaybackOf(node), [key]: value } },
+      { videoPlayback: { ...videoPlaybackOf(node), ...change } },
       'Change video playback'
     )
 }
 
-const ids = { autoplay: useId(), loop: useId(), muted: useId() }
-const OPTIONS: (keyof VideoPlayback)[] = ['autoplay', 'loop', 'muted']
+type PlaybackOption = 'autoplay' | 'loop' | 'muted' | 'showControls'
+const ids = { autoplay: useId(), loop: useId(), muted: useId(), showControls: useId() }
+const OPTIONS: PlaybackOption[] = ['autoplay', 'loop', 'muted', 'showControls']
+
+/** The frame kept from the timeline becomes the poster canvases and exports draw. */
+function setPoster(png: Uint8Array) {
+  emit('update', { ...fill, imageHash: store.storeImage(png) })
+}
 </script>
 
 <template>
   <div class="space-y-2" data-slot="video-fill">
+    <VideoTimeline
+      v-if="clipURL"
+      :src="clipURL"
+      :poster="posterURL"
+      :playback="layers.length > 0 ? playback : null"
+      @trim="(startTime, endTime) => setPlayback({ startTime, endTime })"
+      @poster="setPoster"
+    />
     <div
-      v-if="clipURL || posterURL"
+      v-else-if="posterURL"
       class="flex h-24 items-center justify-center overflow-hidden rounded border border-border"
     >
-      <video
-        v-if="clipURL"
-        :src="clipURL"
-        :poster="posterURL"
-        class="max-h-full max-w-full object-contain"
-        data-test-id="fill-picker-video-preview"
-        muted
-        loop
-        autoplay
-        playsinline
-      />
-      <img v-else-if="posterURL" :src="posterURL" class="max-h-full max-w-full object-contain" />
+      <img :src="posterURL" class="max-h-full max-w-full object-contain" />
     </div>
     <AppButton
       variant="outline"
@@ -141,7 +147,7 @@ const OPTIONS: (keyof VideoPlayback)[] = ['autoplay', 'loop', 'muted']
           :model-value="playback[option]"
           :ariaLabelledby="ids[option]"
           :data-property="`video-${option}`"
-          @update:model-value="setPlayback(option, $event)"
+          @update:model-value="setPlayback({ [option]: $event })"
         />
         <span :id="ids[option]">{{ m[option] }}</span>
       </label>

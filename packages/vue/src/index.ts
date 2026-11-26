@@ -58,7 +58,7 @@ export {
   LIBRARY_ASSET_MIME
 } from '#vue/canvas/drop/use'
 export type { CanvasDropOptions } from '#vue/canvas/drop/use'
-export { isVideoFile, placeCanvasFiles, readVideoFile } from '#vue/canvas/drop/video'
+export { isVideoFile, placeCanvasFiles, readVideoFile, videoFrame } from '#vue/canvas/drop/video'
 
 /** Low-level selection, graph, and derived-state helpers. */
 export { useNodeProps, MIXED } from '#vue/controls/node-props/use'

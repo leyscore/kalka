@@ -23,3 +23,14 @@ export interface Matrix {
   m11: number
   m12: number
 }
+
+/** How a layer's video plays (`VideoPlayback`); times are whole milliseconds of the clip. */
+export interface KiwiVideoPlayback {
+  autoplay?: boolean
+  mediaLoop?: boolean
+  muted?: boolean
+  showControls?: boolean
+  startTimeMs?: number
+  /** 0 plays to the end of the clip. */
+  endTimeMs?: number
+}

@@ -32,6 +32,22 @@ function fitted(width: number, height: number) {
 }
 
 /**
+ * The frame a video shows, as PNG bytes: the poster that canvases and exports draw for a video
+ * paint. Null before the video has a frame.
+ */
+export async function videoFrame(video: HTMLVideoElement): Promise<Uint8Array | null> {
+  if (video.videoWidth <= 0 || video.videoHeight <= 0) return null
+  const canvas = document.createElement('canvas')
+  canvas.width = video.videoWidth
+  canvas.height = video.videoHeight
+  canvas.getContext('2d')?.drawImage(video, 0, 0)
+  const png = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, 'image/png')
+  })
+  return png ? new Uint8Array(await png.arrayBuffer()) : null
+}
+
+/**
  * Reads a video file in the browser: its bytes, its first frame as a PNG poster, which canvases
  * and exports draw where the video does not play, and its size. Null when the browser cannot
  * play it.
@@ -46,18 +62,11 @@ export async function readVideoFile(file: File): Promise<PreparedVideo | null> {
     const ready = loaded(video, 'loadeddata')
     video.src = url
     await ready
-    if (video.videoWidth <= 0 || video.videoHeight <= 0) return null
-    const canvas = document.createElement('canvas')
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
-    canvas.getContext('2d')?.drawImage(video, 0, 0)
-    const poster = await new Promise<Blob | null>((resolve) => {
-      canvas.toBlob(resolve, 'image/png')
-    })
+    const poster = await videoFrame(video)
     if (!poster) return null
     return {
       bytes: new Uint8Array(await file.arrayBuffer()),
-      poster: new Uint8Array(await poster.arrayBuffer()),
+      poster,
       name: file.name,
       ...fitted(video.videoWidth, video.videoHeight)
     }

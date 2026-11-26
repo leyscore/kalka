@@ -37,23 +37,41 @@ export interface PrototypeTrigger {
 
 /**
  * How a layer's video plays when presented, as Figma's `videoPlayback`. A layer without its own
- * (`null`) plays as Figma's prototypes start videos: on its own, looping and muted.
+ * (`null`) plays as Figma's prototypes start videos: on its own, looping and muted, the whole
+ * clip, without controls.
  */
 export interface VideoPlayback {
   autoplay: boolean
   loop: boolean
   muted: boolean
+  /** Shows the player's controls over the video. */
+  showControls: boolean
+  /** Where the trimmed clip starts, in seconds of the clip. */
+  startTime: number
+  /** Where the trimmed clip ends, in seconds of the clip; null plays to its end. */
+  endTime: number | null
 }
 
 export const DEFAULT_VIDEO_PLAYBACK: Readonly<VideoPlayback> = {
   autoplay: true,
   loop: true,
-  muted: true
+  muted: true,
+  showControls: false,
+  startTime: 0,
+  endTime: null
 }
 
-/** How a layer's video plays, its own settings or the defaults. */
+/**
+ * How a layer's video plays, its own settings or the defaults; a record saved before a setting
+ * existed takes that setting's default.
+ */
 export function videoPlaybackOf(node: Pick<SceneNode, 'videoPlayback'>): VideoPlayback {
   return { ...DEFAULT_VIDEO_PLAYBACK, ...node.videoPlayback }
+}
+
+/** Whether a video plays only part of its clip. */
+export function isVideoTrimmed(playback: VideoPlayback): boolean {
+  return playback.startTime > 0 || playback.endTime !== null
 }
 
 /** How a Navigate-like action moves to its destination, as Figma's `navigation`. */

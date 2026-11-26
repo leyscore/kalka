@@ -1,11 +1,13 @@
 import { h, onScopeDispose, type VNode } from 'vue'
 
 import {
+  isVideoTrimmed,
   videoPlaybackOf,
   type Fill,
   type ImageScaleMode,
   type PrototypeMediaAction,
-  type SceneGraph
+  type SceneGraph,
+  type VideoPlayback
 } from '@kalka/scene-graph'
 
 const OBJECT_FIT: Readonly<Record<ImageScaleMode, string>> = {
@@ -62,18 +64,38 @@ export function usePresentVideos(onMedia?: (event: PresentMediaEvent) => void) {
     const src = paint?.videoHash ? urlOf(graph, paint.videoHash) : null
     if (!paint || !src) return null
     const playback = videoPlaybackOf(graph.getNode(nodeId) ?? { videoPlayback: null })
+    const trimmed = isVideoTrimmed(playback)
+    const ended = (video: HTMLVideoElement) => {
+      played.set(video, playback.startTime)
+      onMedia?.({ nodeId, type: 'ON_MEDIA_END' })
+    }
     return h('video', {
       key: `video:${paint.videoHash}`,
       'data-present-video': '',
       src,
       autoplay: playback.autoplay,
       muted: playback.muted,
-      loop: playback.loop,
+      // A trimmed clip loops itself, from its start rather than the clip's.
+      loop: playback.loop && !trimmed,
+      controls: playback.showControls,
       playsinline: true,
+      onLoadedmetadata: (event: Event) => {
+        const video = event.currentTarget
+        if (!(video instanceof HTMLVideoElement) || playback.startTime <= 0) return
+        video.currentTime = playback.startTime
+      },
       onTimeupdate: (event: Event) => {
         const video = event.currentTarget
         if (!(video instanceof HTMLVideoElement)) return
-        const last = played.get(video) ?? 0
+        const last = played.get(video) ?? playback.startTime
+        const end = playback.endTime
+        if (end !== null && video.currentTime >= end) {
+          // The times up to the trimmed end are played through before it ends.
+          if (end > last) onMedia?.({ nodeId, type: 'ON_MEDIA_HIT', from: last, to: end })
+          endTrimmed(video, playback)
+          ended(video)
+          return
+        }
         const time = video.currentTime
         if (time + LOOP_JUMP < last) onMedia?.({ nodeId, type: 'ON_MEDIA_END' })
         else if (time > last) onMedia?.({ nodeId, type: 'ON_MEDIA_HIT', from: last, to: time })
@@ -85,8 +107,9 @@ export function usePresentVideos(onMedia?: (event: PresentMediaEvent) => void) {
       },
       onEnded: (event: Event) => {
         const video = event.currentTarget
-        if (video instanceof HTMLVideoElement) played.set(video, 0)
-        onMedia?.({ nodeId, type: 'ON_MEDIA_END' })
+        if (!(video instanceof HTMLVideoElement)) return
+        if (trimmed) endTrimmed(video, playback)
+        ended(video)
       },
       style: {
         position: 'absolute',
@@ -98,7 +121,8 @@ export function usePresentVideos(onMedia?: (event: PresentMediaEvent) => void) {
         objectFit: OBJECT_FIT[paint.imageScaleMode ?? 'FILL'],
         opacity: String(paint.opacity),
         borderRadius: 'inherit',
-        pointerEvents: 'none'
+        // The controls take the pointer; the layer's own interactions still hear the click.
+        pointerEvents: playback.showControls ? 'auto' : 'none'
       }
     })
   }
@@ -109,6 +133,16 @@ export function usePresentVideos(onMedia?: (event: PresentMediaEvent) => void) {
   })
 
   return { videoOf }
+}
+
+/**
+ * A trimmed clip reached its end: it starts over from its start when it loops, else stops
+ * there, as Figma plays a trimmed video.
+ */
+function endTrimmed(video: HTMLVideoElement, playback: VideoPlayback): void {
+  video.currentTime = playback.startTime
+  if (playback.loop) void video.play().catch(() => undefined)
+  else video.pause()
 }
 
 /** The video a presented layer plays: the layer itself, or the one behind its content. */

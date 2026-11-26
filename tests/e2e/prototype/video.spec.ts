@@ -4,7 +4,7 @@ import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 
 const editor = useEditorSetupWithClear('/?test&no-rulers')
 
-/** A short WebM the page records from a canvas, as a file a person would pick. */
+/** A WebM of about a second the page records from a canvas, as a file a person would pick. */
 async function recordClip(page: Page): Promise<number[]> {
   return page.evaluate(async () => {
     const canvas = document.createElement('canvas')
@@ -18,9 +18,10 @@ async function recordClip(page: Page): Promise<number[]> {
       recorder.addEventListener('stop', resolve)
     })
     recorder.start()
-    for (let frame = 0; frame < 12; frame++) {
+    for (let frame = 0; frame < 60; frame++) {
       if (context) {
-        context.fillStyle = frame % 2 ? '#2050c8' : '#c85020'
+        // A colour per quarter second, so frames at different times differ.
+        context.fillStyle = ['#c85020', '#2050c8', '#20c850', '#c8c820'][Math.floor(frame / 15)]
         context.fillRect(0, 0, 64, 36)
       }
       await new Promise((resolve) => {
@@ -76,9 +77,37 @@ test('the fill picker puts a video on a layer and sets how it plays', async () =
   await expect(page.getByTestId('fill-picker-video-preview')).toBeVisible()
 
   await page.locator('[data-property="video-autoplay"]').click()
+  await page.locator('[data-property="video-showControls"]').click()
   await expect
     .poll(async () => (await nodeOf(page, id))?.videoPlayback)
-    .toEqual({ autoplay: false, loop: true, muted: true })
+    .toEqual({
+      autoplay: false,
+      loop: true,
+      muted: true,
+      showControls: true,
+      startTime: 0,
+      endTime: null
+    })
+
+  // Trim: the start thumb moved right with the keyboard trims the clip's start.
+  const trim = page.locator('[data-property="video-trim"]')
+  await expect(trim).toBeVisible()
+  const [startThumb] = await trim.getByRole('slider').all()
+  await startThumb.focus()
+  await page.keyboard.press('ArrowRight')
+  await expect
+    .poll(async () => (await nodeOf(page, id))?.videoPlayback?.startTime)
+    .toBeCloseTo(0.1, 5)
+  expect((await nodeOf(page, id))?.videoPlayback?.endTime).toBeNull()
+  await expect(page.getByTestId('video-trim-value')).toContainText(/0[.,]1 s/)
+
+  // Poster frame: scrubbing and keeping the frame shown makes it the poster.
+  const posterBefore = (await nodeOf(page, id))?.fill?.imageHash
+  const scrubber = page.locator('[data-property="video-poster-time"]').getByRole('slider')
+  await scrubber.focus()
+  await page.keyboard.press('End')
+  await page.getByTestId('fill-picker-video-keep-frame').click()
+  await expect.poll(async () => (await nodeOf(page, id))?.fill?.imageHash).not.toBe(posterBefore)
   await page.keyboard.press('Escape')
   await expect(page.getByTestId('fill-picker-choose-video')).toHaveCount(0)
 })
@@ -101,7 +130,14 @@ test('a presented video plays as its layer says and Video ends goes on', async (
       name: 'Clip',
       width: 160,
       height: 90,
-      videoPlayback: { autoplay: false, loop: false, muted: false },
+      videoPlayback: {
+        autoplay: false,
+        loop: false,
+        muted: false,
+        showControls: true,
+        startTime: 0,
+        endTime: null
+      },
       fills: [
         {
           type: 'VIDEO',
@@ -140,9 +176,10 @@ test('a presented video plays as its layer says and Video ends goes on', async (
     await video.evaluate((element: HTMLVideoElement) => ({
       autoplay: element.autoplay,
       loop: element.loop,
-      muted: element.muted
+      muted: element.muted,
+      controls: element.controls
     }))
-  ).toEqual({ autoplay: false, loop: false, muted: false })
+  ).toEqual({ autoplay: false, loop: false, muted: false, controls: true })
 
   // The presenter may start over once while it opens; the video ends again until it goes on.
   const next = page.locator(`[data-present-frame="${nextId}"]`)
@@ -155,5 +192,82 @@ test('a presented video plays as its layer says and Video ends goes on', async (
       return next.count()
     })
     .toBe(1)
+  await page.evaluate(() => window.kalka?.getStore?.().stopPlay())
+})
+
+test('a video pasted from the clipboard becomes a layer with a video paint', async () => {
+  const { page } = editor
+  const clip = await recordClip(page)
+  await editor.canvas.canvas.click()
+  await page.evaluate((bytes) => {
+    const data = new DataTransfer()
+    data.items.add(new File([new Uint8Array(bytes)], 'pasted.webm', { type: 'video/webm' }))
+    window.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data }))
+  }, clip)
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const store = window.kalka?.getStore?.()
+        const pageNode = store?.graph.getNode(store.state.currentPageId)
+        const node = pageNode?.childIds.map((id) => store?.graph.getNode(id)).find(Boolean)
+        const fill = node?.fills[0]
+        return node
+          ? { name: node.name, width: node.width, type: fill?.type, clip: !!fill?.videoHash }
+          : null
+      })
+    )
+    .toEqual({ name: 'pasted', width: 64, type: 'VIDEO', clip: true })
+})
+
+test('a presented trimmed video starts at its trimmed start', async () => {
+  const { page } = editor
+  const clip = await recordClip(page)
+  const homeId = await page.evaluate((bytes) => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    store.graph.images.set('trimmed', new Uint8Array(bytes))
+    const home = store.graph.createNode('FRAME', store.state.currentPageId, {
+      name: 'Home',
+      width: 300,
+      height: 300
+    })
+    store.graph.createNode('RECTANGLE', home.id, {
+      name: 'Clip',
+      width: 160,
+      height: 90,
+      videoPlayback: {
+        autoplay: false,
+        loop: true,
+        muted: true,
+        showControls: false,
+        startTime: 0.5,
+        endTime: 0.8
+      },
+      fills: [
+        {
+          type: 'VIDEO',
+          color: { r: 1, g: 1, b: 1, a: 1 },
+          opacity: 1,
+          visible: true,
+          videoHash: 'trimmed'
+        }
+      ]
+    })
+    return home.id
+  }, clip)
+  await page.evaluate((id) => window.kalka?.getStore?.().startPlay({ startId: id }), homeId)
+  const video = page
+    .locator(`[data-present-frame="${homeId}"]`)
+    .locator('[data-layer="Clip"] > video[data-present-video]')
+  await expect(video).toHaveCount(1)
+  // A trimmed clip loops itself from its start, so the element does not loop on its own.
+  await expect
+    .poll(() =>
+      video.evaluate((element: HTMLVideoElement) => ({
+        loop: element.loop,
+        at: Math.round(element.currentTime * 10) / 10
+      }))
+    )
+    .toEqual({ loop: false, at: 0.5 })
   await page.evaluate(() => window.kalka?.getStore?.().stopPlay())
 })

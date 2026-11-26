@@ -463,7 +463,14 @@ describe('.fig prototype round trip', () => {
     const go = [createNodeAction(next.id)]
     graph.createNode('RECTANGLE', page.id, {
       name: 'Clip',
-      videoPlayback: { autoplay: false, loop: true, muted: false },
+      videoPlayback: {
+        autoplay: false,
+        loop: true,
+        muted: false,
+        showControls: true,
+        startTime: 1.25,
+        endTime: 4
+      },
       reactions: [
         {
           trigger: { type: 'ON_MEDIA_HIT', delay: 0, keyCodes: [], mediaHitTime: 2.5 },
@@ -474,7 +481,14 @@ describe('.fig prototype round trip', () => {
     })
     const bytes = (await exportFigFile(graph)).buffer as ArrayBuffer
     const written = parseFigBuffer(bytes).nodeChanges.find((nc) => nc.name === 'Clip')
-    expect(written?.videoPlayback).toMatchObject({ autoplay: false, mediaLoop: true, muted: false })
+    expect(written?.videoPlayback).toMatchObject({
+      autoplay: false,
+      mediaLoop: true,
+      muted: false,
+      showControls: true,
+      startTimeMs: 1250,
+      endTimeMs: 4000
+    })
     const interactions = (written?.prototypeInteractions ?? []) as {
       event: Record<string, unknown>
     }[]
@@ -484,7 +498,14 @@ describe('.fig prototype round trip', () => {
       { interactionType: 'ON_MEDIA_END' }
     ])
     const clip = byName(await parseFigFile(bytes), 'Clip')
-    expect(clip.videoPlayback).toEqual({ autoplay: false, loop: true, muted: false })
+    expect(clip.videoPlayback).toEqual({
+      autoplay: false,
+      loop: true,
+      muted: false,
+      showControls: true,
+      startTime: 1.25,
+      endTime: 4
+    })
     expect(clip.reactions.map((reaction) => reaction.trigger)).toEqual([
       { type: 'ON_MEDIA_HIT', delay: 0, keyCodes: [], mediaHitTime: 2.5 },
       { type: 'ON_MEDIA_END', delay: 0, keyCodes: [] }

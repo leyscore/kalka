@@ -2,7 +2,7 @@ import { useEventListener } from '@vueuse/core'
 
 import { isSVGMarkup } from '@kalka/core/io'
 import type { Vector } from '@kalka/scene-graph/primitives'
-import { extractImageFilesFromClipboard } from '@kalka/vue'
+import { extractImageFilesFromClipboard, placeCanvasFiles } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { isHTMLSource } from '@/app/editor/clipboard/external-html'
@@ -50,7 +50,7 @@ export function bindEditorClipboard(store: EditorStore) {
   function pasteOver(e: ClipboardEvent, center: Vector) {
     const imageFiles = extractImageFilesFromClipboard(e)
     if (imageFiles.length) {
-      void store.placeImageFiles(imageFiles, center.x, center.y)
+      void placeCanvasFiles(store, imageFiles, center.x, center.y)
       return
     }
     const html = e.clipboardData?.getData('text/html') ?? ''
@@ -116,7 +116,7 @@ export function bindEditorClipboard(store: EditorStore) {
     const imageFiles = extractImageFilesFromClipboard(e)
     if (imageFiles.length) {
       const { x, y } = pastePoint(store, cursorPos)
-      void store.placeImageFiles(imageFiles, x, y)
+      void placeCanvasFiles(store, imageFiles, x, y)
       return
     }
 

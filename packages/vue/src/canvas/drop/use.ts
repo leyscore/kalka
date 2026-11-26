@@ -167,7 +167,10 @@ export function filterCanvasFiles(files: ArrayLike<File> | Iterable<File> | null
   )
 }
 
+/** The images and videos a paste carries, which `placeCanvasFiles` places. */
 export function extractImageFilesFromClipboard(e: ClipboardEvent): File[] {
   const files = e.clipboardData?.files
-  return files ? Array.from(files).filter((file) => RASTER_IMAGE_TYPES.has(file.type)) : []
+  return files
+    ? Array.from(files).filter((file) => RASTER_IMAGE_TYPES.has(file.type) || isVideoFile(file))
+    : []
 }
