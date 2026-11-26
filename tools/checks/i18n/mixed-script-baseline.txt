@@ -161,6 +161,7 @@ ja:collaboration.serverSettingsTitle
 ja:collaboration.serverSignInToOpenAnyDescription
 ja:collaboration.serverSignInToOpenDescription
 ja:collaboration.serverWhatIs
+ja:collaboration.sharePermissionRoomNoControl
 ja:collaboration.teamFeatures
 ja:collaboration.unreachableDescription
 ja:commands.paletteDescription
@@ -478,6 +479,7 @@ zh-cn:collaboration.serverSettingsTitle
 zh-cn:collaboration.serverSignInToOpenAnyDescription
 zh-cn:collaboration.serverSignInToOpenDescription
 zh-cn:collaboration.serverWhatIs
+zh-cn:collaboration.sharePermissionRoomNoControl
 zh-cn:collaboration.teamFeatures
 zh-cn:collaboration.unreachableDescription
 zh-cn:commands.paletteDescription
