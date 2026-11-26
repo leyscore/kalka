@@ -275,7 +275,33 @@ const ARG_TO_NODE_PROP: Record<string, string> = {
 
 /** Args that are parameters to the tool, not node properties to track */
 const SKIP_ARGS: Partial<Record<string, Set<string>>> = {
-  set_effects: new Set(['type', 'color', 'offset_x', 'offset_y', 'radius', 'spread']),
+  // Every set_effects argument describes the effect it adds, none a property of the layer.
+  set_effects: new Set([
+    'type',
+    'replace',
+    'color',
+    'offset_x',
+    'offset_y',
+    'radius',
+    'spread',
+    'progressive',
+    'start_radius',
+    'start_x',
+    'start_y',
+    'end_x',
+    'end_y',
+    'noise_type',
+    'secondary_color',
+    'noise_size',
+    'density',
+    'opacity',
+    'clip_to_shape',
+    'refraction',
+    'depth',
+    'light_angle',
+    'light_intensity',
+    'dispersion'
+  ]),
   set_fill: new Set(['type', 'color']),
   set_stroke: new Set(['type', 'color']),
   set_layout: new Set([

@@ -352,7 +352,7 @@ Changes apply live in the open app. Settings tools never expose credentials, mod
 |------|-------------|
 | `set_fill` | Set fill color (hex) |
 | `set_stroke` | Set stroke color, weight, alignment |
-| `set_effects` | Add shadow or blur effects |
+| `set_effects` | Add a shadow, a blur (progressive too), noise, texture, or glass, or replace the effects with it |
 | `update_node` | Update position, size, opacity, corner radius, text, font |
 | `set_layout` | Set auto-layout (flexbox) — direction, spacing, padding, alignment |
 | `set_constraints` | Set resize constraints |

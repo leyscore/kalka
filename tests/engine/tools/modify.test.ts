@@ -79,6 +79,42 @@ describe('set_effects', () => {
     expect(effects.length).toBe(1)
     expect(effects[0].type).toBe('BACKGROUND_BLUR')
   })
+
+  test('adds a progressive blur, noise, texture and glass, and replaces them', () => {
+    const { figma } = setupToolTest()
+    const frame = figma.createFrame()
+    frame.resize(100, 100)
+    const tool = getTool('set_effects')
+
+    tool.execute(figma, {
+      id: frame.id,
+      type: 'FOREGROUND_BLUR',
+      radius: 12,
+      progressive: true,
+      start_radius: 2
+    })
+    tool.execute(figma, { id: frame.id, type: 'NOISE', noise_type: 'DUOTONE', density: 0.3 })
+    tool.execute(figma, { id: frame.id, type: 'TEXTURE', radius: 6 })
+    tool.execute(figma, { id: frame.id, type: 'GLASS', radius: 8, refraction: 0.4 })
+
+    const node = () => expectDefined(figma.getNodeById(frame.id), 'frame node')
+    expect(node().effects).toMatchObject([
+      {
+        type: 'LAYER_BLUR',
+        blurType: 'PROGRESSIVE',
+        radius: 12,
+        startRadius: 2,
+        startOffset: { x: 0.5, y: 0 },
+        endOffset: { x: 0.5, y: 1 }
+      },
+      { type: 'NOISE', noiseType: 'DUOTONE', density: 0.3 },
+      { type: 'TEXTURE', radius: 6, clipToShape: true },
+      { type: 'GLASS', radius: 8, refraction: 0.4, depth: 20 }
+    ])
+
+    tool.execute(figma, { id: frame.id, type: 'INNER_SHADOW', replace: true })
+    expect(node().effects.map((effect) => effect.type)).toEqual(['INNER_SHADOW'])
+  })
 })
 
 describe('update_node', () => {
