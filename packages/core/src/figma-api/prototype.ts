@@ -4,6 +4,7 @@ import {
   flowStartingPoints,
   PROTOTYPE_DIRECTIONS,
   PROTOTYPE_EASING_TYPES,
+  PROTOTYPE_MEDIA_ACTIONS,
   PROTOTYPE_NAVIGATIONS,
   PROTOTYPE_TRANSITION_TYPES,
   PROTOTYPE_TRIGGER_TYPES,
@@ -70,6 +71,13 @@ const actionSchema = v.union([
     preserveScrollPosition: v.optional(v.boolean()),
     resetScrollPosition: v.optional(v.boolean()),
     overlayRelativePosition: v.optional(vector)
+  }),
+  v.object({
+    type: v.literal('UPDATE_MEDIA_RUNTIME'),
+    destinationId: v.optional(v.nullable(v.string())),
+    mediaAction: v.picklist(PROTOTYPE_MEDIA_ACTIONS),
+    amountToSkip: v.optional(v.number()),
+    newTimestamp: v.optional(v.number())
   })
 ])
 
@@ -141,6 +149,17 @@ function actionToFigma(action: PrototypeAction): unknown {
       return { type: action.type }
     case 'URL':
       return { type: 'URL', url: action.url, openInNewTab: action.openInNewTab }
+    case 'UPDATE_MEDIA_RUNTIME': {
+      const common = {
+        type: action.type,
+        destinationId: action.destinationId,
+        mediaAction: action.mediaAction
+      }
+      if (action.mediaAction === 'SKIP_FORWARD' || action.mediaAction === 'SKIP_BACKWARD')
+        return { ...common, amountToSkip: action.amountToSkip }
+      if (action.mediaAction === 'SKIP_TO') return { ...common, newTimestamp: action.newTimestamp }
+      return common
+    }
     case 'NODE':
       return {
         type: 'NODE',
@@ -190,13 +209,21 @@ function actionFromFigma(value: unknown): PrototypeAction {
     const type = v.safeParse(v.object({ type: v.string() }), value)
     throw new Error(
       type.success
-        ? `Kalka does not play ${type.output.type} actions yet; it plays NODE, BACK, CLOSE, URL, SET_VARIABLE, SET_VARIABLE_MODE and CONDITIONAL`
+        ? `Kalka does not play ${type.output.type} actions yet; it plays NODE, BACK, CLOSE, URL, SET_VARIABLE, SET_VARIABLE_MODE, CONDITIONAL and UPDATE_MEDIA_RUNTIME`
         : 'An action needs a type'
     )
   }
   const action = parsed.output
   if (action.type === 'URL')
     return { type: 'URL', url: action.url, openInNewTab: action.openInNewTab ?? true }
+  if (action.type === 'UPDATE_MEDIA_RUNTIME')
+    return {
+      type: action.type,
+      destinationId: action.destinationId ?? null,
+      mediaAction: action.mediaAction,
+      amountToSkip: action.amountToSkip ?? 0,
+      newTimestamp: action.newTimestamp ?? 0
+    }
   if (action.type !== 'NODE') return { type: action.type }
   const transition = action.transition
   return {

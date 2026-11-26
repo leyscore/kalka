@@ -99,6 +99,7 @@ de:prototype.position
 de:prototype.sticky
 de:prototype.url
 de:prototype.variable
+de:prototype.video
 de:settings.mcp
 de:shortcuts.categoryText
 de:shortcuts.categoryZoom
@@ -404,6 +405,7 @@ it:prototype.overlay
 it:prototype.smartAnimate
 it:prototype.sticky
 it:prototype.url
+it:prototype.video
 it:rendering.settingsTitle
 it:settings.account
 it:settings.mcp

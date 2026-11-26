@@ -250,3 +250,64 @@ test('a video paint plays its clip in the presented prototype, over its poster',
   await expect(home.locator('[data-layer="Missing clip"] video')).toHaveCount(0)
   await page.evaluate(() => window.kalka?.getStore?.().stopPlay())
 })
+
+test('a Video action unmutes the presented video when the button is clicked', async () => {
+  const { page } = editor
+  const { homeId, buttonId } = await createFlows(page)
+  const videoId = await page.evaluate((buttonId) => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    store.graph.images.set('clip', new Uint8Array([0, 0, 0, 24, 102, 116, 121, 112]))
+    const home = store.graph.getNode(buttonId)?.parentId ?? ''
+    const video = store.graph.createNode('RECTANGLE', home, {
+      name: 'Clip',
+      y: 200,
+      width: 160,
+      height: 90,
+      fills: [
+        {
+          type: 'VIDEO',
+          color: { r: 1, g: 1, b: 1, a: 1 },
+          opacity: 1,
+          visible: true,
+          videoHash: 'clip'
+        }
+      ]
+    })
+    store.setReactions(buttonId, [])
+    store.select([buttonId])
+    return video.id
+  }, buttonId)
+
+  await page.evaluate(() => window.kalka?.getStore?.().stopPlay())
+  await page.getByRole('tab', { name: 'Prototype' }).click()
+  const panel = page.getByTestId('prototype-panel')
+  await panel.getByRole('button', { name: 'Add interaction' }).click()
+  await panel.locator('[data-property="prototype-action"]').click()
+  await page.getByRole('option', { name: 'Video', exact: true }).click()
+  await panel.locator('[data-property="prototype-media-action"]').click()
+  await page.getByRole('option', { name: 'Unmute', exact: true }).click()
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (id) => window.kalka?.getStore?.().graph.getNode(id)?.reactions[0]?.actions[0],
+        buttonId
+      )
+    )
+    .toEqual({
+      type: 'UPDATE_MEDIA_RUNTIME',
+      destinationId: videoId,
+      mediaAction: 'UNMUTE',
+      amountToSkip: 5,
+      newTimestamp: 0
+    })
+
+  await page.evaluate((id) => window.kalka?.getStore?.().startPlay({ startId: id }), homeId)
+  const home = frame(page, homeId)
+  const clip = home.locator('[data-layer="Clip"] > video[data-present-video]')
+  await expect(clip).toHaveCount(1)
+  expect(await clip.evaluate((video: HTMLVideoElement) => video.muted)).toBe(true)
+  await home.locator('[data-layer="Button"]').click()
+  await expect.poll(() => clip.evaluate((video: HTMLVideoElement) => video.muted)).toBe(false)
+  await page.evaluate(() => window.kalka?.getStore?.().stopPlay())
+})

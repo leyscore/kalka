@@ -1,6 +1,7 @@
 import {
   flowStartingPoints,
   type PrototypeAction,
+  type PrototypeMediaAction,
   type PrototypeReaction,
   type PrototypeTransition,
   type PrototypeTriggerType,
@@ -70,6 +71,8 @@ export type PresentStep =
   | { kind: 'variant'; rootId: string; path: string; transition: PrototypeTransition | null }
   | { kind: 'scroll'; nodeId: string; transition: PrototypeTransition | null }
   | { kind: 'url'; url: string; newTab: boolean }
+  /** A media action on the video of a layer of the frame `rootId`. */
+  | { kind: 'media'; rootId: string; nodeId: string; action: PrototypeMediaAction }
   /** Variables or modes changed: every shown frame draws them. */
   | { kind: 'variables' }
   /** A conditional's chosen actions, to run next in order. */
@@ -257,6 +260,11 @@ export function runAction(
     case 'CONDITIONAL': {
       const actions = conditionalActions(context.graph, state.variables, action, context.nodeIds[0])
       return actions.length > 0 ? { state, step: { kind: 'actions', actions } } : null
+    }
+    case 'UPDATE_MEDIA_RUNTIME': {
+      const nodeId = action.destinationId ?? context.nodeIds[0]
+      if (!nodeId || !context.graph.getNode(nodeId)) return null
+      return { state, step: { kind: 'media', rootId: context.rootId, nodeId, action } }
     }
     default:
       return null

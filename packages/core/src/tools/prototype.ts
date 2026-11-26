@@ -19,7 +19,11 @@ const REACTIONS_HELP =
   '{ type: "BACK" }, { type: "CLOSE" }, { type: "URL", url, openInNewTab? }, ' +
   '{ type: "SET_VARIABLE", variableId, variableValue: VariableData }, ' +
   '{ type: "SET_VARIABLE_MODE", variableCollectionId, variableModeId }, ' +
-  '{ type: "CONDITIONAL", conditionalBlocks: [{ condition?: VariableData, actions }] }. ' +
+  '{ type: "CONDITIONAL", conditionalBlocks: [{ condition?: VariableData, actions }] }, ' +
+  '{ type: "UPDATE_MEDIA_RUNTIME", destinationId (a layer with a video paint; null for this ' +
+  'one), mediaAction: "PLAY" | "PAUSE" | "TOGGLE_PLAY_PAUSE" | "MUTE" | "UNMUTE" | ' +
+  '"TOGGLE_MUTE_UNMUTE" | "SKIP_FORWARD" | "SKIP_BACKWARD" (amountToSkip s) | "SKIP_TO" ' +
+  '(newTimestamp s) }. ' +
   'VariableData: { type: "FLOAT" | "STRING" | "BOOLEAN" | "COLOR", value } | ' +
   '{ type: "VARIABLE_ALIAS", value: { type: "VARIABLE_ALIAS", id } } | ' +
   '{ type: "EXPRESSION", value: { expressionFunction: "ADDITION" | "SUBTRACTION" | ' +

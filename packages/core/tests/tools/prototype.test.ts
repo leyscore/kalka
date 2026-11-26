@@ -64,11 +64,11 @@ describe('prototype tools', () => {
       reactions: [
         {
           trigger: { type: 'ON_CLICK' },
-          actions: [{ type: 'UPDATE_MEDIA_RUNTIME', destinationId: null, mediaAction: 'PLAY' }]
+          actions: [{ type: 'OBJECT_ANIMATION' }]
         }
       ]
     })
-    expect(refused).toMatchObject({ error: expect.stringContaining('UPDATE_MEDIA_RUNTIME') })
+    expect(refused).toMatchObject({ error: expect.stringContaining('OBJECT_ANIMATION') })
 
     const flows = await tool('set_prototype_flows').execute(figma, {
       flows: [

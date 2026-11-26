@@ -70,7 +70,7 @@ describe('.fig prototype round trip', () => {
           },
           {
             event: { interactionType: 'ON_CLICK' },
-            actions: [{ connectionType: 'UPDATE_MEDIA_RUNTIME', mediaAction: 'PLAY' }]
+            actions: [{ connectionType: 'OBJECT_ANIMATION' }]
           }
         ]
       }),
@@ -194,7 +194,7 @@ describe('.fig prototype round trip', () => {
         prototypeInteractions: [
           {
             event: { interactionType: 'ON_CLICK' },
-            actions: [{ connectionType: 'UPDATE_MEDIA_RUNTIME', mediaAction: 'PLAY' }]
+            actions: [{ connectionType: 'OBJECT_ANIMATION' }]
           }
         ]
       })
@@ -414,11 +414,53 @@ describe('.fig prototype round trip', () => {
     })
   })
 
+  test('reads and writes media actions', async () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const video = graph.createNode('RECTANGLE', page.id, { name: 'Video' })
+    const actions: SceneNode['reactions'][number]['actions'] = [
+      {
+        type: 'UPDATE_MEDIA_RUNTIME',
+        destinationId: video.id,
+        mediaAction: 'SKIP_BACKWARD',
+        amountToSkip: 3,
+        newTimestamp: 0
+      },
+      {
+        type: 'UPDATE_MEDIA_RUNTIME',
+        destinationId: null,
+        mediaAction: 'SKIP_TO',
+        amountToSkip: 0,
+        newTimestamp: 7.5
+      }
+    ]
+    graph.createNode('FRAME', page.id, {
+      name: 'Controls',
+      reactions: [{ trigger: { type: 'ON_CLICK', delay: 0, keyCodes: [] }, actions }]
+    })
+    const bytes = (await exportFigFile(graph)).buffer as ArrayBuffer
+    const written = parseFigBuffer(bytes).nodeChanges.find((nc) => nc.name === 'Controls')
+      ?.prototypeInteractions as { actions: Record<string, unknown>[] }[]
+    expect(written[0].actions).toMatchObject([
+      {
+        connectionType: 'UPDATE_MEDIA_RUNTIME',
+        mediaAction: 'SKIP_BACKWARD',
+        mediaSkipByAmount: 3
+      },
+      { connectionType: 'UPDATE_MEDIA_RUNTIME', mediaAction: 'SKIP_TO', mediaSkipToTime: 7.5 }
+    ])
+    const reimported = await parseFigFile(bytes)
+    expect(byName(reimported, 'Controls').reactions[0].actions).toEqual([
+      { ...actions[0], destinationId: byName(reimported, 'Video').id },
+      actions[1]
+    ])
+  })
+
   test("gives a copied layer's interactions GUIDs of their own", async () => {
     const interaction = {
       id: { sessionID: 1, localID: 90 },
       event: { interactionType: 'ON_CLICK' },
-      actions: [{ connectionType: 'UPDATE_MEDIA_RUNTIME', mediaAction: 'PLAY' }]
+      actions: [{ connectionType: 'OBJECT_ANIMATION' }]
     }
     const { graph } = materializeDocument([
       record({ guid: { sessionID: 0, localID: 0 }, type: 'DOCUMENT', name: 'Document' }),

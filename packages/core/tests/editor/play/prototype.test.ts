@@ -253,4 +253,24 @@ describe('presenting a prototype', () => {
       'Light'
     )
   })
+  test('a media action controls the video of its layer, or of the layer it names', () => {
+    const { graph, pageId, home, button } = screens()
+    const video = graph.createNode('RECTANGLE', home.id, { name: 'Video' })
+    const ctx = context(graph, home.id, button.id)
+    const state = startPresentation(pageId, home.id)
+    const mute: PrototypeAction = {
+      type: 'UPDATE_MEDIA_RUNTIME',
+      destinationId: video.id,
+      mediaAction: 'MUTE',
+      amountToSkip: 0,
+      newTimestamp: 0
+    }
+    expect(runAction(graph, state, mute, ctx)).toEqual({
+      state,
+      step: { kind: 'media', rootId: home.id, nodeId: video.id, action: mute }
+    })
+    const own = { ...mute, destinationId: null }
+    expect(runAction(graph, state, own, ctx)?.step).toMatchObject({ nodeId: button.id })
+    expect(runAction(graph, state, { ...mute, destinationId: 'gone' }, ctx)).toBeNull()
+  })
 })

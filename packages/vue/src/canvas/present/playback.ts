@@ -10,6 +10,7 @@ import type { PrototypeAction, PrototypeTransition } from '@kalka/scene-graph'
 
 import { useEditor } from '#vue/editor/context'
 
+import { runMediaAction, videoIn } from './media'
 import { animatePose, layerBoxes, REST, screenPoses, smartAnimate, type Pose } from './motion'
 import type { PresentScreens } from './screens'
 import type { PresentStage } from './stage'
@@ -31,7 +32,7 @@ async function finish(animations: Animation[]): Promise<void> {
 /**
  * Plays the steps of a presented prototype's actions, one after another: screen changes with
  * their transitions, overlays opening and closing, instances changing variant, scrolling to a
- * layer, links and variables. `onVariant` hears of an instance that changed variant once its new
+ * layer, links, variables and media. `onVariant` hears of an instance that changed variant once its new
  * layers are drawn.
  */
 export function usePresentPlayback(options: {
@@ -192,6 +193,12 @@ export function usePresentPlayback(options: {
       return
     }
     if (step.kind === 'scroll') return playScroll(step)
+    if (step.kind === 'media') {
+      const key = screens.keyOf(step.rootId)
+      const video = videoIn((key && instances.get(key)?.elementOf(step.nodeId)) || null)
+      if (video) runMediaAction(video, step.action)
+      return
+    }
     if (step.kind === 'screen') {
       const keep = action.type === 'NODE' && action.preserveScrollPosition
       return playScreen(step, state, keep)

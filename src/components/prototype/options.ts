@@ -3,6 +3,7 @@ import type {
   OverlayPositionType,
   PrototypeDirection,
   PrototypeEasingType,
+  PrototypeMediaActionType,
   PrototypeNavigation,
   PrototypeTransitionType,
   PrototypeTriggerType,
@@ -21,6 +22,7 @@ export type ActionKind =
   | 'SET_VARIABLE'
   | 'SET_VARIABLE_MODE'
   | 'CONDITIONAL'
+  | 'UPDATE_MEDIA_RUNTIME'
 
 export function triggerOptions(m: Messages): { value: PrototypeTriggerType; label: string }[] {
   return [
@@ -49,7 +51,22 @@ export function actionOptions(m: Messages): { value: ActionKind; label: string }
     { value: 'CLOSE', label: m.closeOverlay },
     { value: 'SET_VARIABLE', label: m.setVariable },
     { value: 'SET_VARIABLE_MODE', label: m.setVariableMode },
-    { value: 'CONDITIONAL', label: m.conditional }
+    { value: 'CONDITIONAL', label: m.conditional },
+    { value: 'UPDATE_MEDIA_RUNTIME', label: m.video }
+  ]
+}
+
+export function mediaOptions(m: Messages): { value: PrototypeMediaActionType; label: string }[] {
+  return [
+    { value: 'PLAY', label: m.play },
+    { value: 'PAUSE', label: m.pause },
+    { value: 'TOGGLE_PLAY_PAUSE', label: m.playPause },
+    { value: 'MUTE', label: m.mute },
+    { value: 'UNMUTE', label: m.unmute },
+    { value: 'TOGGLE_MUTE_UNMUTE', label: m.muteUnmute },
+    { value: 'SKIP_FORWARD', label: m.jumpForward },
+    { value: 'SKIP_BACKWARD', label: m.jumpBackward },
+    { value: 'SKIP_TO', label: m.jumpTo }
   ]
 }
 

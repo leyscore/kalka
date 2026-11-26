@@ -1,6 +1,6 @@
 import { h, onScopeDispose, type VNode } from 'vue'
 
-import type { Fill, ImageScaleMode, SceneGraph } from '@kalka/scene-graph'
+import type { Fill, ImageScaleMode, PrototypeMediaAction, SceneGraph } from '@kalka/scene-graph'
 
 const OBJECT_FIT: Readonly<Record<ImageScaleMode, string>> = {
   FILL: 'cover',
@@ -72,4 +72,43 @@ export function usePresentVideos() {
   })
 
   return { videoOf }
+}
+
+/** The video a presented layer plays: the layer itself, or the one behind its content. */
+export function videoIn(element: HTMLElement | null): HTMLVideoElement | null {
+  if (!element) return null
+  const found = element.querySelector(':scope > video[data-present-video]')
+  return found instanceof HTMLVideoElement ? found : null
+}
+
+/** Plays, pauses, mutes or moves through a presented video, as a media action asks. */
+export function runMediaAction(video: HTMLVideoElement, action: PrototypeMediaAction): void {
+  const play = () => void video.play().catch(() => undefined)
+  const seek = (time: number) => {
+    const end = Number.isFinite(video.duration) ? video.duration : Infinity
+    video.currentTime = Math.min(Math.max(0, time), end)
+  }
+  switch (action.mediaAction) {
+    case 'PLAY':
+      return play()
+    case 'PAUSE':
+      return video.pause()
+    case 'TOGGLE_PLAY_PAUSE':
+      return video.paused ? play() : video.pause()
+    case 'MUTE':
+      video.muted = true
+      return
+    case 'UNMUTE':
+      video.muted = false
+      return
+    case 'TOGGLE_MUTE_UNMUTE':
+      video.muted = !video.muted
+      return
+    case 'SKIP_FORWARD':
+      return seek(video.currentTime + action.amountToSkip)
+    case 'SKIP_BACKWARD':
+      return seek(video.currentTime - action.amountToSkip)
+    case 'SKIP_TO':
+      return seek(action.newTimestamp)
+  }
 }

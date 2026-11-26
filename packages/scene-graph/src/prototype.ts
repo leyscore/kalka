@@ -137,6 +137,35 @@ export interface PrototypeSetVariableModeAction {
   modeId: string | null
 }
 
+/** What a media action does to a video, as Figma's `mediaAction`. */
+export const PROTOTYPE_MEDIA_ACTIONS = [
+  'PLAY',
+  'PAUSE',
+  'TOGGLE_PLAY_PAUSE',
+  'MUTE',
+  'UNMUTE',
+  'TOGGLE_MUTE_UNMUTE',
+  'SKIP_FORWARD',
+  'SKIP_BACKWARD',
+  'SKIP_TO'
+] as const
+export type PrototypeMediaActionType = (typeof PROTOTYPE_MEDIA_ACTIONS)[number]
+
+/**
+ * A media action: plays, pauses, mutes or moves through the video of a layer with a video
+ * paint, as Figma's `UPDATE_MEDIA_RUNTIME`. Times are in seconds.
+ */
+export interface PrototypeMediaAction {
+  type: 'UPDATE_MEDIA_RUNTIME'
+  /** The layer whose video it controls; null for the layer the interaction is on. */
+  destinationId: string | null
+  mediaAction: PrototypeMediaActionType
+  /** Skip forward and backward: how far. */
+  amountToSkip: number
+  /** Skip to: where. */
+  newTimestamp: number
+}
+
 /** Conditional: the first block whose condition holds runs its actions. */
 export interface PrototypeConditionalAction {
   type: 'CONDITIONAL'
@@ -151,6 +180,7 @@ export type PrototypeAction =
   | PrototypeSetVariableAction
   | PrototypeSetVariableModeAction
   | PrototypeConditionalAction
+  | PrototypeMediaAction
 
 export interface PrototypeReaction {
   trigger: PrototypeTrigger

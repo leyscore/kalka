@@ -64,10 +64,54 @@ describe('prototype through the Plugin API', () => {
       button.setReactionsAsync([
         {
           trigger: { type: 'ON_CLICK' },
-          actions: [{ type: 'UPDATE_MEDIA_RUNTIME', destinationId: null, mediaAction: 'PLAY' }]
+          actions: [{ type: 'OBJECT_ANIMATION' }]
         }
       ])
-    ).rejects.toThrow('UPDATE_MEDIA_RUNTIME')
+    ).rejects.toThrow('OBJECT_ANIMATION')
+  })
+
+  test('media actions play, pause, mute and skip through a video', async () => {
+    const { graph, button, home } = setup()
+    const actions = [
+      { type: 'UPDATE_MEDIA_RUNTIME', destinationId: home.id, mediaAction: 'TOGGLE_PLAY_PAUSE' },
+      {
+        type: 'UPDATE_MEDIA_RUNTIME',
+        destinationId: null,
+        mediaAction: 'SKIP_FORWARD',
+        amountToSkip: 5
+      },
+      {
+        type: 'UPDATE_MEDIA_RUNTIME',
+        destinationId: null,
+        mediaAction: 'SKIP_TO',
+        newTimestamp: 12
+      }
+    ]
+    await button.setReactionsAsync([{ trigger: { type: 'ON_CLICK' }, actions }])
+    expect(graph.getNode(button.id)?.reactions[0].actions).toEqual([
+      {
+        type: 'UPDATE_MEDIA_RUNTIME',
+        destinationId: home.id,
+        mediaAction: 'TOGGLE_PLAY_PAUSE',
+        amountToSkip: 0,
+        newTimestamp: 0
+      },
+      {
+        type: 'UPDATE_MEDIA_RUNTIME',
+        destinationId: null,
+        mediaAction: 'SKIP_FORWARD',
+        amountToSkip: 5,
+        newTimestamp: 0
+      },
+      {
+        type: 'UPDATE_MEDIA_RUNTIME',
+        destinationId: null,
+        mediaAction: 'SKIP_TO',
+        amountToSkip: 0,
+        newTimestamp: 12
+      }
+    ])
+    expect(button.reactions[0]?.actions as unknown).toEqual(actions)
   })
 
   test("variable actions take and give Figma's VariableData", async () => {

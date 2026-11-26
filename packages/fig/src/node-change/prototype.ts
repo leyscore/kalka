@@ -1,21 +1,23 @@
 import type { NodeChange } from '@kalka/kiwi/fig/codec'
 import { guidToString } from '@kalka/kiwi/fig/guid'
-import type {
-  OverflowDirection,
-  SceneGraph,
-  OverlayPositionType,
-  PrototypeAction,
-  PrototypeDevice,
-  PrototypeDirection,
-  PrototypeEasing,
-  PrototypeEasingType,
-  PrototypeNavigation,
-  PrototypeReaction,
-  PrototypeStartingPoint,
-  PrototypeTransition,
-  PrototypeTriggerType,
-  SceneNode,
-  ScrollBehavior
+import {
+  PROTOTYPE_MEDIA_ACTIONS,
+  type OverflowDirection,
+  type SceneGraph,
+  type OverlayPositionType,
+  type PrototypeAction,
+  type PrototypeDevice,
+  type PrototypeDirection,
+  type PrototypeEasing,
+  type PrototypeEasingType,
+  type PrototypeMediaActionType,
+  type PrototypeNavigation,
+  type PrototypeReaction,
+  type PrototypeStartingPoint,
+  type PrototypeTransition,
+  type PrototypeTriggerType,
+  type SceneNode,
+  type ScrollBehavior
 } from '@kalka/scene-graph'
 import { orderKeyBetween } from '@kalka/scene-graph/order-keys'
 import type { Color, GUID, Vector } from '@kalka/scene-graph/primitives'
@@ -256,6 +258,12 @@ function importTransition(action: Obj): PrototypeTransition | null {
   }
 }
 
+const MEDIA_ACTIONS: ReadonlySet<string> = new Set(PROTOTYPE_MEDIA_ACTIONS)
+
+function isMediaAction(value: string): value is PrototypeMediaActionType {
+  return MEDIA_ACTIONS.has(value)
+}
+
 function importAction(action: unknown): PrototypeAction | null {
   if (!isRecord(action)) return null
   switch (str(action.connectionType)) {
@@ -269,6 +277,17 @@ function importAction(action: unknown): PrototypeAction | null {
         url: str(action.connectionURL) ?? '',
         openInNewTab: action.openUrlInNewTab !== false
       }
+    case 'UPDATE_MEDIA_RUNTIME': {
+      const mediaAction = str(action.mediaAction) ?? 'PLAY'
+      if (!isMediaAction(mediaAction)) return null
+      return {
+        type: 'UPDATE_MEDIA_RUNTIME',
+        destinationId: guidOf(action.transitionNodeID),
+        mediaAction,
+        amountToSkip: typeof action.mediaSkipByAmount === 'number' ? action.mediaSkipByAmount : 0,
+        newTimestamp: typeof action.mediaSkipToTime === 'number' ? action.mediaSkipToTime : 0
+      }
+    }
     case 'INTERNAL_NODE': {
       const navigation = NAVIGATIONS[str(action.navigationType) ?? 'NAVIGATE']
       if (!navigation) return null
@@ -421,6 +440,18 @@ function exportAction(action: PrototypeAction, refs: PrototypeRefs): Obj | null 
     case 'SET_VARIABLE_MODE':
     case 'CONDITIONAL':
       return exportVariableAction(action, refs, (nested) => exportAction(nested, refs))
+    case 'UPDATE_MEDIA_RUNTIME': {
+      const fields: Obj = {
+        connectionType: 'UPDATE_MEDIA_RUNTIME',
+        mediaAction: action.mediaAction
+      }
+      const guid = action.destinationId ? refs.node(action.destinationId) : undefined
+      if (guid) fields.transitionNodeID = guid
+      if (action.mediaAction === 'SKIP_FORWARD' || action.mediaAction === 'SKIP_BACKWARD')
+        fields.mediaSkipByAmount = action.amountToSkip
+      if (action.mediaAction === 'SKIP_TO') fields.mediaSkipToTime = action.newTimestamp
+      return fields
+    }
     case 'NODE': {
       const guid = action.destinationId ? refs.node(action.destinationId) : undefined
       if (!guid) return null

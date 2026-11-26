@@ -31,6 +31,7 @@ import {
   directionOptions,
   DIRECTIONAL,
   easingOptions,
+  mediaOptions,
   type ActionKind,
   type AnimationKind
 } from './options'
@@ -69,6 +70,18 @@ function modeOptions(collectionId: string | null) {
   return (collection?.modes ?? []).map((mode) => ({ value: mode.modeId, label: mode.name }))
 }
 
+/** The layers of the page with a video paint, after the layer the interaction is on. */
+const videoOptions = useSceneComputed(() => [
+  { value: '', label: m.value.thisLayer },
+  ...[...store.graph.getAllNodes()]
+    .filter(
+      (node) =>
+        node.fills.some((fill) => fill.type === 'VIDEO') &&
+        store.graph.isDescendant(node.id, store.state.currentPageId)
+    )
+    .map((node) => ({ value: node.id, label: node.name }))
+])
+
 function kindOf(current: PrototypeAction): ActionKind {
   return current.type === 'NODE' ? current.navigation : current.type
 }
@@ -86,6 +99,14 @@ function setKind(kind: ActionKind) {
       modeId: collection?.modes[0]?.modeId ?? null
     })
   }
+  if (kind === 'UPDATE_MEDIA_RUNTIME')
+    return emit('update', {
+      type: kind,
+      destinationId: videoOptions.value[1]?.value || null,
+      mediaAction: 'TOGGLE_PLAY_PAUSE',
+      amountToSkip: 5,
+      newTimestamp: 0
+    })
   if (kind === 'CONDITIONAL')
     return emit('update', {
       type: 'CONDITIONAL',
@@ -327,6 +348,50 @@ function addBlockAction(blockIndex: number) {
         data-property="prototype-mode"
         @update:model-value="emit('update', { ...action, modeId: $event || null })"
       />
+    </template>
+
+    <template v-else-if="action.type === 'UPDATE_MEDIA_RUNTIME'">
+      <AppSelect
+        :model-value="action.destinationId ?? ''"
+        :options="videoOptions"
+        :label="m.destination"
+        data-property="prototype-video"
+        @update:model-value="emit('update', { ...action, destinationId: $event || null })"
+      />
+      <PanelItemRow>
+        <AppSelect
+          :model-value="action.mediaAction"
+          :options="mediaOptions(m)"
+          :label="m.mediaAction"
+          :ui="{ trigger: 'w-auto flex-1' }"
+          data-property="prototype-media-action"
+          @update:model-value="(mediaAction) => emit('update', { ...action, mediaAction })"
+        />
+        <div
+          v-if="action.mediaAction.startsWith('SKIP_')"
+          class="w-20 shrink-0"
+          data-property="prototype-media-time"
+        >
+          <NumberField
+            :aria-label="m.seconds"
+            suffix="s"
+            :min="0"
+            :step="1"
+            :model-value="
+              action.mediaAction === 'SKIP_TO' ? action.newTimestamp : action.amountToSkip
+            "
+            @commit="
+              (value: number) =>
+                emit(
+                  'update',
+                  action.mediaAction === 'SKIP_TO'
+                    ? { ...action, newTimestamp: Math.max(0, value) }
+                    : { ...action, amountToSkip: Math.max(0, value) }
+                )
+            "
+          />
+        </div>
+      </PanelItemRow>
     </template>
 
     <template v-else-if="action.type === 'CONDITIONAL'">
