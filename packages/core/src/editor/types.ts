@@ -29,6 +29,7 @@ import type {
 } from '#core/canvas/renderer/types'
 import type { InterfaceTheme } from '#core/constants'
 import type { PlayState } from '#core/editor/play/actions'
+import type { PrototypeLinkDrag } from '#core/editor/play/connections'
 import type { SnappingPreferences } from '#core/editor/preferences'
 import type { DefaultLayerProperties } from '#core/editor/shapes/default-properties'
 import type { RotationPreview } from '#core/geometry'
@@ -72,6 +73,8 @@ export interface EditorSharedState {
   showFrameOutlines?: boolean
   /** Figma's View › Pixel preview, off unless set. */
   pixelPreview?: PixelPreview | null
+  /** The Prototype tab is open: the canvas draws prototype connections. */
+  prototyping?: boolean
   /**
    * The document is open to view only, such as a server file shared to view: people look, select,
    * inspect and export, and nothing they do edits it. Only the select and hand tools are offered.
@@ -171,6 +174,8 @@ export interface EditorViewState {
   cursorCanvasY?: number | null
   /** This canvas's preview, or null while it edits. */
   play: PlayState | null
+  /** A prototype connection being dragged out of a layer. */
+  prototypeLink?: PrototypeLinkDrag | null
 }
 
 export type NavigationPhase = 'idle' | 'pan' | 'zoom' | 'momentum' | 'settling'

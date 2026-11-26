@@ -2,6 +2,7 @@ import type { Ref } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
 
+import { endPrototypeLink } from '#vue/canvas/prototype-link'
 import { scaleFactor } from '#vue/canvas/scale/input'
 import { finishShapeBuilderDrag, moveShapeBuilderDrag } from '#vue/canvas/shape-builder/input'
 import { handleNodeEditPointerUp } from '#vue/canvas/vector-input/input'
@@ -57,5 +58,9 @@ export function endToolDrag(drag: Ref<DragState | null>, editor: Editor, commit:
 
 /** Pointer up for a point or handle drag in a path being edited, a stroke, or a scale. */
 export function handleToolPointerUp(drag: Ref<DragState | null>, editor: Editor): boolean {
-  return handleNodeEditPointerUp(drag, editor) || endToolDrag(drag, editor, true)
+  return (
+    handleNodeEditPointerUp(drag, editor) ||
+    endPrototypeLink(drag, editor) ||
+    endToolDrag(drag, editor, true)
+  )
 }

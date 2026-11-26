@@ -16,6 +16,7 @@ import {
   diagnosticsMessages,
   editorMessages,
   effectMessages,
+  prototypeMessages,
   filesMessages,
   findMessages,
   fontsMessages,
@@ -52,6 +53,7 @@ export const useDesignCheckMessages = () => useI18nNamespace(designCheckMessages
 export const useDiagnosticsMessages = () => useI18nNamespace(diagnosticsMessages)
 export const useEditorMessages = () => useI18nNamespace(editorMessages)
 export const useEffectMessages = () => useI18nNamespace(effectMessages)
+export const usePrototypeMessages = () => useI18nNamespace(prototypeMessages)
 export const useFileMessages = () => useI18nNamespace(filesMessages)
 export const useFindMessages = () => useI18nNamespace(findMessages)
 export const useFontMessages = () => useI18nNamespace(fontsMessages)

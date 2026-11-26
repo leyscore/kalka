@@ -27,6 +27,8 @@ export function overlaysFromEditorState(
         : null,
     showMaskOutlines: !previewing && state.showMaskOutlines === true,
     showFrameOutlines: !previewing && state.showFrameOutlines === true,
+    prototyping: !previewing && state.prototyping === true,
+    prototypeLink: previewing ? null : (state.prototypeLink ?? null),
     transforming: state.transforming,
     measurementMode: state.measurementMode,
     enteredContainerId: state.enteredContainerId,

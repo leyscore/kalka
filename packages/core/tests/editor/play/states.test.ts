@@ -118,6 +118,6 @@ describe('preview islands', () => {
     editor.startPlay()
     editor.resetPlay()
     editor.replaceGraph(new SceneGraph())
-    expect(editor.state.play).toEqual({ revision: 2 })
+    expect(editor.state.play).toEqual({ revision: 2, present: null })
   })
 })

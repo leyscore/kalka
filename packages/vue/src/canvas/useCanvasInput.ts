@@ -9,6 +9,7 @@ import { createGuideInput, selectedTopLevelGuideFrameId } from '#vue/canvas/guid
 import { createCanvasLabelEdit } from '#vue/canvas/labels/edit'
 import { handlePenDragMove, updatePenHover } from '#vue/canvas/pen/input'
 import { createCanvasPointer } from '#vue/canvas/pointer/use'
+import { movePrototypeLink, startPrototypeLink } from '#vue/canvas/prototype-link'
 import { bindShapeBuilder, updateShapeBuilderHover } from '#vue/canvas/shape-builder/input'
 import { createTextEditInput } from '#vue/canvas/text-edit/input'
 import { endToolDrag, handleToolPointerUp, moveToolDrag } from '#vue/canvas/tools/drags'
@@ -216,6 +217,10 @@ export function useCanvasInput(
     if (!editor.state.editingTextId) canvasRef.value?.focus()
     editor.setHoveredNode(null)
     const { sx, sy, cx, cy } = getCoords(e)
+    if (e.button === 0 && startPrototypeLink(editor, sx, sy, setDrag)) {
+      e.preventDefault()
+      return
+    }
     if (e.button === 0 && guideInput.tryStartExisting(sx, sy, e.altKey)) {
       e.preventDefault()
       return
@@ -295,6 +300,11 @@ export function useCanvasInput(
     }
 
     const { sx, sy, cx, cy } = getCoords(e)
+
+    if (d.type === 'prototype-link') {
+      movePrototypeLink(editor, d, cx, cy)
+      return
+    }
 
     if (d.type === 'guide') {
       const frameId = e.altKey && !d.guideId ? selectedTopLevelGuideFrameId(editor) : null

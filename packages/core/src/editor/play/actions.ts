@@ -1,15 +1,33 @@
+import { pageHasPrototype } from '@kalka/scene-graph'
+
 import type { EditorContext } from '#core/editor/types'
 
-/** A previewing canvas: its islands remount whenever the revision changes. */
+import { presentationStart } from './prototype'
+
+/**
+ * A previewing canvas: its islands remount whenever the revision changes. A page with a
+ * prototype is presented instead, a screen at a time from `present.startId`.
+ */
 export interface PlayState {
   revision: number
+  present: { startId: string } | null
 }
 
 export function createPlayActions(ctx: EditorContext) {
-  /** Preview this canvas: layers holding controls run as live components. */
-  function startPlay(): void {
+  /**
+   * Preview this canvas: layers holding controls run as live components. A page with
+   * interactions or flows is presented as a prototype, from `startId` or the selected screen.
+   */
+  function startPlay(options: { startId?: string } = {}): void {
     if (ctx.state.play) return
-    ctx.state.play = { revision: 0 }
+    const { graph } = ctx
+    const pageId = ctx.state.currentPageId
+    const startId =
+      options.startId ??
+      (pageHasPrototype(graph, pageId)
+        ? presentationStart(graph, pageId, ctx.state.selectedIds)
+        : null)
+    ctx.state.play = { revision: 0, present: startId ? { startId } : null }
     ctx.state.hoveredNodeId = null
     ctx.requestRepaint()
   }
@@ -26,9 +44,10 @@ export function createPlayActions(ctx: EditorContext) {
     else startPlay()
   }
 
-  /** Put every control back as designed by running the islands afresh. */
+  /** Put every control back as designed by running the islands afresh; a prototype restarts. */
   function resetPlay(): void {
-    if (ctx.state.play) ctx.state.play = { revision: ctx.state.play.revision + 1 }
+    if (ctx.state.play)
+      ctx.state.play = { ...ctx.state.play, revision: ctx.state.play.revision + 1 }
   }
 
   // Another document's layers start from their designed state, not from the old islands'.

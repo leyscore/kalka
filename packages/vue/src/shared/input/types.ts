@@ -240,6 +240,12 @@ export interface DragGuide {
   originalPosition?: number
 }
 
+/** A prototype connection dragged out of the selected layer's handle. */
+export interface DragPrototypeLink {
+  type: 'prototype-link'
+  sourceId: string
+}
+
 export type DragState =
   | DragDraw
   | DragMove
@@ -259,6 +265,7 @@ export type DragState =
   | DragCornerRadius
   | DragGradientHandle
   | DragAutoLayoutValue
+  | DragPrototypeLink
 
 export const TOOL_TO_NODE: Partial<Record<Tool, NodeType>> = {
   FRAME: 'FRAME',

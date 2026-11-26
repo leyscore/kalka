@@ -35,6 +35,7 @@ import {
 } from '#vue/canvas/svg-overlay/layers/outlines'
 import { pixelGridLayer } from '#vue/canvas/svg-overlay/layers/pixel-grid'
 import { presenceLayer } from '#vue/canvas/svg-overlay/layers/presence'
+import { prototypeLayer } from '#vue/canvas/svg-overlay/layers/prototype'
 import { rulersLayer } from '#vue/canvas/svg-overlay/layers/rulers'
 import {
   dropTargetLayer,
@@ -184,6 +185,7 @@ export function composeOverlay(input: ComposeInput): ComposedOverlay {
     ...insertIndicatorLayer(input),
     ...(isMeasuring ? [] : autoLayoutHoverLayer(input)),
     ...gradientLayer(input),
+    ...prototypeLayer(input, input.pageId),
     // On top.
     ...nodeEditLayer(input),
     ...penLayer(input),

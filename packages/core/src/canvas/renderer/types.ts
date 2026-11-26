@@ -4,6 +4,7 @@ import type { SnapGuide } from '@kalka/scene-graph/snap'
 
 import type { GuideOverlayState } from '#core/canvas/guides/types'
 import type { DesignIssueOverlay } from '#core/canvas/issues/types'
+import type { PrototypeLinkDrag } from '#core/editor/play/connections'
 import type { RotationPreview } from '#core/geometry'
 import type { TextEditor } from '#core/text/editor'
 
@@ -54,6 +55,9 @@ export interface RenderOverlays {
   showMaskOutlines?: boolean
   /** Outline every frame, as Figma's View › Frame outlines. */
   showFrameOutlines?: boolean
+  /** The Prototype tab is open: connections are drawn, with the one being dragged. */
+  prototyping?: boolean
+  prototypeLink?: PrototypeLinkDrag | null
   transforming?: boolean
   measurementMode?: MeasurementMode
   enteredContainerId?: string | null

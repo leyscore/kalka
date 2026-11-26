@@ -265,13 +265,11 @@ export function flowStartingPoints(
   for (const node of graph.getChildren(pageId))
     if (node.prototypeStartingPoint)
       flows.push({ node, startingPoint: node.prototypeStartingPoint })
-  return flows.sort((a, b) =>
-    a.startingPoint.position < b.startingPoint.position
-      ? -1
-      : a.startingPoint.position > b.startingPoint.position
-        ? 1
-        : 0
-  )
+  // Positions are fractional-index strings, ordered by code unit as Figma orders them.
+  return flows.sort((a, b) => {
+    if (a.startingPoint.position === b.startingPoint.position) return 0
+    return a.startingPoint.position < b.startingPoint.position ? -1 : 1
+  })
 }
 
 /** Whether the page has anything to play as a prototype: a flow or an interaction. */

@@ -47,6 +47,7 @@ import { createDesignIssueActions } from './issues'
 import { createNodeActions } from './nodes'
 import { createPageActions } from './pages'
 import { createPlayActions } from './play/actions'
+import { createPrototypeActions } from './play/connections'
 import { createResponsiveSync } from './responsive-sync'
 import { createSelectionActions } from './selection'
 import { createShapeActions } from './shapes'
@@ -307,6 +308,7 @@ export function createEditor(options?: EditorOptions) {
   const icons = createIconActions(ctx)
   const alignment = createAlignmentActions(ctx)
   const preview = createPlayActions(ctx)
+  const prototype = createPrototypeActions(ctx, nodes.updateNodeWithUndo)
   const clipboardBridge = createClipboardBridge(clipboard, selection)
   const componentBridge = createComponentBridge(components, selection, structure, pages)
   const structureBridge = createStructureBridge(structure, selection)
@@ -448,6 +450,7 @@ export function createEditor(options?: EditorOptions) {
 
     // Preview: instances with a behaviour respond to the pointer on this canvas
     ...preview,
+    ...prototype,
 
     // Bitmap-to-vector replacement
     ...vectorize,

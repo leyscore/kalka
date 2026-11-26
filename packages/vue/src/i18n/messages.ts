@@ -20,6 +20,7 @@ import { mediaMessageDefaults, mediaMessages } from '#vue/i18n/messages/media'
 import { menuMessageDefaults, menuMessages } from '#vue/i18n/messages/menu'
 import { pageMessageDefaults, pageMessages } from '#vue/i18n/messages/pages'
 import { panelMessageDefaults, panelMessages } from '#vue/i18n/messages/panels'
+import { prototypeMessageDefaults, prototypeMessages } from '#vue/i18n/messages/prototype'
 import { recoveryMessageDefaults, recoveryMessages } from '#vue/i18n/messages/recovery'
 import { renameMessageDefaults, renameMessages } from '#vue/i18n/messages/rename'
 import { renderingMessageDefaults, renderingMessages } from '#vue/i18n/messages/rendering'
@@ -47,6 +48,7 @@ export {
   diagnosticsMessages,
   editorMessages,
   effectMessages,
+  prototypeMessages,
   filesMessages,
   findMessages,
   fontsMessages,
@@ -80,6 +82,7 @@ export const messageDefaults = {
   diagnostics: diagnosticsMessageDefaults,
   editor: editorMessageDefaults,
   effects: effectMessageDefaults,
+  prototype: prototypeMessageDefaults,
   files: filesMessageDefaults,
   find: findMessageDefaults,
   fonts: fontsMessageDefaults,

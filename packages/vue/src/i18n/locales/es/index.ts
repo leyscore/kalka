@@ -18,6 +18,7 @@ import fonts from './fonts.json'
 import media from './media.json'
 import menu from './menu.json'
 import pages from './pages.json'
+import prototype from './prototype.json'
 import panels from './panels.json'
 import recovery from './recovery.json'
 import rename from './rename.json'
@@ -50,6 +51,7 @@ export default {
   media,
   menu,
   pages,
+  prototype,
   panels,
   recovery,
   rendering,
