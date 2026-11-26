@@ -244,8 +244,18 @@ test("a manual overlay's preview on the canvas drags where it opens", async () =
   await page.mouse.down()
   await page.mouse.move((end.x + near.x) / 2, near.y)
   await page.mouse.move(near.x, near.y)
+  // While snapped, the canvas shows the guide along the button's right edge, as a move does.
+  const guides = () =>
+    page.evaluate(() =>
+      (window.kalka?.getStore?.().state.snapGuides ?? []).map((guide) => ({
+        axis: guide.axis,
+        position: guide.position
+      }))
+    )
+  expect(await guides()).toContainEqual({ axis: 'x', position: 160 })
   await page.mouse.up()
   await expect.poll(async () => (await offsetOf())?.x).toBe(120)
+  expect(await guides()).toEqual([])
   await editor.canvas.undo()
 
   await editor.canvas.undo()

@@ -3,7 +3,7 @@ import { markRaw, type Ref } from 'vue'
 import type { Editor } from '@kalka/core/editor'
 import type { PrototypeNodeAction, SceneGraph, SceneNode } from '@kalka/scene-graph'
 import type { Rect, Vector } from '@kalka/scene-graph/primitives'
-import { computeSnap } from '@kalka/scene-graph/snap'
+import { computeSnap, type SnapGuide } from '@kalka/scene-graph/snap'
 
 import { snappingThreshold } from '#vue/shared/input/snap'
 import type { DragPrototypeOverlay, DragState } from '#vue/shared/input/types'
@@ -123,7 +123,13 @@ function snapTargets(graph: SceneGraph, sourceId: string): SceneNode[] {
   })
 }
 
-function offsetAt(editor: Editor, drag: DragPrototypeOverlay, cx: number, cy: number): Vector {
+/** Where the dragged overlay opens, snapped, and the guides of what it snapped to. */
+function offsetAt(
+  editor: Editor,
+  drag: DragPrototypeOverlay,
+  cx: number,
+  cy: number
+): { offset: Vector; guides: SnapGuide[] } {
   const offset = {
     x: drag.origin.x + cx - drag.startX,
     y: drag.origin.y + cy - drag.startY
@@ -132,6 +138,7 @@ function offsetAt(editor: Editor, drag: DragPrototypeOverlay, cx: number, cy: nu
     (overlay) => overlay.reaction === drag.reaction && overlay.action === drag.action
   )
   const frame = destination ? editor.graph.getNode(destination.frameId) : undefined
+  let guides: SnapGuide[] = []
   if (frame && editor.state.snappingPreferences.objects) {
     const source = editor.graph.getAbsoluteBounds(drag.sourceId)
     const moving = { x: source.x + offset.x, y: source.y + offset.y, ...frameSize(frame) }
@@ -143,22 +150,28 @@ function offsetAt(editor: Editor, drag: DragPrototypeOverlay, cx: number, cy: nu
     )
     offset.x += snap.dx
     offset.y += snap.dy
+    guides = snap.guides
   }
-  return { x: Math.round(offset.x), y: Math.round(offset.y) }
+  return { offset: { x: Math.round(offset.x), y: Math.round(offset.y) }, guides }
 }
 
 function frameSize(frame: SceneNode) {
   return { width: frame.width, height: frame.height }
 }
 
-/** The overlay follows the pointer; the drag is one undo step when it ends. */
+/**
+ * The overlay follows the pointer, with the snap guides a moved layer shows; the drag is one
+ * undo step when it ends.
+ */
 export function moveManualOverlay(
   editor: Editor,
   drag: DragPrototypeOverlay,
   cx: number,
   cy: number
 ): void {
-  drag.offset = offsetAt(editor, drag, cx, cy)
+  const { offset, guides } = offsetAt(editor, drag, cx, cy)
+  drag.offset = offset
+  editor.setSnapGuides(guides)
   editor.graph.updateNode(drag.sourceId, { reactions: withOffset(drag, drag.offset) })
   editor.requestRepaint()
 }
@@ -175,6 +188,7 @@ export function endManualOverlayDrag(
   const d = drag.value
   if (d?.type !== 'prototype-overlay') return false
   drag.value = null
+  editor.setSnapGuides([])
   editor.graph.updateNode(d.sourceId, { reactions: structuredClone(d.before) })
   if (commit && d.offset) editor.setReactions(d.sourceId, withOffset(d, d.offset), 'Move overlay')
   else editor.requestRepaint()
