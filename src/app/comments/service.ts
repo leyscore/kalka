@@ -21,6 +21,7 @@ import {
 import { queueChatPrompt } from '@/app/ai/chat/queued-prompt'
 import { isConfigured } from '@/app/ai/chat/storage'
 import { useCollabIdentity } from '@/app/collab/identity'
+import { activeRoom, roomForStore } from '@/app/collab/rooms'
 import { editHandoff } from '@/app/comments/handoff-undo'
 import { watchFrameReviews } from '@/app/comments/reviews'
 import type { EditorStore } from '@/app/editor/active-store'
@@ -100,6 +101,16 @@ function stateOf(store: EditorStore) {
 /** The name people's comments and approvals carry: theirs in a room, or "You". */
 export function currentPersonName(): string {
   return useCollabIdentity().name.value.trim() || 'You'
+}
+
+/**
+ * Whether people may comment on the document: one they edit, or a server file open to view only,
+ * whose viewers comment through the server, as in Figma. A version previewed to view only takes
+ * no comments.
+ */
+export function mayComment(store: EditorStore): boolean {
+  if (!store.state.viewOnly) return true
+  return (roomForStore(store) ?? activeRoom.value)?.serverRole.value === 'viewer'
 }
 
 /** C: comment mode on or off; off also drops a comment not posted yet. */

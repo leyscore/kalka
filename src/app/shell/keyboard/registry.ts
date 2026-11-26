@@ -9,6 +9,7 @@ import { askAboutSelection } from '@/app/ai/chat/ask-selection'
 import { annotateSelection } from '@/app/comments/annotations'
 import {
   leaveComments,
+  mayComment,
   stopCommentPlacing,
   toggleCommentPins,
   toggleCommentPlacing
@@ -236,8 +237,12 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     },
     {
       id: 'toggle-comment-mode',
+      // Viewers of a server file comment, as in Figma.
+      viewing: true,
       keys: 'KeyC',
-      run: ({ store }) => toggleCommentPlacing(store)
+      run: ({ store }) => {
+        if (mayComment(store)) toggleCommentPlacing(store)
+      }
     },
     {
       id: 'toggle-comment-pins',

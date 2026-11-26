@@ -24,6 +24,12 @@ export const SERVER_SNAPSHOT = 'srv-snap'
  * id. It comes before `srv-load`'s done item and whenever a new one arrives.
  */
 export const SERVER_PENDING = 'srv-pending'
+/**
+ * Comments from anyone in the room, viewers included: sent to the server as comment operations,
+ * received stamped with who sent them, and acknowledged by an editor once in the document.
+ */
+export const SERVER_COMMENT = 'srv-comment'
+export const SERVER_COMMENT_ACK = 'srv-comment-ack'
 
 /** `srv-load` items: the deflated snapshot's parts, then each update since, then done. */
 export const LOAD_SNAPSHOT_PART = 1

@@ -15,6 +15,7 @@ import { publishLocalAgents } from '@/app/collab/local-awareness'
 import { connectCollabRoom } from '@/app/collab/room/connection'
 import { deriveRoomStatus, type RoomStatus, type ServerRoomState } from '@/app/collab/room/status'
 import { serverAccount, serverSessionExpired } from '@/app/collab/server/account'
+import { bindServerComments, type ServerComments } from '@/app/collab/server/comment-channel'
 import {
   renameServerDocument,
   saveServerFile,
@@ -160,6 +161,8 @@ export function openRoomSession({
   let suppressYjsEvents = false
   let suppressGraphSync = false
   let disposed = false
+  /** A server room's comment channel, which lets its viewers comment. */
+  let serverComments: ServerComments | null = null
 
   const status = computed(() =>
     deriveRoomStatus({
@@ -198,6 +201,7 @@ export function openRoomSession({
     if (hasDocument.value && name && store.state.documentName !== name) {
       store.state.documentName = name
     }
+    serverComments?.flush()
   }
 
   function updatePeers() {
@@ -236,6 +240,7 @@ export function openRoomSession({
     applyYjsToGraph: (events) => {
       sync.applyYjsToGraph(events)
       refreshDocument()
+      serverComments?.showPending()
     }
   })
   meta.observe(refreshDocument)
@@ -339,6 +344,24 @@ export function openRoomSession({
         }
       })
     : undefined
+  serverComments = serverRoom
+    ? bindServerComments({
+        room: serverRoom,
+        store,
+        ynodes,
+        hasDocument: () => !disposed && hasDocument.value,
+        personName: displayName,
+        quietly: (write) => {
+          const was = suppressGraphSync
+          suppressGraphSync = true
+          try {
+            write()
+          } finally {
+            suppressGraphSync = was
+          }
+        }
+      })
+    : null
 
   void persistence.whenSynced.then(() => {
     if (disposed) return undefined
@@ -404,16 +427,26 @@ export function openRoomSession({
         sync.syncLocalEdit(edit)
         return
       }
+      // A viewer's comments go to the server's comment channel; the document never takes them.
+      const rootId = store.graph.rootId
+      const commented = edit.changed.has(rootId) && serverComments?.sendLocalChanges() === true
       // A viewer's edit would stay on their screen only: it is put back, and they are told why.
       suppressGraphSync = true
       try {
         sync.revertLocalEdit(edit)
+        serverComments?.showPending()
         store.undo.clear()
         store.requestRender()
       } finally {
         suppressGraphSync = false
       }
-      onViewOnlyEdit()
+      const onlyComments =
+        commented &&
+        edit.changed.size === 1 &&
+        edit.placed.size === 0 &&
+        edit.deleted.size === 0 &&
+        edit.reordered.size === 0
+      if (!onlyComments) onViewOnlyEdit()
     }
   })
 

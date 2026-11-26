@@ -12,7 +12,7 @@ import {
 } from '@kalka/vue'
 import type { Tool } from '@kalka/vue'
 
-import { commentPlacing, stopCommentPlacing } from '@/app/comments/service'
+import { commentPlacing, mayComment, stopCommentPlacing } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
 import { toolIcons } from '@/app/editor/icons'
 import { useActionToast } from '@/app/shell/toast/action'
@@ -77,7 +77,8 @@ const { mobileCategory, slideDirection, hasPrev, hasNext, goPrev, goNext } = use
 
 /**
  * A document open to view only keeps the tools that look: the move and hand tools, alone or in
- * their group. Inserting and commenting go with the drawing tools.
+ * their group. Inserting goes with the drawing tools; commenting stays, as viewers comment in
+ * Figma, through the server's comment channel.
  */
 const viewOnly = computed(() => store.state.viewOnly === true)
 const VIEWING_TOOLS: ReadonlySet<Tool> = new Set(['SELECT', 'HAND'])
@@ -115,9 +116,9 @@ function onActionTap(item: ToolbarActionItem) {
       :tools-idle="commentsPlacing"
       @set-tool="pickTool(actions.setTool, $event)"
     >
-      <template v-if="!viewOnly" #end>
-        <InsertIconButton :ui="toolbarUI" />
-        <CommentToolButton :ui="toolbarUI" />
+      <template #end>
+        <InsertIconButton v-if="!viewOnly" :ui="toolbarUI" />
+        <CommentToolButton v-if="mayComment(store)" :ui="toolbarUI" />
       </template>
     </DesktopToolbar>
 

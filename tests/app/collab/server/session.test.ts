@@ -1,12 +1,20 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph } from '@kalka/scene-graph'
+import {
+  addCommentThread,
+  findCommentThread,
+  replyToComment,
+  SceneGraph,
+  toggleCommentReaction
+} from '@kalka/scene-graph'
 
 import { openRoomSession, type RoomSession } from '@/app/collab/session'
 import type { ServerRole, ServerRoomTransport } from '@/app/collab/transport/server'
 import {
   LOAD_DONE,
   LOAD_UPDATE,
+  SERVER_COMMENT,
+  SERVER_COMMENT_ACK,
   SERVER_LOAD,
   SERVER_PEER,
   SERVER_PENDING
@@ -42,6 +50,9 @@ function createServerRoom() {
   let versions = 0
   let takes = 0
   let nextId = 1
+  /** Comments waiting for an editor, stamped as `server/src/comments.ts` does. */
+  const comments: { id: string; frame: Uint8Array }[] = []
+  const stamp = (value: string) => [encoder.encode(value).length, ...encoder.encode(value)]
 
   const deliver = (connection: Connection, namespace: string, data: Uint8Array, from: string) => {
     const copy = data.slice()
@@ -72,6 +83,7 @@ function createServerRoom() {
         deliver(self, SERVER_LOAD, withKind(LOAD_UPDATE, update), SERVER_PEER)
       if (pending) deliver(self, SERVER_PENDING, encoder.encode(pending.version), SERVER_PEER)
       deliver(self, SERVER_LOAD, Uint8Array.of(LOAD_DONE), SERVER_PEER)
+      for (const comment of comments) deliver(self, SERVER_COMMENT, comment.frame, SERVER_PEER)
     })
     return {
       server: true,
@@ -83,7 +95,27 @@ function createServerRoom() {
       makeAction(namespace) {
         return [
           (data, target) => {
-            if (target === SERVER_PEER) return
+            if (target === SERVER_PEER) {
+              if (namespace === SERVER_COMMENT) {
+                const id = `comment-${comments.length + 1}`
+                const name = role === 'viewer' ? 'Viewer' : 'Editor'
+                const frame = Uint8Array.of(
+                  ...stamp(id),
+                  ...stamp(self.id),
+                  ...stamp(name),
+                  ...data
+                )
+                comments.push({ id, frame })
+                for (const other of connections)
+                  if (other !== self) deliver(other, SERVER_COMMENT, frame, SERVER_PEER)
+              } else if (namespace === SERVER_COMMENT_ACK && role !== 'viewer') {
+                const acked = new TextDecoder().decode(data)
+                const at = comments.findIndex((comment) => comment.id === acked)
+                if (at !== -1) comments.splice(at, 1)
+              }
+              return
+            }
+            if (namespace.startsWith('srv-')) return
             if (role === 'viewer' && namespace === YJS_UPDATE) return
             for (const other of connections) {
               if (other === self || (target && other.id !== target)) continue
@@ -131,7 +163,8 @@ function createServerRoom() {
     deleteDocument() {
       for (const connection of connections) for (const handler of connection.goneHandlers) handler()
     },
-    takes: () => takes
+    takes: () => takes,
+    waitingComments: () => comments.length
   }
 }
 
@@ -358,6 +391,84 @@ describe('server documents', () => {
       expect(layerNames(viewer.store)).toEqual(['Shared card'])
       expect(layerNames(editor.store)).toEqual(['Shared card'])
       expect(notices.viewOnly).toBe(1)
+    })
+  })
+
+  test('a viewer comments through the server, and still cannot edit the design', async () => {
+    await withServer(async (open, server, _renames, notices) => {
+      server.upload(uploadedGraph('Shared card'))
+      const editor = open('editor')
+      await settle()
+      const viewer = open('viewer')
+      await settle()
+      const page = expectDefined(viewer.store.graph.getPages()[0], 'page')
+      const thread = addCommentThread(
+        viewer.store.graph,
+        { pageId: page.id, nodeId: null, x: 10, y: 20 },
+        { kind: 'person', name: 'Somebody else' },
+        'Can the title be larger?'
+      )
+      await settle()
+      // Written in by the editor, under the name the server knows the viewer by.
+      const merged = expectDefined(findCommentThread(editor.store.graph, thread.id), 'merged')
+      expect(merged.messages[0]?.author).toEqual({ kind: 'person', name: 'Viewer' })
+      expect(merged.messages[0]?.text).toBe('Can the title be larger?')
+      expect(findCommentThread(viewer.store.graph, thread.id)?.messages[0]?.author.name).toBe(
+        'Viewer'
+      )
+      expect(server.waitingComments()).toBe(0)
+      expect(notices.viewOnly).toBe(0)
+
+      // A reply and a reaction travel the same way.
+      const first = expectDefined(merged.messages[0], 'first message')
+      replyToComment(viewer.store.graph, thread.id, { kind: 'person', name: 'V' }, 'Or bolder')
+      toggleCommentReaction(viewer.store.graph, thread.id, first.id, '👍', 'V')
+      await settle()
+      const replied = expectDefined(findCommentThread(editor.store.graph, thread.id), 'replied')
+      expect(replied.messages.map((message) => message.text)).toEqual([
+        'Can the title be larger?',
+        'Or bolder'
+      ])
+      expect(replied.messages[0]?.reactions).toEqual([{ emoji: '👍', people: ['Viewer'] }])
+
+      // The design stays as the room has it.
+      const card = expectDefined(viewer.store.graph.getChildren(page.id)[0], 'card')
+      viewer.store.graph.updateNode(card.id, { name: 'Renamed by viewer' })
+      await settle()
+      expect(layerNames(editor.store)).toEqual(['Shared card'])
+      expect(layerNames(viewer.store)).toEqual(['Shared card'])
+      expect(notices.viewOnly).toBe(1)
+    })
+  })
+
+  test("a viewer's comment waits on the server until an editor opens the file", async () => {
+    await withServer(async (open, server) => {
+      server.upload(uploadedGraph('Shared card'))
+      const first = open('editor')
+      await settle()
+      first.session.dispose()
+      const viewer = open('viewer')
+      await settle()
+      const page = expectDefined(viewer.store.graph.getPages()[0], 'page')
+      const thread = addCommentThread(
+        viewer.store.graph,
+        { pageId: page.id, nodeId: null, x: 0, y: 0 },
+        { kind: 'person', name: 'V' },
+        'Nobody is here yet'
+      )
+      await settle()
+      // Shown to the viewer meanwhile, and kept by the server.
+      expect(findCommentThread(viewer.store.graph, thread.id)?.messages[0]?.text).toBe(
+        'Nobody is here yet'
+      )
+      expect(server.waitingComments()).toBe(1)
+
+      const editor = open('editor')
+      await settle()
+      expect(findCommentThread(editor.store.graph, thread.id)?.messages[0]?.author.name).toBe(
+        'Viewer'
+      )
+      expect(server.waitingComments()).toBe(0)
     })
   })
 
