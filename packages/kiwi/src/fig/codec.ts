@@ -355,7 +355,7 @@ export interface NodeChange {
   exportSettings?: unknown[]
   layoutGrids?: unknown[]
   // Layout
-  stackMode?: 'NONE' | 'HORIZONTAL' | 'VERTICAL'
+  stackMode?: 'NONE' | 'HORIZONTAL' | 'VERTICAL' | 'GRID'
   stackSpacing?: number
   stackPadding?: number
   stackPaddingRight?: number

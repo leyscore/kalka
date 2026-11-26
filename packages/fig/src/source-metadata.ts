@@ -96,6 +96,12 @@ const EDITED_RAW_FIELDS: Partial<Record<string, readonly string[]>> = {
   // A variant's specs are written from its values.
   componentPropertyValues: ['variantPropSpecs'],
   variantPropSpecs: ['variantPropSpecs'],
+  gridTemplateColumns: ['gridColumns', 'gridColumnsSizing'],
+  gridTemplateRows: ['gridRows', 'gridRowsSizing'],
+  gridColumnGap: ['gridColumnGap'],
+  gridRowGap: ['gridRowGap'],
+  gridPosition: ['gridColumnAnchor', 'gridRowAnchor', 'gridColumnSpan', 'gridRowSpan'],
+  gridChildHorizontalAlign: ['gridChildHorizontalAlign'],
   // Edited interactions are written from the layer's, without what Kalka does not play.
   reactions: ['prototypeInteractions']
 }

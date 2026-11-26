@@ -349,7 +349,7 @@ function serializeLayoutProps(node: SceneNode, nc: KiwiNodeChange, graph: SceneG
     fixFilledOwnSizing(node, nc, graph)
     return
   }
-  if (node.layoutMode !== 'NONE' && node.layoutMode !== 'GRID') {
+  if (node.layoutMode !== 'NONE') {
     nc.stackMode = node.layoutMode
     nc.stackSpacing = node.itemSpacing
     nc.stackVerticalPadding = node.paddingTop
