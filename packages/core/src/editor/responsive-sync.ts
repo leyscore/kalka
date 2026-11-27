@@ -21,6 +21,22 @@ interface ResponsiveSyncOptions {
 }
 
 /**
+ * Whether a layer is being deleted: it, or a parent above it, has already left its own parent.
+ * `deleteNode` takes a layer out of its parent before deleting its children.
+ */
+function isDetached(graph: SceneGraph, nodeId: string): boolean {
+  let node = graph.getNode(nodeId)
+  const seen = new Set<string>()
+  while (node?.parentId && !seen.has(node.id)) {
+    seen.add(node.id)
+    const parent = graph.getNode(node.parentId)
+    if (!parent?.childIds.includes(node.id)) return true
+    node = parent
+  }
+  return node === undefined
+}
+
+/**
  * Keeps breakpoint artboards in step with their primary. A field change passes at once to the
  * copy one breakpoint narrower that still followed it, so it lands in the same undo step. A
  * structural edit in a breakpoint is made in the primary instead, and after any structural
@@ -99,7 +115,10 @@ export function createResponsiveSync(options: ResponsiveSyncOptions) {
     const source = sourceOf.get(id)
     sourceOf.delete(id)
     const breakpoint = parentId !== null && current.getNode(parentId)?.type === 'CANVAS'
-    if (source && !breakpoint && !options.isReplaying() && current.getNode(source))
+    // A layer deleted with its parent goes with that parent's deletion, which accounts for it:
+    // the children of a deleted breakpoint artboard leave the primary alone.
+    const withParent = parentId !== null && isDetached(current, parentId)
+    if (source && !breakpoint && !withParent && !options.isReplaying() && current.getNode(source))
       current.deleteNode(source)
     schedule(parentId ? current.getNode(parentId) : undefined)
   }

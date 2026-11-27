@@ -123,6 +123,20 @@ export function counterpartIn(
   return copiesIn(graph, artboard).get(sourceId)
 }
 
+/**
+ * A layer and its counterparts in every artboard of its group, the primary's first; just the
+ * layer when it is an artboard or outside a group. Deleting a layer deletes all of them.
+ */
+export function responsiveCounterparts(graph: SceneGraph, node: SceneNode): SceneNode[] {
+  if (isArtboard(graph, node)) return [node]
+  const primary = responsivePrimaryOf(graph, node)
+  if (!primary) return [node]
+  const artboards = responsiveArtboards(graph, primary.id)
+  if (artboards.length < 2) return [node]
+  const found = artboards.flatMap((artboard) => counterpartIn(graph, node, artboard) ?? [])
+  return found.some((counterpart) => counterpart.id === node.id) ? found : [node, ...found]
+}
+
 /** The artboards of a layer's group around it: the one it is in, and the next wider/narrower. */
 function neighbours(graph: SceneGraph, node: SceneNode) {
   const primary = responsivePrimaryOf(graph, node)

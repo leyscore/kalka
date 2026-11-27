@@ -1,4 +1,9 @@
-import { CommittedGraphEventError, cycleSafeParent, handoffThreadsOn } from '@kalka/scene-graph'
+import {
+  CommittedGraphEventError,
+  cycleSafeParent,
+  handoffThreadsOn,
+  responsiveCounterparts
+} from '@kalka/scene-graph'
 import type { CommentThread, SceneGraph, SceneNode } from '@kalka/scene-graph'
 import { getAxisAlignedBoundsInParent, getNodeLocalMatrix } from '@kalka/scene-graph/coordinate'
 import type { Rect, Vector } from '@kalka/scene-graph/primitives'
@@ -420,7 +425,15 @@ export function createClipboardActions(ctx: EditorContext) {
       index: number
       subtree: Map<string, SceneNode>
     }> = []
-    for (const id of nodeIds) {
+    // Breakpoints share their structure: a layer goes from every artboard of its group in this
+    // one step, so undo brings each copy back as it was.
+    const ids = new Set(
+      [...nodeIds].flatMap((id) => {
+        const node = ctx.graph.getNode(id)
+        return node ? responsiveCounterparts(ctx.graph, node).map((each) => each.id) : []
+      })
+    )
+    for (const id of ids) {
       const node = ctx.graph.getNode(id)
       if (!node || node.locked) continue
       // The document and its pages are not layers: pages go through deletePage, which undoes.
