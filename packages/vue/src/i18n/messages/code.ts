@@ -21,6 +21,7 @@ export const codeMessageDefaults = {
   noSelection: 'Select a layer to see its code',
   noSelectionDesignJSX: 'Or write Design JSX to add new layers to the page.',
   noSelectionTailwindJSX: 'Tailwind JSX is generated for the selected layers.',
+  noSelectionHTMLCSS: 'HTML and CSS are generated for the selected layers.',
   writeJSX: 'Write JSX'
 } as const
 

@@ -141,6 +141,7 @@ ja:automation.webmcpUnsupported
 ja:code.copyJSXReference
 ja:code.editorHTMLCSSLabel
 ja:code.noSelectionDesignJSX
+ja:code.noSelectionHTMLCSS
 ja:code.noSelectionTailwindJSX
 ja:code.writeJSX
 ja:collaboration.billingElsewhere
@@ -473,6 +474,7 @@ zh-cn:automation.webmcpUnsupported
 zh-cn:code.copyJSXReference
 zh-cn:code.editorHTMLCSSLabel
 zh-cn:code.noSelectionDesignJSX
+zh-cn:code.noSelectionHTMLCSS
 zh-cn:code.noSelectionTailwindJSX
 zh-cn:code.writeJSX
 zh-cn:collaboration.billingElsewhere

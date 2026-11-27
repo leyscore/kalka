@@ -16,13 +16,6 @@ import { JSX_REFERENCE } from '@kalka/design-jsx'
 import type { SceneNode } from '@kalka/scene-graph'
 import { useEditorEvent, useI18n } from '@kalka/vue'
 
-import {
-  commitDOMCodeSession,
-  createDOMCodeSession,
-  previewDOMCode,
-  resetDOMCodePreview,
-  type DOMCodeSession
-} from '@/app/code/dom-preview'
 import { generatedCodeFor, selectionHTMLCode, type GeneratedCode } from '@/app/code/generated'
 import { useCodeLayers } from '@/app/code/layers/use'
 import {
@@ -33,7 +26,7 @@ import {
   type DesignJSXEditSession,
   type DesignJSXLayerLine
 } from '@/app/code/live-preview'
-import { starterSourceFor, type CodeSource } from '@/app/code/templates'
+import type { CodeSource } from '@/app/code/templates'
 import { useEditorStore } from '@/app/editor/active-store'
 import { appPreferences, updateDefaultCodeSource } from '@/app/settings/preferences/store'
 import HandoffSection from '@/components/handoff/HandoffSection.vue'
@@ -59,7 +52,6 @@ const status = ref<'idle' | 'updating' | 'updated' | 'error'>('idle')
 const error = ref('')
 const designSession = shallowRef<DesignJSXEditSession | null>(null)
 const codeEditor = useTemplateRef<InstanceType<typeof CodeEditor>>('codeEditor')
-let domSession: DOMCodeSession | null = null
 let previewQueue = Promise.resolve()
 let pendingPreview: Promise<void> | undefined
 let commitPromise: Promise<void> | undefined
@@ -100,7 +92,8 @@ const composing = ref(false)
 
 /**
  * Generated code needs a selection; without one the panel says so instead of showing a
- * template that looks like a real layer. Writing new Design JSX is an explicit action.
+ * template that looks like a real layer. Writing new Design JSX is an explicit action. HTML/CSS
+ * keeps its read-only editor and says so in it.
  */
 const showEmptyState = computed(
   () =>
@@ -128,11 +121,11 @@ const sourceOptions = computed(() => [
   { value: 'tailwind-jsx' as const, label: code.value.sourceTailwindJSX },
   { value: 'html-css' as const, label: code.value.sourceHTMLCSS }
 ])
-/** HTML/CSS shows the selection's exported code, read-only; with nothing selected it writes new HTML. */
-const showsSelectionHTML = computed(
-  () => source.value === 'html-css' && store.state.selectedIds.size > 0 && !edited.value
-)
-const readOnly = computed(() => source.value === 'tailwind-jsx' || showsSelectionHTML.value)
+/**
+ * HTML/CSS and Tailwind JSX are generated read-only: HTML/CSS shows the selection's exported code
+ * and never writes back into the document.
+ */
+const readOnly = computed(() => source.value !== 'design-jsx')
 const editorLabel = computed(() =>
   source.value === 'html-css' ? code.value.editorHTMLCSSLabel : code.value.editorDesignLabel
 )
@@ -162,12 +155,7 @@ function beginDesignSession(): DesignJSXEditSession | null {
   return result.session
 }
 
-function beginDOMSession(): DOMCodeSession {
-  domSession ??= createDOMCodeSession(store)
-  return domSession
-}
-
-/** Design JSX previews are recorded as they apply; an HTML/CSS preview is committed here. */
+/** Design JSX previews are recorded as they apply. */
 async function commitCurrentSession(): Promise<void> {
   if (commitPromise) return commitPromise
   const operation = (async () => {
@@ -175,10 +163,7 @@ async function commitCurrentSession(): Promise<void> {
     await previewQueue
     updateVersion += 1
     takeCanvasEdits()
-    const dom = domSession
     designSession.value = null
-    domSession = null
-    if (dom) commitDOMCodeSession(store, dom)
     pendingPreview = undefined
   })()
   commitPromise = operation
@@ -198,16 +183,12 @@ async function runPreview(version: number): Promise<void> {
   let result: { ok: true } | { ok: false; error: string }
   let previewLayers: DesignJSXLayerLine[] | null = null
   try {
-    if (source.value === 'html-css') {
-      result = await previewDOMCode(store, beginDOMSession(), draft.value)
-    } else {
-      const session = beginDesignSession()
-      const preview = session
-        ? await previewDesignJSX(store, session, draft.value)
-        : ({ ok: false, error: error.value } as const)
-      if (preview.ok) previewLayers = preview.layers
-      result = preview
-    }
+    const session = beginDesignSession()
+    const preview = session
+      ? await previewDesignJSX(store, session, draft.value)
+      : ({ ok: false, error: error.value } as const)
+    if (preview.ok) previewLayers = preview.layers
+    result = preview
   } finally {
     previewing -= 1
     previewedVersion = store.state.sceneVersion
@@ -261,16 +242,13 @@ async function resetDraft(): Promise<void> {
   await previewQueue
   takeCanvasEdits()
   const design = designSession.value
-  const dom = domSession
   designSession.value = null
-  domSession = null
   if (design) resetDesignJSXPreview(store, design)
-  if (dom) resetDOMCodePreview(store, dom)
   pendingPreview = undefined
   error.value = ''
   status.value = 'idle'
   edited.value = false
-  if (source.value === 'html-css') draft.value = starterSourceFor('html-css')
+  if (source.value === 'html-css') void followSelectionHTML(true)
   else showCanvas(source.value)
 }
 
@@ -284,7 +262,7 @@ async function changeSource(next: CodeSource): Promise<void> {
   status.value = 'idle'
   if (next === 'html-css') {
     codeLayers.showGenerated(null)
-    draft.value = starterSourceFor(next)
+    void followSelectionHTML(true)
   } else {
     showCanvas(next)
   }
@@ -306,21 +284,23 @@ function showCanvas(next: Exclude<CodeSource, 'html-css'>) {
  * written. Another selection starts over with its generated code.
  */
 let selectionHTMLVersion = 0
-let showingSelectionHTML = false
+/** The selection and scene the HTML shown was generated for; exporting may lay layers out. */
+let followedHTML: { key: string; scene: number } | null = null
 
-/** HTML/CSS follows the selection with the code Kalka exports for it, until someone writes. */
-async function followSelectionHTML(): Promise<void> {
-  if (edited.value) return
+/** HTML/CSS follows the selection with the code Kalka exports for it. */
+async function followSelectionHTML(force = false): Promise<void> {
+  const key = selectionKey.value
+  if (!force && followedHTML?.key === key && followedHTML.scene === store.state.sceneVersion) return
   const version = ++selectionHTMLVersion
   const ids = [...store.state.selectedIds]
   if (ids.length === 0) {
-    if (showingSelectionHTML) draft.value = starterSourceFor('html-css')
-    showingSelectionHTML = false
+    draft.value = `<!-- ${code.value.noSelection}. ${code.value.noSelectionHTMLCSS} -->`
+    followedHTML = { key, scene: store.state.sceneVersion }
     return
   }
   const generated = await selectionHTMLCode(store.graph, ids)
-  if (version !== selectionHTMLVersion || edited.value || source.value !== 'html-css') return
-  showingSelectionHTML = true
+  if (version !== selectionHTMLVersion || source.value !== 'html-css') return
+  followedHTML = { key, scene: store.state.sceneVersion }
   followedSelection = selectionKey.value
   draft.value = generated.code
 }

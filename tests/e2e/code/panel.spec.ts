@@ -1,6 +1,5 @@
 import { expect, test, useEditorSetup } from '#tests/e2e/fixtures'
 import {
-  getCodeNodeSummaries,
   getFirstSelectedNodeId,
   getUndoLabel,
   hasNode,
@@ -150,27 +149,20 @@ test('Reset restores generated source and original canvas state', async () => {
   await expect(codeEditor()).toContainText('Rectangle')
 })
 
-// With a selection, HTML/CSS shows the selection's HTML read-only; with none, it writes new layers.
-test('HTML/CSS live preview commits as one undoable session', async () => {
-  const shownText = async (text: string) =>
-    (await getCodeNodeSummaries(editor.page)).some((node) => node.text === text)
-  await openCodePanel()
+// HTML/CSS is generated read-only for the selection; with nothing selected the panel says so.
+test('HTML/CSS without a selection asks for one and never replaces the document', async () => {
+  await editor.canvas.drawRect(90, 90, 140, 100)
+  const rectId = await getFirstSelectedNodeId(editor.page)
+  await codeTab().click()
   await selectSource('HTML/CSS')
-  await codeEditor().fill('<div style="width: 180px; height: 90px">First</div>')
-  await expect.poll(() => shownText('First')).toBe(true)
-  await codeEditor().fill('<div style="width: 220px; height: 110px">Final</div>')
-  await expect(editor.page.getByTestId('code-panel-status')).toContainText('Updated live')
-  await expect(editor.page.getByTestId('code-panel-status')).toHaveAttribute('data-tone', 'success')
-  await expect.poll(() => shownText('Final')).toBe(true)
-  expect(await shownText('First')).toBe(false)
+  await expect(codeEditor()).toHaveAttribute('aria-readonly', 'true')
+  await expect(editor.page.getByTestId('code-panel-status')).toContainText('Generated, read only')
 
-  await designTab().click()
-  await expect.poll(() => getUndoLabel(editor.page)).toBe('Edit HTML/CSS')
-  await editor.page.keyboard.press('Meta+z')
-  await expect.poll(() => shownText('Final')).toBe(false)
-  expect(await shownText('First')).toBe(false)
-  await editor.page.keyboard.press('Meta+Shift+z')
-  await expect.poll(() => shownText('Final')).toBe(true)
+  const generated = await codeEditor().textContent()
+  await editor.page.evaluate(() => window.kalka?.getStore?.().clearSelection())
+  await expect(codeEditor()).not.toHaveText(generated ?? '')
+  await expect(codeEditor()).toHaveAttribute('aria-readonly', 'true')
+  expect(await hasNode(editor.page, rectId)).toBe(true)
 })
 
 test('switching source formats commits the current live session', async () => {
@@ -195,19 +187,6 @@ test('Reset before debounce cancels the pending preview', async () => {
   await editor.page.waitForTimeout(450)
   expect(await hasNode(editor.page, originalId)).toBe(true)
   expect(await hasNodeNamed(editor.page, 'Stale reset preview')).toBe(false)
-})
-
-test('HTML/CSS uses the same editor and live reloads the canvas', async () => {
-  await openCodePanel()
-  await selectSource('HTML/CSS')
-  await expect(codePanel().locator('[data-slot="code-editor"]')).toHaveCount(1)
-  await expect(codeEditor()).toHaveAttribute('aria-label', 'HTML and CSS')
-  await codeEditor().fill(
-    '<style>.card { width: 240px; height: 120px; background: red; }</style><div class="card">Hello</div>'
-  )
-  await expect(editor.page.getByTestId('code-panel-status')).toContainText('Updated live')
-  const importedNodes = await getCodeNodeSummaries(editor.page)
-  expect(importedNodes.some((node) => node.type !== 'DOCUMENT' && node.type !== 'PAGE')).toBe(true)
 })
 
 test('Tailwind JSX is generated read-only in the same editor', async () => {
