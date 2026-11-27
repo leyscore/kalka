@@ -312,7 +312,7 @@ function setDevice(id: string) {
         />
       </PanelSection>
 
-      <PanelSection v-if="isScreen" :label="m.overlay" :default-open="false">
+      <PanelSection v-if="isScreen" :label="m.overlay">
         <AppSelect
           :model-value="node.overlayPositionType"
           :options="overlayPositionOptions(m)"

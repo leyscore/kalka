@@ -262,3 +262,23 @@ test("a manual overlay's preview on the canvas drags where it opens", async () =
   await expect.poll(offsetOf).toBeNull()
   editor.canvas.assertNoErrors()
 })
+
+test("a frame's overlay settings show and change it", async () => {
+  const { page } = editor
+  const { farId } = await createScreens(page)
+  await page.evaluate((id) => window.kalka?.getStore?.().select([id]), farId)
+  await page.getByRole('tab', { name: 'Prototype' }).click()
+  const section = page.getByTestId('prototype-panel').getByRole('region', { name: 'Overlay' })
+  await expect(section.locator('[data-property="prototype-overlay-position"]')).toBeVisible()
+  const closeOutside = section.getByRole('checkbox', { name: 'Close when clicking outside' })
+  await expect(closeOutside).toBeVisible()
+  await closeOutside.click()
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (id) => window.kalka?.getStore?.().graph.getNode(id)?.overlayBackgroundInteraction,
+        farId
+      )
+    )
+    .toBe('CLOSE_ON_CLICK_OUTSIDE')
+})

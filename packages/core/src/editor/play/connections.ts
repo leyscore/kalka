@@ -33,12 +33,45 @@ export function createPrototypeActions(ctx: EditorContext, updateNodeWithUndo: N
     ctx.requestRepaint()
   }
 
+  /**
+   * Set a layer's interactions. A frame that becomes an overlay for the first time closes on a
+   * click outside it, as Figma's overlay settings start, in the same undo step.
+   */
   function setReactions(
     nodeId: string,
     reactions: PrototypeReaction[],
     label = 'Edit interaction'
   ) {
-    updateNodeWithUndo(nodeId, { reactions }, label)
+    const newOverlays = overlayDestinations(reactions).filter((id) => !isOverlayTarget(id))
+    if (newOverlays.length === 0) {
+      updateNodeWithUndo(nodeId, { reactions }, label)
+      return
+    }
+    ctx.undo.runBatch(label, () => {
+      updateNodeWithUndo(nodeId, { reactions }, label)
+      for (const id of newOverlays) {
+        const frame = ctx.graph.getNode(id)
+        if (frame?.overlayBackgroundInteraction === 'NONE' && frame.overlayBackground === null)
+          updateNodeWithUndo(id, { overlayBackgroundInteraction: 'CLOSE_ON_CLICK_OUTSIDE' }, label)
+      }
+    })
+  }
+
+  /** The frames these interactions open as overlays. */
+  function overlayDestinations(reactions: readonly PrototypeReaction[]): string[] {
+    const ids = new Set<string>()
+    for (const reaction of reactions)
+      for (const action of reaction.actions)
+        if (action.type === 'NODE' && action.navigation === 'OVERLAY' && action.destinationId)
+          ids.add(action.destinationId)
+    return [...ids]
+  }
+
+  /** Whether any layer already opens this frame as an overlay. */
+  function isOverlayTarget(frameId: string): boolean {
+    for (const node of ctx.graph.getAllNodes())
+      if (overlayDestinations(node.reactions).includes(frameId)) return true
+    return false
   }
 
   /**

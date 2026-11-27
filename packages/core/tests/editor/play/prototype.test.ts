@@ -106,6 +106,27 @@ describe('presenting a prototype', () => {
     expect(run({ type: 'BACK' })).toBeNull()
   })
 
+  test('a frame first opened as an overlay closes on a click outside, in the same undo step', () => {
+    const { editor, graph, menu, button } = screens()
+    expect(graph.getNode(menu.id)?.overlayBackgroundInteraction).toBe('NONE')
+    const reaction = createPrototypeReaction(menu.id)
+    reaction.actions = [createNodeAction(menu.id, 'OVERLAY')]
+    editor.setReactions(button.id, [reaction])
+    expect(graph.getNode(menu.id)?.overlayBackgroundInteraction).toBe('CLOSE_ON_CLICK_OUTSIDE')
+
+    // Turned off by hand, it stays off when the interaction changes again.
+    editor.updateNodeWithUndo(menu.id, { overlayBackgroundInteraction: 'NONE' })
+    editor.setReactions(button.id, [structuredClone(reaction)])
+    expect(graph.getNode(menu.id)?.overlayBackgroundInteraction).toBe('NONE')
+
+    editor.undo.undo()
+    editor.undo.undo()
+    expect(graph.getNode(menu.id)?.overlayBackgroundInteraction).toBe('CLOSE_ON_CLICK_OUTSIDE')
+    editor.undo.undo()
+    expect(graph.getNode(menu.id)?.overlayBackgroundInteraction).toBe('NONE')
+    expect(graph.getNode(button.id)?.reactions).toEqual([])
+  })
+
   test('change to shows another variant of the instance around the trigger', () => {
     const { editor, graph, pageId, home } = screens()
     const set = graph.createNode('COMPONENT_SET', pageId, {
