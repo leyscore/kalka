@@ -90,6 +90,25 @@ if (IS_BROWSER && 'window' in globalThis) {
 }
 
 /** Fetches a document over HTTP and opens it in a new tab. Browser builds only. */
+/** A link the browser could not read: the site refuses other sites, or cannot be reached. */
+export class RemoteFileUnreachableError extends Error {
+  constructor(url: URL, cause: TypeError) {
+    super(`Failed to fetch ${url.href}`, { cause })
+    this.name = 'RemoteFileUnreachableError'
+  }
+}
+
+/** A link that answered with an error status rather than a file. */
+export class RemoteFileStatusError extends Error {
+  constructor(
+    readonly status: number,
+    statusText: string
+  ) {
+    super(`Failed to fetch file: ${status} ${statusText}`)
+    this.name = 'RemoteFileStatusError'
+  }
+}
+
 export async function openBrowserFileFromURL(url: URL, init?: RequestInit): Promise<void> {
   // The cap needs a controller of its own, so a caller's signal is combined with it
   // rather than replaced: dropping it would leave the caller unable to cancel.
@@ -97,9 +116,12 @@ export async function openBrowserFileFromURL(url: URL, init?: RequestInit): Prom
   const signal = init?.signal
     ? AbortSignal.any([init.signal, controller.signal])
     : controller.signal
-  const response = await fetch(url, { ...init, signal })
-  if (!response.ok)
-    throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`)
+  const response = await fetch(url, { ...init, signal }).catch((error: unknown) => {
+    // The browser says only "Failed to fetch" for a site that refuses the read or cannot be reached.
+    if (error instanceof TypeError) throw new RemoteFileUnreachableError(url, error)
+    throw error
+  })
+  if (!response.ok) throw new RemoteFileStatusError(response.status, response.statusText)
   const bytes = await readBoundedBody(response, MAX_REMOTE_DOCUMENT_BYTES, {
     onExceeded: () => controller.abort()
   })

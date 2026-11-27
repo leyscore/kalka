@@ -57,11 +57,14 @@ export async function startWithHTML(html: string, documentName: string): Promise
   await store.importDOMText(html, { documentName })
 }
 
-/** A full https link, or null for anything else. */
+/**
+ * A full web link, or null for anything else. A plain http link is allowed too, for a local server
+ * or a company network; a page served over https may still be refused it by the browser.
+ */
 export function parseDocumentURL(text: string): URL | null {
   try {
     const url = new URL(text.trim())
-    return url.protocol === 'https:' ? url : null
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url : null
   } catch {
     return null
   }

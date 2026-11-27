@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
 import { parseDocumentURL, startFromURL } from '@/app/home/start'
+import { RemoteFileStatusError, RemoteFileUnreachableError } from '@/app/shell/menu/files'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import {
   AppDialogBody,
@@ -19,6 +20,18 @@ const { welcome, common } = useI18n()
 const text = ref('')
 const error = ref<string | null>(null)
 const url = computed(() => parseDocumentURL(text.value))
+// An error is about the link it was given; editing the link clears it.
+watch(text, () => {
+  error.value = null
+})
+
+/** What went wrong, in words: the browser's own network error says only "Failed to fetch". */
+function describeFailure(failure: unknown): string {
+  if (failure instanceof RemoteFileStatusError)
+    return welcome.value.openURLStatus({ status: String(failure.status) })
+  if (failure instanceof RemoteFileUnreachableError) return welcome.value.openURLUnreachable
+  return failure instanceof Error ? failure.message : String(failure)
+}
 
 async function submit(): Promise<void> {
   error.value = null
@@ -31,7 +44,7 @@ async function submit(): Promise<void> {
     open.value = false
     text.value = ''
   } catch (failure) {
-    error.value = failure instanceof Error ? failure.message : String(failure)
+    error.value = describeFailure(failure)
   }
 }
 </script>

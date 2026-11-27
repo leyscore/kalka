@@ -63,7 +63,10 @@ export const welcomeMessageDefaults = {
     'Kalka turns it into layers you can edit. Styles in <style> tags and style attributes are kept.',
   openURLHint:
     'A link to a .fig, .pen or .html file. The site must allow downloads from other sites.',
-  invalidURL: 'Enter a full https:// link.',
+  invalidURL: 'Enter a full link that starts with https:// or http://.',
+  openURLUnreachable:
+    'Kalka could not read this link: the site does not let other sites read its files, or it cannot be reached.',
+  openURLStatus: params('The link answered {status}: there is no file to open there.'),
   importAction: 'Import',
   openAction: 'Open',
   cancel: 'Cancel',
