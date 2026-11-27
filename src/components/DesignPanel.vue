@@ -48,6 +48,7 @@ import SelectionActionsControl from './properties/SelectionActionsControl.vue'
 import ShaderSection from './properties/ShaderSection.vue'
 import StrokeSection from './properties/stroke/StrokeSection.vue'
 import LocalStylesSection from './properties/styles/LocalStylesSection.vue'
+import MultiTextSection from './properties/typography/MultiTextSection.vue'
 import TypographySection from './properties/TypographySection.vue'
 import VariablesSection from './properties/VariablesSection.vue'
 
@@ -125,6 +126,7 @@ const viewOnly = useDocumentViewOnly()
       <PositionSection />
       <ConstraintsSection />
       <AppearanceSection />
+      <MultiTextSection />
       <FillSection />
       <StrokeSection />
       <EffectsSection />
