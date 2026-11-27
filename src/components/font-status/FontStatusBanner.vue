@@ -41,7 +41,7 @@ function replace(from: string, to: string) {
   <div
     v-if="issues.length > 0"
     data-test-id="font-status-banner"
-    class="mx-2 mt-2 overflow-hidden rounded-[10px] border border-warning-border bg-warning-bg text-xs text-warning-text backdrop-blur-[28px]"
+    class="mx-2 mt-2 overflow-hidden rounded-[10px] border border-warning-border bg-panel shadow-[inset_0_0_0_100vmax_var(--color-warning-bg)] text-xs text-warning-text backdrop-blur-[28px]"
   >
     <div class="flex items-center gap-2 px-3 py-1.5">
       <icon-hugeicons-triangle-alert class="size-3.5 shrink-0" />

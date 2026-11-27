@@ -48,6 +48,8 @@ test('a pasted design offers to keep the free fonts it names, and adds them in o
 
 test('a font the free catalogue lacks can be replaced from the font issues', async ({ page }) => {
   await openEditor(page)
+  const canvasTop = async () => (await page.getByTestId('canvas-area').boundingBox())?.y
+  const before = await canvasTop()
   await pasteHTML(
     page,
     `<p style="font-family:'Nowhere Grotesk';font-size:24px">Missing on every computer</p>`
@@ -55,6 +57,8 @@ test('a font the free catalogue lacks can be replaced from the font issues', asy
 
   const issues = page.getByTestId('font-status-banner')
   await expect(issues).toBeVisible()
+  // The notice floats over the canvas: the canvas stays where it was.
+  expect(await canvasTop()).toBe(before)
   await issues.getByRole('button', { name: 'Show font issues' }).click()
   await expect(issues.getByRole('button', { name: 'Replace Nowhere Grotesk with' })).toBeVisible()
   await expect(page.getByRole('region', { name: /saved with this document/ })).toBeHidden()

@@ -25,6 +25,7 @@ import CanvasSplitRoot from '@/components/canvas/CanvasSplitRoot.vue'
 import ActiveRoomOverlay from '@/components/collab-room/ActiveRoomOverlay.vue'
 import { useRoomActions } from '@/components/collab-room/useRoomActions'
 import EditorCanvas from '@/components/EditorCanvas.vue'
+import FontStatusBanner from '@/components/font-status/FontStatusBanner.vue'
 import FolderFileView from '@/components/folder/FolderFileView.vue'
 import LayersPanel from '@/components/LayersPanel.vue'
 import MobileDrawer from '@/components/MobileDrawer.vue'
@@ -151,6 +152,15 @@ const desktopLayout = computed(
               <!-- A file of the folder takes the canvas's place, tools included, until it is closed. -->
               <FolderFileView />
               <Toolbar v-if="!openFolderFile" />
+              <!-- Font notices float over the canvas, so one appearing never pushes the panels. -->
+              <div
+                class="pointer-events-none absolute inset-x-0 top-5 z-30 flex justify-center"
+                data-slot="canvas-notices"
+              >
+                <div class="pointer-events-auto flex w-full max-w-lg flex-col">
+                  <FontStatusBanner />
+                </div>
+              </div>
             </div>
           </SplitterPanel>
           <SplitterResizeHandle :class="horizontalSplitterStyles.handle()">

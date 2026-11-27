@@ -30,7 +30,7 @@ const { fonts } = useI18n()
         ? fonts.missingFontTitle
         : fonts.missingFontsTitle({ count: families.length })
     "
-    class="mx-2 mt-2 flex flex-col gap-2 rounded-[10px] border border-border bg-panel/90 px-3 py-2.5 text-xs text-surface backdrop-blur-[28px]"
+    class="mx-2 mt-2 flex flex-col gap-2 rounded-[10px] border border-border bg-panel px-3 py-2.5 text-xs text-surface backdrop-blur-[28px]"
   >
     <div class="flex items-start gap-2">
       <icon-hugeicons-text-font class="mt-px size-3.5 shrink-0 text-primary" />
