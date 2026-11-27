@@ -58,7 +58,9 @@ export const NODE_ICONS: Partial<Record<string, typeof IconSquare>> = {
   LINE: IconMinus,
   TEXT: IconType,
   VECTOR: IconPenTool,
-  RECTANGLE: IconSquare
+  RECTANGLE: IconSquare,
+  POLYGON: IconTriangle,
+  STAR: IconStar
 }
 
 export const AUTO_LAYOUT_ICONS: Partial<Record<string, typeof IconSquare>> = {
