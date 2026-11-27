@@ -4,6 +4,8 @@
   "clipboardMissingDesignData": "Le presse-papiers ne contient aucune donnée de design.",
   "clipboardAccessBlocked": "L’accès au presse-papiers est bloqué dans ce contexte de navigateur.",
   "nothingToPaste": "Le presse-papiers ne contient rien que Kalka puisse coller.",
+  "noClosedTab": "Aucun onglet fermé à rouvrir.",
+  "reopenClosedTabFailed": "Impossible de rouvrir l’onglet fermé : son fichier ou son brouillon n’existe plus.",
   "copiedAs": "Copié au format {format}.",
   "copiedProperties": "Propriétés copiées.",
   "thumbnailSet": "« {name} » est désormais la miniature du fichier.",

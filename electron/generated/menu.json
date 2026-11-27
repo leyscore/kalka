@@ -140,6 +140,11 @@
         "id": "close",
         "label": "Close Tab",
         "accelerator": "CmdOrCtrl+W"
+      },
+      {
+        "id": "reopen-closed-tab",
+        "label": "Reopen Closed Tab",
+        "accelerator": "CmdOrCtrl+Shift+T"
       }
     ]
   },

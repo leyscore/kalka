@@ -4,6 +4,8 @@
   "clipboardMissingDesignData": "剪贴板中没有设计数据。",
   "clipboardAccessBlocked": "当前浏览器环境阻止了剪贴板访问。",
   "nothingToPaste": "剪贴板中没有 Kalka 可以粘贴的内容。",
+  "noClosedTab": "没有可重新打开的已关闭标签页。",
+  "reopenClosedTabFailed": "无法重新打开已关闭的标签页：其文件或草稿已不存在。",
   "copiedAs": "已复制为 {format}。",
   "copiedProperties": "已复制属性。",
   "thumbnailSet": "“{name}”现在是文件的缩略图。",

@@ -4,6 +4,8 @@
   "clipboardMissingDesignData": "Die Zwischenablage enthält keine Designdaten.",
   "clipboardAccessBlocked": "Der Zugriff auf die Zwischenablage ist in diesem Browserkontext blockiert.",
   "nothingToPaste": "Die Zwischenablage enthält nichts, was Kalka einfügen kann.",
+  "noClosedTab": "Kein geschlossener Tab zum Wiederherstellen.",
+  "reopenClosedTabFailed": "Der geschlossene Tab lässt sich nicht wieder öffnen: Seine Datei oder sein Entwurf existiert nicht mehr.",
   "copiedAs": "Als {format} kopiert.",
   "copiedProperties": "Eigenschaften kopiert.",
   "thumbnailSet": "„{name}“ ist jetzt die Miniatur der Datei.",

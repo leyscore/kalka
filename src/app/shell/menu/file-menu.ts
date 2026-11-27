@@ -67,6 +67,8 @@ export const FILE_MENU = {
     },
     { type: 'separator' },
     { id: 'autosave', label: 'Autosave', checkbox: true },
-    { id: 'close', label: 'Close Tab', shortcut: 'MOD+W' }
+    { id: 'close', label: 'Close Tab', shortcut: 'MOD+W' },
+    // A browser keeps ⇧⌘T for its own tabs, so there the menu and the palette reopen one.
+    { id: 'reopen-closed-tab', label: 'Reopen Closed Tab', shortcut: 'MOD+SHIFT+T' }
   ]
 } satisfies AppMenuGroupSchema

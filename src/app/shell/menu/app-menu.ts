@@ -55,6 +55,7 @@ import { useAppTheme } from '@/app/shell/theme'
 import { openExternalLink } from '@/app/shell/ui'
 import { saveDocumentToStorage } from '@/app/storage/workspace/save'
 import { closeTab, activeTab } from '@/app/tabs'
+import { reopenClosedTab } from '@/app/tabs/reopen'
 import { docsURL, IS_TAURI } from '@/constants'
 
 export interface AppMenuGroup {
@@ -131,6 +132,7 @@ export function useAppMenu() {
     'save-to-version-history': 'saveToVersionHistory',
     autosave: 'autosave',
     close: 'closeTab',
+    'reopen-closed-tab': 'reopenClosedTab',
     copy: 'copy',
     cut: 'cut',
     paste: 'paste',
@@ -278,6 +280,7 @@ export function useAppMenu() {
     close: () => {
       if (activeTab.value) void closeTab(activeTab.value.id)
     },
+    'reopen-closed-tab': () => void reopenClosedTab(),
     settings: openSettings,
     'nudge-amount': openSettings,
     documentation: () => void openExternalLink(docsURL(locale.value)),

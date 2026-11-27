@@ -4,6 +4,8 @@
   "clipboardMissingDesignData": "クリップボードにデザインデータがありません。",
   "clipboardAccessBlocked": "このブラウザー環境ではクリップボードへのアクセスがブロックされています。",
   "nothingToPaste": "クリップボードに Kalka が貼り付けられるものがありません。",
+  "noClosedTab": "再度開ける閉じたタブはありません。",
+  "reopenClosedTabFailed": "閉じたタブを再度開けませんでした。ファイルまたは下書きがもうありません。",
   "copiedAs": "{format} としてコピーしました。",
   "copiedProperties": "プロパティをコピーしました。",
   "thumbnailSet": "「{name}」をファイルのサムネイルに設定しました。",

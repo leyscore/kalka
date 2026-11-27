@@ -4,6 +4,8 @@
   "clipboardMissingDesignData": "Gli appunti non contengono dati di design.",
   "clipboardAccessBlocked": "L’accesso agli appunti è bloccato in questo contesto del browser.",
   "nothingToPaste": "Gli appunti non contengono nulla che Kalka possa incollare.",
+  "noClosedTab": "Nessuna scheda chiusa da riaprire.",
+  "reopenClosedTabFailed": "Impossibile riaprire la scheda chiusa: il suo file o la sua bozza non esiste più.",
   "copiedAs": "Copiato come {format}.",
   "copiedProperties": "Proprietà copiate.",
   "thumbnailSet": "«{name}» è ora la miniatura del file.",

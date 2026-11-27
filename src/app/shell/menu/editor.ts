@@ -27,6 +27,7 @@ import { SHELL_MENU_IDS } from '@/app/shell/menu/shell'
 import { useAppTheme } from '@/app/shell/theme'
 import { saveDocumentToStorage } from '@/app/storage/workspace/save'
 import { createTab, closeTab, activeTab } from '@/app/tabs'
+import { reopenClosedTab } from '@/app/tabs/reopen'
 import { isTauri } from '@/app/tauri/env'
 
 function commandMenuIds(entries: readonly AppMenuEntry[]): EditorCommandId[] {
@@ -87,6 +88,7 @@ export function useEditorMenu() {
     close: () => {
       if (activeTab.value) void closeTab(activeTab.value.id)
     },
+    'reopen-closed-tab': () => void reopenClosedTab(),
     save: () => void store.saveFigFile(),
     'save-as': () => void store.saveFigFileAs(),
     'save-to-storage': () => void saveDocumentToStorage(store),

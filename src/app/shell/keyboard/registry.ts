@@ -38,6 +38,7 @@ import type {
 import { joinOrToggleAI, vectorShortcutDefinitions } from '@/app/shell/keyboard/vector-shortcuts'
 import { showAdjacentPage } from '@/app/shell/menu/editor-actions'
 import { appMenuTinykeysShortcut } from '@/app/shell/menu/shortcut'
+import { reopenClosedTab } from '@/app/tabs/reopen'
 
 type ShortcutAction = (options: KeyboardShortcutRunOptions) => void
 
@@ -374,6 +375,13 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
       viewing: true,
       keys: appMenuTinykeysShortcut('close') ?? '$mod+KeyW',
       run: ({ closeActiveTab }) => closeActiveTab(),
+      whileEditingText: true
+    },
+    {
+      id: 'reopen-closed-tab',
+      viewing: true,
+      keys: appMenuTinykeysShortcut('reopen-closed-tab') ?? '$mod+Shift+KeyT',
+      run: () => void reopenClosedTab(),
       whileEditingText: true
     },
     {

@@ -48,6 +48,7 @@ import { createDeferred } from '@/app/runtime/deferred'
 import { toast } from '@/app/shell/ui'
 import { getLocalCanvasStore } from '@/app/storage/local-store'
 import { seedStorageCanvasFromRemote } from '@/app/storage/sync/persist'
+import { rememberClosedTab, type ClosedTab } from '@/app/tabs/closed'
 import { createFileOpenCoordinator } from '@/app/tabs/open/coordinator'
 import { findTabByFileIdentity } from '@/app/tabs/open/identity'
 
@@ -179,6 +180,16 @@ function isKeptDraft(tab: Tab): boolean {
   )
 }
 
+/** What Reopen closed tab brings back of a tab being closed: its draft, or its file. */
+function reopenableTab(tab: Tab, discarded: boolean): ClosedTab | null {
+  if (tab.kind !== 'document') return null
+  const { store } = tab
+  const { path, handle } = store.getSourceIdentity()
+  if (path || handle) return { kind: 'file', path, handle }
+  if (discarded || !draftsPersist.value || isRecoveryKeptElsewhere(store.state)) return null
+  return { kind: 'draft', snapshotId: store.getRecoveryId() }
+}
+
 /**
  * Close a tab, asking whether to save unsaved changes. Pass `unsaved` to decide without
  * asking, as automation must: nobody may be there to answer.
@@ -201,6 +212,8 @@ export async function closeTab(tabId: string, unsaved?: 'save' | 'discard'): Pro
   else await closingTab.store.persistRecoveryNow()
   if (!tabsRef.value.includes(closingTab)) return
   if (choice === 'saved' && closingTab.store.hasUnsavedChanges()) return
+  const reopen = reopenableTab(closingTab, choice === 'discard')
+  if (reopen) rememberClosedTab(reopen)
   const wasActive = activeTabId.value === tabId
   coverThumbnailListeners.get(closingTab.store)?.()
   coverThumbnailListeners.delete(closingTab.store)

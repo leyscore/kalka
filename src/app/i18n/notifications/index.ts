@@ -10,6 +10,8 @@ export const notificationMessageDefaults = {
   clipboardMissingDesignData: 'Clipboard does not contain design data.',
   clipboardAccessBlocked: 'Clipboard access is blocked in this browser context.',
   nothingToPaste: 'The clipboard holds nothing Kalka can paste.',
+  noClosedTab: 'No closed tab to reopen.',
+  reopenClosedTabFailed: 'Could not reopen the closed tab: its file or draft is gone.',
   copiedAs: params('Copied as {format}.'),
   copiedProperties: 'Copied properties.',
   thumbnailSet: params('“{name}” is now the file’s thumbnail.'),

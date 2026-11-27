@@ -59,6 +59,7 @@
   "checkUpdates": "アップデートを確認…",
   "booleanOperations": "パスの型抜き (ブーリアン演算)",
   "closeTab": "タブを閉じる",
+  "reopenClosedTab": "閉じたタブを再度開く",
   "zoomIn": "拡大",
   "zoomOut": "縮小",
   "arrangeAlignLeft": "左揃え",

@@ -4,6 +4,8 @@
   "clipboardMissingDesignData": "El portapapeles no contiene datos de diseño.",
   "clipboardAccessBlocked": "El acceso al portapapeles está bloqueado en este contexto del navegador.",
   "nothingToPaste": "El portapapeles no contiene nada que Kalka pueda pegar.",
+  "noClosedTab": "No hay ninguna pestaña cerrada que reabrir.",
+  "reopenClosedTabFailed": "No se pudo reabrir la pestaña cerrada: su archivo o borrador ya no existe.",
   "copiedAs": "Copiado como {format}.",
   "copiedProperties": "Propiedades copiadas.",
   "thumbnailSet": "«{name}» es ahora la miniatura del archivo.",
