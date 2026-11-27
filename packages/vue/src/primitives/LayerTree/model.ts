@@ -11,6 +11,7 @@ function nodeToLayerNode(node: SceneNode): LayerNode {
     layoutMode: node.layoutMode,
     slot: !!slotPropertyId(node),
     icon: !!readIcon(node),
+    mask: node.isMask,
     visible: node.visible,
     locked: node.locked
   }

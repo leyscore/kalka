@@ -11,6 +11,8 @@ export interface LayerNode {
   slot?: boolean
   /** Whether the layer is an icon from a set, which keeps its name to be swapped or exported. */
   icon?: boolean
+  /** Whether the layer masks the layers above it. */
+  mask?: boolean
   visible: boolean
   locked: boolean
   children?: LayerNode[]

@@ -7,6 +7,7 @@ import IconFrame from '~icons/hugeicons/frame'
 import IconGrid from '~icons/hugeicons/grid3x3'
 import IconGroup from '~icons/hugeicons/group'
 import IconHand from '~icons/hugeicons/hand'
+import IconMask from '~icons/hugeicons/layer-mask-01'
 import IconColumns from '~icons/hugeicons/layout-3-column'
 import IconSection from '~icons/hugeicons/layout-grid'
 import IconMinus from '~icons/hugeicons/minus'
@@ -79,7 +80,9 @@ export function nodeIcon(node: {
   layoutMode: string
   slot?: boolean
   icon?: boolean
+  mask?: boolean
 }) {
+  if (node.mask) return IconMask
   if (node.slot) return IconSlot
   if (node.icon && node.type === 'FRAME') return IconSmile
   if (node.type === 'FRAME' && node.layoutMode !== 'NONE')
@@ -96,6 +99,7 @@ export function sceneNodeIcon(node: SceneNode) {
     type: node.type,
     layoutMode: node.layoutMode,
     slot: !!slotPropertyId(node),
-    icon: !!readIcon(node)
+    icon: !!readIcon(node),
+    mask: node.isMask
   })
 }

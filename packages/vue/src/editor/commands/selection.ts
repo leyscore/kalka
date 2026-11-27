@@ -13,6 +13,9 @@ type SelectionCommandId = Exclude<
   ComponentCommandId | MatchingCommandId | ObjectCommandId
 >
 
+/** The group Use as mask makes of several layers, named as Figma names it. */
+const MASK_GROUP_NAME = 'Mask group'
+
 function selectedMaskTarget(nodes: SceneNode[], editor: EditorCommandMapOptions['editor']) {
   if (nodes.length === 0) return null
   if (nodes.length === 1) return nodes[0]
@@ -177,13 +180,24 @@ export function createSelectionCommands({
       },
       enabled: capabilities.canToggleMask,
       run: () => {
-        const target = selectedMaskTarget(editor.getSelectedNodes(), editor)
+        const selected = editor.getSelectedNodes()
+        const target = selectedMaskTarget(selected, editor)
         if (!target) return
-        editor.updateNodeWithUndo(
-          target.id,
-          { isMask: !target.isMask },
-          target.isMask ? 'Remove mask' : 'Use as mask'
-        )
+        if (target.isMask || selected.length < 2) {
+          editor.updateNodeWithUndo(
+            target.id,
+            { isMask: !target.isMask },
+            target.isMask ? 'Remove mask' : 'Use as mask'
+          )
+          return
+        }
+        // As in Figma, several layers go into a Mask group, masked by the one at the back, so
+        // the layers panel shows which layer masks which.
+        editor.undo.runBatch('Use as mask', () => {
+          const groupId = editor.groupSelected()
+          if (groupId) editor.updateNodeWithUndo(groupId, { name: MASK_GROUP_NAME }, 'Use as mask')
+          editor.updateNodeWithUndo(target.id, { isMask: true }, 'Use as mask')
+        })
       }
     },
     'selection.bringForward': {

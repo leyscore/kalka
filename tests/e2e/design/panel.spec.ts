@@ -488,3 +488,64 @@ test('multi-select shows mixed header and boolean operations', async () => {
   await expect(editor.page.getByTestId('boolean-operation-booleanExclude')).toBeVisible()
   await expect(editor.page.getByTestId('boolean-operation-flatten')).toBeVisible()
 })
+
+test('masking two layers puts them in a Mask group the layers panel marks', async () => {
+  await editor.page.keyboard.press('Escape')
+  await editor.canvas.clearCanvas()
+  const ids = await editor.page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const pageId = store.state.currentPageId
+    const circle = store.graph.createNode('ELLIPSE', pageId, {
+      name: 'Circle',
+      x: 600,
+      y: 300,
+      width: 80,
+      height: 80
+    })
+    const photo = store.graph.createNode('RECTANGLE', pageId, {
+      name: 'Photo',
+      x: 620,
+      y: 320,
+      width: 80,
+      height: 80
+    })
+    store.select([circle.id, photo.id])
+    return { circle: circle.id, photo: photo.id }
+  })
+  await editor.page.getByTestId('selection-toggle-mask').click()
+  await editor.canvas.waitForRender()
+
+  const structure = await editor.page.evaluate(({ circle, photo }) => {
+    const store = window.kalka?.getStore?.()
+    const parent = store?.graph.getNode(store.graph.getNode(circle)?.parentId ?? '')
+    return {
+      parent: [parent?.type, parent?.name],
+      children: parent?.childIds,
+      mask: store?.graph.getNode(circle)?.isMask,
+      photoMask: store?.graph.getNode(photo)?.isMask
+    }
+  }, ids)
+  expect(structure).toEqual({
+    parent: ['GROUP', 'Mask group'],
+    children: [ids.circle, ids.photo],
+    mask: true,
+    photoMask: false
+  })
+  await expect(
+    editor.page
+      .getByRole('treeitem', { name: /Mask group/ })
+      .or(editor.page.getByText('Mask group'))
+  ).not.toHaveCount(0)
+
+  // One step undoes it all.
+  await editor.canvas.undo()
+  await editor.canvas.waitForRender()
+  expect(
+    await editor.page.evaluate(({ circle }) => {
+      const store = window.kalka?.getStore?.()
+      const node = store?.graph.getNode(circle)
+      return [store?.graph.getNode(node?.parentId ?? '')?.type, node?.isMask]
+    }, ids)
+  ).toEqual(['CANVAS', false])
+})
