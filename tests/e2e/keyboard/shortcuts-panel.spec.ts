@@ -48,3 +48,12 @@ test('the help button and the command palette open the panel', async () => {
   await expect(panel()).toBeVisible()
   await editor.page.keyboard.press('Escape')
 })
+
+test('the panel opens on its filter, so typing narrows the list', async () => {
+  await editor.page.keyboard.press('ControlOrMeta+Slash')
+  await expect(panel()).toBeVisible()
+  await expect(panel().getByRole('searchbox')).toBeFocused()
+  await editor.page.keyboard.type('Rectangle')
+  await expect(panel().getByRole('searchbox')).toHaveValue('Rectangle')
+  await editor.page.keyboard.press('Escape')
+})

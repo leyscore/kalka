@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 
 import type { MenuEntry, Tool } from '@kalka/vue'
 import { shortcutPlatform, useI18n, useShortcutsMessages } from '@kalka/vue'
@@ -102,6 +102,15 @@ const sections = computed(() => {
     return rows.length > 0 ? [{ category, label: categoryLabel, rows }] : []
   })
 })
+
+const filter = useTemplateRef<InstanceType<typeof AppInput>>('filter')
+
+/** The dialog opens on its filter, so typing narrows the list at once. */
+function focusFilter(event: Event) {
+  if (!filter.value) return
+  event.preventDefault()
+  filter.value.focus()
+}
 </script>
 
 <template>
@@ -112,12 +121,13 @@ const sections = computed(() => {
     size="xl"
     height="tall"
     data-test-id="keyboard-shortcuts"
+    @open-auto-focus="focusFilter"
   >
     <div class="@container/shortcuts flex min-h-0 flex-col gap-3">
       <AppInput
+        ref="filter"
         v-model="query"
         type="search"
-        autofocus
         :placeholder="messages.filter"
         :aria-label="messages.filter"
       />
