@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { countBy } from 'es-toolkit'
 import { computed, reactive, useId } from 'vue'
 
 import {
@@ -105,7 +106,19 @@ function destinations(kind: ActionKind) {
   let layers = frames.value
   if (kind === 'CHANGE_TO') layers = variantsAround(current.id)
   else if (kind === 'SCROLL_TO') layers = screenLayers(current.id)
-  return layers.map((layer) => ({ value: layer.id, label: layer.name }))
+  return labelDuplicates(layers)
+}
+
+/** Layers by name; layers sharing a name are numbered in order, so a list tells them apart. */
+function labelDuplicates(layers: readonly SceneNode[]) {
+  const counts = countBy(layers, (layer) => layer.name)
+  const seen = new Map<string, number>()
+  return layers.map((layer) => {
+    if (counts[layer.name] === 1) return { value: layer.id, label: layer.name }
+    const nth = (seen.get(layer.name) ?? 0) + 1
+    seen.set(layer.name, nth)
+    return { value: layer.id, label: `${layer.name} (${nth})` }
+  })
 }
 
 function setReactions(reactions: PrototypeReaction[]) {

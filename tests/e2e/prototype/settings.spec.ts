@@ -282,3 +282,23 @@ test("a frame's overlay settings show and change it", async () => {
     )
     .toBe('CLOSE_ON_CLICK_OUTSIDE')
 })
+
+test('frames that share a name are told apart in the destination list', async () => {
+  const { page } = editor
+  await createScreens(page)
+  await page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const pageId = store.state.currentPageId
+    for (const x of [600, 1200])
+      store.graph.createNode('FRAME', pageId, { name: 'Copy', x, y: 1000, width: 200, height: 200 })
+  })
+  await page.getByRole('tab', { name: 'Prototype' }).click()
+  const panel = page.getByTestId('prototype-panel')
+  await panel.getByRole('button', { name: 'Add interaction' }).click()
+  await panel.locator('[data-property="prototype-destination"]').click()
+  const names = await page.getByRole('option').allTextContents()
+  const copies = names.map((name) => name.trim()).filter((name) => name.startsWith('Copy'))
+  expect(copies).toHaveLength(2)
+  expect(new Set(copies).size).toBe(2)
+})
