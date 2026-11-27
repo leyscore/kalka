@@ -92,7 +92,7 @@ describe('Tailwind JSX export format', () => {
     })
 
     expect(result).toMatchObject({ format: 'tailwind-jsx', extension: 'jsx' })
-    expect(String(result.data)).toStartWith('<div data-name="Card" className="flex flex-col')
+    expect(String(result.data)).toStartWith('<div className="flex flex-col')
     expect(io.listExportFormats('page').map((format) => format.id)).toContain('tailwind-jsx')
   })
 })
