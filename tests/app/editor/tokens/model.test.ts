@@ -221,3 +221,19 @@ describe('alias candidates', () => {
     expect(candidates.map((candidate) => candidate.id)).toEqual(['other'])
   })
 })
+
+describe('token groups', () => {
+  test('lists the tokens outside any group first, apart from the groups after them', () => {
+    const graph = graphWith([
+      ['brand/primary', 'COLOR', { r: 0, g: 0, b: 1, a: 1 }],
+      ['surface', 'COLOR', { r: 1, g: 1, b: 1, a: 1 }]
+    ])
+    const collection = graph.variableCollections.get('c')
+    if (!collection) throw new Error('missing collection')
+    const groups = tokenGroups(graph, collection, [...graph.variables.values()])
+    expect(groups.map((group) => [group.path, group.rows.map((row) => row.label)])).toEqual([
+      ['', ['surface']],
+      ['brand', ['primary']]
+    ])
+  })
+})

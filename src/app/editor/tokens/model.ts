@@ -74,7 +74,10 @@ function splitName(name: string): { path: string; label: string } {
     : { path: name.slice(0, at), label: name.slice(at + 1) }
 }
 
-/** A collection's tokens grouped by their name path, with CSS names unique across the document. */
+/**
+ * A collection's tokens grouped by their name path, those outside any group first, with CSS names
+ * unique across the document.
+ */
 export function tokenGroups(
   graph: SceneGraph,
   collection: VariableCollection,
@@ -93,10 +96,13 @@ export function tokenGroups(
       )
     }
   })
-  return Object.entries(groupBy(rows, (row) => row.path)).map(([path, grouped]) => ({
+  // Tokens outside any group come first, as Figma lists them, so none reads as part of the group
+  // listed above it.
+  const groups = Object.entries(groupBy(rows, (row) => row.path)).map(([path, grouped]) => ({
     path,
     rows: grouped
   }))
+  return [...groups.filter((group) => !group.path), ...groups.filter((group) => group.path)]
 }
 
 /** The condition a mode applies under when it names none, shown as the input's placeholder. */
