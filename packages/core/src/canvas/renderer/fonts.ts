@@ -75,7 +75,11 @@ function settleFontDemand(
   snapshot: FontResolutionSnapshot,
   nodeIds: readonly string[]
 ): void {
+  const generation = r.fontGeneration
   syncFontGeneration(r)
+  // Tiles are keyed by the scene version, which a font arriving does not change: drop them, as
+  // loading the renderer's fonts does, or text drawn while the face loaded stays on the canvas.
+  if (r.fontGeneration !== generation) r.tiledScene.invalidateStructure()
   for (const nodeId of nodeIds) {
     const pending = r.pendingFontNodes.get(nodeId)
     if (pending) {

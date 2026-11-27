@@ -50,9 +50,16 @@ async function sceneVersion(page: Page) {
   })
 }
 
+/**
+ * The canvas's own pixels: font notices float over the canvas while a face loads, and would
+ * otherwise tell the crops apart before the text repaints.
+ */
 async function crop(page: Page) {
   const box = expectDefined(await page.getByTestId('canvas-element').boundingBox(), 'canvas bounds')
-  return page.screenshot({ clip: { x: box.x + 24, y: box.y + 24, width: 360, height: 200 } })
+  return page.screenshot({
+    clip: { x: box.x + 24, y: box.y + 24, width: 360, height: 200 },
+    style: '[data-slot="canvas-notices"] { visibility: hidden; }'
+  })
 }
 
 async function directReference(page: Page) {
