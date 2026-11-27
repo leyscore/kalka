@@ -19,13 +19,6 @@ import AppSelect from '@/components/ui/select/AppSelect.vue'
 
 import ImageAdjustmentSlider from './ImageAdjustmentSlider.vue'
 
-const IMAGE_SCALE_MODES: { value: ImageScaleMode; label: string }[] = [
-  { value: 'FILL', label: 'Fill' },
-  { value: 'FIT', label: 'Fit' },
-  { value: 'CROP', label: 'Crop' },
-  { value: 'TILE', label: 'Tile' }
-]
-
 const { fill } = defineProps<{ fill: Fill }>()
 const emit = defineEmits<{ update: [fill: Fill] }>()
 
@@ -66,6 +59,12 @@ onFileChange(async (files) => {
 })
 
 const labels = useEffectMessages()
+const scaleModes = computed<{ value: ImageScaleMode; label: string }[]>(() => [
+  { value: 'FILL', label: labels.value.imageFill },
+  { value: 'FIT', label: labels.value.imageFit },
+  { value: 'CROP', label: labels.value.imageCrop },
+  { value: 'TILE', label: labels.value.imageTile }
+])
 
 /** Figma's image adjustments, each from -100 to 100 in the panel and -1 to 1 on the paint. */
 function adjustment(key: ImageFilterKey): number {
@@ -102,11 +101,11 @@ const scaleMode = computed({
       @click="pickImage()"
     >
       <template #leading><icon-hugeicons-image-01 class="size-3" /></template>
-      {{ fill.imageHash ? 'Replace' : 'Choose image' }}
+      {{ fill.imageHash ? labels.replaceImage : labels.chooseImage }}
     </AppButton>
     <AppSelect
       :model-value="scaleMode"
-      :options="IMAGE_SCALE_MODES"
+      :options="scaleModes"
       @update:model-value="(m) => (scaleMode = m as ImageScaleMode)"
     />
     <div class="flex flex-col gap-1" data-slot="image-adjustments">

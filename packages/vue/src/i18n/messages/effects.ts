@@ -37,7 +37,13 @@ export const effectMessageDefaults = {
   tint: 'Tint',
   highlights: 'Highlights',
   shadows: 'Shadows',
-  resetAdjustments: 'Reset adjustments'
+  resetAdjustments: 'Reset adjustments',
+  chooseImage: 'Choose image',
+  replaceImage: 'Replace',
+  imageFill: 'Fill',
+  imageFit: 'Fit',
+  imageCrop: 'Crop',
+  imageTile: 'Tile'
 } as const
 
 export const effectMessages = i18n('effects', effectMessageDefaults)

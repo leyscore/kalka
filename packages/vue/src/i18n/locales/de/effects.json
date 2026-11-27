@@ -34,5 +34,11 @@
   "tint": "Tönung",
   "highlights": "Lichter",
   "shadows": "Schatten",
-  "resetAdjustments": "Anpassungen zurücksetzen"
+  "resetAdjustments": "Anpassungen zurücksetzen",
+  "chooseImage": "Bild auswählen",
+  "replaceImage": "Ersetzen",
+  "imageFill": "Füllen",
+  "imageFit": "Einpassen",
+  "imageCrop": "Zuschneiden",
+  "imageTile": "Kacheln"
 }

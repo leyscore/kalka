@@ -34,5 +34,11 @@
   "tint": "Tinte",
   "highlights": "Luces",
   "shadows": "Sombras",
-  "resetAdjustments": "Restablecer ajustes"
+  "resetAdjustments": "Restablecer ajustes",
+  "chooseImage": "Elegir imagen",
+  "replaceImage": "Reemplazar",
+  "imageFill": "Rellenar",
+  "imageFit": "Ajustar",
+  "imageCrop": "Recortar",
+  "imageTile": "Mosaico"
 }

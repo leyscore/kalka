@@ -34,5 +34,11 @@
   "tint": "色合い",
   "highlights": "ハイライト",
   "shadows": "シャドウ",
-  "resetAdjustments": "調整をリセット"
+  "resetAdjustments": "調整をリセット",
+  "chooseImage": "画像を選択",
+  "replaceImage": "置き換え",
+  "imageFill": "塗りつぶし",
+  "imageFit": "フィット",
+  "imageCrop": "切り抜き",
+  "imageTile": "タイル"
 }

@@ -34,5 +34,11 @@
   "tint": "Tinta",
   "highlights": "Luci",
   "shadows": "Ombre",
-  "resetAdjustments": "Reimposta regolazioni"
+  "resetAdjustments": "Reimposta regolazioni",
+  "chooseImage": "Scegli immagine",
+  "replaceImage": "Sostituisci",
+  "imageFill": "Riempi",
+  "imageFit": "Adatta",
+  "imageCrop": "Ritaglia",
+  "imageTile": "Affianca"
 }

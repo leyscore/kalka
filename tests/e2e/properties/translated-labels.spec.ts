@@ -51,3 +51,21 @@ test('effect types are named in the chosen language', async ({ page }) => {
   await expect(page.getByRole('option', { name: panels.dropShadow, exact: true })).toBeVisible()
   await expect(page.getByRole('option', { name: panels.layerBlur, exact: true })).toBeVisible()
 })
+
+test('the image fill picker is named in the chosen language', async ({ page }) => {
+  const effects = french('effects')
+  await openInFrench(page)
+  await page.evaluate(() => {
+    const editor = window.kalka?.getStore?.()
+    if (!editor) throw new Error('Editor unavailable')
+    const id = editor.createShape('RECTANGLE', 100, 100, 180, 120)
+    editor.select([id])
+  })
+  await page.getByTestId('fill-picker-swatch').first().click()
+  await page.getByTestId('fill-picker-tab-image').click()
+  const picker = page.locator('[data-picker-content]')
+  await expect(picker.getByTestId('fill-picker-choose-image')).toHaveText(effects.chooseImage)
+  await picker.getByRole('combobox').click()
+  for (const key of ['imageFill', 'imageFit', 'imageCrop', 'imageTile'])
+    await expect(page.getByRole('option', { name: effects[key], exact: true })).toBeVisible()
+})

@@ -34,5 +34,11 @@
   "tint": "色调",
   "highlights": "高光",
   "shadows": "阴影",
-  "resetAdjustments": "重置调整"
+  "resetAdjustments": "重置调整",
+  "chooseImage": "选择图片",
+  "replaceImage": "替换",
+  "imageFill": "填充",
+  "imageFit": "适应",
+  "imageCrop": "裁剪",
+  "imageTile": "平铺"
 }
