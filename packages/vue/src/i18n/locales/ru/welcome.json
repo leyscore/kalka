@@ -53,6 +53,8 @@
   "promptLabel": "Попросить агента о дизайне",
   "promptPlaceholder": "Опишите страницу, и ИИ-агент нарисует её в HTML",
   "promptSubmit": "Создать",
+  "promptPlaceholderSetup": "Подключите поставщика ИИ, затем опишите страницу, которую нужно нарисовать",
+  "promptConnect": "Подключить ИИ",
   "sampleFile": "Пример",
   "sampleFileHint": "Лендинг для изучения",
   "pasteHTMLHint": "Kalka превратит его в редактируемые слои. Стили в тегах <style> и атрибутах style сохраняются.",

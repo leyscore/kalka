@@ -58,6 +58,8 @@ export const welcomeMessageDefaults = {
   promptLabel: 'Ask your agent for a design',
   promptPlaceholder: 'Describe a page, your AI agent draws it in HTML',
   promptSubmit: 'Generate',
+  promptPlaceholderSetup: 'Connect an AI provider, then describe a page for it to draw',
+  promptConnect: 'Connect AI',
   sampleFile: 'Sample file',
   sampleFileHint: 'A landing page to explore',
   pasteHTMLHint:

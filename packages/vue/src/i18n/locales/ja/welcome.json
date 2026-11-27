@@ -53,6 +53,8 @@
   "promptLabel": "エージェントにデザインを頼む",
   "promptPlaceholder": "ページを説明すると、AIエージェントがHTMLで描きます",
   "promptSubmit": "生成",
+  "promptPlaceholderSetup": "AIプロバイダーを接続してから、描いてほしいページを説明してください",
+  "promptConnect": "AIを接続",
   "sampleFile": "サンプルファイル",
   "sampleFileHint": "見て回れるランディングページ",
   "pasteHTMLHint": "Kalkaが編集可能なレイヤーに変換します。<style>タグとstyle属性のスタイルは保持されます。",

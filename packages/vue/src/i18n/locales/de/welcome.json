@@ -53,6 +53,8 @@
   "promptLabel": "Deinen Agenten um ein Design bitten",
   "promptPlaceholder": "Beschreibe eine Seite, dein KI-Agent zeichnet sie in HTML",
   "promptSubmit": "Erstellen",
+  "promptPlaceholderSetup": "Verbinde einen KI-Anbieter und beschreibe dann eine Seite zum Zeichnen",
+  "promptConnect": "KI verbinden",
   "sampleFile": "Beispieldatei",
   "sampleFileHint": "Eine Landingpage zum Erkunden",
   "pasteHTMLHint": "Kalka macht daraus bearbeitbare Ebenen. Stile in <style>-Tags und style-Attributen bleiben erhalten.",

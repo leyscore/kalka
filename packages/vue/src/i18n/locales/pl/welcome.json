@@ -53,6 +53,8 @@
   "promptLabel": "Poproś agenta o projekt",
   "promptPlaceholder": "Opisz stronę, a agent AI narysuje ją w HTML",
   "promptSubmit": "Generuj",
+  "promptPlaceholderSetup": "Połącz dostawcę AI, a potem opisz stronę do narysowania",
+  "promptConnect": "Połącz AI",
   "sampleFile": "Plik przykładowy",
   "sampleFileHint": "Strona docelowa do poznania",
   "pasteHTMLHint": "Kalka zamienia go w edytowalne warstwy. Style ze znaczników <style> i atrybutów style zostają zachowane.",

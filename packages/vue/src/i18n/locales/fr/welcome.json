@@ -53,6 +53,8 @@
   "promptLabel": "Demander un design à votre agent",
   "promptPlaceholder": "Décrivez une page, votre agent IA la dessine en HTML",
   "promptSubmit": "Générer",
+  "promptPlaceholderSetup": "Connectez un fournisseur d’IA, puis décrivez une page à dessiner",
+  "promptConnect": "Connecter l’IA",
   "sampleFile": "Fichier exemple",
   "sampleFileHint": "Une landing page à explorer",
   "pasteHTMLHint": "Kalka le transforme en calques modifiables. Les styles des balises <style> et des attributs style sont conservés.",

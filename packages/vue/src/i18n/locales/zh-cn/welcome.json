@@ -53,6 +53,8 @@
   "promptLabel": "让你的智能体做设计",
   "promptPlaceholder": "描述一个页面，你的 AI 智能体会用 HTML 画出来",
   "promptSubmit": "生成",
+  "promptPlaceholderSetup": "先连接 AI 服务商，再描述要绘制的页面",
+  "promptConnect": "连接 AI",
   "sampleFile": "示例文件",
   "sampleFileHint": "一个可供探索的落地页",
   "pasteHTMLHint": "Kalka 会将其转换为可编辑的图层。<style> 标签和 style 属性中的样式会被保留。",

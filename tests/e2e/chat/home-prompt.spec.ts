@@ -27,11 +27,16 @@ test('Generate on Home opens a new document and sends the prompt to its chat', a
   await expect(chat.assistantMessage()).toBeVisible()
 })
 
-test('Generate on Home without a model offers AI setup and keeps the prompt', async ({ chat }) => {
-  const { prompt, generate } = await openHomePrompt(chat.page)
+test('without a model, Home says AI needs connecting and keeps a prompt typed anyway', async ({
+  chat
+}) => {
+  const { home, prompt } = await openHomePrompt(chat.page)
+  await expect(prompt).toHaveAttribute('placeholder', /^Connect an AI provider/)
+  const connect = home.getByRole('button', { name: 'Connect AI', exact: true })
+  await expect(home.getByRole('button', { name: 'Generate' })).toHaveCount(0)
 
   await prompt.fill('A portfolio for a photographer')
-  await generate.click()
+  await connect.click()
 
   const setup = chat.page.getByTestId('ai-setup-dialog')
   await expect(setup).toBeVisible()
