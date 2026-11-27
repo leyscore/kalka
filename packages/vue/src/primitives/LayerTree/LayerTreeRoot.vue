@@ -177,13 +177,13 @@ function select(id: string, selection: boolean | LayerSelectionMode) {
   const mode = typeof selection === 'boolean' ? { additive: selection, range: false } : selection
   emit('select', id, mode.additive)
   const visibleIds = visibleRows.value.map((row) => row.node.id)
-  const next = layerSelectionForTarget(
-    visibleIds,
-    editor.state.selectedIds,
-    selectionAnchorId,
-    id,
-    mode
-  )
+  // A range runs from the layer clicked last in the panel while it is still selected, else from
+  // the layer selected last anywhere, such as the one just drawn on the canvas.
+  const anchorId =
+    selectionAnchorId && editor.state.selectedIds.has(selectionAnchorId)
+      ? selectionAnchorId
+      : ([...editor.state.selectedIds].at(-1) ?? null)
+  const next = layerSelectionForTarget(visibleIds, editor.state.selectedIds, anchorId, id, mode)
   if (!mode.range) selectionAnchorId = id
   applyingSelection = true
   try {
