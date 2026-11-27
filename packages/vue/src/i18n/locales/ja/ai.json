@@ -227,6 +227,7 @@
   "agentWorking": "作業中",
   "agentWaiting": "あなたの返答待ち",
   "agentReady": "準備完了",
+  "agentNotConnected": "未接続",
   "agentsWorking": "{count} 体のエージェントが作業中",
   "aboutLabel": "対象",
   "aboutWholePage": "{page}、ページ全体",

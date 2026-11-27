@@ -227,6 +227,7 @@
   "agentWorking": "工作中",
   "agentWaiting": "等待你的回复",
   "agentReady": "就绪",
+  "agentNotConnected": "未连接",
   "agentsWorking": "{count} 个智能体正在工作",
   "aboutLabel": "关于",
   "aboutWholePage": "{page}，整个页面",

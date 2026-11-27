@@ -48,6 +48,7 @@ export const aiMessageDefaults = {
   agentWorking: 'Working',
   agentWaiting: 'Waiting for you',
   agentReady: 'Ready',
+  agentNotConnected: 'Not connected',
   agentsWorking: params('{count} agents working'),
   aboutLabel: 'About',
   aboutWholePage: params('{page}, whole page'),

@@ -1,7 +1,8 @@
 import { tv } from 'tailwind-variants'
 
 /** What the agent is up to, as the chat's sky shows it. */
-export type AgentBannerState = 'ready' | 'working' | 'waiting'
+/** `offline` is an agent with no model to answer: nothing is connected yet. */
+export type AgentBannerState = 'ready' | 'working' | 'waiting' | 'offline'
 
 /**
  * The strip of sky at the top of the AI chat, where the agent lives: its pixel creature in a glass
@@ -23,7 +24,7 @@ export const chatSkyTheme = tv({
     text: 'flex min-w-0 flex-col gap-px',
     name: 'truncate font-display text-[17px] leading-[1.15] font-semibold tracking-[-0.01em] text-surface',
     status: 'flex min-w-0 items-center gap-1.5 text-[11px] text-label',
-    dot: 'size-1.5 shrink-0 rounded-full bg-success data-[state=waiting]:bg-warning-action data-[state=working]:bg-link',
+    dot: 'size-1.5 shrink-0 rounded-full bg-success data-[state=offline]:bg-muted data-[state=waiting]:bg-warning-action data-[state=working]:bg-link',
     statusText: 'truncate',
     progress: 'absolute inset-x-3.5 bottom-2 h-[3px] overflow-hidden rounded-full bg-surface/10',
     liquid:

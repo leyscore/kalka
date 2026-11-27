@@ -227,6 +227,7 @@
   "agentWorking": "Trabajando",
   "agentWaiting": "Te espera",
   "agentReady": "Listo",
+  "agentNotConnected": "Sin conectar",
   "agentsWorking": "{count} agentes trabajando",
   "aboutLabel": "Sobre",
   "aboutWholePage": "{page}, página entera",

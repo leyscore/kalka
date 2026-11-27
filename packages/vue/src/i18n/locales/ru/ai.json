@@ -227,6 +227,7 @@
   "agentWorking": "Работает",
   "agentWaiting": "Ждёт вас",
   "agentReady": "Готов",
+  "agentNotConnected": "Не подключён",
   "agentsWorking": "Агентов в работе: {count}",
   "aboutLabel": "О чём",
   "aboutWholePage": "{page}, вся страница",

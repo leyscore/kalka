@@ -361,12 +361,14 @@ const banner = computed(() => {
   let state: AgentBannerState = 'ready'
   if (currentQuestions.value && !teamAgent.value) state = 'waiting'
   else if (working) state = 'working'
+  else if (!isConfigured.value && !teamAgent.value) state = 'offline'
   const agents = presenceOf(store).agents.value
   const busy = agents.filter((agent) => agent.status !== 'idle' && agent.name !== name)
   const others = busy.map((agent) => agent.name)
   const note = agents.find((agent) => agent.name === name)?.note
   let line: string = ai.value.agentReady
-  if (state === 'waiting') line = ai.value.agentWaiting
+  if (state === 'offline') line = ai.value.agentNotConnected
+  else if (state === 'waiting') line = ai.value.agentWaiting
   else if (state === 'working') line = note || ai.value.agentWorking
   const count = busy.length + (working ? 1 : 0)
   if (state !== 'waiting' && count > 1) line = ai.value.agentsWorking({ count })
