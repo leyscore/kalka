@@ -110,6 +110,7 @@
   "sourceAi": "Un assistant IA",
   "sourceOther": "Autre",
   "aiTitle": "Branchez votre IA",
+  "aiLater": "Plus tard",
   "aiIntro": "Décrivez une page et votre agent la dessine, en calques modifiables. Vous pouvez aussi le faire plus tard dans les Réglages.",
   "tourStep": "{current} sur {total}",
   "tourNext": "Suivant",

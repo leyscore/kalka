@@ -110,6 +110,7 @@
   "sourceAi": "Ein KI-Assistent",
   "sourceOther": "Anderes",
   "aiTitle": "Verbinde deine KI",
+  "aiLater": "Später",
   "aiIntro": "Beschreibe eine Seite und dein Agent zeichnet sie, in Ebenen, die du bearbeiten kannst. Das geht auch später in den Einstellungen.",
   "tourStep": "{current} von {total}",
   "tourNext": "Weiter",

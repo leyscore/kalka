@@ -92,3 +92,14 @@ test('an address that names nothing opens Home instead of a blank page', async (
   await new CanvasHelper(page).waitForInit()
   await expect(page).toHaveURL(/\/(welcome)?$/)
 })
+
+test('the AI step can be left for later', async ({ page }) => {
+  await page.goto('/')
+  await new CanvasHelper(page).waitForInit()
+  const welcome = page.getByTestId('welcome')
+  for (let i = 0; i < 3; i++) await welcome.getByTestId('welcome-next').click()
+  await expect(welcome.getByTestId('welcome-continue')).toBeVisible()
+  await welcome.getByTestId('welcome-ai-later').click()
+  await expect(welcome).toHaveCount(0)
+  await expect(page).not.toHaveURL(/\/welcome/)
+})

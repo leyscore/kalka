@@ -118,6 +118,7 @@ export const welcomeMessageDefaults = {
   sourceAi: 'An AI assistant',
   sourceOther: 'Other',
   aiTitle: 'Bring your AI',
+  aiLater: 'Later',
   aiIntro:
     'Describe a page and your agent draws it, in layers you can edit. You can also do this later in Settings.',
   tourStep: params('{current} of {total}'),

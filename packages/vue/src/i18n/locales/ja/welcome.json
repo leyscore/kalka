@@ -110,6 +110,7 @@
   "sourceAi": "AI アシスタント",
   "sourceOther": "その他",
   "aiTitle": "AI を接続する",
+  "aiLater": "後で",
   "aiIntro": "ページを説明すると、エージェントが編集できるレイヤーで描きます。あとから設定で行うこともできます。",
   "tourStep": "{current}/{total}",
   "tourNext": "次へ",

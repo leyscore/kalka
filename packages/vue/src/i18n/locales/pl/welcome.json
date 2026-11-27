@@ -110,6 +110,7 @@
   "sourceAi": "Od asystenta AI",
   "sourceOther": "Inne",
   "aiTitle": "Podłącz swoją AI",
+  "aiLater": "Później",
   "aiIntro": "Opisz stronę, a twój agent ją narysuje, w warstwach, które możesz edytować. Możesz to też zrobić później w Ustawieniach.",
   "tourStep": "{current} z {total}",
   "tourNext": "Dalej",

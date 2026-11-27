@@ -438,6 +438,15 @@ function onOpenChange(open: boolean): void {
                 </div>
                 <div :class="styles.nav()">
                   <AppButton size="lg" variant="link" @click="back">{{ welcome.back }}</AppButton>
+                  <!-- The AI is optional: leaving it for later is as visible as connecting it. -->
+                  <AppButton
+                    size="lg"
+                    variant="link"
+                    data-test-id="welcome-ai-later"
+                    @click="finish"
+                  >
+                    {{ welcome.aiLater }}
+                  </AppButton>
                 </div>
               </div>
             </div>

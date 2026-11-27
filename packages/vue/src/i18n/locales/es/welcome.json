@@ -110,6 +110,7 @@
   "sourceAi": "Un asistente de IA",
   "sourceOther": "Otro",
   "aiTitle": "Conecta tu IA",
+  "aiLater": "Más tarde",
   "aiIntro": "Describe una página y tu agente la dibuja, en capas que puedes editar. También puedes hacerlo más tarde en Ajustes.",
   "tourStep": "{current} de {total}",
   "tourNext": "Siguiente",

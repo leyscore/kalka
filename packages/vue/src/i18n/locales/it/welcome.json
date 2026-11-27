@@ -110,6 +110,7 @@
   "sourceAi": "Un assistente IA",
   "sourceOther": "Altro",
   "aiTitle": "Collega la tua IA",
+  "aiLater": "Più tardi",
   "aiIntro": "Descrivi una pagina e il tuo agente la disegna, in livelli modificabili. Puoi farlo anche più tardi nelle Impostazioni.",
   "tourStep": "{current} di {total}",
   "tourNext": "Avanti",
