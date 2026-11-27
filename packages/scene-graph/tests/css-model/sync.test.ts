@@ -131,3 +131,28 @@ describe('a layer’s CSS', () => {
     expect('height' in changes).toBe(false)
   })
 })
+
+describe('a shorthand an imported page wrote', () => {
+  test('gives way to the fill written in its place', () => {
+    const { graph, page } = graphWithPage()
+    const button = graph.createNode('FRAME', page.id, {
+      style: { background: '#38bdf8', padding: '12px 24px' }
+    })
+    graph.updateNode(button.id, {
+      fills: [{ type: 'SOLID', color: { r: 1, g: 0.5, b: 0, a: 1 }, opacity: 1, visible: true }]
+    })
+    const node = graph.getNode(button.id)
+    if (!node) throw new Error('missing layer')
+    expect(node.style.background).toBeUndefined()
+    expect(layerCSS(node, undefined)['background-color']).toBeDefined()
+  })
+
+  test('a shorthand of another family stays as written', () => {
+    const { graph, page } = graphWithPage()
+    const button = graph.createNode('FRAME', page.id, { style: { padding: '12px 24px' } })
+    graph.updateNode(button.id, {
+      fills: [{ type: 'SOLID', color: { r: 1, g: 0.5, b: 0, a: 1 }, opacity: 1, visible: true }]
+    })
+    expect(graph.getNode(button.id)?.style.padding).toBe('12px 24px')
+  })
+})

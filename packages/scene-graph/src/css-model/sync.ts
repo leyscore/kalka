@@ -56,6 +56,24 @@ function propertiesWrittenFrom(fields: ReadonlySet<string>): Set<string> {
 
 const literal = (_field: string, value: string) => value
 
+/** Shorthands that do not cover every property named after them. */
+const SHORTHAND_LONGHANDS: Record<string, readonly string[]> = {
+  flex: ['flex-grow', 'flex-shrink', 'flex-basis']
+}
+
+/**
+ * Whether a shorthand sets one of the properties: `background` sets `background-color`, so a
+ * fill written as `background-color` must not be painted over by the `background` an imported
+ * page wrote.
+ */
+function setsAnyOf(shorthand: string, properties: ReadonlySet<string>): boolean {
+  const longhands = SHORTHAND_LONGHANDS[shorthand]
+  if (longhands) return longhands.some((longhand) => properties.has(longhand))
+  const prefix = `${shorthand}-`
+  for (const property of properties) if (property.startsWith(prefix)) return true
+  return false
+}
+
 /**
  * A layer's whole CSS: what the table writes from its fields and parent, literal values in
  * export order, then the declarations of its `style`, which the fields do not give.
@@ -75,7 +93,9 @@ export function styleAfterFieldChanges(
   // Most layers keep no CSS of their own; a gesture runs this every frame.
   if (isEmptyObject(node.style)) return null
   const replaced = propertiesWrittenFrom(new Set(fields))
-  const kept = Object.entries(node.style).filter(([property]) => !replaced.has(property))
+  const kept = Object.entries(node.style).filter(
+    ([property]) => !replaced.has(property) && !setsAnyOf(property, replaced)
+  )
   return kept.length === Object.keys(node.style).length ? null : Object.fromEntries(kept)
 }
 
