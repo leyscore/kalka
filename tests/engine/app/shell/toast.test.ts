@@ -69,3 +69,11 @@ describe('toast progress', () => {
     expect(toast.toasts.value.map((entry) => entry.progressLabel)).not.toContain('ignored')
   })
 })
+
+describe('toast duration', () => {
+  test('a toast offering an action stays longer than a plain confirmation', () => {
+    toast.info('Plain')
+    toast.info('With undo', { label: 'Undo', run: () => {} })
+    expect(toastDuration(entryAt(1))).toBeGreaterThan(toastDuration(entryAt(0)))
+  })
+})

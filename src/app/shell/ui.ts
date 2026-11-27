@@ -41,6 +41,8 @@ export interface ToastHandle {
 }
 
 const TOAST_DURATION = 3000
+/** A toast offering an action, such as Undo, stays long enough to reach it. */
+const ACTION_TOAST_DURATION = 8000
 // Errors stay long enough to read but always self-clean, so a
 // stuck/repeating error source can't pile up over the canvas.
 const ERROR_TOAST_DURATION = 10000
@@ -82,7 +84,8 @@ function trim() {
 /** Toast-driven work keeps its toast open until progress clears or the work ends. */
 export function toastDuration(entry: Toast): number {
   if (entry.progress) return 0
-  return entry.variant === 'error' ? ERROR_TOAST_DURATION : TOAST_DURATION
+  if (entry.variant === 'error') return ERROR_TOAST_DURATION
+  return entry.action ? ACTION_TOAST_DURATION : TOAST_DURATION
 }
 
 function startProgress(

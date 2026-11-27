@@ -74,6 +74,14 @@ test('a kept draft is deleted from its menu, and Undo brings it back', async ({
   await draft.getByRole('button', { name: /^Actions for / }).click()
   await page.getByRole('menuitem', { name: 'Duplicate', exact: true }).click()
   await expect(draft).toHaveCount(2)
-  await expect(draft.filter({ hasText: 'Untitled copy' })).toHaveCount(1)
+  const copy = draft.filter({ hasText: 'Untitled copy' })
+  await expect(copy).toHaveCount(1)
+
+  // The copy deleted in turn comes back too.
+  await copy.getByRole('button', { name: /^Actions for / }).click()
+  await page.getByRole('menuitem', { name: 'Delete draft' }).click()
+  await expect(copy).toHaveCount(0)
+  await page.getByRole('button', { name: 'Undo', exact: true }).click()
+  await expect(copy).toHaveCount(1)
   await context.close()
 })

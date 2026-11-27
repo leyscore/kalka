@@ -3,10 +3,16 @@ import { ToastProvider, ToastViewport } from 'reka-ui'
 
 import { useI18n } from '@kalka/vue'
 
-import { toast, toastDuration } from '@/app/shell/ui'
+import { toast, toastDuration, type Toast } from '@/app/shell/ui'
 import AppToast from '@/components/ui/feedback/AppToast.vue'
 
 const { common, settings } = useI18n()
+
+/** An action, such as Undo, does its work once: the toast offering it then goes. */
+function runAction(entry: Toast) {
+  toast.remove(entry.id)
+  entry.action?.run()
+}
 </script>
 
 <template>
@@ -26,7 +32,7 @@ const { common, settings } = useI18n()
       :copied-label="common.copiedExclamation"
       :close-label="common.close"
       @close="toast.remove(t.id)"
-      @action="t.action?.run()"
+      @action="runAction(t)"
     />
     <ToastViewport
       :label="`${settings.notifications} (F8)`"
