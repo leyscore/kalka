@@ -17,8 +17,14 @@ function defaultInstancePlacement(
   component: SceneNode,
   parentId: string
 ): DefaultInstancePlacement {
-  const bounds = getAxisAlignedWorldBounds(component, ctx.graph)
-  const world = { x: bounds.x + bounds.width + 40, y: bounds.y }
+  // A variant's instance goes beside its whole set, not over the variants next to it.
+  const set = component.parentId ? ctx.graph.getNode(component.parentId) : undefined
+  const beside = set?.type === 'COMPONENT_SET' ? set : component
+  const bounds = getAxisAlignedWorldBounds(beside, ctx.graph)
+  const world = {
+    x: bounds.x + bounds.width + 40,
+    y: getAxisAlignedWorldBounds(component, ctx.graph).y
+  }
   const parent = ctx.graph.getNode(parentId)
   if (!parent) return { local: world, world }
   const inverse = Matrix.invert(getWorldMatrix(parent, ctx.graph))
