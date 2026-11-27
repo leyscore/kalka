@@ -57,7 +57,7 @@ function propertiesWrittenFrom(fields: ReadonlySet<string>): Set<string> {
 const literal = (_field: string, value: string) => value
 
 /** Shorthands that do not cover every property named after them. */
-const SHORTHAND_LONGHANDS: Record<string, readonly string[]> = {
+const SHORTHAND_LONGHANDS: Partial<Record<string, readonly string[]>> = {
   flex: ['flex-grow', 'flex-shrink', 'flex-basis']
 }
 

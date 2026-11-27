@@ -83,6 +83,17 @@ function marqueesInside(hit: SceneNode): boolean {
   return MARQUEE_CONTAINERS.has(hit.type) && hit.childIds.length > 0
 }
 
+/** As in Figma, a press inside a selected layer drags it, even under a layer drawn over it. */
+function pressesUnderSelection(hit: SceneNode, cx: number, cy: number, editor: Editor): boolean {
+  const { selectedIds } = editor.state
+  return (
+    !selectedIds.has(hit.id) &&
+    [...selectedIds].some(
+      (id) => !editor.graph.isDescendant(hit.id, id) && editor.graph.isPointInNode(id, cx, cy)
+    )
+  )
+}
+
 /** A press in a document open to view only: selects what is under it, or starts a marquee. */
 function selectToView(
   e: MouseEvent,
@@ -138,6 +149,18 @@ export function handleSelectDown(
     return
   }
 
+  pressLayer(e, hit, { cx, cy, sx, sy }, editor, deep, setDrag)
+}
+
+/** A press on a layer: selects it, or keeps the selection it lands in, and starts moving it. */
+function pressLayer(
+  e: MouseEvent,
+  hit: SceneNode,
+  { cx, cy, sx, sy }: { cx: number; cy: number; sx: number; sy: number },
+  editor: Editor,
+  deep: boolean,
+  setDrag: (d: DragState) => void
+) {
   // As in Figma, Cmd-dragging from the empty area of a frame draws a marquee inside it.
   if (deep && !e.shiftKey && marqueesInside(hit)) {
     editor.clearSelection()
@@ -145,13 +168,7 @@ export function handleSelectDown(
     return
   }
 
-  // As in Figma, a press inside a selected layer drags it, even under a layer drawn over it.
-  const overSelection =
-    !e.shiftKey &&
-    !editor.state.selectedIds.has(hit.id) &&
-    [...editor.state.selectedIds].some(
-      (id) => !editor.graph.isDescendant(hit.id, id) && editor.graph.isPointInNode(id, cx, cy)
-    )
+  const overSelection = !e.shiftKey && pressesUnderSelection(hit, cx, cy, editor)
   const keepsSelection = !e.shiftKey && (overSelection || pressesSelection(hit, cx, cy, editor))
   if (!editor.state.selectedIds.has(hit.id) && !e.shiftKey && !keepsSelection) {
     editor.select([hit.id])

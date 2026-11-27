@@ -73,7 +73,7 @@ describe('toast progress', () => {
 describe('toast duration', () => {
   test('a toast offering an action stays longer than a plain confirmation', () => {
     toast.info('Plain')
-    toast.info('With undo', { label: 'Undo', run: () => {} })
+    toast.info('With undo', { label: 'Undo', run: () => undefined })
     expect(toastDuration(entryAt(1))).toBeGreaterThan(toastDuration(entryAt(0)))
   })
 })

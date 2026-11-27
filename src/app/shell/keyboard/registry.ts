@@ -42,6 +42,11 @@ import { reopenClosedTab } from '@/app/tabs/reopen'
 
 type ShortcutAction = (options: KeyboardShortcutRunOptions) => void
 
+/** A shortcut's keys as the app menu binds them, or its default when the menu has none. */
+function menuKeys(id: string, fallback: string): string {
+  return appMenuTinykeysShortcut(id) ?? fallback
+}
+
 export type ShortcutDefinition = {
   id: string
   keys: string | string[]
@@ -188,43 +193,43 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     {
       id: 'copy-properties',
       viewing: true,
-      keys: appMenuTinykeysShortcut('copy-properties') ?? '$mod+Alt+KeyC',
+      keys: menuKeys('copy-properties', '$mod+Alt+KeyC'),
       run: ({ store }) => void copySelectionProperties(store)
     },
     {
       id: 'paste-properties',
-      keys: appMenuTinykeysShortcut('paste-properties') ?? '$mod+Alt+KeyV',
+      keys: menuKeys('paste-properties', '$mod+Alt+KeyV'),
       run: ({ store }) => void pasteClipboardProperties(store)
     },
     { id: 'pick-color', keys: 'KeyI', run: ({ store }) => void pickColorForSelection(store) },
     {
       id: 'copy-as-png',
       viewing: true,
-      keys: appMenuTinykeysShortcut('copy-as-png') ?? '$mod+Shift+KeyC',
+      keys: menuKeys('copy-as-png', '$mod+Shift+KeyC'),
       run: ({ store }) => void copyLayersAsPNG(store, [...store.state.selectedIds])
     },
     {
       id: 'copy-link',
       viewing: true,
-      keys: appMenuTinykeysShortcut('copy-link') ?? '$mod+KeyL',
+      keys: menuKeys('copy-link', '$mod+KeyL'),
       run: ({ store }) => void copySelectionLink(store)
     },
     {
       id: 'export-selection-png',
       viewing: true,
-      keys: appMenuTinykeysShortcut('export-selection') ?? '$mod+Shift+KeyE',
+      keys: menuKeys('export-selection', '$mod+Shift+KeyE'),
       run: ({ actions }) => actions.exportSelectionPNG(),
       whileEditingText: true
     },
     {
       id: 'save-to-version-history',
-      keys: appMenuTinykeysShortcut('save-to-version-history') ?? '$mod+Alt+KeyS',
+      keys: menuKeys('save-to-version-history', '$mod+Alt+KeyS'),
       run: () => requestNamedVersion()
     },
     {
       id: 'save-as',
       viewing: true,
-      keys: appMenuTinykeysShortcut('save-as') ?? '$mod+Shift+KeyS',
+      keys: menuKeys('save-as', '$mod+Shift+KeyS'),
       run: ({ store }) => void store.saveFigFileAs(),
       whileEditingText: true
     },
@@ -232,7 +237,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     {
       id: 'toggle-preview',
       viewing: true,
-      keys: appMenuTinykeysShortcut('toggle-preview') ?? '$mod+Alt+Enter',
+      keys: menuKeys('toggle-preview', '$mod+Alt+Enter'),
       run: ({ actions }) => actions.togglePlay(),
       preview: true
     },
@@ -318,7 +323,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     {
       id: 'toggle-ui',
       viewing: true,
-      keys: appMenuTinykeysShortcut('toggle-ui') ?? '$mod+Backslash',
+      keys: menuKeys('toggle-ui', '$mod+Backslash'),
       run: ({ actions }) => actions.toggleUI(),
       whileEditingText: true
     },
@@ -326,21 +331,21 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     {
       id: 'open-settings',
       viewing: true,
-      keys: appMenuTinykeysShortcut('settings') ?? '$mod+Comma',
+      keys: menuKeys('settings', '$mod+Comma'),
       run: () => openSettings(),
       global: true
     },
     {
       id: 'zoom-in',
       viewing: true,
-      keys: [appMenuTinykeysShortcut('zoom-in') ?? '$mod+Equal', '$mod+Shift+Equal'],
+      keys: [menuKeys('zoom-in', '$mod+Equal'), '$mod+Shift+Equal'],
       run: zoomAtViewportCenter(-100),
       global: true
     },
     {
       id: 'zoom-out',
       viewing: true,
-      keys: appMenuTinykeysShortcut('zoom-out') ?? '$mod+Minus',
+      keys: menuKeys('zoom-out', '$mod+Minus'),
       run: zoomAtViewportCenter(100),
       global: true
     },
@@ -373,14 +378,14 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     {
       id: 'close-tab',
       viewing: true,
-      keys: appMenuTinykeysShortcut('close') ?? '$mod+KeyW',
+      keys: menuKeys('close', '$mod+KeyW'),
       run: ({ closeActiveTab }) => closeActiveTab(),
       whileEditingText: true
     },
     {
       id: 'reopen-closed-tab',
       viewing: true,
-      keys: appMenuTinykeysShortcut('reopen-closed-tab') ?? '$mod+Shift+KeyT',
+      keys: menuKeys('reopen-closed-tab', '$mod+Shift+KeyT'),
       run: () => void reopenClosedTab(),
       whileEditingText: true
     },
@@ -395,7 +400,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     {
       id: 'find',
       viewing: true,
-      keys: appMenuTinykeysShortcut('find') ?? '$mod+KeyF',
+      keys: menuKeys('find', '$mod+KeyF'),
       run: () => {
         if (!hasOpenDismissableLayer()) openFind()
       },
@@ -404,7 +409,7 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     },
     {
       id: 'rename-selection',
-      keys: appMenuTinykeysShortcut('selection.rename') ?? '$mod+KeyR',
+      keys: menuKeys('selection.rename', '$mod+KeyR'),
       run: ({ store }) => requestRenameSelection(store)
     },
     ...commandShortcuts(
@@ -418,14 +423,14 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
     ),
     {
       id: 'save',
-      keys: appMenuTinykeysShortcut('save') ?? '$mod+KeyS',
+      keys: menuKeys('save', '$mod+KeyS'),
       run: ({ store }) => void store.saveFigFile(),
       whileEditingText: true
     },
     {
       id: 'open-file',
       viewing: true,
-      keys: appMenuTinykeysShortcut('open') ?? '$mod+KeyO',
+      keys: menuKeys('open', '$mod+KeyO'),
       run: ({ openFileDialog }) => openFileDialog(),
       whileEditingText: true
     },

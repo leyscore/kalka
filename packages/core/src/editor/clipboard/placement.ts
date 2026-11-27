@@ -74,13 +74,14 @@ export function createClipboardPlacementActions(ctx: EditorContext) {
       .getChildren(parentId)
       .filter((sibling) => !selected.has(sibling.id))
       .map((sibling) => getAxisAlignedBoundsInParent([sibling], parentId, ctx.graph))
-    let offset = union.width + DUPLICATE_FRAME_GAP
-    for (;;) {
+    const blockerAt = (offset: number) => {
       const shifted = boxes.map((box) => ({ ...box, x: box.x + offset }))
-      const blocker = others.find((other) => shifted.some((box) => overlaps(box, other)))
-      if (!blocker) return offset
-      offset = blocker.x + blocker.width + DUPLICATE_FRAME_GAP - union.x
+      return others.find((other) => shifted.some((box) => overlaps(box, other)))
     }
+    let offset = union.width + DUPLICATE_FRAME_GAP
+    for (let blocker = blockerAt(offset); blocker; blocker = blockerAt(offset))
+      offset = blocker.x + blocker.width + DUPLICATE_FRAME_GAP - union.x
+    return offset
   }
 
   function translate(nodeIds: string[], dx: number, dy: number) {

@@ -351,6 +351,18 @@ const failureMessage = computed(() => {
 })
 const failureHasSettingsAction = computed(() => chatFailure.value?.reason === 'model-not-found')
 const status = computed(() => (teamAgent.value?.chat ?? chat.value)?.status ?? 'ready')
+function bannerState(working: boolean): AgentBannerState {
+  if (currentQuestions.value && !teamAgent.value) return 'waiting'
+  if (working) return 'working'
+  if (!isConfigured.value && !teamAgent.value) return 'offline'
+  return 'ready'
+}
+function bannerLine(state: AgentBannerState, note: string | undefined): string {
+  if (state === 'offline') return ai.value.agentNotConnected
+  if (state === 'waiting') return ai.value.agentWaiting
+  if (state === 'working') return note || ai.value.agentWorking
+  return ai.value.agentReady
+}
 /** The agent whose conversation is on screen, as the sky at the top of the chat shows it. */
 const banner = computed(() => {
   const tab = activeTab.value
@@ -358,18 +370,11 @@ const banner = computed(() => {
   const store = tab.store
   const name = teamAgent.value?.name ?? runAgentName(store) ?? ai.value.designAgent
   const working = status.value === 'submitted' || status.value === 'streaming'
-  let state: AgentBannerState = 'ready'
-  if (currentQuestions.value && !teamAgent.value) state = 'waiting'
-  else if (working) state = 'working'
-  else if (!isConfigured.value && !teamAgent.value) state = 'offline'
+  const state = bannerState(working)
   const agents = presenceOf(store).agents.value
   const busy = agents.filter((agent) => agent.status !== 'idle' && agent.name !== name)
   const others = busy.map((agent) => agent.name)
-  const note = agents.find((agent) => agent.name === name)?.note
-  let line: string = ai.value.agentReady
-  if (state === 'offline') line = ai.value.agentNotConnected
-  else if (state === 'waiting') line = ai.value.agentWaiting
-  else if (state === 'working') line = note || ai.value.agentWorking
+  let line = bannerLine(state, agents.find((agent) => agent.name === name)?.note)
   const count = busy.length + (working ? 1 : 0)
   if (state !== 'waiting' && count > 1) line = ai.value.agentsWorking({ count })
   else if (state !== 'waiting' && busy[0]) {

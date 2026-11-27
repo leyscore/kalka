@@ -197,7 +197,7 @@ describe('@kalka/dom-css conversion', () => {
       '<h1>Des sites qui se construisent seuls, page après page</h1>',
       { runtime: createHeadlessCSSRuntime() }
     )
-    const [text] = [...graph.getAllNodes()].filter((node) => node.type === 'TEXT')
+    const text = [...graph.getAllNodes()].find((node) => node.type === 'TEXT')
     expect(text?.name).toBe('Des sites qui se construisent seuls, page après page')
   })
   it('converts HTML and CSS to a scene graph with one API call', async () => {

@@ -23,7 +23,6 @@ import {
   type RecoverySnapshotMeta
 } from '@/app/document/recovery'
 import { draftsPersist } from '@/app/document/recovery/drafts'
-import { isRecoveryKeptElsewhere } from '@/app/document/recovery/kept-elsewhere'
 import { liveRecoveryIds } from '@/app/document/recovery/live'
 import { setActiveEditorStore } from '@/app/editor/active-store'
 import type {
@@ -48,7 +47,7 @@ import { createDeferred } from '@/app/runtime/deferred'
 import { toast } from '@/app/shell/ui'
 import { getLocalCanvasStore } from '@/app/storage/local-store'
 import { seedStorageCanvasFromRemote } from '@/app/storage/sync/persist'
-import { rememberClosedTab, type ClosedTab } from '@/app/tabs/closed'
+import { isKeptDraft, rememberClosedTab, reopenableDocument } from '@/app/tabs/closed'
 import { createFileOpenCoordinator } from '@/app/tabs/open/coordinator'
 import { findTabByFileIdentity } from '@/app/tabs/open/identity'
 
@@ -168,26 +167,11 @@ export function switchTab(tabId: string): boolean {
   return true
 }
 
-/** A document with nowhere to save it but recovery, which keeps it across reloads. */
-function isKeptDraft(tab: Tab): boolean {
-  const { store } = tab
-  return (
-    tab.kind === 'document' &&
-    draftsPersist.value &&
-    store.hasUnsavedChanges() &&
-    !store.hasWritableSource() &&
-    !isRecoveryKeptElsewhere(store.state)
-  )
-}
-
-/** What Reopen closed tab brings back of a tab being closed: its draft, or its file. */
-function reopenableTab(tab: Tab, discarded: boolean): ClosedTab | null {
-  if (tab.kind !== 'document') return null
-  const { store } = tab
-  const { path, handle } = store.getSourceIdentity()
-  if (path || handle) return { kind: 'file', path, handle }
-  if (discarded || !draftsPersist.value || isRecoveryKeptElsewhere(store.state)) return null
-  return { kind: 'draft', snapshotId: store.getRecoveryId() }
+/** How a tab closes: a draft recovery keeps closes as Figma's does, without asking. */
+function closeChoice(tab: Tab, unsaved?: 'save' | 'discard') {
+  if (unsaved) return confirmDocumentClose(tab.store, async () => unsaved)
+  if (tab.kind === 'document' && isKeptDraft(tab.store)) return 'keep' as const
+  return requestDocumentClose(tab.store, tab.store.state.documentName)
 }
 
 /**
@@ -200,19 +184,16 @@ export async function closeTab(tabId: string, unsaved?: 'save' | 'discard'): Pro
 
   const closingTab = tabsRef.value[idx]
   if (closingTab.kind === 'home' && tabsRef.value.length === 1) return
-  // A draft recovery keeps closes as Figma's does, without asking: it stays on Home.
-  const keptDraft = !unsaved && isKeptDraft(closingTab)
-  const choice = keptDraft
-    ? 'keep'
-    : unsaved
-      ? await confirmDocumentClose(closingTab.store, async () => unsaved)
-      : await requestDocumentClose(closingTab.store, closingTab.store.state.documentName)
+  const choice = await closeChoice(closingTab, unsaved)
   if (choice === 'cancel') return
   if (choice === 'discard') await closingTab.store.discardRecovery()
   else await closingTab.store.persistRecoveryNow()
   if (!tabsRef.value.includes(closingTab)) return
   if (choice === 'saved' && closingTab.store.hasUnsavedChanges()) return
-  const reopen = reopenableTab(closingTab, choice === 'discard')
+  const reopen =
+    closingTab.kind === 'document'
+      ? reopenableDocument(closingTab.store, choice === 'discard')
+      : null
   if (reopen) rememberClosedTab(reopen)
   const wasActive = activeTabId.value === tabId
   coverThumbnailListeners.get(closingTab.store)?.()
