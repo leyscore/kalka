@@ -108,7 +108,9 @@ const statusText = computed(() =>
     @change="collab.saveName"
   />
 
-  <div class="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
+  <div
+    class="mt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 border-t border-border pt-3"
+  >
     <p
       v-if="room.desktopLink.value"
       class="flex shrink-0 items-center gap-3 text-[11px] whitespace-nowrap text-muted"
@@ -136,6 +138,7 @@ const statusText = computed(() =>
     <AppButton
       color="neutral"
       variant="ghost"
+      class="ml-auto shrink-0"
       data-test-id="collab-leave"
       @click="collab.disconnect"
     >
