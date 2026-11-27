@@ -17,7 +17,11 @@ import {
   type ApplyImportedDocumentOptions
 } from '@/app/document/io/imported-document'
 import type { DocumentSourceIdentity } from '@/app/document/io/types'
-import { getRecoveryStore, type RecoverySnapshotMeta } from '@/app/document/recovery'
+import {
+  getRecoveryStore,
+  type RecoverySnapshot,
+  type RecoverySnapshotMeta
+} from '@/app/document/recovery'
 import { liveRecoveryIds } from '@/app/document/recovery/live'
 import { setActiveEditorStore } from '@/app/editor/active-store'
 import type {
@@ -548,8 +552,22 @@ export async function listRecoverySnapshots(): Promise<RecoverySnapshotMeta[]> {
   return snapshots.filter((snapshot) => !live.has(snapshot.id))
 }
 
-export async function discardRecoverySnapshot(id: string): Promise<void> {
-  await getRecoveryStore().remove(id)
+/** Removes a recovery snapshot and returns what it held, which `keepRecoverySnapshot` puts back. */
+export async function discardRecoverySnapshot(id: string): Promise<RecoverySnapshot | null> {
+  const store = getRecoveryStore()
+  const snapshot = await store.read(id)
+  await store.remove(id)
+  return snapshot
+}
+
+/** Puts a discarded recovery snapshot back. */
+export async function keepRecoverySnapshot(snapshot: RecoverySnapshot): Promise<void> {
+  await getRecoveryStore().write({
+    id: snapshot.id,
+    documentName: snapshot.documentName,
+    figBytes: snapshot.figBytes,
+    sourcePath: snapshot.sourcePath
+  })
 }
 
 export async function restoreRecoverySnapshot(id: string): Promise<void> {
@@ -633,6 +651,7 @@ export function useTabsStore() {
     listRecoverySnapshots,
     restoreRecoverySnapshot,
     discardRecoverySnapshot,
+    keepRecoverySnapshot,
     prepareForReload,
     getActiveStore,
     tabCount

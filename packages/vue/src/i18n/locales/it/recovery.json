@@ -7,5 +7,7 @@
   "settingsTitle": "Ripristino",
   "settingsDescription": "Gestisci le copie locali di ripristino dei documenti non salvati.",
   "restore": "Ripristina",
-  "discard": "Scarta"
+  "discard": "Scarta",
+  "discarded": "Scartato",
+  "undoDiscard": "Annulla"
 }

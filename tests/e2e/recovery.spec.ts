@@ -54,3 +54,36 @@ test('keeps recovery independent from cancelling an unsaved-document close', asy
 
   await context.close()
 })
+
+test('a document discarded from the recovery dialog can be put back', async ({
+  browser,
+  baseURL
+}) => {
+  const context = await browser.newContext({ baseURL })
+  const page = await context.newPage()
+  await page.goto('/')
+  await new CanvasHelper(page).waitForInit()
+  await page.evaluate(async () => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    store.createShape('RECTANGLE', 120, 120, 240, 140)
+    await store.persistRecoveryNow()
+  })
+
+  page.once('dialog', (dialog) => dialog.accept())
+  await page.reload()
+  const recovery = page.getByRole('alertdialog', { name: 'Recover unsaved work' })
+  await recovery.getByRole('button', { name: 'Discard' }).click()
+  // The dialog stays with an Undo instead of losing the document on one click.
+  await recovery.getByRole('button', { name: 'Undo' }).click()
+  await recovery.getByRole('button', { name: 'Close', exact: true }).click()
+
+  page.once('dialog', (dialog) => dialog.accept())
+  await page.reload()
+  await expect(
+    page.getByRole('alertdialog', { name: 'Recover unsaved work' }).getByRole('button', {
+      name: 'Restore'
+    })
+  ).toHaveCount(1)
+  await context.close()
+})

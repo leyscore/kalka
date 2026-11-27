@@ -7,5 +7,7 @@
   "settingsTitle": "Wiederherstellung",
   "settingsDescription": "Lokale Wiederherstellungskopien für ungespeicherte Dokumente verwalten.",
   "restore": "Wiederherstellen",
-  "discard": "Verwerfen"
+  "discard": "Verwerfen",
+  "discarded": "Verworfen",
+  "undoDiscard": "Rückgängig"
 }

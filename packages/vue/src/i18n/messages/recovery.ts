@@ -10,7 +10,9 @@ export const recoveryMessageDefaults = {
   preserveUnsavedWorkDescription:
     'Store local recovery copies so documents can be restored after an unexpected shutdown.',
   restore: 'Restore',
-  discard: 'Discard'
+  discard: 'Discard',
+  discarded: 'Discarded',
+  undoDiscard: 'Undo'
 } as const
 
 export const recoveryMessages = i18n('recovery', recoveryMessageDefaults)

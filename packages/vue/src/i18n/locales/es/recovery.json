@@ -7,5 +7,7 @@
   "settingsTitle": "Recuperación",
   "settingsDescription": "Controla las copias locales de recuperación de documentos no guardados.",
   "restore": "Restaurar",
-  "discard": "Descartar"
+  "discard": "Descartar",
+  "discarded": "Descartado",
+  "undoDiscard": "Deshacer"
 }

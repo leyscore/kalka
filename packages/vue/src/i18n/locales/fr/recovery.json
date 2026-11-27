@@ -7,5 +7,7 @@
   "settingsTitle": "Récupération",
   "settingsDescription": "Gérez les copies locales de récupération des documents non enregistrés.",
   "restore": "Restaurer",
-  "discard": "Supprimer"
+  "discard": "Supprimer",
+  "discarded": "Supprimé",
+  "undoDiscard": "Annuler"
 }

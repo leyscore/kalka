@@ -7,5 +7,7 @@
   "settingsTitle": "恢复",
   "settingsDescription": "管理未保存文档的本地恢复副本。",
   "restore": "恢复",
-  "discard": "丢弃"
+  "discard": "丢弃",
+  "discarded": "已丢弃",
+  "undoDiscard": "撤销"
 }

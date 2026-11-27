@@ -7,5 +7,7 @@
   "settingsTitle": "復元",
   "settingsDescription": "未保存ドキュメントのローカル復元コピーを管理します。",
   "restore": "復元",
-  "discard": "破棄"
+  "discard": "破棄",
+  "discarded": "破棄しました",
+  "undoDiscard": "元に戻す"
 }
