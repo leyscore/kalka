@@ -19,7 +19,7 @@ test('File menu opens and shows items', async () => {
 
   const items = await menu.locator('[role="menuitem"]').allTextContents()
   expect(items.some((t) => t.includes('Open'))).toBe(true)
-  expect(items.some((t) => t.includes('Open storage workspace'))).toBe(true)
+  expect(items.some((t) => t.includes('Open shared storage'))).toBe(true)
   expect(items.some((t) => t.includes('Save'))).toBe(true)
   expect(items.some((t) => t.includes('Save as'))).toBe(true)
 
@@ -156,9 +156,9 @@ test('Zoom to fit via View menu works', async () => {
   expect(zoomAfter).not.toBe(zoomBefore)
 })
 
-test('Open storage workspace navigates from the File menu', async () => {
+test('Open shared storage navigates from the File menu', async () => {
   await openAppMenu(editor.page, 'File')
-  await editor.page.getByRole('menuitem', { name: 'Open storage workspace…' }).click()
+  await editor.page.getByRole('menuitem', { name: 'Open shared storage…' }).click()
 
   await expect(editor.page).toHaveURL(/\/files\/storage/)
   await expect(editor.page.getByTestId('recent-files-home')).toBeVisible()

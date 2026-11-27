@@ -126,7 +126,7 @@ test('storage workspace directs unconfigured users to Settings', async ({ page }
   await expect(page.getByTestId('settings-storage-panel')).toBeVisible()
 })
 
-test('Save to storage uploads the open document and lists it in the workspace', async ({
+test('Save to shared storage uploads the open document and lists it in the workspace', async ({
   page
 }) => {
   const objects = new Map<string, Buffer>()
@@ -171,7 +171,7 @@ test('Save to storage uploads the open document and lists it in the workspace', 
 
   // Before storage is configured, the command opens storage settings.
   let file = await openAppMenu(page, 'File')
-  await file.getByRole('menuitem', { name: 'Save to storage…' }).click()
+  await file.getByRole('menuitem', { name: 'Save to shared storage…' }).click()
   const panel = page.getByTestId('settings-storage-panel')
   await expect(panel).toBeVisible()
   await panel.getByRole('button', { name: /S3 storage/ }).click()
@@ -183,7 +183,7 @@ test('Save to storage uploads the open document and lists it in the workspace', 
   await page.getByTestId('app-settings-back').click()
 
   file = await openAppMenu(page, 'File')
-  await file.getByRole('menuitem', { name: 'Save to storage…' }).click()
+  await file.getByRole('menuitem', { name: 'Save to shared storage…' }).click()
   await expect
     .poll(() => [...objects.keys()].filter((key) => key.includes('/canvases/')).sort())
     .toEqual([
@@ -195,7 +195,7 @@ test('Save to storage uploads the open document and lists it in the workspace', 
   expect(uploaded?.subarray(0, 4)).toEqual(Buffer.from([0x50, 0x4b, 0x03, 0x04]))
 
   file = await openAppMenu(page, 'File')
-  await file.getByRole('menuitem', { name: 'Open storage workspace…' }).click()
+  await file.getByRole('menuitem', { name: 'Open shared storage…' }).click()
   await expect(page.getByTestId('recent-files-home')).toBeVisible()
   await expect(page.getByRole('button', { name: /^Untitled/ }).first()).toBeVisible()
 })
