@@ -254,3 +254,41 @@ test('Copy/Paste as submenu exists', async () => {
 
   await closeMenu()
 })
+
+test('right-clicking a layer inside the selection keeps the selection', async () => {
+  await editor.canvas.clearCanvas()
+  const ids = await editor.page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const pageId = store.state.currentPageId
+    const button = store.graph.createNode('FRAME', pageId, {
+      name: 'Button',
+      x: 200,
+      y: 200,
+      width: 200,
+      height: 80
+    })
+    const label = store.graph.createNode('RECTANGLE', button.id, {
+      name: 'Label',
+      x: 40,
+      y: 20,
+      width: 120,
+      height: 40
+    })
+    store.select([button.id])
+    const { panX, panY, zoom } = store.state
+    return {
+      button: button.id,
+      label: label.id,
+      at: { x: 300 * zoom + panX, y: 240 * zoom + panY }
+    }
+  })
+  await editor.canvas.waitForRender()
+
+  await rightClickShape(ids.at.x, ids.at.y)
+  await expect(contextMenu()).toBeVisible()
+  expect(
+    await editor.page.evaluate(() => [...(window.kalka?.getStore?.()?.state.selectedIds ?? [])])
+  ).toEqual([ids.button])
+  await closeMenu()
+})

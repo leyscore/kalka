@@ -33,7 +33,20 @@ export function createCanvasContextSelection(
     }
     store.setSelectedGuide(null)
     const { x: cx, y: cy } = store.screenToCanvas(sx, sy)
+    // As in Figma, a right-click on the selection keeps it, even over a layer inside it, so its
+    // menu acts on what was selected.
+    if (insideSelection(cx, cy)) return
     store.selectAtPoint(cx, cy)
+  }
+
+  function insideSelection(x: number, y: number): boolean {
+    for (const id of store.state.selectedIds) {
+      const node = store.graph.getNode(id)
+      if (!node || node.type === 'CANVAS') continue
+      const box = store.graph.getAbsoluteBounds(id)
+      if (x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height) return true
+    }
+    return false
   }
 
   return { selectAtContextPoint }

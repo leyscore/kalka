@@ -187,6 +187,11 @@ export function useCanvasInput(
       e.preventDefault()
       return
     }
+    // A right-click only opens the menu, which picks what it acts on: tools take the left button.
+    if (e.button === 2) {
+      if (!editor.state.editingTextId) canvasRef.value?.focus()
+      return
+    }
     startPress(e)
   }
 
