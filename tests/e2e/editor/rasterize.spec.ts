@@ -1,8 +1,9 @@
 import { expect, test, useEditorSetup } from '#tests/e2e/fixtures'
+import { openAppMenu } from '#tests/helpers/menu'
 
 const editor = useEditorSetup()
 
-test('⌘E rasterizes the selection into one image layer, and undo brings the layers back', async () => {
+test('Rasterize Selection turns the selection into one image layer, and undo brings the layers back', async () => {
   const page = editor.page
   const ids = await page.evaluate(() => {
     const store = window.kalka?.getStore?.()
@@ -22,7 +23,9 @@ test('⌘E rasterizes the selection into one image layer, and undo brings the la
     store.select([a, b])
     return [a, b]
   })
-  await page.keyboard.press('ControlOrMeta+KeyE')
+  // Rasterize has no shortcut, as in Figma: Cmd+E flattens.
+  const menu = await openAppMenu(page, 'Object')
+  await menu.getByRole('menuitem', { name: 'Rasterize Selection' }).click()
   await expect
     .poll(() =>
       page.evaluate(() => {
