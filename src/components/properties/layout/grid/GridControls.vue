@@ -37,16 +37,19 @@ function defaultTrackValue(sizing: GridTrackSizing): number {
         <div v-for="(track, i) in ctx.node[trackProp]" :key="i" class="flex items-center gap-1">
           <NumberField
             v-if="track.sizing !== 'AUTO'"
-            class="flex-1"
+            class="min-w-0 flex-1"
             :icon="`${trackProp === 'gridTemplateColumns' ? 'C' : 'R'}${i + 1}`"
             :model-value="track.value"
             :min="track.sizing === 'FR' ? 1 : 0"
             :suffix="track.sizing === 'FR' ? 'fr' : 'px'"
             @update:model-value="ctx.updateGridTrack(trackProp, i, { value: $event })"
           />
-          <span v-else class="flex-1 px-1 text-xs text-muted">{{ ctx.trackLabel(track) }}</span>
+          <span v-else class="min-w-0 flex-1 px-1 text-xs text-muted">{{
+            ctx.trackLabel(track)
+          }}</span>
           <AppSelect
             :model-value="track.sizing"
+            :ui="{ trigger: 'w-[104px] shrink-0' }"
             :options="ctx.trackSizingOptions"
             @update:model-value="
               ctx.updateGridTrack(trackProp, i, {
