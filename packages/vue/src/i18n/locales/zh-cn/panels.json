@@ -503,6 +503,8 @@
   "libraryName": "库名称",
   "revisionDescription": "修订说明",
   "libraryPublishFailed": "发布库失败",
+  "libraryIdRequired": "请输入库 ID 后再发布。",
+  "libraryNameRequired": "请输入库名称后再发布。",
   "libraryChanges": "更改",
   "searchLibraryChanges": "搜索更改",
   "noLibraryChangesFound": "没有匹配的更改",

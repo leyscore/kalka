@@ -113,7 +113,12 @@ function toggleAsset(key: string, value: boolean) {
 async function publish() {
   const id = libraryId.value.trim()
   const name = libraryName.value.trim()
-  if (!id || !name || selectedKeys.value.size === 0 || publishing.value) return
+  if (selectedKeys.value.size === 0 || publishing.value) return
+  // A missing field says so, rather than leaving the button doing nothing.
+  if (!id || !name) {
+    error.value = id ? panels.value.libraryNameRequired : panels.value.libraryIdRequired
+    return
+  }
   publishing.value = true
   error.value = ''
   try {
@@ -228,13 +233,7 @@ async function publish() {
         size="md"
         color="primary"
         variant="solid"
-        :disabled="
-          publishing ||
-          loading ||
-          selectedKeys.size === 0 ||
-          !libraryId.trim() ||
-          !libraryName.trim()
-        "
+        :disabled="publishing || loading || selectedKeys.size === 0"
         @click="publish"
       >
         {{ publishing ? panels.publishingLibrary : panels.publishLibrary }}

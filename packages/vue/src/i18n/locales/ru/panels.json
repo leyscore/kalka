@@ -519,6 +519,8 @@
   "libraryName": "Название библиотеки",
   "revisionDescription": "Описание редакции",
   "libraryPublishFailed": "Не удалось опубликовать библиотеку.",
+  "libraryIdRequired": "Введите идентификатор библиотеки, чтобы опубликовать.",
+  "libraryNameRequired": "Введите название библиотеки, чтобы опубликовать.",
   "libraryChanges": "Изменения",
   "searchLibraryChanges": "Поиск изменений",
   "noLibraryChangesFound": "Нет соответствующих изменений",

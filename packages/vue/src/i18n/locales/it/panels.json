@@ -511,6 +511,8 @@
   "libraryName": "Nome della libreria",
   "revisionDescription": "Descrizione della revisione",
   "libraryPublishFailed": "Impossibile pubblicare la libreria",
+  "libraryIdRequired": "Inserisci un identificativo della libreria per pubblicare.",
+  "libraryNameRequired": "Inserisci un nome della libreria per pubblicare.",
   "libraryChanges": "Cambiamenti",
   "searchLibraryChanges": "Cerca modifiche",
   "noLibraryChangesFound": "Nessuna modifica corrispondente",

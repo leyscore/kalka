@@ -530,6 +530,8 @@
   "libraryName": "Nombre de la biblioteca",
   "revisionDescription": "Descripción de la revisión",
   "libraryPublishFailed": "No se pudo publicar la biblioteca",
+  "libraryIdRequired": "Introduce un ID de biblioteca para publicar.",
+  "libraryNameRequired": "Introduce un nombre de biblioteca para publicar.",
   "libraryChanges": "Cambios",
   "searchLibraryChanges": "Buscar cambios",
   "noLibraryChangesFound": "No hay cambios coincidentes",

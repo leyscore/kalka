@@ -58,6 +58,8 @@ export const panelAssetMessages = {
   libraryName: 'Library name',
   revisionDescription: 'Revision description',
   libraryPublishFailed: 'Failed to publish library',
+  libraryIdRequired: 'Enter a library ID to publish.',
+  libraryNameRequired: 'Enter a library name to publish.',
   libraryChanges: 'Changes',
   searchLibraryChanges: 'Search changes',
   noLibraryChangesFound: 'No matching changes',

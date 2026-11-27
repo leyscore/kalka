@@ -522,6 +522,8 @@
   "libraryName": "ライブラリ名",
   "revisionDescription": "リビジョンの説明",
   "libraryPublishFailed": "ライブラリの公開に失敗しました",
+  "libraryIdRequired": "公開するにはライブラリ ID を入力してください。",
+  "libraryNameRequired": "公開するにはライブラリ名を入力してください。",
   "libraryChanges": "変更点",
   "searchLibraryChanges": "変更を検索",
   "noLibraryChangesFound": "一致する変更はありません",
