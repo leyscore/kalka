@@ -111,6 +111,7 @@ export function createClipboardActions(ctx: EditorContext) {
     const allSnapshots = new Map<string, SceneNode>()
     const record: DuplicateRecord = []
     const repeated = repeatedDuplicateOffset(topLevel)
+    const groupOffset = repeated ? null : placementActions.duplicateGroupOffset(topLevel)
 
     const placed: Rect[] = []
     const copies = new Map<string, string>()
@@ -119,6 +120,7 @@ export function createClipboardActions(ctx: EditorContext) {
       let position: Vector = { x: node.x, y: node.y }
       if (repeated) position = { x: node.x + repeated.x, y: node.y + repeated.y }
       else if (topLevel.length === 1) position = placementActions.duplicatePosition(node, placed)
+      else if (groupOffset !== null) position = { x: node.x + groupOffset, y: node.y }
       const clone = duplicateNode(ctx, node, parentId, position)
       if (!clone) continue
       if (ctx.state.renameDuplicates)

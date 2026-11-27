@@ -52,6 +52,37 @@ export function createClipboardPlacementActions(ctx: EditorContext) {
     return { x: node.x + candidate.x - box.x, y: node.y }
   }
 
+  /**
+   * How far right several top-level frames' copies go: past the whole selection, then past any
+   * layer in the way, so each copy keeps its place among the others. Null when the selection is
+   * not frames side by side on one page or section, whose copies land on the originals.
+   */
+  function duplicateGroupOffset(nodes: readonly SceneNode[]): number | null {
+    const parentId = nodes[0]?.parentId ?? ctx.state.currentPageId
+    const parent = ctx.graph.getNode(parentId)
+    const topLevel = !parent || parent.type === 'CANVAS' || parent.type === 'SECTION'
+    if (
+      !topLevel ||
+      nodes.length < 2 ||
+      nodes.some((node) => node.type !== 'FRAME' || (node.parentId ?? parentId) !== parentId)
+    )
+      return null
+    const boxes = nodes.map((node) => getAxisAlignedBoundsInParent([node], parentId, ctx.graph))
+    const union = getAxisAlignedBoundsInParent([...nodes], parentId, ctx.graph)
+    const selected = new Set(nodes.map((node) => node.id))
+    const others = ctx.graph
+      .getChildren(parentId)
+      .filter((sibling) => !selected.has(sibling.id))
+      .map((sibling) => getAxisAlignedBoundsInParent([sibling], parentId, ctx.graph))
+    let offset = union.width + DUPLICATE_FRAME_GAP
+    for (;;) {
+      const shifted = boxes.map((box) => ({ ...box, x: box.x + offset }))
+      const blocker = others.find((other) => shifted.some((box) => overlaps(box, other)))
+      if (!blocker) return offset
+      offset = blocker.x + blocker.width + DUPLICATE_FRAME_GAP - union.x
+    }
+  }
+
   function translate(nodeIds: string[], dx: number, dy: number) {
     for (const id of nodeIds) {
       const node = ctx.graph.getNode(id)
@@ -200,6 +231,7 @@ export function createClipboardPlacementActions(ctx: EditorContext) {
     centerNodesAt,
     centerNodesAtCanvasPoint,
     duplicatePosition,
+    duplicateGroupOffset,
     keepCanvasTransforms,
     placeForeignPaste,
     placePasted,

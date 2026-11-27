@@ -88,7 +88,7 @@ describe('duplicate placement', () => {
     expect(selected()).toMatchObject({ parentId: section.id, x: 280, y: 50 })
   })
 
-  test('duplicates a multi-selection in place, keeping names', () => {
+  test('puts copies of several top-level frames to the right of the whole selection', () => {
     const page = setup()
     const a = node('FRAME', page, { name: 'A', width: 100, height: 100 })
     const b = node('FRAME', page, { name: 'B', x: 140, width: 100, height: 100 })
@@ -96,9 +96,19 @@ describe('duplicate placement', () => {
     editor.duplicateSelected()
     const copies = [...editor.state.selectedIds].map((id) => editor.graph.getNode(id))
     expect(copies.map((n) => [n?.name, n?.x, n?.y])).toEqual([
-      ['A', 0, 0],
-      ['B', 140, 0]
+      ['A', 280, 0],
+      ['B', 420, 0]
     ])
+  })
+
+  test('duplicates several layers that are not top-level frames in place', () => {
+    const page = setup()
+    const a = node('RECTANGLE', page, { x: 10 })
+    const b = node('RECTANGLE', page, { x: 90 })
+    editor.select([a.id, b.id])
+    editor.duplicateSelected()
+    const copies = [...editor.state.selectedIds].map((id) => editor.graph.getNode(id)?.x)
+    expect(copies).toEqual([10, 90])
   })
 
   test('duplicates a main component as an instance, but a variant as a variant', () => {
