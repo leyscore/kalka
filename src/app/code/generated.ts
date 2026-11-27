@@ -1,4 +1,4 @@
-import { renderNodesToHTML } from '@kalka/core/io'
+import { renderNodesToHTML, vectorElement } from '@kalka/core/io'
 import { selectionToJSXWithLayers } from '@kalka/design-jsx'
 import { sceneNodesToTailwindJSXWithLayers } from '@kalka/dom-css/export'
 import type { SceneGraph } from '@kalka/scene-graph'
@@ -20,7 +20,8 @@ export function generatedCodeFor(
 ): GeneratedCode {
   if (nodeIds.length === 0) return { code: starterSourceFor(source), layerIds: [] }
   return source === 'tailwind-jsx'
-    ? sceneNodesToTailwindJSXWithLayers(graph, nodeIds)
+    ? // Vector layers are drawn as SVG, as the HTML export draws them.
+      sceneNodesToTailwindJSXWithLayers(graph, nodeIds, { vectorElement })
     : selectionToJSXWithLayers(nodeIds, graph)
 }
 
