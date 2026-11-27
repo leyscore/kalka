@@ -1,5 +1,6 @@
 import type { EditorStore } from '@/app/editor/active-store'
-import { matchingClipboardSnapshot } from '@/app/editor/clipboard/memory'
+import { isDesignClipboardHTML } from '@/app/editor/clipboard/html'
+import { getInMemoryClipboardHTML, matchingClipboardSnapshot } from '@/app/editor/clipboard/memory'
 import { readClipboardHTML } from '@/app/editor/clipboard/read'
 import { resolveSystemClipboard } from '@/app/editor/clipboard/system'
 import { notificationMessages } from '@/app/i18n/notifications'
@@ -18,7 +19,10 @@ export async function copySelectionProperties(store: EditorStore) {
 export async function pasteClipboardProperties(store: EditorStore) {
   if (store.state.selectedIds.size === 0) return
   try {
-    const html = await readClipboardHTML()
+    // As in Figma, the properties copied here paste here, even when the system clipboard has
+    // since lost them or cannot be read back.
+    const memory = getInMemoryClipboardHTML()
+    const html = (await readClipboardHTML()) ?? (isDesignClipboardHTML(memory) ? memory : null)
     if (!html) {
       toast.error(notificationMessages.get().clipboardMissingDesignData)
       return

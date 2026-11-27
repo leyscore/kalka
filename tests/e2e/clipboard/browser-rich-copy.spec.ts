@@ -58,3 +58,41 @@ test('browser menu copy writes rich and plain Kalka clipboard formats', async ()
     )
     .toBe(before + 1)
 })
+
+test('properties copied here paste here after the system clipboard lost them', async () => {
+  await editor.canvas.clearCanvas()
+  const [source, target] = await editor.page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const red = { r: 1, g: 0, b: 0, a: 1 }
+    const a = store.createShape('RECTANGLE', 100, 100, 80, 80)
+    store.updateNode(a, { fills: [{ type: 'SOLID', color: red, opacity: 1, visible: true }] })
+    const b = store.createShape('RECTANGLE', 240, 100, 80, 80)
+    store.select([a])
+    return [a, b]
+  })
+
+  const edit = await openAppMenu(editor.page, 'Edit')
+  await edit.getByRole('menuitem', { name: /^Copy properties/ }).click()
+  await expect(editor.page.getByText('Copied properties.').first()).toBeVisible()
+  // Something else takes the system clipboard, as another app or a blocked write would.
+  await editor.page.evaluate(() => navigator.clipboard.writeText('plain words'))
+
+  await editor.page.evaluate((id) => window.kalka?.getStore?.()?.select([id]), target)
+  const paste = await openAppMenu(editor.page, 'Edit')
+  await paste.getByRole('menuitem', { name: /^Paste properties/ }).click()
+  await expect
+    .poll(() =>
+      editor.page.evaluate(
+        ([a, b]) => {
+          const store = window.kalka?.getStore?.()
+          return (
+            JSON.stringify(store?.graph.getNode(a)?.fills) ===
+            JSON.stringify(store?.graph.getNode(b)?.fills)
+          )
+        },
+        [source, target]
+      )
+    )
+    .toBe(true)
+})
