@@ -115,6 +115,12 @@ function layoutModeUpdates(
     applyGridDefaults(ctx, node, id, updates)
   } else if ((mode === 'HORIZONTAL' || mode === 'VERTICAL') && node.layoutMode === 'NONE') {
     Object.assign(updates, autoLayoutDefaults(ctx, node, mode))
+  } else if ((mode === 'HORIZONTAL' || mode === 'VERTICAL') && node.layoutMode === 'GRID') {
+    // As in Figma, the gaps stay when the flow changes: along the new flow, then across it.
+    const along = mode === 'HORIZONTAL' ? node.gridColumnGap : node.gridRowGap
+    const across = mode === 'HORIZONTAL' ? node.gridRowGap : node.gridColumnGap
+    updates.itemSpacing = along
+    updates.counterAxisSpacing = across
   }
   return updates
 }
@@ -136,20 +142,22 @@ function applyGridDefaults(
     sizing: 'FR' as const,
     value: 1
   }))
-  updates.gridColumnGap = 0
-  updates.gridRowGap = 0
-  updates.primaryAxisSizing = 'FIXED'
-  updates.counterAxisSizing = 'FIXED'
-  if (node.primaryAxisSizing === 'HUG' || node.counterAxisSizing === 'HUG') {
-    const maxChildW = Math.max(...children.map((child) => child.width), 100)
-    const maxChildH = Math.max(...children.map((child) => child.height), 100)
-    updates.width = maxChildW * cols
-    updates.height = maxChildH * rows
+  // A flow's gaps carry over to the grid, as Figma keeps them when the flow changes.
+  const flows = node.layoutMode === 'HORIZONTAL' || node.layoutMode === 'VERTICAL'
+  const along = flows ? node.itemSpacing : 0
+  const across = flows ? node.counterAxisSpacing : 0
+  updates.gridColumnGap = node.layoutMode === 'VERTICAL' ? across : along
+  updates.gridRowGap = node.layoutMode === 'VERTICAL' ? along : across
+  // A frame that hugged its layers keeps hugging the grid, so gaps and new rows grow it.
+  const hugged = flows && (node.primaryAxisSizing === 'HUG' || node.counterAxisSizing === 'HUG')
+  updates.primaryAxisSizing = hugged ? 'HUG' : 'FIXED'
+  updates.counterAxisSizing = hugged ? 'HUG' : 'FIXED'
+  if (!flows) {
+    updates.paddingTop = 0
+    updates.paddingRight = 0
+    updates.paddingBottom = 0
+    updates.paddingLeft = 0
   }
-  updates.paddingTop = 0
-  updates.paddingRight = 0
-  updates.paddingBottom = 0
-  updates.paddingLeft = 0
 }
 
 /**
@@ -181,13 +189,17 @@ function autoLayoutDefaults(
   }
   const content = getAxisAlignedBoundsInParent(children, node.id, ctx.graph)
   const inset = (value: number) => Math.max(0, Math.round(value))
-  return {
-    ...base,
-    itemSpacing: inferredSpacing(boxes, mode),
+  const itemSpacing = inferredSpacing(boxes, mode)
+  const padding = {
     paddingTop: inset(content.y),
     paddingRight: inset(node.width - content.x - content.width),
     paddingBottom: inset(node.height - content.y - content.height),
-    paddingLeft: inset(content.x),
+    paddingLeft: inset(content.x)
+  }
+  return {
+    ...base,
+    itemSpacing,
+    ...padding,
     primaryAxisSizing: 'HUG',
     counterAxisSizing: 'HUG'
   }

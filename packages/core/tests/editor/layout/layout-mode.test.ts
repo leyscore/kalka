@@ -83,3 +83,38 @@ describe('adding auto layout to a frame', () => {
     expect(undone.childIds).toEqual([right.id, left.id])
   })
 })
+
+describe('changing the flow of a frame', () => {
+  function grid(editor: ReturnType<typeof createEditor>) {
+    const frame = editor.graph.createNode('FRAME', editor.state.currentPageId, {
+      width: 400,
+      height: 200
+    })
+    for (const x of [0, 120, 240])
+      editor.graph.createNode('RECTANGLE', frame.id, { x, y: 0, width: 100, height: 100 })
+    editor.setLayoutMode(frame.id, 'HORIZONTAL')
+    return frame.id
+  }
+
+  test('a frame that hugged its layers keeps hugging them as a grid', () => {
+    const editor = createEditor()
+    const id = grid(editor)
+    expect(getNodeOrThrow(editor.graph, id).primaryAxisSizing).toBe('HUG')
+    editor.setLayoutMode(id, 'GRID')
+    const node = getNodeOrThrow(editor.graph, id)
+    expect([node.primaryAxisSizing, node.counterAxisSizing]).toEqual(['HUG', 'HUG'])
+  })
+
+  test('keeps the gaps when it goes from a grid to a row and back', () => {
+    const editor = createEditor()
+    const id = grid(editor)
+    editor.setLayoutMode(id, 'GRID')
+    editor.graph.updateNode(id, { gridColumnGap: 24, gridRowGap: 16 })
+    editor.setLayoutMode(id, 'HORIZONTAL')
+    let node = getNodeOrThrow(editor.graph, id)
+    expect([node.itemSpacing, node.counterAxisSpacing]).toEqual([24, 16])
+    editor.setLayoutMode(id, 'GRID')
+    node = getNodeOrThrow(editor.graph, id)
+    expect([node.gridColumnGap, node.gridRowGap]).toEqual([24, 16])
+  })
+})
