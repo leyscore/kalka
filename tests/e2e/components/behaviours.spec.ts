@@ -378,3 +378,41 @@ test('a rectangle made a Textarea gets its text layer from the panel and takes t
   await editor.page.keyboard.type('second line')
   await expect(field).toHaveValue('Text typed\nsecond line')
 })
+
+test('a frame made a Text field from the panel takes typing in preview', async () => {
+  const componentId = await editor.page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const component = store.graph.createNode('COMPONENT', store.state.currentPageId, {
+      name: 'Component',
+      x: 120,
+      y: 120,
+      width: 383,
+      height: 95,
+      fills: [
+        { type: 'SOLID' as const, color: { r: 1, g: 1, b: 1, a: 1 }, opacity: 1, visible: true }
+      ]
+    })
+    store.select([component.id])
+    return component.id
+  })
+  await editor.canvas.waitForRender()
+
+  const section = propertySection(editor.page, 'Behaviour')
+  await section.getByRole('button', { name: 'Add behaviour' }).click()
+  await editor.page.getByRole('option', { name: /Text field/ }).click()
+  await section.getByRole('button', { name: 'Add text layer' }).click()
+  await expect(section.getByText('Ready', { exact: true })).toBeVisible()
+
+  const instanceId = await editor.page.evaluate((id) => {
+    const store = window.kalka?.getStore?.()
+    const instance = store?.graph.createInstance(id, store.state.currentPageId, { x: 120, y: 300 })
+    return instance?.id ?? ''
+  }, componentId)
+  await startPreview()
+  const field = island(instanceId).locator('input')
+  await field.click()
+  await editor.page.keyboard.press('End')
+  await editor.page.keyboard.type(' typed')
+  await expect(field).toHaveValue(/ typed$/)
+})
