@@ -201,7 +201,7 @@ function onToggleSides(activeNode: SceneNode | null) {
       <div v-if="!isMixed && items.length > 0" class="mt-1 flex items-center gap-1.5">
         <AppSelect
           :label="panels.strokeType"
-          :ui="{ trigger: 'w-[88px] flex-none' }"
+          :ui="{ trigger: 'min-w-0 flex-1' }"
           :model-value="strokeCtx.currentAlign(activeNode)"
           :options="strokeCtx.alignOptions"
           data-property="stroke-align"
@@ -210,7 +210,7 @@ function onToggleSides(activeNode: SceneNode | null) {
         <Tip :label="panels.strokeWeight">
           <NumberField
             v-if="!expandedSides"
-            class="flex-1"
+            class="w-16 flex-none"
             icon="W"
             :model-value="items[0]?.weight ?? 1"
             :min="0"
