@@ -3,6 +3,7 @@ import { computed, onScopeDispose, ref, watch, type Ref } from 'vue'
 import type { EditorState } from '@kalka/core/editor'
 import type { Fill } from '@kalka/scene-graph'
 import { isGradientFill } from '@kalka/scene-graph/gradient'
+import { pressesGradientHandle } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 
@@ -95,9 +96,15 @@ export function useCanvasGradientHandles({
   })
 
   /** Keeps the picker open when the press outside it lands on one of its gradient handles. */
-  function keepOpen(event: Event) {
+  function keepOpen(event: CustomEvent<{ originalEvent: Event }>) {
     const edit = store.state.gradientEdit
-    if (owned(edit) && (edit.handle !== null || edit.dragging)) event.preventDefault()
+    if (!owned(edit)) return
+    const press = event.detail?.originalEvent
+    const onHandle =
+      edit.handle !== null ||
+      edit.dragging ||
+      (press instanceof MouseEvent && pressesGradientHandle(store, press))
+    if (onHandle) event.preventDefault()
   }
 
   return { activeStop, keepOpen }

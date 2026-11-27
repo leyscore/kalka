@@ -104,3 +104,59 @@ test('dragging the handles of an open gradient moves its end and its stops', asy
   expect((await gradientFill())?.gradientTransform).toEqual(DEFAULT_GRADIENT_TRANSFORM)
   canvas.assertNoErrors()
 })
+
+test('a gradient handle over a resize handle drags the gradient, not the layer', async () => {
+  const { page, canvas } = editor
+  const id = await page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const node = store.graph.createNode('RECTANGLE', store.state.currentPageId, {
+      name: 'Small',
+      x: 100,
+      y: 100,
+      width: 128,
+      height: 64,
+      fills: [
+        { type: 'SOLID', color: { r: 0.85, g: 0.85, b: 0.85, a: 1 }, opacity: 1, visible: true }
+      ]
+    })
+    store.select([node.id])
+    store.zoomToSelection(2.58)
+    return node.id
+  })
+  await canvas.waitForRender()
+  await page.getByTestId('fill-picker-swatch').first().click()
+  const picker = page.locator('[data-picker-content]')
+  await expect(picker).toBeVisible()
+  await page.getByTestId('fill-picker-tab-gradient').click()
+  await canvas.waitForRender()
+
+  // The end of Figma's new gradient sits at the bottom middle, on the bottom resize handle.
+  const a = await onCanvas({ x: 164, y: 164 })
+  const b = await onCanvas({ x: 110, y: 120 })
+  // Pressed straight away, with no hover over the handle first, as a stylus or a quick hand does.
+  const box = await page.getByTestId('canvas-element').boundingBox()
+  const at = (p: { x: number; y: number }) => ({ x: (box?.x ?? 0) + p.x, y: (box?.y ?? 0) + p.y })
+  const cdp = await page.context().newCDPSession(page)
+  const send = (type: 'mousePressed' | 'mouseMoved' | 'mouseReleased', p: { x: number; y: number }) =>
+    cdp.send('Input.dispatchMouseEvent', {
+      type,
+      ...at(p),
+      button: 'left',
+      buttons: type === 'mouseReleased' ? 0 : 1,
+      clickCount: 1
+    })
+  await send('mousePressed', a)
+  for (let step = 1; step <= 8; step++)
+    await send('mouseMoved', { x: a.x + ((b.x - a.x) * step) / 8, y: a.y + ((b.y - a.y) * step) / 8 })
+  await send('mouseReleased', b)
+  await cdp.detach()
+  await expect(picker).toBeVisible()
+  const node = await page.evaluate(
+    (nodeId) => window.kalka?.getStore?.()?.graph.getNode(nodeId) ?? null,
+    id
+  )
+  expect(node?.height).toBe(64)
+  expect(node?.fills[0]?.gradientTransform).not.toEqual(DEFAULT_GRADIENT_TRANSFORM)
+  canvas.assertNoErrors()
+})

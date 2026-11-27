@@ -196,6 +196,7 @@ export {
 } from '#vue/primitives/Fill'
 export type { FillActions, FillCategory } from '#vue/primitives/Fill'
 export { useGradientStops } from '#vue/primitives/GradientEditor/useGradientStops'
+export { pressesGradientHandle } from '#vue/shared/input/gradient'
 export { useFontPicker } from '#vue/primitives/FontPicker/useFontPicker'
 
 /** Headless structural primitives and their local contexts. */

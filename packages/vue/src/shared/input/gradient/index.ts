@@ -14,6 +14,7 @@ import {
   type GradientEdit,
   type GradientHandle
 } from '#vue/shared/input/gradient/geometry'
+import { getPointerCoords } from '#vue/shared/input/geometry'
 import type { DragGradientHandle } from '#vue/shared/input/types'
 
 export * from '#vue/shared/input/gradient/geometry'
@@ -70,6 +71,16 @@ export function hoverGradientHandle(editor: Editor, cx: number, cy: number): str
   const handle = hit?.handle ?? null
   if (edit.handle !== handle) editor.setGradientEdit({ ...edit, handle })
   return hit ? 'pointer' : null
+}
+
+/**
+ * Whether a press on the canvas lands on a gradient handle, read from the press itself: a picker
+ * dismissed by that press would hide the handles before the canvas could start dragging one.
+ */
+export function pressesGradientHandle(editor: Editor, event: MouseEvent): boolean {
+  if (!(event.target instanceof HTMLCanvasElement)) return false
+  const { cx, cy } = getPointerCoords(event, event.target, editor)
+  return hitGradientHandle(editor, cx, cy) !== null
 }
 
 /** Starts dragging the gradient handle under the press, if there is one. */
