@@ -17,6 +17,7 @@ import {
 } from '#vue/controls/shared-style/model'
 import { useEditor } from '#vue/editor/context'
 import { useEditorEvent } from '#vue/editor/events/use'
+import { useI18n } from '#vue/i18n'
 
 /**
  * The document's styles of one kind, kept current as their definitions change, with the actions
@@ -24,6 +25,7 @@ import { useEditorEvent } from '#vue/editor/events/use'
  */
 export function useSharedStyles(kind: SharedStyleKind) {
   const store = useEditor()
+  const { variables: messages } = useI18n()
   // The document's styles are a walk of every layer: it runs again only after an edit to a style
   // layer, not after every edit, such as each keystroke in a text.
   const stylesRevision = shallowRef(0)
@@ -60,7 +62,14 @@ export function useSharedStyles(kind: SharedStyleKind) {
     groups: computed(() => groupSharedStyles(styles.value)),
     definition,
     rename: (styleNodeId: string, name: string) => store.renameSharedStyle(styleNodeId, name),
-    duplicate: (styleNodeId: string) => store.duplicateSharedStyle(styleNodeId),
+    // A copy is told apart from its original in the list, as a duplicated variable is.
+    duplicate: (styleNodeId: string) => {
+      const name = store.graph.getNode(styleNodeId)?.name
+      return store.duplicateSharedStyle(
+        styleNodeId,
+        name ? messages.value.duplicateName({ name }) : undefined
+      )
+    },
     remove: (styleNodeId: string) => store.deleteSharedStyle(styleNodeId),
     move: (styleNodeId: string, targetNodeId: string, placement: 'before' | 'after') =>
       store.moveSharedStyle(styleNodeId, targetNodeId, placement)

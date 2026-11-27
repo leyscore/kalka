@@ -303,7 +303,7 @@ test('describes a style in its editor and duplicates it from Local styles', asyn
     page.evaluate(() => {
       const store = window.kalka?.getStore?.()
       return [...(store?.graph.getAllNodes() ?? [])]
-        .filter((node) => node.name === 'Brand/Accent' && node.sharedStyleType === 'FILL')
+        .filter((node) => node.name.startsWith('Brand/Accent') && node.sharedStyleType === 'FILL')
         .map((node) => node.symbolDescription)
     })
   await expect.poll(described).toEqual(['Links and focus rings'])
@@ -312,6 +312,8 @@ test('describes a style in its editor and duplicates it from Local styles', asyn
   await accent.hover()
   await accent.locator('xpath=..').getByTestId('fill-style-actions').click()
   await page.getByTestId('fill-style-duplicate').click()
-  await expect(local.locator('[data-local-fill-style="Brand/Accent"]')).toHaveCount(2)
+  // The copy is named apart from its original, so the list tells them apart.
+  await expect(local.locator('[data-local-fill-style="Brand/Accent"]')).toHaveCount(1)
+  await expect(local.locator('[data-local-fill-style="Brand/Accent copy"]')).toHaveCount(1)
   await expect.poll(described).toEqual(['Links and focus rings', 'Links and focus rings'])
 })

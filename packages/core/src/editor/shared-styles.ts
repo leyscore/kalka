@@ -182,10 +182,11 @@ export function createSharedStyleActions(ctx: EditorContext, nodes: NodeActions)
   }
 
   /**
-   * Makes a copy of a style with its name, description, values and variable bindings, listed
-   * right after it, as Figma's Duplicate style. Layers stay on the original.
+   * Makes a copy of a style with its description, values and variable bindings, listed right
+   * after it, as Figma's Duplicate style, named `name` (the style's own name when none is given).
+   * Layers stay on the original.
    */
-  function duplicateSharedStyle(styleNodeId: string): SharedStyle | null {
+  function duplicateSharedStyle(styleNodeId: string, name?: string): SharedStyle | null {
     const style = styleDefinition(styleNodeId)
     const type = style?.sharedStyleType
     if (!style || !type) return null
@@ -198,7 +199,7 @@ export function createSharedStyleActions(ctx: EditorContext, nodes: NodeActions)
         ...(type === 'TEXT' ? { text: style.text } : {}),
         boundVariables: { ...style.boundVariables },
         symbolDescription: style.symbolDescription,
-        name: style.name,
+        name: name?.trim() || style.name,
         sharedStyleType: type
       })
       const copyId = copy.source.id
