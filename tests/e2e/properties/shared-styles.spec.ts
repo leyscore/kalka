@@ -309,8 +309,7 @@ test('describes a style in its editor and duplicates it from Local styles', asyn
   await expect.poll(described).toEqual(['Links and focus rings'])
   await page.keyboard.press('Escape')
 
-  await accent.hover()
-  await accent.locator('xpath=..').getByTestId('fill-style-actions').click()
+  await accent.click({ button: 'right' })
   await page.getByTestId('fill-style-duplicate').click()
   // The copy is named apart from its original, so the list tells them apart.
   await expect(local.locator('[data-local-fill-style="Brand/Accent"]')).toHaveCount(1)

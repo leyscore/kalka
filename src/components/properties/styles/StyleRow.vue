@@ -21,7 +21,10 @@ import { styleKindForType } from './kinds'
 import StyleEditPopover from './StyleEditPopover.vue'
 import StyleLabel from './StyleLabel.vue'
 
-/** One style in Local styles: a click edits it, its menu renames, duplicates, moves or deletes it. */
+/**
+ * One style in Local styles: a click edits it, its menu (also on a right-click) renames,
+ * duplicates, moves or deletes it.
+ */
 const { type, name, label, definition, first, last } = defineProps<{
   type: SharedStyleType
   name: string
@@ -42,6 +45,8 @@ const menuCls = useMenuUI({ content: 'min-w-44' })
 const itemCls = menuItem({ justify: 'start' })
 const renaming = ref(false)
 const draftName = ref(name)
+// A right-click on the style opens its menu, as in Figma.
+const menuOpen = ref(false)
 
 function startRenaming() {
   draftName.value = name
@@ -79,11 +84,12 @@ function commitName() {
           :aria-label="`${panels.editStyle}: ${name}`"
           v-bind="{ [`data-local-${kind}-style`]: name }"
           @dblclick="startRenaming"
+          @contextmenu.prevent="menuOpen = true"
         >
           <StyleLabel :type="type" :label="label" :definition="definition" />
         </button>
       </PopoverTrigger>
-      <DropdownMenuRoot :modal="false">
+      <DropdownMenuRoot v-model:open="menuOpen" :modal="false">
         <DropdownMenuTrigger as-child>
           <IconButton
             :label="panels.styleActions"
