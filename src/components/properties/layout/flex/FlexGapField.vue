@@ -102,8 +102,9 @@ function setMode(value: string) {
             <SelectItemIndicator class="absolute left-1.5 inline-flex items-center justify-center"
               ><icon-hugeicons-check class="size-3 text-primary"
             /></SelectItemIndicator>
+            <!-- Named as Figma's Space between, which someone coming from Figma looks for. -->
             <SelectItemText>{{
-              mode === 'AUTO' ? panels.auto : Math.round(ctx.node.itemSpacing)
+              mode === 'AUTO' ? panels.gapSpaceBetween : Math.round(ctx.node.itemSpacing)
             }}</SelectItemText>
           </SelectItem>
         </SelectViewport>

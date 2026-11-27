@@ -459,6 +459,7 @@
   "noComponentsFound": "Nie znaleziono komponentów",
   "gapAuto": "Automatyczny odstep",
   "horizontalGap": "Odstep poziomy",
+  "gapSpaceBetween": "Auto (rozłóż równo)",
   "verticalGap": "Odstep pionowy",
   "addMinWidth": "Dodaj min. szerokosc",
   "removeMinWidth": "Usun min. szerokosc",

@@ -470,6 +470,7 @@
   "noComponentsFound": "No se encontraron componentes",
   "gapAuto": "Espaciado auto",
   "horizontalGap": "Espaciado horizontal",
+  "gapSpaceBetween": "Auto (espacio entre)",
   "verticalGap": "Espaciado vertical",
   "addMinWidth": "Agregar ancho min",
   "removeMinWidth": "Eliminar ancho min",

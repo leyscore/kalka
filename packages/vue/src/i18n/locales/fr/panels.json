@@ -451,6 +451,7 @@
   "noComponentsFound": "Aucun composant trouvé",
   "gapAuto": "Espacement auto",
   "horizontalGap": "Espacement horizontal",
+  "gapSpaceBetween": "Auto (espacement réparti)",
   "verticalGap": "Espacement vertical",
   "addMinWidth": "Ajouter largeur min",
   "removeMinWidth": "Supprimer largeur min",

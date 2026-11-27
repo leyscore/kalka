@@ -183,6 +183,7 @@ export const panelAppearanceMessages = {
   layoutWrap: 'Wrap layout',
   gapAuto: 'Auto gap',
   horizontalGap: 'Horizontal gap',
+  gapSpaceBetween: 'Auto (space between)',
   verticalGap: 'Vertical gap',
   auto: 'Auto',
   columns: 'Columns',

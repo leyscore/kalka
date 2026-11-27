@@ -451,6 +451,7 @@
   "noComponentsFound": "Keine Komponenten gefunden",
   "gapAuto": "Automatischer Abstand",
   "horizontalGap": "Horizontaler Abstand",
+  "gapSpaceBetween": "Automatisch (verteilt)",
   "verticalGap": "Vertikaler Abstand",
   "addMinWidth": "Mindestbreite hinzufuegen",
   "removeMinWidth": "Mindestbreite entfernen",

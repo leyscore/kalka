@@ -443,6 +443,7 @@
   "noComponentsFound": "未找到组件",
   "gapAuto": "自动间距",
   "horizontalGap": "水平间距",
+  "gapSpaceBetween": "自动（两端对齐）",
   "verticalGap": "垂直间距",
   "addMinWidth": "添加最小宽度",
   "removeMinWidth": "移除最小宽度",

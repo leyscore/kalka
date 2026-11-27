@@ -462,6 +462,7 @@
   "noComponentsFound": "コンポーネントが見つかりません",
   "gapAuto": "間隔自動",
   "horizontalGap": "水平方向の間隔",
+  "gapSpaceBetween": "自動（均等配置）",
   "verticalGap": "垂直方向の間隔",
   "addMinWidth": "最小幅を追加",
   "removeMinWidth": "最小幅を削除",

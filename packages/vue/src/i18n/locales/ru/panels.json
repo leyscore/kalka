@@ -459,6 +459,7 @@
   "noComponentsFound": "Компоненты не найдены",
   "gapAuto": "Авто отступ",
   "horizontalGap": "Горизонтальный отступ",
+  "gapSpaceBetween": "Авто (равномерно)",
   "verticalGap": "Вертикальный отступ",
   "addMinWidth": "Добавить мин. ширину",
   "removeMinWidth": "Убрать мин. ширину",
