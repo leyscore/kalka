@@ -475,6 +475,8 @@
   "manageLibraries": "Gestire le librerie",
   "manageLibrariesDescription": "Sfoglia le librerie ed esamina gli aggiornamenti disponibili in questo file.",
   "reviewLibraryUpdates": "Esamina gli aggiornamenti della libreria",
+  "libraryUpdatesAvailable": "Aggiornamenti della libreria disponibili",
+  "libraryUpdatesReview": "Esamina",
   "enableLibrary": "Abilita libreria",
   "disableLibrary": "Disabilita libreria",
   "noLibraries": "Nessuna libreria pubblicata",

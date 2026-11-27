@@ -28,6 +28,7 @@ import EditorCanvas from '@/components/EditorCanvas.vue'
 import FontStatusBanner from '@/components/font-status/FontStatusBanner.vue'
 import FolderFileView from '@/components/folder/FolderFileView.vue'
 import LayersPanel from '@/components/LayersPanel.vue'
+import LibraryUpdatesNotice from '@/components/libraries/LibraryUpdatesNotice.vue'
 import MobileDrawer from '@/components/MobileDrawer.vue'
 import MobileHud from '@/components/MobileHud/MobileHud.vue'
 import PropertiesPanel from '@/components/PropertiesPanel.vue'
@@ -161,6 +162,7 @@ const desktopLayout = computed(
                   <FontStatusBanner />
                 </div>
               </div>
+              <LibraryUpdatesNotice />
             </div>
           </SplitterPanel>
           <SplitterResizeHandle :class="horizontalSplitterStyles.handle()">

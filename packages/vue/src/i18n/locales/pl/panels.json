@@ -483,6 +483,8 @@
   "manageLibraries": "Zarządzaj bibliotekami",
   "manageLibrariesDescription": "Przeglądaj biblioteki i sprawdzaj aktualizacje dostępne w tym pliku.",
   "reviewLibraryUpdates": "Przejrzyj aktualizacje biblioteki",
+  "libraryUpdatesAvailable": "Dostępne aktualizacje biblioteki",
+  "libraryUpdatesReview": "Przejrzyj",
   "enableLibrary": "Włącz bibliotekę",
   "disableLibrary": "Wyłącz bibliotekę",
   "noLibraries": "Brak opublikowanych bibliotek",

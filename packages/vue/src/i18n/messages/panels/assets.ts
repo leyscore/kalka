@@ -19,6 +19,8 @@ export const panelAssetMessages = {
   manageLibraries: 'Manage libraries',
   manageLibrariesDescription: 'Browse libraries and review updates available in this file.',
   reviewLibraryUpdates: 'Review library updates',
+  libraryUpdatesAvailable: 'Library updates available',
+  libraryUpdatesReview: 'Review',
   enableLibrary: 'Enable library',
   disableLibrary: 'Disable library',
   noLibraries: 'No published libraries',

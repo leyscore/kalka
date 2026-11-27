@@ -475,6 +475,8 @@
   "manageLibraries": "Bibliotheken verwalten",
   "manageLibrariesDescription": "Bibliotheken durchsuchen und verfügbare Aktualisierungen für diese Datei prüfen.",
   "reviewLibraryUpdates": "Bibliotheksaktualisierungen prüfen",
+  "libraryUpdatesAvailable": "Bibliotheksupdates verfügbar",
+  "libraryUpdatesReview": "Prüfen",
   "enableLibrary": "Bibliothek aktivieren",
   "disableLibrary": "Bibliothek deaktivieren",
   "noLibraries": "Keine veröffentlichten Bibliotheken",

@@ -152,6 +152,12 @@ test('library manager scopes populated updates and does not mutate on discovery'
   await page.keyboard.press('Escape')
   await expect(manager).toBeHidden()
   await page.getByTestId('tabbar-tab').nth(1).click()
+  // Opening the file with updates waiting says so, with a Review that opens them.
+  await expect(page.getByText('Library updates available', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Review', exact: true }).click()
+  await expect(manager).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(manager).toBeHidden()
 
   await page.getByTestId('left-panel-assets-tab').click()
   await expect(page.getByRole('button', { name: 'Review library updates' })).toBeVisible()

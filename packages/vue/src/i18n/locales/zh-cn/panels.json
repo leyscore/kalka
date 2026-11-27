@@ -467,6 +467,8 @@
   "manageLibraries": "管理库",
   "manageLibrariesDescription": "浏览库并查看此文件中可用的更新。",
   "reviewLibraryUpdates": "查看库更新",
+  "libraryUpdatesAvailable": "有可用的库更新",
+  "libraryUpdatesReview": "查看",
   "enableLibrary": "启用库",
   "disableLibrary": "禁用库",
   "noLibraries": "没有发布的库",

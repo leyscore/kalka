@@ -494,6 +494,8 @@
   "manageLibraries": "Gestionar bibliotecas",
   "manageLibrariesDescription": "Explore bibliotecas y revise las actualizaciones disponibles en este archivo.",
   "reviewLibraryUpdates": "Revisar las actualizaciones de la biblioteca",
+  "libraryUpdatesAvailable": "Actualizaciones de biblioteca disponibles",
+  "libraryUpdatesReview": "Revisar",
   "enableLibrary": "Habilitar biblioteca",
   "disableLibrary": "Deshabilitar biblioteca",
   "noLibraries": "No hay bibliotecas publicadas",

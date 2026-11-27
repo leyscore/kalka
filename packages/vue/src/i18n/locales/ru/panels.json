@@ -483,6 +483,8 @@
   "manageLibraries": "Управление библиотеками",
   "manageLibrariesDescription": "Просматривайте библиотеки и проверяйте доступные для этого файла обновления.",
   "reviewLibraryUpdates": "Проверить обновления библиотеки",
+  "libraryUpdatesAvailable": "Доступны обновления библиотек",
+  "libraryUpdatesReview": "Просмотреть",
   "enableLibrary": "Включить библиотеку",
   "disableLibrary": "Отключить библиотеку",
   "noLibraries": "Нет опубликованных библиотек",
