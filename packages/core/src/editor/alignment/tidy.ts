@@ -28,6 +28,25 @@ export function tidyRows(items: readonly TidyItem[]): TidyItem[][] {
   return rows.map((row) => row.sort((a, b) => centerX(a) - centerX(b)))
 }
 
+/**
+ * Rows for layers scattered rather than lined up: when most rows hold a single layer and those
+ * layers do not share a column, the rows say nothing about a grid, so the layers, in reading
+ * order, fill a grid as close to square as their count allows, balanced on both axes.
+ */
+function balancedRows(rows: TidyItem[][]): TidyItem[][] {
+  const singles = rows.filter((row) => row.length === 1).map(([item]) => item)
+  if (rows.length < 3 || singles.length * 2 <= rows.length) return rows
+  const sharesColumn =
+    Math.max(...singles.map((item) => item.x)) <
+    Math.min(...singles.map((item) => item.x + item.width))
+  if (sharesColumn) return rows
+  const ordered = rows.flat()
+  const columns = Math.ceil(Math.sqrt(ordered.length))
+  return Array.from({ length: Math.ceil(ordered.length / columns) }, (_, index) =>
+    ordered.slice(index * columns, (index + 1) * columns)
+  )
+}
+
 function average(values: readonly number[]): number {
   if (values.length === 0) return 0
   return Math.max(0, Math.round(values.reduce((sum, value) => sum + value, 0) / values.length))
@@ -40,24 +59,31 @@ function average(values: readonly number[]): number {
  * widest layer and a row as tall as its tallest. Returns each layer's new top left corner.
  */
 export function tidyPositions(items: readonly TidyItem[]): Map<string, Vector> {
-  const rows = tidyRows(items)
+  const standing = tidyRows(items)
+  const rows = balancedRows(standing)
   const columns = Math.max(0, ...rows.map((row) => row.length))
   const columnWidths = Array.from({ length: columns }, (_, index) =>
     Math.max(0, ...rows.map((row) => row[index]?.width ?? 0))
   )
   const rowHeights = rows.map((row) => Math.max(...row.map((item) => item.height)))
-  const columnGap = average(
-    rows.flatMap((row) =>
-      row.slice(1).map((item, index) => item.x - (row[index].x + row[index].width))
+  const gapsBetween = (lines: TidyItem[][]) => ({
+    column: average(
+      lines.flatMap((row) =>
+        row.slice(1).map((item, index) => item.x - (row[index].x + row[index].width))
+      )
+    ),
+    row: average(
+      lines.slice(1).map((row, index) => {
+        const above = lines[index]
+        const top = Math.min(...row.map((item) => item.y))
+        return top - Math.max(...above.map((item) => item.y + item.height))
+      })
     )
-  )
-  const rowGap = average(
-    rows.slice(1).map((row, index) => {
-      const above = rows[index]
-      const top = Math.min(...row.map((item) => item.y))
-      return top - Math.max(...above.map((item) => item.y + item.height))
-    })
-  )
+  })
+  // A grid made from scattered layers spaces both ways as they were spaced apart, top to bottom.
+  const gaps = gapsBetween(standing)
+  const rowGap = gaps.row
+  const columnGap = rows === standing ? gaps.column : gaps.row
 
   const left = Math.min(...items.map((item) => item.x))
   let top = Math.min(...items.map((item) => item.y))

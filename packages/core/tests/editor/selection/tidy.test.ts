@@ -9,6 +9,27 @@ function card(id: string, x: number, y: number, width = 40, height = 40) {
 }
 
 describe('tidy up', () => {
+  test('lays layers scattered one per row out in a grid balanced on both axes', () => {
+    const scattered = [
+      card('a', 0, 0),
+      card('b', 300, 70),
+      card('c', 120, 140),
+      card('d', 410, 210),
+      card('e', 40, 280),
+      card('f', 220, 350)
+    ]
+    const positions = tidyPositions(scattered)
+    const xs = new Set([...positions.values()].map((point) => point.x))
+    const ys = new Set([...positions.values()].map((point) => point.y))
+    // Six layers make three columns of two rows, not one column of six.
+    expect([xs.size, ys.size]).toEqual([3, 2])
+  })
+
+  test('keeps layers that stand in one column as a column', () => {
+    const positions = tidyPositions([card('a', 0, 0), card('b', 4, 70), card('c', 2, 140)])
+    expect(new Set([...positions.values()].map((point) => point.x)).size).toBe(1)
+  })
+
   test('groups layers into the rows they roughly stand in, left to right', () => {
     const rows = tidyRows([card('b', 60, 4), card('d', 58, 62), card('a', 0, 0), card('c', 3, 55)])
     expect(rows.map((row) => row.map((item) => item.id))).toEqual([
