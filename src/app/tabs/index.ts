@@ -614,7 +614,8 @@ export async function restoreRecoverySnapshot(id: string): Promise<void> {
         store.state.documentName = snapshot.documentName
         // The document goes back to its file, still unsaved, so saving does not ask where.
         if (snapshot.sourcePath) store.setPlannedFilePath(snapshot.sourcePath)
-        await store.adoptRecoverySnapshot(id)
+        // A draft recovery keeps is where it lives: reopening it changes nothing.
+        await store.adoptRecoverySnapshot(id, !!snapshot.sourcePath || !draftsPersist.value)
       },
       load
     )

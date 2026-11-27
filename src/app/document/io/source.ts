@@ -369,8 +369,14 @@ export function createDocumentSourceActions({
     markDocumentSaved,
     getStorageBinding,
     getRecoveryId: () => recovery.getRecoveryId(),
-    adoptRecoverySnapshot: (id: string) => {
-      changes.markChanged()
+    /**
+     * Takes over a restored snapshot. It is unsaved work unless recovery is where the document
+     * lives, as for a draft, which then opens as it was left rather than marked modified.
+     */
+    adoptRecoverySnapshot: (id: string, unsaved = true) => {
+      if (unsaved) changes.markChanged()
+      // Recovery holds this state; only the record of changes is reset, not the snapshot.
+      else changes.markSaved()
       return recovery.adoptRecoverySnapshot(id)
     },
     persistRecoveryNow: () => recovery.persistNow(),

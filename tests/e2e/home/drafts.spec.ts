@@ -52,6 +52,13 @@ test('an unsaved document is a draft in Recent, open or after a reload', async (
     .locator('[data-slot="trigger"]')
     .click()
   await expect(page.getByText('Draft rectangle')).toBeVisible()
+  // Reopened as it was left: nothing is modified, and closing it asks nothing.
+  const tab = page.locator('[data-slot="tab-item"][data-active]')
+  await expect(tab.getByRole('img', { name: 'Unsaved changes' })).toHaveCount(0)
+  await tab.getByTestId('tabbar-close').click()
+  await expect(page.getByRole('alertdialog')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Dashboard', exact: true }).click()
+  await expect(home.getByTestId('home-draft')).toHaveCount(2)
 
   await context.close()
 })
