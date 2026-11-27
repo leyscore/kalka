@@ -118,3 +118,18 @@ describe('changing the flow of a frame', () => {
     expect([node.gridColumnGap, node.gridRowGap]).toEqual([24, 16])
   })
 })
+
+describe('auto layout on layers piled on each other', () => {
+  test('mirrors the leading padding at the end instead of keeping the space below the pile', () => {
+    const editor = createEditor()
+    const list = editor.graph.createNode('FRAME', editor.state.currentPageId, {
+      width: 360,
+      height: 700
+    })
+    for (let i = 0; i < 10; i++)
+      editor.graph.createNode('RECTANGLE', list.id, { x: 16, y: 25 + i * 2, width: 328, height: 112 })
+    editor.setLayoutMode(list.id, 'VERTICAL')
+    const node = getNodeOrThrow(editor.graph, list.id)
+    expect(node.paddingBottom).toBe(node.paddingTop)
+  })
+})

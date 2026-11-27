@@ -196,6 +196,16 @@ function autoLayoutDefaults(
     paddingBottom: inset(node.height - content.y - content.height),
     paddingLeft: inset(content.x)
   }
+  // Layers piled on each other spread out along the flow, past where the pile ended: the space
+  // left after the pile is not a padding to keep, so the end mirrors the start instead.
+  const row = mode === 'HORIZONTAL'
+  const laidOut =
+    boxes.reduce((sum, box) => sum + (row ? box.width : box.height), 0) +
+    itemSpacing * (boxes.length - 1)
+  if (laidOut > (row ? content.width : content.height) + 1) {
+    if (row) padding.paddingRight = padding.paddingLeft
+    else padding.paddingBottom = padding.paddingTop
+  }
   return {
     ...base,
     itemSpacing,
