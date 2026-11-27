@@ -47,8 +47,9 @@ export function createShapeActions(ctx: EditorContext) {
     if (!prepareSlotEdits(ctx, [pid])) {
       throw new Error('Cannot add a layer to the locked part of an instance')
     }
+    const onPage = ctx.graph.getNode(pid)?.type === 'CANVAS'
     const overrides: Partial<SceneNode> = {
-      ...newLayerDefaults(type, ctx.state.theme),
+      ...newLayerDefaults(type, ctx.state.theme, onPage ? ctx.state.pageColor : undefined),
       ...defaultPropertiesFor(type, ctx.state.defaultLayerProperties),
       x,
       y,

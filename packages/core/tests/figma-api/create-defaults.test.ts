@@ -108,4 +108,19 @@ describe('new layer defaults', () => {
       editor.dispose()
     }
   })
+
+  test('a line drawn straight on a dark page is white, and black inside a frame', () => {
+    const editor = createEditor()
+    try {
+      const page = editor.state.currentPageId
+      editor.state.pageColor = { r: 0.12, g: 0.12, b: 0.12, a: 1 }
+      const onPage = editor.graph.getNode(editor.createShape('LINE', 0, 0, 100, 0, page))
+      const frameId = editor.createShape('FRAME', 0, 0, 100, 100, page)
+      const inFrame = editor.graph.getNode(editor.createShape('LINE', 0, 0, 100, 0, frameId))
+      expect(solid(onPage?.strokes ?? [])).toEqual([WHITE])
+      expect(solid(inFrame?.strokes ?? [])).toEqual([BLACK])
+    } finally {
+      editor.dispose()
+    }
+  })
 })

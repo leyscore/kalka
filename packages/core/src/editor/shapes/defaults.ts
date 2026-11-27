@@ -1,5 +1,6 @@
-import type { Fill, NodeType, SceneNode, Stroke } from '@kalka/scene-graph'
+import type { Color, Fill, NodeType, SceneNode, Stroke } from '@kalka/scene-graph'
 import { DEFAULT_STROKE_WEIGHT } from '@kalka/scene-graph'
+import { readableForeground } from '@kalka/scene-graph/color'
 import { copyFills, copyStrokes } from '@kalka/scene-graph/copy'
 
 import {
@@ -18,11 +19,14 @@ const BLACK_STROKE: Stroke = { ...BLACK_FILL, weight: DEFAULT_STROKE_WEIGHT, ali
 /**
  * What a new layer starts with, as Figma gives it from a drawing tool and from the plugin API:
  * frames and components white (frames clipping their content), shapes light grey, lines and
- * vectors a black 1 px stroke, text black, and sections filled for the interface `theme`.
+ * vectors a black 1 px stroke, text black, and sections filled for the interface `theme`. A line
+ * or vector drawn straight on a page of `background` takes the stroke that shows on it, white on
+ * a dark canvas.
  */
 export function newLayerDefaults(
   type: NodeType,
-  theme: InterfaceTheme = 'light'
+  theme: InterfaceTheme = 'light',
+  background?: Color
 ): Partial<SceneNode> {
   switch (type) {
     case 'FRAME':
@@ -43,7 +47,12 @@ export function newLayerDefaults(
       return { fills: copyFills([DEFAULT_SHAPE_FILL]), pointCount: 3 }
     case 'LINE':
     case 'VECTOR':
-      return { fills: [], strokes: copyStrokes([BLACK_STROKE]) }
+      return {
+        fills: [],
+        strokes: copyStrokes([
+          background ? { ...BLACK_STROKE, color: readableForeground(background) } : BLACK_STROKE
+        ])
+      }
     case 'TEXT':
       return { fills: copyFills([BLACK_FILL]) }
     default:
