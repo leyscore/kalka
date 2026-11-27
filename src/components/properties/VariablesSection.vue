@@ -19,7 +19,7 @@ const variableCount = useSceneComputed(() => {
   return editor.getVariableCount()
 })
 const hasVariables = computed(() => variableCount.value > 0)
-const { panels } = useI18n()
+const { panels, variables } = useI18n()
 </script>
 
 <template>
@@ -29,9 +29,16 @@ const { panels } = useI18n()
         <icon-hugeicons-square-arrow-out-up-right class="size-3.5" />
       </IconButton>
     </template>
-    <div v-if="hasVariables" class="mt-1 text-[11px] text-muted">
-      {{ variableCount }} / {{ collectionCount }}
-    </div>
+    <dl v-if="hasVariables" class="mt-1 flex flex-col gap-0.5 text-[11px] text-muted">
+      <div class="flex justify-between">
+        <dt>{{ panels.variables }}</dt>
+        <dd class="tabular-nums">{{ variableCount }}</dd>
+      </div>
+      <div class="flex justify-between">
+        <dt>{{ variables.collections }}</dt>
+        <dd class="tabular-nums">{{ collectionCount }}</dd>
+      </div>
+    </dl>
     <div v-else class="mt-1 text-[11px] text-muted">{{ panels.noLocalVariables }}</div>
   </PanelSection>
 </template>
