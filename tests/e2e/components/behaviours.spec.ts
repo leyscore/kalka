@@ -380,6 +380,8 @@ test('a rectangle made a Textarea gets its text layer from the panel and takes t
 })
 
 test('a frame made a Text field from the panel takes typing in preview', async () => {
+  const leave = editor.page.getByRole('button', { name: /Leave preview/ })
+  if (await leave.isVisible()) await leave.click()
   const componentId = await editor.page.evaluate(() => {
     const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
@@ -415,4 +417,5 @@ test('a frame made a Text field from the panel takes typing in preview', async (
   await editor.page.keyboard.press('End')
   await editor.page.keyboard.type(' typed')
   await expect(field).toHaveValue(/ typed$/)
+  await leave.click()
 })
