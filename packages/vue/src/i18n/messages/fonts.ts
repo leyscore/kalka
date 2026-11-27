@@ -82,6 +82,8 @@ export const fontsMessageDefaults = {
   replaceFont: 'Replace…',
   replaceFontWith: params('Replace {family} with'),
   fontReplaced: params('{from} replaced with {to}.'),
+  replacementStyle: params('Style of {family}'),
+  replaceApply: 'Replace',
   dismiss: 'Not now'
 } as const
 

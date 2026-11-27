@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+import { FONT_WEIGHT_NAMES, styleToWeight } from '@kalka/scene-graph'
 import { useI18n } from '@kalka/vue'
 
 import { useMissingDocumentFonts } from '@/app/editor/fonts/missing'
@@ -8,6 +9,7 @@ import { useDocumentFontStatus } from '@/app/editor/fonts/status'
 import { toast } from '@/app/shell/ui'
 import FontPicker from '@/components/font-picker/FontPicker.vue'
 import MissingFontsPrompt from '@/components/font-status/MissingFontsPrompt.vue'
+import AppSelect from '@/components/ui/select/AppSelect.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'
 
 const { fonts } = useI18n()
@@ -18,15 +20,34 @@ const missing = useMissingDocumentFonts(status)
 const issues = computed(() =>
   status.value.issues.filter((issue) => !missing.offered.value.includes(issue.family))
 )
-const unavailable = computed(() => new Set(missing.unavailable.value))
+const weights = Object.entries(FONT_WEIGHT_NAMES).map(([value, label]) => ({
+  value: Number(value),
+  label
+}))
+type Issue = (typeof issues.value)[number]
+const issueKey = (issue: Issue) => `${issue.family}:${issue.style}`
+
+/**
+ * A replacement under way: the family picked for one face, and the style to set it in, the
+ * face's own weight until another is chosen.
+ */
+const pending = ref<{ key: string; family: string; weight: number } | null>(null)
+
+function pick(issue: Issue, family: string) {
+  pending.value = { key: issueKey(issue), family, weight: styleToWeight(issue.style) }
+}
 
 async function addMissing() {
   if (await missing.addAll()) toast.info(fonts.value.missingFontsAdded)
 }
 
-function replace(from: string, to: string) {
-  missing.replace(from, to)
-  toast.info(fonts.value.fontReplaced({ from, to }))
+function replace(issue: Issue) {
+  const choice = pending.value
+  if (!choice) return
+  pending.value = null
+  missing.replaceFace(issue, choice.family, choice.weight)
+  const to = `${choice.family} ${FONT_WEIGHT_NAMES[choice.weight] ?? ''}`.trim()
+  toast.info(fonts.value.fontReplaced({ from: `${issue.family} ${issue.style}`, to }))
 }
 </script>
 
@@ -103,11 +124,29 @@ function replace(from: string, to: string) {
               : fonts.affectedLayerCount({ count: issue.nodeIds.length })
           }}
         </span>
+        <template v-if="pending?.key === issueKey(issue)">
+          <AppSelect
+            :label="fonts.replacementStyle({ family: pending.family })"
+            :model-value="pending.weight"
+            :options="weights"
+            :display-label="`${pending.family} ${FONT_WEIGHT_NAMES[pending.weight] ?? ''}`"
+            class="max-w-40"
+            @update:model-value="pending && (pending.weight = Number($event))"
+          />
+          <button
+            type="button"
+            class="shrink-0 rounded-md px-1.5 py-0.5 font-medium text-warning-action transition-colors hover:bg-amber-500/20"
+            @click="replace(issue)"
+          >
+            {{ fonts.replaceApply }}
+          </button>
+        </template>
+        <!-- A family the computer lacks, or only one of its styles: either can be replaced. -->
         <FontPicker
-          v-if="unavailable.has(issue.family)"
+          v-else
           :model-value="issue.family"
-          :label="fonts.replaceFontWith({ family: issue.family })"
-          @select="replace(issue.family, $event)"
+          :label="fonts.replaceFontWith({ family: `${issue.family} ${issue.style}` })"
+          @select="pick(issue, $event)"
         >
           <template #trigger="{ label }">
             <button

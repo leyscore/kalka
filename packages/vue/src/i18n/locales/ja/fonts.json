@@ -69,6 +69,8 @@
   "missingFontsAdded": "フォントをドキュメントに保存しました。",
   "replaceFontWith": "{family} を置き換えるフォント",
   "fontReplaced": "{from} を {to} に置き換えました。",
+  "replacementStyle": "{family} のスタイル",
+  "replaceApply": "置き換え",
   "dismiss": "後で",
   "replaceFont": "置き換え…"
 }

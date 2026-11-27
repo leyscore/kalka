@@ -2,7 +2,7 @@ import { uniq } from 'es-toolkit/array'
 import { computed, ref, shallowRef, watch, type Ref } from 'vue'
 
 import type { DocumentFontStatus, FontLoadedSource } from '@kalka/core/text'
-import { DEFAULT_FONT_FAMILY, type SceneNode } from '@kalka/scene-graph'
+import { DEFAULT_FONT_FAMILY, styleToWeight, type SceneNode } from '@kalka/scene-graph'
 import { useEditorEvent } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
@@ -91,22 +91,29 @@ export function useMissingDocumentFonts(status: Ref<DocumentFontStatus>) {
     }
   }
 
-  /** Sets every text of the page in `from` in `to` instead, as one step to undo. */
-  function replace(from: string, to: string) {
-    if (from === to) return
-    const ids = status.value.faces
-      .filter((face) => face.family === from)
-      .flatMap((face) => face.nodeIds)
+  /**
+   * Sets the texts that draw one face the computer lacks, a whole family or only one of its
+   * styles, in another family at the weight chosen, as one step to undo.
+   */
+  function replaceFace(
+    from: { family: string; style: string; nodeIds: readonly string[] },
+    to: string,
+    weight: number
+  ) {
+    const fromWeight = styleToWeight(from.style)
+    const matches = (style: { fontFamily?: string; fontWeight?: number }, node: SceneNode) =>
+      (style.fontFamily ?? node.fontFamily) === from.family &&
+      (style.fontWeight ?? node.fontWeight) === fromWeight
     editor.undo.runBatch('Replace font', () => {
-      for (const id of uniq(ids)) {
+      for (const id of uniq(from.nodeIds)) {
         const node = editor.graph.getNode(id)
         if (node?.type !== 'TEXT') continue
         const changes: Partial<SceneNode> = {}
-        if (node.fontFamily === from) changes.fontFamily = to
-        if (node.styleRuns.some((run) => run.style.fontFamily === from))
+        if (matches({}, node)) Object.assign(changes, { fontFamily: to, fontWeight: weight })
+        if (node.styleRuns.some((run) => matches(run.style, node)))
           changes.styleRuns = node.styleRuns.map((run) =>
-            run.style.fontFamily === from
-              ? { ...run, style: { ...run.style, fontFamily: to } }
+            matches(run.style, node)
+              ? { ...run, style: { ...run.style, fontFamily: to, fontWeight: weight } }
               : run
           )
         if (Object.keys(changes).length > 0) editor.updateNodeWithUndo(id, changes, 'Replace font')
@@ -116,11 +123,11 @@ export function useMissingDocumentFonts(status: Ref<DocumentFontStatus>) {
 
   return {
     offered,
+    replaceFace,
     unavailable,
     adding,
     failed,
     addAll,
-    replace,
     dismiss: () => {
       dismissed.value = true
     }

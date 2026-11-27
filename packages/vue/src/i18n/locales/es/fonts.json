@@ -69,6 +69,8 @@
   "missingFontsAdded": "Las fuentes se guardan con el documento.",
   "replaceFontWith": "Reemplazar {family} por",
   "fontReplaced": "{from} reemplazada por {to}.",
+  "replacementStyle": "Estilo de {family}",
+  "replaceApply": "Reemplazar",
   "dismiss": "Ahora no",
   "replaceFont": "Reemplazar…"
 }

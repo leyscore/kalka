@@ -60,8 +60,24 @@ test('a font the free catalogue lacks can be replaced from the font issues', asy
   // The notice floats over the canvas: the canvas stays where it was.
   expect(await canvasTop()).toBe(before)
   await issues.getByRole('button', { name: 'Show font issues' }).click()
-  await expect(issues.getByRole('button', { name: 'Replace Nowhere Grotesk with' })).toBeVisible()
   await expect(page.getByRole('region', { name: /saved with this document/ })).toBeHidden()
+
+  // The replacement takes a family, then a style of it.
+  await issues.getByRole('button', { name: 'Replace Nowhere Grotesk Regular with' }).click()
+  await page.getByRole('combobox', { name: 'Search fonts…' }).fill('Inter')
+  await page.getByTestId('font-picker-item').filter({ hasText: 'Inter' }).first().click()
+  await issues.getByRole('combobox', { name: 'Style of Inter' }).click()
+  await page.getByRole('option', { name: 'Bold', exact: true }).click()
+  await issues.getByRole('button', { name: 'Replace', exact: true }).click()
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const store = window.kalka?.getStore?.()
+        const text = [...(store?.graph.nodes.values() ?? [])].find((node) => node.type === 'TEXT')
+        return text ? [text.fontFamily, text.fontWeight] : null
+      })
+    )
+    .toEqual(['Inter', 700])
 })
 
 test('Add font in the font picker searches the free catalogue and keeps the family', async ({

@@ -69,6 +69,8 @@
   "missingFontsAdded": "Les polices sont enregistrées avec le document.",
   "replaceFontWith": "Remplacer {family} par",
   "fontReplaced": "{from} remplacée par {to}.",
+  "replacementStyle": "Style de {family}",
+  "replaceApply": "Remplacer",
   "dismiss": "Plus tard",
   "replaceFont": "Remplacer…"
 }

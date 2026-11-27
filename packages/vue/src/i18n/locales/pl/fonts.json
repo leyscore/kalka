@@ -69,6 +69,8 @@
   "missingFontsAdded": "Czcionki są zapisane z dokumentem.",
   "replaceFontWith": "Zastąp {family} czcionką",
   "fontReplaced": "Zastąpiono {from} czcionką {to}.",
+  "replacementStyle": "Styl kroju {family}",
+  "replaceApply": "Zastąp",
   "dismiss": "Nie teraz",
   "replaceFont": "Zastąp…"
 }
