@@ -204,6 +204,7 @@
   "stroke": "Contorno",
   "effects": "Effetti",
   "export": "Esporta",
+  "exportLayer": "Esporta {name}",
   "typography": "Tipografia",
   "fontFamily": "Famiglia di caratteri",
   "fontWeight": "Peso del carattere",

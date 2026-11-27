@@ -215,6 +215,7 @@
   "stroke": "線",
   "effects": "エフェクト",
   "export": "エクスポート",
+  "exportLayer": "{name} をエクスポート",
   "typography": "タイポグラフィ",
   "fontFamily": "フォントファミリー",
   "fontWeight": "フォントの太さ",

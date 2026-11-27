@@ -52,6 +52,7 @@ export const panelLayoutMessages = {
     'Swapping draws {name} in place of this icon and discards the changes made to its paths.'
   ),
   export: 'Export',
+  exportLayer: params('Export {name}'),
   typography: 'Typography',
   fontFamily: 'Font family',
   fontWeight: 'Font weight',

@@ -248,7 +248,7 @@ watch(previewKey, updatePreview, { flush: 'post' })
       :disabled="exporting"
       @click="doExport"
     >
-      <span class="truncate">{{ panels.export }} {{ activeName }}</span>
+      <span class="truncate">{{ panels.exportLayer({ name: activeName }) }}</span>
     </AppButton>
 
     <Tip v-if="activeSettings.length > 0" :label="panels.toggleExportPreview">

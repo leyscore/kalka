@@ -204,6 +204,7 @@
   "stroke": "Contour",
   "effects": "Effets",
   "export": "Export",
+  "exportLayer": "Exporter {name}",
   "typography": "Typographie",
   "fontFamily": "Famille de police",
   "fontWeight": "Graisse",

@@ -202,6 +202,7 @@
   "stroke": "描边",
   "effects": "效果",
   "export": "导出",
+  "exportLayer": "导出 {name}",
   "typography": "排版",
   "fontFamily": "字体",
   "fontWeight": "字重",

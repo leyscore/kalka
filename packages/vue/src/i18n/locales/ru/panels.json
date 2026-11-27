@@ -206,6 +206,7 @@
   "stroke": "Обводка",
   "effects": "Эффекты",
   "export": "Экспорт",
+  "exportLayer": "Экспортировать {name}",
   "typography": "Типографика",
   "fontFamily": "Гарнитура шрифта",
   "fontWeight": "Насыщенность шрифта",

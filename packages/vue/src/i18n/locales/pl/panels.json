@@ -206,6 +206,7 @@
   "stroke": "Obrys",
   "effects": "Efekty",
   "export": "Eksport",
+  "exportLayer": "Eksportuj {name}",
   "typography": "Typografia",
   "fontFamily": "Rodzina czcionek",
   "fontWeight": "Grubość czcionki",

@@ -69,3 +69,18 @@ test('the image fill picker is named in the chosen language', async ({ page }) =
   for (const key of ['imageFill', 'imageFit', 'imageCrop', 'imageTile'])
     await expect(page.getByRole('option', { name: effects[key], exact: true })).toBeVisible()
 })
+
+test('the export button is named in the chosen language', async ({ page }) => {
+  const panels = french('panels')
+  await openInFrench(page)
+  await page.evaluate(() => {
+    const editor = window.kalka?.getStore?.()
+    if (!editor) throw new Error('Editor unavailable')
+    const id = editor.createShape('RECTANGLE', 100, 100, 180, 120)
+    editor.updateNode(id, { name: 'Card', exportSettings: [{ format: 'PNG', scale: 1 }] })
+    editor.select([id])
+  })
+  await expect(page.getByTestId('export-button')).toHaveText(
+    panels.exportLayer.replace('{name}', 'Card')
+  )
+})

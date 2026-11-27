@@ -217,6 +217,7 @@
   "stroke": "Trazo",
   "effects": "Efectos",
   "export": "Exportar",
+  "exportLayer": "Exportar {name}",
   "typography": "Tipografía",
   "fontFamily": "Familia tipográfica",
   "fontWeight": "Peso de fuente",

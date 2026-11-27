@@ -204,6 +204,7 @@
   "stroke": "Kontur",
   "effects": "Effekte",
   "export": "Export",
+  "exportLayer": "{name} exportieren",
   "typography": "Typografie",
   "fontFamily": "Schriftfamilie",
   "fontWeight": "Schriftstärke",
