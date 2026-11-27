@@ -31,6 +31,7 @@ import {
   type Placement
 } from './measured'
 import { isPhrasingBlock, paintsBox, phrasingContent } from './phrasing'
+import { tableGrid, type TableGrid } from './table'
 
 export interface DesignDocumentToSceneGraphOptions {
   pageName?: string
@@ -338,6 +339,9 @@ function createElementLayer(
     return text
   }
 
+  const table = tableGrid(element)
+  if (table) return createTableNode(graph, parentId, element, style, table, placement)
+
   const node = createFrameNode(graph, parentId, element, style, placement)
   const placed: Array<[DesignNode, SceneNode]> = []
   for (const child of paintOrder(element.children, node.layoutMode !== 'NONE')) {
@@ -351,6 +355,49 @@ function createElementLayer(
     if (layer) placed.push([child, layer])
   }
   if (node.layoutMode === 'NONE') lowerOverlappedBackgrounds(graph, node, placed)
+  return node
+}
+
+/** A table as a grid that hugs its cells, each cell a row that hugs its content (`./table`). */
+function createTableNode(
+  graph: SceneGraph,
+  parentId: string,
+  element: DesignElement,
+  style: DesignStyleDeclaration,
+  table: TableGrid,
+  placement?: Placement
+): SceneNode {
+  const node = createFrameNode(graph, parentId, element, style, placement)
+  const auto = () => ({ sizing: 'AUTO' as const, value: 0 })
+  Object.assign(node, {
+    layoutMode: 'GRID',
+    gridTemplateColumns: Array.from({ length: table.columns }, auto),
+    gridTemplateRows: Array.from({ length: table.rows }, auto),
+    gridColumnGap: table.gap.column,
+    gridRowGap: table.gap.row,
+    primaryAxisSizing: 'HUG',
+    counterAxisSizing: 'HUG'
+  } satisfies Partial<SceneNode>)
+  for (const cell of table.cells) {
+    const layer = createDesignNode(graph, node.id, cell.element, style, {
+      parentBox: element.layoutBox ?? { x: 0, y: 0, width: 0, height: 0 },
+      byMeasure: false
+    })
+    if (!layer) continue
+    Object.assign(layer, {
+      gridPosition: {
+        column: cell.column,
+        row: cell.row,
+        columnSpan: cell.columnSpan,
+        rowSpan: cell.rowSpan
+      },
+      // A cell fills its track both ways, so a column is as wide as its widest cell.
+      layoutGrow: 1,
+      layoutAlignSelf: 'STRETCH',
+      primaryAxisSizing: 'HUG',
+      counterAxisSizing: 'HUG'
+    } satisfies Partial<SceneNode>)
+  }
   return node
 }
 

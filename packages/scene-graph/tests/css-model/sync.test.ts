@@ -156,3 +156,21 @@ describe('a shorthand an imported page wrote', () => {
     expect(graph.getNode(button.id)?.style.padding).toBe('12px 24px')
   })
 })
+
+describe('a grid that hugs', () => {
+  test('leaves its width to its tracks', () => {
+    const { graph, page } = graphWithPage()
+    const grid = graph.createNode('FRAME', page.id, {
+      layoutMode: 'GRID',
+      width: 300,
+      height: 200,
+      gridTemplateColumns: [{ sizing: 'AUTO', value: 0 }],
+      gridTemplateRows: [{ sizing: 'AUTO', value: 0 }],
+      primaryAxisSizing: 'HUG',
+      counterAxisSizing: 'HUG'
+    })
+    const css = layerCSS(grid, undefined)
+    expect(css.width === undefined || css.width === 'max-content').toBe(true)
+    expect(css.height).toBeUndefined()
+  })
+})

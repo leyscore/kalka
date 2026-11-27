@@ -379,3 +379,44 @@ describe('measured HTML import', () => {
     expect(label.textAutoResize).toBe('WIDTH_AND_HEIGHT')
   })
 })
+
+describe('a measured table', () => {
+  const cell = (tag: string, text: string, x: number, y: number) =>
+    element(tag, box(x, y, 80, 38), {
+      ...BLOCK,
+      display: 'table-cell',
+      padding: '8px',
+      'background-color': 'rgb(240, 240, 240)'
+    }, [
+      { type: 'text', text, layoutBox: box(x + 8, y + 9, text.length * 8, 20) }
+    ])
+
+  test('is a grid of cells sized by their content, so a longer cell widens its column', () => {
+    const table = element('table', box(0, 0, 160, 76), { ...BLOCK, display: 'table' }, [
+      element('tbody', box(0, 0, 160, 76), { ...BLOCK, display: 'table-row-group' }, [
+        element('tr', box(0, 0, 160, 38), { ...BLOCK, display: 'table-row' }, [
+          cell('th', 'Amount', 0, 0),
+          cell('th', 'Status', 80, 0)
+        ]),
+        element('tr', box(0, 38, 160, 38), { ...BLOCK, display: 'table-row' }, [
+          cell('td', '80', 0, 38),
+          cell('td', 'Pending', 80, 38)
+        ])
+      ])
+    ])
+    const { graph, artboard } = graphOf(measured([table]))
+    const [grid] = graph.getChildren(artboard.id)
+    expect(grid.layoutMode).toBe('GRID')
+    expect(grid.gridTemplateColumns.map((track) => track.sizing)).toEqual(['AUTO', 'AUTO'])
+    expect(grid.primaryAxisSizing).toBe('HUG')
+    const cells = graph.getChildren(grid.id)
+    expect(cells.map((layer) => layer.gridPosition)).toEqual([
+      { column: 1, row: 1, columnSpan: 1, rowSpan: 1 },
+      { column: 2, row: 1, columnSpan: 1, rowSpan: 1 },
+      { column: 1, row: 2, columnSpan: 1, rowSpan: 1 },
+      { column: 2, row: 2, columnSpan: 1, rowSpan: 1 }
+    ])
+    // Each cell hugs its text, so the browser's grid sizes the column by the widest one.
+    expect(cells.every((layer) => layer.layoutMode === 'HORIZONTAL')).toBe(true)
+  })
+})

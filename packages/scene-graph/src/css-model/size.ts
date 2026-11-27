@@ -20,8 +20,9 @@ export function hugs(node: SceneNode, axis: Axis): boolean {
       node.textAutoResize === 'WIDTH_AND_HEIGHT' ||
       (axis === 'height' && node.textAutoResize === 'HEIGHT')
     )
-  if (node.layoutMode !== 'HORIZONTAL' && node.layoutMode !== 'VERTICAL') return false
-  const primary = (node.layoutMode === 'HORIZONTAL') === (axis === 'width')
+  if (node.layoutMode === 'NONE') return false
+  // A grid sizes like a row: its columns along the primary axis (`layoutSizing`).
+  const primary = (node.layoutMode !== 'VERTICAL') === (axis === 'width')
   return (primary ? node.primaryAxisSizing : node.counterAxisSizing) === 'HUG'
 }
 
@@ -70,8 +71,8 @@ function readContentSizing(
     else if (unsized('height')) node.textAutoResize = 'HEIGHT'
     return
   }
-  if (node.layoutMode !== 'HORIZONTAL' && node.layoutMode !== 'VERTICAL') return
-  const row = node.layoutMode === 'HORIZONTAL'
+  if (node.layoutMode === 'NONE') return
+  const row = node.layoutMode !== 'VERTICAL'
   if (unsized(row ? 'width' : 'height')) node.primaryAxisSizing = 'HUG'
   if (unsized(row ? 'height' : 'width')) node.counterAxisSizing = 'HUG'
 }
