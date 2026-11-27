@@ -70,7 +70,7 @@ describe('APP_MENU_SCHEMA', () => {
     const entries = fileMenu ? actionItems(fileMenu.items) : []
 
     expect(entries).toContainEqual(
-      expect.objectContaining({ id: 'open-storage-workspace', label: 'Open Storage Workspace…' })
+      expect.objectContaining({ id: 'open-storage-workspace', label: 'Open Shared Storage…' })
     )
   })
 

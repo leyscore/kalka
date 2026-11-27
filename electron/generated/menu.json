@@ -27,7 +27,7 @@
       },
       {
         "id": "open-storage-workspace",
-        "label": "Open Storage Workspace…"
+        "label": "Open Shared Storage…"
       },
       {
         "id": "import-claude-design",
@@ -56,7 +56,7 @@
       },
       {
         "id": "save-to-storage",
-        "label": "Save to Storage…"
+        "label": "Save to Shared Storage…"
       },
       {
         "id": "duplicate-file",

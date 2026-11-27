@@ -11,7 +11,7 @@ export const FILE_MENU = {
     { id: 'open', label: 'Open…', shortcut: 'MOD+O' },
     { id: 'open-folder', label: 'Open Folder…', target: 'native' },
     { id: 'open-recent', label: 'Open Recent', target: 'native' },
-    { id: 'open-storage-workspace', label: 'Open Storage Workspace…', handler: 'shell' },
+    { id: 'open-storage-workspace', label: 'Open Shared Storage…', handler: 'shell' },
     { id: 'import-claude-design', label: 'Import Claude Design Project…' },
     // Figma's ⇧⌘K is Create component set here.
     { id: 'place-image', label: 'Place Image/Video…' },
@@ -19,7 +19,7 @@ export const FILE_MENU = {
     { id: 'save', label: 'Save', shortcut: 'MOD+S' },
     { id: 'save-as', label: 'Save As…', shortcut: 'MOD+SHIFT+S' },
     { id: 'save-as-folder', label: 'Save As Folder…', target: 'native' },
-    { id: 'save-to-storage', label: 'Save to Storage…' },
+    { id: 'save-to-storage', label: 'Save to Shared Storage…' },
     { id: 'duplicate-file', label: 'Duplicate' },
     { id: 'save-to-version-history', label: 'Save to Version History…', shortcut: 'MOD+ALT+S' },
     { id: 'revert-to-saved', label: 'Revert to Saved' },
