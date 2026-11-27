@@ -228,6 +228,10 @@ function fontsLoaded(browserDocument: Document): Promise<void> {
   })
 }
 
+/** No scrollbar takes room from the page, whatever the system's scrollbars or the page's own. */
+const HIDDEN_SCROLLBAR_CSS =
+  'html{scrollbar-width:none!important}::-webkit-scrollbar{display:none!important}'
+
 function applySandboxHostStyle(element: HTMLElement, width = DEFAULT_VIEWPORT_WIDTH): void {
   element.style.cssText = [
     // The content must not inherit the editor's own color, font or visibility; text with no
@@ -291,8 +295,10 @@ async function computeStylesInIframe(
     // A browser's default 8px body margin would narrow the page the content lays out in; the
     // page's own stylesheet, added after, still sets the body's margin when it has one.
     // Animations and transitions would be measured mid-way; a design is read at rest.
+    // The frame is shorter than most pages: a classic scrollbar would take its width from the
+    // page, so a section sized to the viewport would come out 15px narrower than the artboard.
     iframeDocument.write(
-      `<!doctype html><html><head><style>body{margin:0}</style></head><body></body></html>`
+      `<!doctype html><html><head><style>body{margin:0}${HIDDEN_SCROLLBAR_CSS}</style></head><body></body></html>`
     )
     iframeDocument.close()
 
