@@ -5,7 +5,7 @@ import { getAxisAlignedBoundsInParent } from '@kalka/scene-graph/coordinate'
 
 import { computeLayout } from '#core/layout'
 
-import { inferredSpacing } from './layout-inference'
+import { flowOrder, inferredCounterAlign, inferredFlow, inferredSpacing } from './layout-inference'
 import type { EditorContext } from './types'
 
 export function createLayoutModeActions(ctx: EditorContext) {
@@ -38,7 +38,45 @@ export function createLayoutModeActions(ctx: EditorContext) {
     })
   }
 
-  return { setLayoutMode }
+  /**
+   * Gives a frame auto layout as Shift+A does in Figma: the flow follows how its layers are
+   * spread, a row or a column, and they keep their order along it, so the frame looks the same.
+   */
+  function addAutoLayout(id: string) {
+    const node = ctx.graph.getNode(id)
+    if (node?.layoutMode !== 'NONE') return
+    const children = flowChildren(ctx, node)
+    const boxes = children.map((child) => getAxisAlignedBoundsInParent([child], id, ctx.graph))
+    const mode = inferredFlow(boxes)
+    const order = flowOrder(boxes, mode).map((index) => children[index].id)
+    const previousOrder = [...node.childIds]
+    ctx.undo.runBatch('Add auto layout', () => {
+      const flowIds = new Set(order)
+      // The flow takes the layers in the order they read; absolute layers keep their places.
+      const queue = [...order]
+      const nextOrder = previousOrder.map((childId) =>
+        flowIds.has(childId) ? (queue.shift() ?? childId) : childId
+      )
+      const reorder = (ids: readonly string[]) =>
+        ids.forEach((childId, index) => ctx.graph.insertChildAt(childId, id, index))
+      if (nextOrder.some((childId, index) => childId !== previousOrder[index])) {
+        reorder(nextOrder)
+        ctx.undo.push({
+          label: 'Add auto layout',
+          forward: () => reorder(nextOrder),
+          inverse: () => reorder(previousOrder)
+        })
+      }
+      setLayoutMode(id, mode)
+    })
+  }
+
+  return { setLayoutMode, addAutoLayout }
+}
+
+/** The layers a frame's auto layout lays out: those not positioned absolutely. */
+function flowChildren(ctx: EditorContext, node: SceneNode): SceneNode[] {
+  return ctx.graph.getChildren(node.id).filter((child) => child.layoutPositioning !== 'ABSOLUTE')
 }
 
 function captureLayoutState(node: SceneNode): Partial<SceneNode> {
@@ -123,10 +161,12 @@ function autoLayoutDefaults(
   node: SceneNode,
   mode: 'HORIZONTAL' | 'VERTICAL'
 ): Partial<SceneNode> {
-  const base: Partial<SceneNode> = { primaryAxisAlign: 'MIN', counterAxisAlign: 'MIN' }
-  const children = ctx.graph
-    .getChildren(node.id)
-    .filter((child) => child.layoutPositioning !== 'ABSOLUTE')
+  const children = flowChildren(ctx, node)
+  const boxes = children.map((child) => getAxisAlignedBoundsInParent([child], node.id, ctx.graph))
+  const base: Partial<SceneNode> = {
+    primaryAxisAlign: 'MIN',
+    counterAxisAlign: inferredCounterAlign(boxes, mode)
+  }
   if (children.length === 0) {
     return {
       ...base,
@@ -139,7 +179,6 @@ function autoLayoutDefaults(
       counterAxisSizing: 'FIXED'
     }
   }
-  const boxes = children.map((child) => getAxisAlignedBoundsInParent([child], node.id, ctx.graph))
   const content = getAxisAlignedBoundsInParent(children, node.id, ctx.graph)
   const inset = (value: number) => Math.max(0, Math.round(value))
   return {

@@ -107,7 +107,8 @@ export function createKeyboardActions({
   function toggleAutoLayout() {
     const node = store.selectedNode.value
     if (node?.type === 'FRAME' && store.selectedNodes.value.length === 1) {
-      store.setLayoutMode(node.id, node.layoutMode === 'NONE' ? 'VERTICAL' : 'NONE')
+      if (node.layoutMode === 'NONE') store.addAutoLayout(node.id)
+      else store.setLayoutMode(node.id, 'NONE')
     } else if (store.selectedNodes.value.length > 0) {
       runCommand('selection.wrapInAutoLayout')
     }

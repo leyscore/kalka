@@ -35,10 +35,9 @@ function inGrid(parentId: string | null): boolean {
             :active="ctx.node.layoutMode !== 'NONE'"
             class="data-[state=on]:bg-accent/15"
             @click="
-              ctx.editor.setLayoutMode(
-                ctx.node.id,
-                ctx.node.layoutMode === 'NONE' ? 'VERTICAL' : 'NONE'
-              )
+              ctx.node.layoutMode === 'NONE'
+                ? ctx.editor.addAutoLayout(ctx.node.id)
+                : ctx.editor.setLayoutMode(ctx.node.id, 'NONE')
             "
           >
             <icon-hugeicons-layout-panel-top class="size-3.5" />

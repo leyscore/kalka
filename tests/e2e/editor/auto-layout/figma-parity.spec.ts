@@ -74,6 +74,42 @@ test('Shift+A keeps the gap, the flow and the order of the layers it wraps', asy
   canvas.assertNoErrors()
 })
 
+test('Shift+A on a frame reads a row from the layers already side by side in it', async ({
+  page
+}) => {
+  const canvas = await start(page)
+  const { frameId, ids } = await page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const frame = store.graph.createNode('FRAME', store.state.currentPageId, {
+      name: 'Card',
+      x: 100,
+      y: 100,
+      width: 540,
+      height: 540
+    })
+    const made = [216, 36].map(
+      (x) => store.graph.createNode('RECTANGLE', frame.id, { x, y: 54, width: 144, height: 54 }).id
+    )
+    store.select([frame.id])
+    return { frameId: frame.id, ids: made }
+  })
+  await canvas.waitForRender()
+
+  await canvas.pressKey('Shift+A')
+  await canvas.waitForRender()
+
+  const frame = await getNodeById(page, frameId)
+  expect(frame).toMatchObject({
+    layoutMode: 'HORIZONTAL',
+    itemSpacing: 36,
+    width: 540,
+    height: 540,
+    childIds: [ids[1], ids[0]]
+  })
+  canvas.assertNoErrors()
+})
+
 test('Absolute position takes a layer out of the flow where it is, in one undo step', async ({
   page
 }) => {

@@ -37,4 +37,49 @@ describe('adding auto layout to a frame', () => {
     editor.undoAction()
     expect(getNodeOrThrow(editor.graph, frame.id).layoutMode).toBe('NONE')
   })
+
+  test('Shift+A reads a row from layers side by side and keeps them in place', () => {
+    const editor = createEditor()
+    const frame = editor.graph.createNode('FRAME', editor.state.currentPageId, {
+      width: 540,
+      height: 540
+    })
+    // Drawn right to left, so the layer order is not the reading order.
+    const right = editor.graph.createNode('RECTANGLE', frame.id, {
+      name: 'Right',
+      x: 216,
+      y: 54,
+      width: 144,
+      height: 54
+    })
+    const left = editor.graph.createNode('RECTANGLE', frame.id, {
+      name: 'Left',
+      x: 36,
+      y: 54,
+      width: 144,
+      height: 54
+    })
+    editor.addAutoLayout(frame.id)
+    const node = getNodeOrThrow(editor.graph, frame.id)
+    expect({
+      mode: node.layoutMode,
+      spacing: node.itemSpacing,
+      padding: [node.paddingTop, node.paddingRight, node.paddingBottom, node.paddingLeft],
+      size: [node.width, node.height],
+      order: node.childIds,
+      places: [left.id, right.id].map((id) => getNodeOrThrow(editor.graph, id).x)
+    }).toEqual({
+      mode: 'HORIZONTAL',
+      spacing: 36,
+      padding: [54, 180, 432, 36],
+      size: [540, 540],
+      order: [left.id, right.id],
+      places: [36, 216]
+    })
+
+    editor.undoAction()
+    const undone = getNodeOrThrow(editor.graph, frame.id)
+    expect(undone.layoutMode).toBe('NONE')
+    expect(undone.childIds).toEqual([right.id, left.id])
+  })
 })
