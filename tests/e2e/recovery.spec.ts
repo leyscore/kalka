@@ -1,10 +1,7 @@
 import { expect, test } from '#tests/e2e/fixtures'
 import { CanvasHelper } from '#tests/helpers/canvas'
 
-test('keeps recovery independent from cancelling an unsaved-document close', async ({
-  browser,
-  baseURL
-}) => {
+test('a draft closes without asking and recovery keeps it', async ({ browser, baseURL }) => {
   const context = await browser.newContext({ baseURL })
   const page = await context.newPage()
   await page.goto('/')
@@ -23,11 +20,11 @@ test('keeps recovery independent from cancelling an unsaved-document close', asy
   await page.keyboard.press('ControlOrMeta+t')
   await expect(page.getByTestId('recent-files-home')).toBeVisible()
   await expect(page.getByTestId('tabbar-tab')).toHaveCount(1)
+  // As in Figma, closing a draft's tab asks nothing: the draft stays on Home.
   await page.locator('[data-slot="tab-item"]').first().getByTestId('tabbar-close').click()
-  await expect(page.getByRole('alertdialog', { name: /Save changes to/ })).toBeVisible()
-  await page.getByRole('button', { name: 'Cancel', exact: true }).click()
-  await expect(page.getByTestId('tabbar-tab')).toHaveCount(1)
-  await expect(page.getByTestId('recent-files-home')).toBeVisible()
+  await expect(page.getByTestId('tabbar-tab')).toHaveCount(0)
+  await expect(page.getByRole('alertdialog', { name: /Save changes to/ })).toHaveCount(0)
+  await expect(page.getByTestId('recent-files-home').getByTestId('home-draft')).toHaveCount(1)
   await expect
     .poll(() =>
       page.evaluate(async () => {

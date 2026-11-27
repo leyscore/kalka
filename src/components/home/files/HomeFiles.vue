@@ -6,11 +6,11 @@ import { useDocumentWorkspace, useI18n, useViewportKind } from '@kalka/vue'
 
 import { serverAccount, serverSessionExpired } from '@/app/collab/server/account'
 import { openServerDocumentById } from '@/app/collab/server/documents'
+import { draftsPersist } from '@/app/document/recovery/drafts'
 import { recoveryEnabled } from '@/app/document/recovery/preferences'
 import {
   deleteDraft,
   draftPreview,
-  draftsPersist,
   listDrafts,
   openDraft,
   restoreDeletedDraft,

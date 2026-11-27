@@ -22,6 +22,8 @@ import {
   type RecoverySnapshot,
   type RecoverySnapshotMeta
 } from '@/app/document/recovery'
+import { draftsPersist } from '@/app/document/recovery/drafts'
+import { isRecoveryKeptElsewhere } from '@/app/document/recovery/kept-elsewhere'
 import { liveRecoveryIds } from '@/app/document/recovery/live'
 import { setActiveEditorStore } from '@/app/editor/active-store'
 import type {
@@ -165,6 +167,18 @@ export function switchTab(tabId: string): boolean {
   return true
 }
 
+/** A document with nowhere to save it but recovery, which keeps it across reloads. */
+function isKeptDraft(tab: Tab): boolean {
+  const { store } = tab
+  return (
+    tab.kind === 'document' &&
+    draftsPersist.value &&
+    store.hasUnsavedChanges() &&
+    !store.hasWritableSource() &&
+    !isRecoveryKeptElsewhere(store.state)
+  )
+}
+
 /**
  * Close a tab, asking whether to save unsaved changes. Pass `unsaved` to decide without
  * asking, as automation must: nobody may be there to answer.
@@ -175,14 +189,18 @@ export async function closeTab(tabId: string, unsaved?: 'save' | 'discard'): Pro
 
   const closingTab = tabsRef.value[idx]
   if (closingTab.kind === 'home' && tabsRef.value.length === 1) return
-  const choice = unsaved
-    ? await confirmDocumentClose(closingTab.store, async () => unsaved)
-    : await requestDocumentClose(closingTab.store, closingTab.store.state.documentName)
+  // A draft recovery keeps closes as Figma's does, without asking: it stays on Home.
+  const keptDraft = !unsaved && isKeptDraft(closingTab)
+  const choice = keptDraft
+    ? 'keep'
+    : unsaved
+      ? await confirmDocumentClose(closingTab.store, async () => unsaved)
+      : await requestDocumentClose(closingTab.store, closingTab.store.state.documentName)
   if (choice === 'cancel') return
   if (choice === 'discard') await closingTab.store.discardRecovery()
   else await closingTab.store.persistRecoveryNow()
   if (!tabsRef.value.includes(closingTab)) return
-  if (choice !== 'discard' && closingTab.store.hasUnsavedChanges()) return
+  if (choice === 'saved' && closingTab.store.hasUnsavedChanges()) return
   const wasActive = activeTabId.value === tabId
   coverThumbnailListeners.get(closingTab.store)?.()
   coverThumbnailListeners.delete(closingTab.store)

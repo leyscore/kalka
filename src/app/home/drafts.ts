@@ -1,11 +1,8 @@
-import { computed } from 'vue'
-
 import { renderThumbnail } from '@kalka/core/io/formats/raster'
 import { extractFigThumbnailFromReader } from '@kalka/fig'
 
 import {
   getRecoveryStore,
-  isRecoveryStoreMemoryFallback,
   type RecoverySnapshot,
   type RecoverySnapshotMeta
 } from '@/app/document/recovery'
@@ -27,11 +24,6 @@ export interface DraftDocument {
   /** The recovery snapshot that keeps it, which opening it restores. */
   snapshotId?: string
 }
-
-/** Whether drafts outlive this page: recovery keeps them in this browser's storage. */
-export const draftsPersist = computed(
-  () => recoveryEnabled.value && !isRecoveryStoreMemoryFallback()
-)
 
 /**
  * A tab with nowhere to save it, no file, storage or server, that holds work: edits, or a draft

@@ -2,6 +2,14 @@ import { expect, test } from '#tests/e2e/fixtures'
 import { CanvasHelper } from '#tests/helpers/canvas'
 
 test.beforeEach(async ({ page }) => {
+  // With recovery on, a draft closes without asking and stays on Home; without it, closing
+  // would lose the work, so Kalka asks.
+  await page.addInitScript(() => {
+    const key = 'kalka:preferences:v1'
+    const stored: unknown = JSON.parse(localStorage.getItem(key) ?? '{}')
+    const preferences = typeof stored === 'object' && stored ? stored : {}
+    localStorage.setItem(key, JSON.stringify({ ...preferences, recovery: { enabled: false } }))
+  })
   await page.goto('/')
   await new CanvasHelper(page).waitForInit()
   await page.evaluate(() => {
