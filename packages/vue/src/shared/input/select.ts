@@ -73,6 +73,16 @@ function startHandleDrag(
   return valueDrag !== null
 }
 
+const MARQUEE_CONTAINERS = new Set(['FRAME', 'SECTION', 'COMPONENT', 'COMPONENT_SET'])
+
+/**
+ * Whether a Cmd-press landed on the empty area of a frame that holds layers: the deep hit is the
+ * innermost layer under the pointer, so a frame there means none of its layers is.
+ */
+function marqueesInside(hit: SceneNode): boolean {
+  return MARQUEE_CONTAINERS.has(hit.type) && hit.childIds.length > 0
+}
+
 /** A press in a document open to view only: selects what is under it, or starts a marquee. */
 function selectToView(
   e: MouseEvent,
@@ -121,9 +131,17 @@ export function handleSelectDown(
 
   if (startHandleDrag(e, cx, cy, editor, tryStartRotation, setDrag)) return
 
-  const hit = resolveHit(cx, cy, editor, fns, e.metaKey || e.ctrlKey)
+  const deep = e.metaKey || e.ctrlKey
+  const hit = resolveHit(cx, cy, editor, fns, deep)
   if (!hit) {
     if (!editor.state.enteredContainerId) startMarquee(cx, cy, editor, setDrag)
+    return
+  }
+
+  // As in Figma, Cmd-dragging from the empty area of a frame draws a marquee inside it.
+  if (deep && !e.shiftKey && marqueesInside(hit)) {
+    editor.clearSelection()
+    setDrag({ type: 'marquee', startX: cx, startY: cy, containerId: hit.id, selectOnClick: hit.id })
     return
   }
 

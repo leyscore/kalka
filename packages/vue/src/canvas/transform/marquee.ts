@@ -48,6 +48,7 @@ export function finishMarquee(editor: Editor, d: DragMarquee) {
   const zoom = editor.state.zoom
   const dragged =
     !!marquee && isPastPointerDragThreshold(0, 0, marquee.width * zoom, marquee.height * zoom)
-  if (!dragged && container?.type === 'SECTION') editor.select([container.id])
+  if (!dragged && d.selectOnClick) editor.select([d.selectOnClick])
+  else if (!dragged && container?.type === 'SECTION') editor.select([container.id])
   editor.setMarquee(null)
 }
