@@ -150,7 +150,6 @@ export function toggleCommentPins(store: EditorStore): void {
   state.value = { ...state.value, pinsVisible: !state.value.pinsVisible }
 }
 
-/** Whether comment mode is on, for the toolbar. */
 /**
  * Picking a tool leaves comment mode, as picking another tool leaves any tool: the comment not
  * posted yet goes, and an open thread stays open.
@@ -161,16 +160,24 @@ export function stopCommentPlacing(store: EditorStore): void {
   state.value = { ...state.value, placing: false, draft: null }
 }
 
+/** Whether comment mode is on, for the toolbar. */
 export function commentPlacing(store: EditorStore): boolean {
   return stateOf(store).value.placing
 }
 
-/** Escape: leaves comment mode, or closes the open thread. Whether there was anything to leave. */
+/**
+ * Escape, as in Figma: closes the open thread or draft first, then leaves comment mode. Whether
+ * there was anything to leave.
+ */
 export function leaveComments(store: EditorStore): boolean {
   const state = stateOf(store)
   const { placing, draft, openThreadId } = state.value
-  if (!placing && !draft && !openThreadId) return false
-  state.value = { ...state.value, placing: false, draft: null, openThreadId: null }
+  if (draft || openThreadId) {
+    state.value = { ...state.value, draft: null, openThreadId: null }
+    return true
+  }
+  if (!placing) return false
+  state.value = { ...state.value, placing: false }
   return true
 }
 
@@ -321,7 +328,8 @@ export function useComments(store: EditorStore) {
       if (!anchor || !text.trim()) return null
       const agent = mentionedAgent(text, mentionableAgents(store))
       const thread = addCommentThread(store.graph, anchor, author(), text, { agent, mentions })
-      state.value = { ...state.value, draft: null, openThreadId: thread.id, placing: false }
+      // As in Figma, comment mode stays on after posting, ready for the next comment.
+      state.value = { ...state.value, draft: null, openThreadId: thread.id }
       changed()
       dispatch(thread)
       notifyCommentPosted(store, thread)

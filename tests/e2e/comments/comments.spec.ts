@@ -60,8 +60,10 @@ async function canvasPoint(page: Page, x: number, y: number) {
 
 async function comment(page: Page, x: number, y: number, text: string) {
   const canvas = new CanvasHelper(page)
-  await page.keyboard.press('c')
-  await expect(page.locator('[data-slot="comment-placement"]')).toBeVisible()
+  // Comment mode stays on after a comment is posted, as in Figma.
+  const placement = page.locator('[data-slot="comment-placement"]')
+  if (!(await placement.isVisible())) await page.keyboard.press('c')
+  await expect(placement).toBeVisible()
   const point = await canvasPoint(page, x, y)
   await canvas.click(point.x, point.y)
   const thread = page.locator('[data-slot="comment-thread"]')
@@ -81,10 +83,13 @@ test('C pins a comment on a layer, which moves with it', async ({ page }) => {
   await expect(page.locator('[data-slot="comment-thread"]')).toContainText(
     'Tighten the spacing under the title'
   )
-  // Posting leaves comment mode; Escape closes the thread.
-  await expect(page.locator('[data-slot="comment-placement"]')).toHaveCount(0)
+  // Posting stays in comment mode, as in Figma; Escape closes the thread, then leaves the mode.
+  await expect(page.locator('[data-slot="comment-placement"]')).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(page.locator('[data-slot="comment-thread"]')).toHaveCount(0)
+  await expect(page.locator('[data-slot="comment-placement"]')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.locator('[data-slot="comment-placement"]')).toHaveCount(0)
 
   const before = await pins(page).boundingBox()
   await callAsAgent(page, 'update_node', { id: cardId, x: 140 })
@@ -102,6 +107,8 @@ test('C pins a comment on a layer, which moves with it', async ({ page }) => {
 test('a pin follows its layer as it is dragged on the canvas', async ({ page }) => {
   const cardId = await open(page)
   await comment(page, 120, 100, 'Align the title')
+  // The thread, then comment mode.
+  await page.keyboard.press('Escape')
   await page.keyboard.press('Escape')
   await expect(pins(page)).toHaveCount(1)
   const before = await pins(page).boundingBox()
