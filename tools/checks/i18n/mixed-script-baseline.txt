@@ -238,6 +238,7 @@ ja:panels.folderVersionsDesktop
 ja:panels.folderViewClean
 ja:panels.gridSummaryGrid
 ja:panels.libraryId
+ja:panels.libraryIdRequired
 ja:panels.lineHeightPixels
 ja:panels.localFontsAccessHint
 ja:panels.sizingFillFr
@@ -301,6 +302,7 @@ ja:welcome.designBrand
 ja:welcome.designWebsites
 ja:welcome.homeTitle
 ja:welcome.importClaudeDesign
+ja:welcome.importFigma
 ja:welcome.importFile
 ja:welcome.importHTML
 ja:welcome.installTitle
@@ -316,7 +318,9 @@ ja:welcome.pasteHTMLHint
 ja:welcome.presetLaptop
 ja:welcome.presetSocial
 ja:welcome.privacy
+ja:welcome.promptConnect
 ja:welcome.promptPlaceholder
+ja:welcome.promptPlaceholderSetup
 ja:welcome.sourceAi
 ja:welcome.sourceLabel
 ja:welcome.statusOff
@@ -569,6 +573,7 @@ zh-cn:panels.folderVersionsDesktop
 zh-cn:panels.folderViewClean
 zh-cn:panels.gridSummaryGrid
 zh-cn:panels.libraryId
+zh-cn:panels.libraryIdRequired
 zh-cn:panels.lineHeightPixels
 zh-cn:panels.localFontsAccessHint
 zh-cn:panels.sizingFillFr
@@ -628,6 +633,7 @@ zh-cn:welcome.connectAgentHint
 zh-cn:welcome.connectMCP
 zh-cn:welcome.homeTitle
 zh-cn:welcome.importClaudeDesign
+zh-cn:welcome.importFigma
 zh-cn:welcome.importFile
 zh-cn:welcome.importHTML
 zh-cn:welcome.installTitle
@@ -641,7 +647,9 @@ zh-cn:welcome.openURLHint
 zh-cn:welcome.pasteHTML
 zh-cn:welcome.pasteHTMLHint
 zh-cn:welcome.privacy
+zh-cn:welcome.promptConnect
 zh-cn:welcome.promptPlaceholder
+zh-cn:welcome.promptPlaceholderSetup
 zh-cn:welcome.sourceAi
 zh-cn:welcome.sourceLabel
 zh-cn:welcome.statusOff
