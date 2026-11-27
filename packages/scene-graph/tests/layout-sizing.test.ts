@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 
-import { layoutSizing, layoutSizingUpdates, SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import {
+  fillingParentUpdates,
+  layoutSizing,
+  layoutSizingUpdates,
+  SceneGraph,
+  type SceneNode
+} from '@kalka/scene-graph'
 
 function child(parent: Partial<SceneNode>, node: Partial<SceneNode> = {}) {
   const graph = new SceneGraph()
@@ -28,5 +34,31 @@ describe('layout sizing across a stretching parent', () => {
     expect(layoutSizingUpdates(graph, node, 'VERTICAL', 'FIXED')).toEqual({
       layoutAlignSelf: 'AUTO'
     })
+  })
+})
+
+describe('a child set to fill a parent that hugs it', () => {
+  test('turns the parent fixed along that axis only', () => {
+    const { graph, node } = child({
+      layoutMode: 'VERTICAL',
+      primaryAxisSizing: 'HUG',
+      counterAxisSizing: 'HUG'
+    })
+    const parentId = node.parentId ?? ''
+    expect(fillingParentUpdates(graph, node, 'HORIZONTAL')).toEqual({
+      id: parentId,
+      updates: { counterAxisSizing: 'FIXED' }
+    })
+    expect(fillingParentUpdates(graph, node, 'VERTICAL')).toEqual({
+      id: parentId,
+      updates: { primaryAxisSizing: 'FIXED' }
+    })
+  })
+
+  test('leaves a fixed parent, and a layer outside auto layout, alone', () => {
+    const fixed = child({ layoutMode: 'VERTICAL', counterAxisSizing: 'FIXED' })
+    expect(fillingParentUpdates(fixed.graph, fixed.node, 'HORIZONTAL')).toBeUndefined()
+    const loose = child({ layoutMode: 'NONE' })
+    expect(fillingParentUpdates(loose.graph, loose.node, 'HORIZONTAL')).toBeUndefined()
   })
 })

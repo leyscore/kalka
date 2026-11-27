@@ -3,6 +3,7 @@ import type { ComputedRef } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
 import {
+  fillingParentUpdates,
   layoutSizing,
   layoutSizingOptions,
   layoutSizingUpdates,
@@ -255,11 +256,13 @@ export function createLayoutActions({
   function setAxisSizing(axis: LayoutAxis, sizing: LayoutSizing) {
     const n = node.value
     if (!n) return
-    editor.updateNodeWithUndo(
-      n.id,
-      axisSizingPatchForNode(editor.graph, n, axis, sizing),
-      `Set ${axis} sizing`
-    )
+    const label = `Set ${axis} sizing`
+    const parent =
+      sizing === 'FILL' ? fillingParentUpdates(editor.graph, n, sizingAxis(axis)) : undefined
+    editor.undo.runBatch(label, () => {
+      if (parent) editor.updateNodeWithUndo(parent.id, parent.updates, label)
+      editor.updateNodeWithUndo(n.id, axisSizingPatchForNode(editor.graph, n, axis, sizing), label)
+    })
   }
 
   // A typed size moves and stretches the layer's layers by their constraints, as resizing it on

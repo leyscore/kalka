@@ -166,3 +166,19 @@ export function layoutSizingUpdates(
   if (node.type === 'TEXT') Object.assign(updates, textSizingUpdates(graph, node, axis, value))
   return updates
 }
+
+/**
+ * What a parent becomes when its child is set to fill along `axis`: a parent that hugs there turns
+ * fixed at its size, as in Figma, since a layer cannot both fill its parent and size it. Without
+ * this the child would fill a parent that shrinks to its other layers, and collapse.
+ */
+export function fillingParentUpdates(
+  graph: SceneGraph,
+  node: SceneNode,
+  axis: LayoutSizingAxis
+): { id: string; updates: Partial<SceneNode> } | undefined {
+  const parent = fillingParent(graphParent(graph, node), node)
+  if (!parent || layoutSizing(graph, parent, axis) !== 'HUG') return undefined
+  const updates = layoutSizingUpdates(graph, parent, axis, 'FIXED')
+  return Object.keys(updates).length > 0 ? { id: parent.id, updates } : undefined
+}
