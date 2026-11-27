@@ -37,6 +37,9 @@ export const ARTBOARD_CSS = [
   // A layer's text keeps the font the projection writes; this is only the fallback.
   'body{font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}',
   'img{display:block}',
+  // An image fill with no image yet shows where it goes, as Figma's grey checkerboard does,
+  // rather than leaving the layer invisible.
+  'img:not([src]){background:repeating-conic-gradient(#d9d9d9 0 25%,#f2f2f2 0 50%) 0 0/16px 16px}',
   // Projected text is a span with a width; it lays out as a box.
   '[data-kalka-text]{display:block}',
   // A shader layer plays its drawing behind its own content (dom-scene/shaders.ts).
