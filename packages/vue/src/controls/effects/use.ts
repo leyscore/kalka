@@ -27,7 +27,10 @@ export function useEffectsControls() {
 
   return {
     expandedIndex,
-    effectOptions: EFFECT_OPTIONS,
+    /** Read on render, so the names follow the language. */
+    get effectOptions() {
+      return EFFECT_OPTIONS.value
+    },
     createDefaultEffect,
     isShadow,
     isBlur,

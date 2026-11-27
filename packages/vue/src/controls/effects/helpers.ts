@@ -1,4 +1,4 @@
-import type { Ref } from 'vue'
+import { computed, type Ref } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
 import type { Effect, SceneNode } from '@kalka/scene-graph'
@@ -11,22 +11,31 @@ type EffectType = Effect['type']
 const { panels } = useI18n()
 const effectLabels = useEffectMessages()
 
-const EFFECT_LABELS: Record<string, string> = {
-  DROP_SHADOW: panels.value.dropShadow,
-  INNER_SHADOW: panels.value.innerShadow,
-  LAYER_BLUR: panels.value.layerBlur,
-  BACKGROUND_BLUR: panels.value.backgroundBlur,
-  FOREGROUND_BLUR: panels.value.foregroundBlur,
-  NOISE: effectLabels.value.noise,
-  TEXTURE: effectLabels.value.texture,
-  GLASS: effectLabels.value.glass
-}
+export const EFFECT_TYPES: EffectType[] = [
+  'DROP_SHADOW',
+  'INNER_SHADOW',
+  'LAYER_BLUR',
+  'BACKGROUND_BLUR',
+  'FOREGROUND_BLUR',
+  'NOISE',
+  'TEXTURE',
+  'GLASS'
+]
 
-export const EFFECT_TYPES = Object.keys(EFFECT_LABELS) as EffectType[]
-export const EFFECT_OPTIONS = EFFECT_TYPES.map((t) => ({
-  value: t,
-  label: EFFECT_LABELS[t]
-}))
+/** The effect kinds a menu offers, named in the current language, which may load after this module. */
+export const EFFECT_OPTIONS = computed(() => {
+  const labels: Record<string, string> = {
+    DROP_SHADOW: panels.value.dropShadow,
+    INNER_SHADOW: panels.value.innerShadow,
+    LAYER_BLUR: panels.value.layerBlur,
+    BACKGROUND_BLUR: panels.value.backgroundBlur,
+    FOREGROUND_BLUR: panels.value.foregroundBlur,
+    NOISE: effectLabels.value.noise,
+    TEXTURE: effectLabels.value.texture,
+    GLASS: effectLabels.value.glass
+  }
+  return EFFECT_TYPES.map((type) => ({ value: type, label: labels[type] }))
+})
 
 export function isBlur(type: string) {
   return type === 'LAYER_BLUR' || type === 'BACKGROUND_BLUR' || type === 'FOREGROUND_BLUR'
