@@ -5,9 +5,13 @@ test.beforeEach(async ({ page }) => {
   // With recovery on, a draft closes without asking and stays on Home; without it, closing
   // would lose the work, so Kalka asks.
   await page.addInitScript(() => {
+    // Artboard frames are sandboxed and have no storage of their own.
+    if (window !== window.top) return
     const key = 'kalka:preferences:v1'
+    // oxlint-disable-next-line kalka/no-direct-storage-access -- Seeds the page's own storage before the app loads.
     const stored: unknown = JSON.parse(localStorage.getItem(key) ?? '{}')
     const preferences = typeof stored === 'object' && stored ? stored : {}
+    // oxlint-disable-next-line kalka/no-direct-storage-access -- Seeds the page's own storage before the app loads.
     localStorage.setItem(key, JSON.stringify({ ...preferences, recovery: { enabled: false } }))
   })
   await page.goto('/')

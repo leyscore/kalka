@@ -1,3 +1,5 @@
+import type { Page } from '@playwright/test'
+
 import { expect, test } from '#tests/e2e/fixtures'
 import { CanvasHelper } from '#tests/helpers/canvas'
 import { testPath } from '#tests/helpers/paths'
@@ -9,7 +11,7 @@ test.beforeEach(async ({ page }) => {
   await page.getByTestId('home-open-url').click()
 })
 
-function urlDialog(page: import('@playwright/test').Page) {
+function urlDialog(page: Page) {
   return page.getByRole('dialog', { name: 'Open from a URL' })
 }
 

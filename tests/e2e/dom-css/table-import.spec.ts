@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
 import { CanvasHelper } from '#tests/helpers/canvas'
 
@@ -8,12 +8,13 @@ const TABLE = `<table style="border-collapse:collapse">
 </table>`
 
 /** The drawn boxes of the cells in an artboard, by their text. */
-function cellBoxes(page: import('@playwright/test').Page) {
+function cellBoxes(page: Page) {
   return page.evaluate(() => {
     const boxes: Record<string, { x: number; width: number; textRight: number }> = {}
     for (const frame of document.querySelectorAll<HTMLIFrameElement>('iframe[data-kalka-artboard]'))
-      for (const text of frame.contentDocument?.querySelectorAll<HTMLElement>('[data-kalka-text]') ??
-        []) {
+      for (const text of frame.contentDocument?.querySelectorAll<HTMLElement>(
+        '[data-kalka-text]'
+      ) ?? []) {
         const cell = text.parentElement
         if (!cell) continue
         const { x, width } = cell.getBoundingClientRect()
@@ -39,7 +40,8 @@ test('a longer cell of an imported table widens its column instead of running ov
     const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     for (const node of store.graph.nodes.values())
-      if (node.type === 'TEXT' && node.text === '80') store.updateNode(node.id, { text: '80 000 000 000' })
+      if (node.type === 'TEXT' && node.text === '80')
+        store.updateNode(node.id, { text: '80 000 000 000' })
   })
   await canvas.waitForRender()
 
