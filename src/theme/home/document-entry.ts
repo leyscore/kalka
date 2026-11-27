@@ -41,6 +41,8 @@ export const documentEntry = tv({
         trigger: 'flex h-full flex-col gap-[7px]',
         body: 'flex flex-none items-baseline gap-2 px-px',
         name: 'min-w-0 flex-1',
+        /** The date gives way before the name, which a narrow card would cut to its first letter. */
+        metadata: 'min-w-0 shrink-[4]',
         trailingMetadata: 'hidden sm:hidden'
       },
       list: {

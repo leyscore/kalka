@@ -110,7 +110,11 @@ export function createDocumentSourceActions({
   }
 
   function buildRecoveryFigFile() {
+    // Skia draws the thumbnail a draft's card on Home shows, when something already loaded it.
+    const renderer = getRenderer()
     return exportFigFile(editor.graph, {
+      ck: renderer?.ck,
+      renderer: renderer ?? undefined,
       pageId: state.currentPageId,
       documentName: state.documentName
     })

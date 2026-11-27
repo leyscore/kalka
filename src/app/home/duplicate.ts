@@ -1,7 +1,10 @@
+import { exportFigFile } from '@kalka/core/io/formats/fig'
+
 import { getRecoveryStore } from '@/app/document/recovery'
 import type { DraftDocument } from '@/app/home/drafts'
 import { rememberRecentFile } from '@/app/recent-files'
 import { createCanvasId } from '@/app/storage/id'
+import { getTabsSnapshot } from '@/app/tabs'
 
 /** The name Figma gives a duplicated file: its own with " copy" after it. */
 export function duplicateName(name: string): string {
@@ -9,12 +12,30 @@ export function duplicateName(name: string): string {
 }
 
 /**
- * Figma's Duplicate on a file of Home, for a draft recovery keeps: a second draft, "<name> copy",
- * holding what it holds. False for a draft a tab has open, which File › Duplicate copies.
+ * Figma's Duplicate on a draft of Home: a second draft, "<name> copy", holding what it holds now,
+ * listed with the others. A draft a tab has open is copied as the tab has it, without leaving Home.
  */
 export async function duplicateDraft(draft: DraftDocument): Promise<boolean> {
-  if (!draft.snapshotId || draft.tabId) return false
   const store = getRecoveryStore()
+  const tab = draft.tabId ? getTabsSnapshot().find(({ id }) => id === draft.tabId) : undefined
+  if (tab) {
+    const { graph, state } = tab.store
+    const name = duplicateName(state.documentName)
+    // Drawn with Skia, so the copy's card on Home shows the document too.
+    const renderer = await tab.store.loadCanvasKit()
+    await store.write({
+      id: createCanvasId(),
+      documentName: name,
+      figBytes: await exportFigFile(graph, {
+        ck: renderer?.ck,
+        renderer: renderer ?? undefined,
+        pageId: state.currentPageId,
+        documentName: name
+      })
+    })
+    return true
+  }
+  if (!draft.snapshotId) return false
   const snapshot = await store.read(draft.snapshotId)
   if (!snapshot) return false
   await store.write({

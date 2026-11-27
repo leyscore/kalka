@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core'
-import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
 
 import { useDocumentWorkspace, useI18n, useViewportKind } from '@kalka/vue'
 
@@ -9,6 +9,7 @@ import { openServerDocumentById } from '@/app/collab/server/documents'
 import { recoveryEnabled } from '@/app/document/recovery/preferences'
 import {
   deleteDraft,
+  draftPreview,
   draftsPersist,
   listDrafts,
   openDraft,
@@ -154,7 +155,33 @@ const hasRecentFiles = computed(() => documents.value.length > 0)
 const drafts = ref<DraftDocument[]>([])
 async function refreshDrafts(): Promise<void> {
   drafts.value = place === 'home' ? await listDrafts() : []
+  void refreshDraftPreviews(drafts.value)
 }
+/** Each draft's preview, by draft ID, as object URLs this list revokes when it replaces them. */
+const draftPreviews = ref(new Map<string, string>())
+let previewGeneration = 0
+async function refreshDraftPreviews(list: readonly DraftDocument[]): Promise<void> {
+  const generation = ++previewGeneration
+  const next = new Map<string, string>()
+  for (const draft of list) {
+    const bytes = await draftPreview(draft)
+    if (bytes)
+      next.set(
+        draft.id,
+        URL.createObjectURL(new Blob([Uint8Array.from(bytes)], { type: 'image/png' }))
+      )
+  }
+  if (generation !== previewGeneration) {
+    for (const url of next.values()) URL.revokeObjectURL(url)
+    return
+  }
+  for (const url of draftPreviews.value.values()) URL.revokeObjectURL(url)
+  draftPreviews.value = next
+}
+onBeforeUnmount(() => {
+  previewGeneration++
+  for (const url of draftPreviews.value.values()) URL.revokeObjectURL(url)
+})
 onMounted(() => void refreshDrafts())
 // Coming back to Home from a document picks up what changed there.
 watch(activeTab, () => void refreshDrafts())
@@ -388,13 +415,15 @@ function formattedDate(updatedAt: string): string {
             :name="draft.name"
             :badge="files.draftBadge"
             :metadata="formattedDate(draft.updatedAt)"
+            :previewURL="draftPreviews.get(draft.id)"
             data-test-id="home-draft"
             @open="openDraftDocument(draft)"
           >
-            <template v-if="draft.snapshotId && !draft.tabId" #actions>
+            <!-- A draft a tab has open is deleted by closing that tab, so it offers Duplicate only. -->
+            <template #actions>
               <FileActions
                 :name="draft.name"
-                deletable
+                :deletable="!draft.tabId"
                 @duplicate="duplicateDraftDocument(draft)"
                 @delete="deleteDraftDocument(draft)"
               />
@@ -421,8 +450,12 @@ function formattedDate(updatedAt: string): string {
               v-if="!hasRecentFiles && !drafts.length"
               class="flex flex-col justify-center gap-1 px-1 sm:px-3"
             >
-              <p class="text-[13px] font-medium text-label">{{ files.noRecentFiles }}</p>
-              <p class="text-xs text-muted">{{ files.noRecentFilesDescription }}</p>
+              <p class="text-[13px] font-medium text-label">
+                {{ files.noRecentFiles }}
+              </p>
+              <p class="text-xs text-muted">
+                {{ files.noRecentFilesDescription }}
+              </p>
             </div>
           </template>
         </div>
@@ -434,13 +467,15 @@ function formattedDate(updatedAt: string): string {
             :name="draft.name"
             :badge="files.draftBadge"
             :metadata="formattedDate(draft.updatedAt)"
+            :previewURL="draftPreviews.get(draft.id)"
             data-test-id="home-draft"
             @open="openDraftDocument(draft)"
           >
-            <template v-if="draft.snapshotId && !draft.tabId" #actions>
+            <!-- A draft a tab has open is deleted by closing that tab, so it offers Duplicate only. -->
+            <template #actions>
               <FileActions
                 :name="draft.name"
-                deletable
+                :deletable="!draft.tabId"
                 @duplicate="duplicateDraftDocument(draft)"
                 @delete="deleteDraftDocument(draft)"
               />

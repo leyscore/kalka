@@ -23,18 +23,34 @@ test('an unsaved document is a draft in Recent, open or after a reload', async (
   const draft = home.getByTestId('home-draft')
   await expect(draft).toHaveCount(1)
   await expect(draft.locator('[data-slot="badge"]')).toBeVisible()
-  await draft.locator('[data-slot="trigger"]').click()
+  // Its card shows the document, not an empty picture, and offers Duplicate, not Delete.
+  await expect(draft.locator('[data-slot="preview"] img')).toHaveAttribute('src', /^blob:/)
+  await draft.getByRole('button', { name: /^Actions for / }).click()
+  await expect(page.getByRole('menuitem', { name: 'Delete draft' })).toHaveCount(0)
+  await page.getByRole('menuitem', { name: 'Duplicate', exact: true }).click()
+  await expect(draft).toHaveCount(2)
+  await expect(draft.filter({ hasText: 'Untitled copy' })).toHaveCount(1)
+  await draft.filter({ hasNotText: 'Untitled copy' }).locator('[data-slot="trigger"]').click()
   await expect(page.getByText('Draft rectangle')).toBeVisible()
 
   // After a reload, closing the recovery dialog keeps the draft, and Home restores it.
   page.once('dialog', (dialog) => dialog.accept())
   await page.reload()
-  const recovery = page.getByRole('alertdialog', { name: 'Recover unsaved work' })
+  const recovery = page.getByRole('alertdialog', {
+    name: 'Recover unsaved work'
+  })
   await expect(recovery).toBeVisible()
   await recovery.getByRole('button', { name: 'Close', exact: true }).click()
   await page.getByRole('button', { name: 'Dashboard', exact: true }).click()
-  await expect(home.getByTestId('home-draft')).toHaveCount(1)
-  await home.getByTestId('home-draft').locator('[data-slot="trigger"]').click()
+  await expect(home.getByTestId('home-draft')).toHaveCount(2)
+  await expect(
+    home.getByTestId('home-draft').filter({ hasText: 'Untitled copy' }).locator('img')
+  ).toHaveAttribute('src', /^blob:/)
+  await home
+    .getByTestId('home-draft')
+    .filter({ hasNotText: 'Untitled copy' })
+    .locator('[data-slot="trigger"]')
+    .click()
   await expect(page.getByText('Draft rectangle')).toBeVisible()
 
   await context.close()
@@ -56,7 +72,9 @@ test('a kept draft is deleted from its menu, and Undo brings it back', async ({
   })
   page.once('dialog', (dialog) => dialog.accept())
   await page.reload()
-  const recovery = page.getByRole('alertdialog', { name: 'Recover unsaved work' })
+  const recovery = page.getByRole('alertdialog', {
+    name: 'Recover unsaved work'
+  })
   await recovery.getByRole('button', { name: 'Close', exact: true }).click()
   await page.getByRole('button', { name: 'Dashboard', exact: true }).click()
 

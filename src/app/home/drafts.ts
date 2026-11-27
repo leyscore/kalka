@@ -1,5 +1,8 @@
 import { computed } from 'vue'
 
+import { renderThumbnail } from '@kalka/core/io/formats/raster'
+import { extractFigThumbnailFromReader } from '@kalka/fig'
+
 import {
   getRecoveryStore,
   isRecoveryStoreMemoryFallback,
@@ -115,4 +118,57 @@ export async function restoreDeletedDraft(snapshot: RecoverySnapshot): Promise<v
     figBytes: snapshot.figBytes,
     sourcePath: snapshot.sourcePath
   })
+}
+
+/** A draft's preview on Home, as wide as the card: 16 by 10. */
+const DRAFT_PREVIEW_WIDTH = 640
+const DRAFT_PREVIEW_HEIGHT = 400
+
+/**
+ * What a draft's tab drew last, by recovery ID: a snapshot is written without a thumbnail, so a
+ * draft closed in this session keeps the one its tab drew.
+ */
+const drawnPreviews = new Map<string, Uint8Array>()
+
+async function drawOpenDraft(tab: Tab): Promise<Uint8Array | null> {
+  const { store } = tab
+  const renderer = await store.loadCanvasKit()
+  if (!renderer) return null
+  const bytes = renderThumbnail(
+    renderer.ck,
+    renderer,
+    store.graph,
+    store.state.currentPageId,
+    DRAFT_PREVIEW_WIDTH,
+    DRAFT_PREVIEW_HEIGHT
+  )
+  if (bytes) drawnPreviews.set(store.getRecoveryId(), bytes)
+  return bytes
+}
+
+async function keptDraftPreview(snapshotId: string): Promise<Uint8Array | null> {
+  const drawn = drawnPreviews.get(snapshotId)
+  if (drawn) return drawn
+  const snapshot = await getRecoveryStore().read(snapshotId)
+  if (!snapshot) return null
+  const bytes = snapshot.figBytes
+  return extractFigThumbnailFromReader({
+    size: bytes.byteLength,
+    read: (start, end) => Promise.resolve(bytes.subarray(start, end))
+  })
+}
+
+/**
+ * A PNG of the draft for its card on Home: its tab's current page drawn now, or, for a draft
+ * recovery keeps, the thumbnail of its snapshot. Null when there is nothing to show.
+ */
+export async function draftPreview(draft: DraftDocument): Promise<Uint8Array | null> {
+  try {
+    const tab = draft.tabId ? getTabsSnapshot().find(({ id }) => id === draft.tabId) : undefined
+    if (tab) return await drawOpenDraft(tab)
+    return draft.snapshotId ? await keptDraftPreview(draft.snapshotId) : null
+  } catch (error) {
+    console.warn('[Drafts] Could not draw a draft preview:', error)
+    return null
+  }
 }
