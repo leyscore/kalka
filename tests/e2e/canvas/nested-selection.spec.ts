@@ -84,3 +84,33 @@ test('a Cmd-click on the empty area of a nested frame still selects it', async (
   await canvas.waitForRender()
   expect(await selectedNames()).toEqual(['Inner'])
 })
+
+test('dragging inside the selected layer moves it, even where another layer is drawn over it', async () => {
+  await canvas.clearCanvas()
+  await canvas.drawRect(100, 100, 160, 160)
+  await canvas.drawRect(180, 180, 160, 160)
+  await canvas.pressKey('Escape')
+  const [under, over] = await page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    return store.graph.getChildren(store.state.currentPageId).map((node) => ({ id: node.id, x: node.x }))
+  })
+  // Select the lower one where nothing covers it, then drag from where the upper one covers it.
+  await canvas.click(120, 120)
+  await canvas.drag(220, 220, 260, 220)
+  await canvas.waitForRender()
+  const after = await page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    return store.graph.getChildren(store.state.currentPageId).map((node) => node.x)
+  })
+  expect(after[0]).not.toBe(under.x)
+  expect(after[1]).toBe(over.x)
+
+  // A click there without a drag selects the layer on top, as before.
+  await canvas.click(220, 220)
+  await canvas.waitForRender()
+  expect(
+    await page.evaluate(() => [...(window.kalka?.getStore?.()?.state.selectedIds ?? [])])
+  ).toEqual([over.id])
+})

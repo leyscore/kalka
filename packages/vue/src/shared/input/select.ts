@@ -145,7 +145,14 @@ export function handleSelectDown(
     return
   }
 
-  const keepsSelection = !e.shiftKey && pressesSelection(hit, cx, cy, editor)
+  // As in Figma, a press inside a selected layer drags it, even under a layer drawn over it.
+  const overSelection =
+    !e.shiftKey &&
+    !editor.state.selectedIds.has(hit.id) &&
+    [...editor.state.selectedIds].some(
+      (id) => !editor.graph.isDescendant(hit.id, id) && editor.graph.isPointInNode(id, cx, cy)
+    )
+  const keepsSelection = !e.shiftKey && (overSelection || pressesSelection(hit, cx, cy, editor))
   if (!editor.state.selectedIds.has(hit.id) && !e.shiftKey && !keepsSelection) {
     editor.select([hit.id])
   } else if (e.shiftKey) {
@@ -157,7 +164,7 @@ export function handleSelectDown(
   const drag = createSelectionMoveDrag(cx, cy, sx, sy, editor, e.altKey)
   // A click without dragging still selects a layer inside a selected frame; groups need a double-click.
   if (drag.type === 'move' && keepsSelection && !editor.state.selectedIds.has(hit.id)) {
-    drag.selectOnClick = clickSelectsInside(hit, editor) ? hit.id : undefined
+    drag.selectOnClick = overSelection || clickSelectsInside(hit, editor) ? hit.id : undefined
   }
   setDrag(drag)
 }
