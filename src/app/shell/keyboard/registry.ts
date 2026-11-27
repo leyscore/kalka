@@ -21,6 +21,7 @@ import {
 } from '@/app/editor/clipboard/properties'
 import { pickColorForSelection } from '@/app/editor/color/eyedropper'
 import { openFind } from '@/app/editor/find/state'
+import { copyLayersAsPNG } from '@/app/editor/clipboard/png'
 import { copySelectionLink } from '@/app/editor/selection/link'
 import { requestRenameSelection } from '@/app/editor/selection/rename-dialog'
 import { TOOL_SHORTCUTS } from '@/app/editor/session'
@@ -188,6 +189,12 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
       run: ({ store }) => void pasteClipboardProperties(store)
     },
     { id: 'pick-color', keys: 'KeyI', run: ({ store }) => void pickColorForSelection(store) },
+    {
+      id: 'copy-as-png',
+      viewing: true,
+      keys: appMenuTinykeysShortcut('copy-as-png') ?? '$mod+Shift+KeyC',
+      run: ({ store }) => void copyLayersAsPNG(store, [...store.state.selectedIds])
+    },
     {
       id: 'copy-link',
       viewing: true,

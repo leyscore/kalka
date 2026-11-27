@@ -139,6 +139,7 @@ export function useAppMenu() {
     'set-default-properties': 'setDefaultProperties',
     'pick-color': 'pickColor',
     'copy-link': 'copyLinkToSelection',
+    'copy-as-png': 'copyAsPNG',
     'place-image': 'placeImage',
     'copy-properties': 'copyProperties',
     'paste-properties': 'pasteProperties',

@@ -209,6 +209,11 @@
         "accelerator": "CmdOrCtrl+L"
       },
       {
+        "id": "copy-as-png",
+        "label": "Copy as PNG",
+        "accelerator": "CmdOrCtrl+Shift+C"
+      },
+      {
         "id": "selection.duplicate",
         "label": "Duplicate",
         "accelerator": "CmdOrCtrl+D"

@@ -94,6 +94,7 @@ export const APP_MENU_SCHEMA = [
       { id: 'set-default-properties', label: 'Set Default Properties' },
       { id: 'pick-color', label: 'Pick Color', shortcut: 'I' },
       { id: 'copy-link', label: 'Copy Link to Selection', shortcut: 'MOD+L' },
+      { id: 'copy-as-png', label: 'Copy as PNG', shortcut: 'MOD+SHIFT+C' },
       {
         id: 'selection.duplicate',
         label: 'Duplicate',

@@ -1,5 +1,6 @@
 import type { EditorStore } from '@/app/editor/active-store'
 import { pasteOverSelection } from '@/app/editor/clipboard/paste-over'
+import { copyLayersAsPNG } from '@/app/editor/clipboard/png'
 import { pasteClipboardToReplace } from '@/app/editor/clipboard/paste-to-replace'
 import {
   copySelectionProperties,
@@ -20,6 +21,7 @@ export function createSelectionMenuActions(store: EditorStore) {
     'paste-over-selection': () => void pasteOverSelection(store),
     'set-default-properties': () => void setDefaultProperties(store),
     'copy-link': () => void copySelectionLink(store),
+    'copy-as-png': () => void copyLayersAsPNG(store, [...store.state.selectedIds]),
     'pick-color': () => void pickColorForSelection(store),
     'copy-properties': () => void copySelectionProperties(store),
     'paste-properties': () => void pasteClipboardProperties(store),
