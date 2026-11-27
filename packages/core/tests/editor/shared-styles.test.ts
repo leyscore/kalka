@@ -209,8 +209,9 @@ describe('shared colour, effect and grid styles', () => {
     expect(graph.getNode(style.nodeId)?.boundVariables).toEqual({ 'fills/0/color': brand.id })
 
     editor.updateNodeWithUndo(badge.id, { strokeStyleId: style.id })
+    // A paint's opacity changes beside its bound colour, which stays bound.
     editor.updateSharedStyle(style.nodeId, {
-      fills: [{ type: 'SOLID', color: blue, opacity: 1, visible: true }]
+      fills: [{ type: 'SOLID', color: red, opacity: 0.5, visible: true }]
     })
     expect(graph.getNode(card.id)?.boundVariables).toEqual({
       opacity: 'kept',
@@ -312,5 +313,70 @@ describe('shared colour, effect and grid styles', () => {
     expect(graph.getNode(card.id)?.strokeStyleId).toBe(style.id)
     editor.updateNodeWithUndo(card.id, { strokes: strokes.map((s) => ({ ...s, opacity: 0.2 })) })
     expect(graph.getNode(card.id)?.strokeStyleId).toBeNull()
+  })
+})
+
+describe('colour styles over variables', () => {
+  const blue = { r: 0.12, g: 0.42, b: 1, a: 1 }
+  const green = { r: 0, g: 0.66, b: 0.42, a: 1 }
+
+  function setupBound() {
+    const graph = new SceneGraph()
+    const editor = createEditor({ graph })
+    const page = editor.state.currentPageId
+    const collection = graph.createCollection('Theme')
+    const brand = graph.createVariable('brand/primary', 'COLOR', collection.id, blue)
+    const frame = graph.createNode('FRAME', page, { name: 'Frame', width: 300, height: 300 })
+    const rect = graph.createNode('RECTANGLE', frame.id, {
+      name: 'Rect',
+      fills: [{ type: 'SOLID', color: blue, opacity: 1, visible: true }]
+    })
+    graph.bindVariable(rect.id, 'fills/0/color', brand.id)
+    return { graph, editor, frame, rect, brand }
+  }
+
+  const copyOf = (graph: SceneGraph, frameId: string) => {
+    const copy = graph
+      .getChildren(graph.getNode(frameId)?.parentId ?? '')
+      .find((node) => node.name === 'Frame' && node.id !== frameId)
+    const rect = copy && graph.getChildren(copy.id)[0]
+    if (!rect) throw new Error('No copy')
+    return rect
+  }
+
+  test('a colour edited in a style made from a variable gives the layers that colour, and copies keep the style', () => {
+    const { graph, editor, frame, rect } = setupBound()
+    const style = editor.createSharedStyle('fill', 'Brand/Primary', [rect.id])
+    if (!style) throw new Error('No style')
+    editor.updateSharedStyle(style.nodeId, {
+      fills: [{ type: 'SOLID', color: green, opacity: 1, visible: true }]
+    })
+    expect(graph.getNode(rect.id)?.boundVariables['fills/0/color']).toBeUndefined()
+
+    editor.select([frame.id])
+    editor.duplicateSelected()
+    const copy = copyOf(graph, frame.id)
+    expect(copy.fillStyleId).toBe(style.id)
+    expect(copy.fills[0]?.color).toEqual(green)
+  })
+
+  test('a copy of a layer using a style bound to a variable keeps the style', () => {
+    const { graph, editor, frame, rect, brand } = setupBound()
+    const style = editor.createSharedStyle('fill', 'Brand/Primary', [rect.id])
+    if (!style) throw new Error('No style')
+    editor.select([frame.id])
+    editor.duplicateSelected()
+    const copy = copyOf(graph, frame.id)
+    expect(copy.fillStyleId).toBe(style.id)
+    expect(copy.boundVariables['fills/0/color']).toBe(brand.id)
+  })
+
+  test('a variable change reaches the layers using a style bound to it, which keep the style', () => {
+    const { graph, editor, rect, brand } = setupBound()
+    const style = editor.createSharedStyle('fill', 'Brand/Primary', [rect.id])
+    if (!style) throw new Error('No style')
+    editor.updateVariableValue(brand.id, graph.variableCollections.get(brand.collectionId)?.defaultModeId ?? '', green)
+    expect(graph.getNode(rect.id)?.fills[0]?.color).toEqual(green)
+    expect(graph.getNode(rect.id)?.fillStyleId).toBe(style.id)
   })
 })

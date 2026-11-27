@@ -270,6 +270,17 @@ function scopedNodes(graph: SceneGraph, scope: BindingScope | undefined): Iterab
   return layersUsingVariables(graph, scope.variables)
 }
 
+/** The styles a layer uses, kept as they are by a write that does not edit it. */
+function appliedStyles(node: SceneNode): Partial<SceneNode> {
+  const styles: Partial<SceneNode> = {}
+  if (node.fillStyleId) styles.fillStyleId = node.fillStyleId
+  if (node.strokeStyleId) styles.strokeStyleId = node.strokeStyleId
+  if (node.effectStyleId) styles.effectStyleId = node.effectStyleId
+  if (node.textStyleId) styles.textStyleId = node.textStyleId
+  if (node.gridStyleId) styles.gridStyleId = node.gridStyleId
+  return styles
+}
+
 /**
  * Resolve live numeric, text, and visibility bindings, numbers in scene units, without authoring
  * instance overrides. A scope limits it to the layers a change can reach, so layers whose saved
@@ -290,7 +301,8 @@ export function reconcileVariableBindings(graph: SceneGraph, scope?: BindingScop
     const { effects } = resolvedEffectBindings(graph, node)
     if (effects && !isEqual(effects, node.effects)) updates.effects = effects
     if (Object.keys(updates).length === 0) continue
-    graph.updateNode(node.id, updates)
+    // What a binding resolves to is not an edit of the layer, so a style it uses stays applied.
+    graph.updateNode(node.id, { ...updates, ...appliedStyles(node) })
     changed.push(node.id)
   }
   return changed

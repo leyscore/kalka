@@ -166,6 +166,41 @@ function bindingsFromStyle(
   return bindings
 }
 
+/**
+ * An edit of a style's paints or effects as it is recorded: a colour given by hand in place of a
+ * variable's ends that binding, as in Figma, so the style and its layers keep the colour shown
+ * rather than going back to the variable's. An edit that sets bindings itself keeps them.
+ */
+export function sharedStyleEditChanges(
+  style: SceneNode,
+  changes: Partial<SceneNode>
+): Partial<SceneNode> {
+  if ('boundVariables' in changes) return changes
+  const lists = (['fills', 'effects'] as const).filter((list) => list in changes)
+  if (lists.length === 0) return changes
+  const kept = Object.fromEntries(
+    Object.entries(style.boundVariables).filter(([field]) => {
+      const [list, index] = field.split('/')
+      const key = field.split('/').at(2)
+      if (list !== 'fills' && list !== 'effects') return true
+      const next = changes[list]
+      if (!next) return true
+      const position = Number(index)
+      const before: unknown = style[list][position]
+      const after: unknown = next[position]
+      if (after === undefined) return false
+      if (key === undefined) return isEqual(before, after)
+      const value = (item: unknown) =>
+        typeof item === 'object' && item !== null
+          ? Object.entries(item).find(([name]) => name === key)?.[1]
+          : undefined
+      return isEqual(value(before), value(after))
+    })
+  )
+  if (Object.keys(kept).length === Object.keys(style.boundVariables).length) return changes
+  return { ...changes, boundVariables: kept }
+}
+
 /** The values a style gives a layer that uses it as `kind`, copied from its definition. */
 export function sharedStyleValues(
   kind: SharedStyleKind,

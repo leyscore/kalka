@@ -1,6 +1,7 @@
 import {
   findInstanceAncestor,
   sharedStyleConsumers,
+  sharedStyleEditChanges,
   sharedStyleKindsForType,
   sharedStyleRefKey,
   sharedStyleValues,
@@ -48,9 +49,10 @@ export function useStyleEdit(definition: () => SceneNode) {
     const style = definition()
     const snapshot = before ?? new Map()
     before = snapshot
-    remember(style, Object.keys(changes) as (keyof SceneNode)[], snapshot)
+    const shown = sharedStyleEditChanges(style, changes)
+    remember(style, Object.keys(shown) as (keyof SceneNode)[], snapshot)
     pending = { ...pending, ...changes }
-    editor.updateNode(style.id, changes)
+    editor.updateNode(style.id, shown)
     const updated = editor.graph.getNode(style.id)
     if (!updated) return
     for (const { node, values } of targets(updated)) {

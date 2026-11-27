@@ -1,6 +1,7 @@
 import {
   findInstanceAncestor,
   sharedStyleConsumers,
+  sharedStyleEditChanges,
   sharedStyleFields,
   sharedStyleKindsForType,
   sharedStyleRefKey,
@@ -135,9 +136,12 @@ export function createSharedStyleActions(ctx: EditorContext, nodes: NodeActions)
     const type = style?.sharedStyleType
     if (!style || !styleId || !type) return
     const allowed = new Set<string>(sharedStyleFields(type))
-    const styleChanges = Object.fromEntries(
-      Object.entries(changes).filter(([key]) => allowed.has(key))
-    ) as Partial<SceneNode>
+    const styleChanges = sharedStyleEditChanges(
+      style,
+      Object.fromEntries(
+        Object.entries(changes).filter(([key]) => allowed.has(key))
+      ) as Partial<SceneNode>
+    )
     if (Object.keys(styleChanges).length === 0) return
     const label = EDIT_LABELS[type]
     ctx.undo.runBatch(label, () => {
