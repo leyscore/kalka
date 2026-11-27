@@ -151,13 +151,13 @@ export function toggleCommentPins(store: EditorStore): void {
 }
 
 /**
- * Picking a tool leaves comment mode, as picking another tool leaves any tool: the comment not
- * posted yet goes, and an open thread stays open.
+ * Choosing another tool leaves comment mode, as in Figma: a comment not posted yet goes, and the
+ * open thread closes.
  */
 export function stopCommentPlacing(store: EditorStore): void {
   const state = stateOf(store)
-  if (!state.value.placing && !state.value.draft) return
-  state.value = { ...state.value, placing: false, draft: null }
+  if (!state.value.placing && !state.value.draft && !state.value.openThreadId) return
+  state.value = { ...state.value, placing: false, draft: null, openThreadId: null }
 }
 
 /** Whether comment mode is on, for the toolbar. */

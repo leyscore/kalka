@@ -208,3 +208,15 @@ test('comments work in a document opened after the editor started', async ({ pag
   await thread.getByRole('textbox').press('ControlOrMeta+Enter')
   await expect(pins(page)).toHaveCount(1)
 })
+
+test('picking another tool after posting closes the thread and leaves comment mode', async ({
+  page
+}) => {
+  await open(page)
+  await comment(page, 120, 100, 'Title too small')
+  await expect(page.locator('[data-slot="comment-thread"]')).toBeVisible()
+  await page.getByTestId('toolbar').getByRole('button', { name: /^Rectangle/ }).first().click()
+  await expect(page.locator('[data-slot="comment-thread"]')).toHaveCount(0)
+  await expect(page.locator('[data-slot="comment-placement"]')).toHaveCount(0)
+  expect(await page.evaluate(() => window.kalka?.getStore?.()?.state.activeTool)).toBe('RECTANGLE')
+})
