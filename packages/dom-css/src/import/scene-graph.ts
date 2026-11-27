@@ -1,4 +1,4 @@
-import { SceneGraph, type SceneNode, parseShaderLayer } from '@kalka/scene-graph'
+import { SceneGraph, type SceneNode, parseShaderLayer, textLayerName } from '@kalka/scene-graph'
 import {
   clipsBackgroundToText,
   colorToFillFromCSS,
@@ -88,7 +88,8 @@ function createTextNode(
   style: DesignStyleDeclaration
 ) {
   const node = graph.createNode('TEXT', parentId, {
-    name: text.slice(0, 32) || 'Text',
+    // Named as a text typed in Kalka is, so editing it renames it the same way.
+    name: textLayerName(text) || 'Text',
     text,
     width: Math.max(text.length * 8, 1),
     height: 20

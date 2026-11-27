@@ -8,6 +8,19 @@ import type { SceneNode, TextListLine, TextListType } from './types'
 
 const PLAIN_LINE: TextListLine = { type: 'NONE', level: 0 }
 
+/** The longest name a text layer takes from its text. */
+const MAX_TEXT_NAME = 80
+
+/**
+ * The name a text layer takes from its text, as Figma names it: its first line, trimmed. Every
+ * way a text layer is made names it so, which lets an edit tell a name still taken from the
+ * text from one given by hand.
+ */
+export function textLayerName(text: string): string {
+  const [line = ''] = text.split(/\r?\n|\u2028/)
+  return line.replace(/\s+/g, ' ').trim().slice(0, MAX_TEXT_NAME)
+}
+
 /** The deepest list Kalka nests, as Figma stops at a few levels too. */
 export const MAX_LIST_LEVEL = 5
 

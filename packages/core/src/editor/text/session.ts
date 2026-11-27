@@ -1,7 +1,7 @@
 import type { Paragraph } from 'canvaskit-wasm'
 import { isEqual } from 'es-toolkit/predicate'
 
-import type { SceneNode, StyleRun, TextListLine } from '@kalka/scene-graph'
+import { textLayerName, type SceneNode, type StyleRun, type TextListLine } from '@kalka/scene-graph'
 import { copyDerivedGlyphs, copyGeometryPaths, copyStyleRuns } from '@kalka/scene-graph/copy'
 
 export type TextEditSizeSnapshot = Partial<Pick<SceneNode, 'width' | 'height'>>
@@ -110,15 +110,6 @@ function fillsEqual(
 ) {
   if (a.length !== b.length) return false
   return a.every((fill, index) => isEqual(fill, b[index]))
-}
-
-/** The longest name a text layer takes from its text. */
-const MAX_TEXT_NAME = 80
-
-/** The name a text layer takes from its text, as Figma names it: its first line, trimmed. */
-export function textLayerName(text: string): string {
-  const [line = ''] = text.split(/\r?\n|\u2028/)
-  return line.replace(/\s+/g, ' ').trim().slice(0, MAX_TEXT_NAME)
 }
 
 /**

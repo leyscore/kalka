@@ -192,6 +192,14 @@ describe('@kalka/dom-css conversion', () => {
       ['Here', true]
     ])
   })
+  it('names a text layer after its whole first line, as a text typed in Kalka', async () => {
+    const graph = await htmlToSceneGraph(
+      '<h1>Des sites qui se construisent seuls, page après page</h1>',
+      { runtime: createHeadlessCSSRuntime() }
+    )
+    const [text] = [...graph.getAllNodes()].filter((node) => node.type === 'TEXT')
+    expect(text?.name).toBe('Des sites qui se construisent seuls, page après page')
+  })
   it('converts HTML and CSS to a scene graph with one API call', async () => {
     const graph = await htmlToSceneGraph(cardHTML, {
       cssText: cardCSS,

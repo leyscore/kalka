@@ -44,4 +44,11 @@ describe('text layers named after their text', () => {
     expect(edit('Bonjour', 'Bonjour', '  Salut   à tous  \nsecond').nameOf()).toBe('Salut à tous')
     expect(edit('Bonjour', 'Bonjour', '\nSalut').nameOf()).toBe('Bonjour')
   })
+
+  test('a long text named after its first line follows an edit, as an imported heading', () => {
+    const heading = 'Des sites qui se construisent seuls, page après page'
+    expect(edit(heading, heading, 'Votre site en une heure').nameOf()).toBe(
+      'Votre site en une heure'
+    )
+  })
 })
