@@ -1,5 +1,5 @@
 import type { Editor } from '@kalka/core/editor'
-import type { SceneNode } from '@kalka/scene-graph'
+import { readIcon, type SceneNode } from '@kalka/scene-graph'
 
 import type { DragOriginal as MoveOriginal } from '#vue/shared/input/drag-original'
 import { duplicateAndDrag } from '#vue/shared/input/duplicate-drag'
@@ -33,11 +33,14 @@ export function pressesSelection(hit: SceneNode, cx: number, cy: number, editor:
   })
 }
 
-/** Whether clicking `hit` inside the selection selects it: not when a selected group holds it. */
+/**
+ * Whether clicking `hit` inside the selection selects it: not when a selected group or icon
+ * holds it, which a double-click opens instead.
+ */
 export function clickSelectsInside(hit: SceneNode, editor: Editor) {
   for (let node = editor.graph.getNode(hit.parentId ?? ''); node;) {
     if (editor.state.selectedIds.has(node.id)) {
-      return node.type !== 'GROUP' && node.type !== 'BOOLEAN_OPERATION'
+      return node.type !== 'GROUP' && node.type !== 'BOOLEAN_OPERATION' && !readIcon(node)
     }
     node = editor.graph.getNode(node.parentId ?? '')
   }

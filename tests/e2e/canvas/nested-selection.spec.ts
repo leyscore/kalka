@@ -114,3 +114,52 @@ test('dragging inside the selected layer moves it, even where another layer is d
     await page.evaluate(() => [...(window.kalka?.getStore?.()?.state.selectedIds ?? [])])
   ).toEqual([over.id])
 })
+
+test('a double-click stops at an icon, and the next one goes into its paths', async () => {
+  await canvas.clearCanvas()
+  const ids = await page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const pageId = store.state.currentPageId
+    const card = store.graph.createNode('FRAME', pageId, {
+      name: 'Card',
+      x: 100,
+      y: 100,
+      width: 300,
+      height: 200
+    })
+    const icon = store.graph.createNode('FRAME', card.id, {
+      name: 'home',
+      x: 40,
+      y: 40,
+      width: 96,
+      height: 96,
+      pluginData: [{ pluginId: 'kalka', key: 'icon', value: '{"name":"lucide:home"}' }]
+    })
+    const path = store.graph.createNode('RECTANGLE', icon.id, {
+      name: 'path',
+      x: 0,
+      y: 0,
+      width: 96,
+      height: 96,
+      fills: [{ type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 1, visible: true }]
+    })
+    store.select([card.id])
+    const point = { x: 100 + 40 + 48, y: 100 + 40 + 48 }
+    const { panX, panY, zoom } = store.state
+    return {
+      icon: icon.id,
+      path: path.id,
+      at: { x: point.x * zoom + panX, y: point.y * zoom + panY }
+    }
+  })
+  await canvas.waitForRender()
+  const selection = () =>
+    page.evaluate(() => [...(window.kalka?.getStore?.()?.state.selectedIds ?? [])])
+
+  await canvas.dblclick(ids.at.x, ids.at.y)
+  expect(await selection()).toEqual([ids.icon])
+  // A double-click of its own, a little apart, so it does not continue the first one.
+  await canvas.dblclick(ids.at.x + 12, ids.at.y)
+  expect(await selection()).toEqual([ids.path])
+})

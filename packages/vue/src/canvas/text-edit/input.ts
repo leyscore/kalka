@@ -1,5 +1,5 @@
 import { getNodeEditCapability, type Editor } from '@kalka/core/editor'
-import type { SceneNode } from '@kalka/scene-graph'
+import { readIcon, type SceneNode } from '@kalka/scene-graph'
 
 import type { CanvasLabelKind } from '#vue/canvas/labels/edit'
 import type { DragState } from '#vue/shared/input/types'
@@ -115,6 +115,19 @@ export function createTextEditInput(options: TextEditInputOptions) {
     return false
   }
 
+  /**
+   * The icon a deep hit lies in, short of the layer already selected: as in Figma, a double-click
+   * stops at an icon, and only the next one goes into its paths.
+   */
+  function stopAtIcon(hit: SceneNode, selectedId: string | undefined): SceneNode {
+    let icon: SceneNode | undefined
+    for (let node: SceneNode | undefined = hit; node && node.id !== selectedId;) {
+      if (readIcon(node)) icon = node
+      node = node.parentId ? editor.graph.getNode(node.parentId) : undefined
+    }
+    return icon ?? hit
+  }
+
   function handleContainerDoubleClick(
     selectedId: string | undefined,
     cx: number,
@@ -129,7 +142,8 @@ export function createTextEditInput(options: TextEditInputOptions) {
     ) {
       return false
     }
-    const hit = getContainerDescendantHit(selectedId, cx, cy)
+    const deep = getContainerDescendantHit(selectedId, cx, cy)
+    const hit = deep ? stopAtIcon(deep, selectedId) : deep
     editor.enterContainer(selectedId)
     if (hit?.type === 'TEXT') startTextEditingAt(hit, cx, cy)
     else if (hit) editor.select([hit.id])
@@ -146,10 +160,15 @@ export function createTextEditInput(options: TextEditInputOptions) {
 
     const selectedId =
       editor.state.selectedIds.size === 1 ? [...editor.state.selectedIds][0] : undefined
+    // The first click of this double-click selected an icon: it stays the icon, as in Figma.
+    const selectedNode = selectedId ? editor.graph.getNode(selectedId) : undefined
+    if (selectedNode && readIcon(selectedNode) && !wasSelectedBeforeClickSequence(selectedNode.id))
+      return
     if (handleContainerDoubleClick(selectedId, cx, cy)) return
 
-    const hit = hitTestInScope(cx, cy, true)
-    if (!hit) return
+    const deep = hitTestInScope(cx, cy, true)
+    if (!deep) return
+    const hit = stopAtIcon(deep, selectedId)
 
     if (hit.type === 'TEXT') {
       const isTopLevelText = hit.parentId === editor.state.currentPageId
