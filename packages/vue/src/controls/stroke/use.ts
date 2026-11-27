@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 
 import { newStrokeGeometry, type Stroke } from '@kalka/scene-graph'
+import { readableForeground } from '@kalka/scene-graph/color'
 
 import { useNodeProps } from '#vue/controls/node-props/use'
 import { createEndPointControls } from '#vue/controls/stroke/end-caps'
@@ -76,10 +77,14 @@ export function useStrokeControls() {
     sideOptions: SIDE_OPTIONS,
     borderSides: BORDER_SIDES,
     sideMenuOpen,
-    /** A new stroke for the selection: black, with the weight and alignment its first node keeps. */
+    /**
+     * A new stroke for the selection, with the weight and alignment its first node keeps: black,
+     * or white on a dark canvas, where black would not show.
+     */
     get defaultStroke(): Stroke {
       const first = nodes.value.at(0)
-      return { ...DEFAULT_STROKE, ...(first ? newStrokeGeometry(first) : {}) }
+      const color = readableForeground(store.state.pageColor)
+      return { ...DEFAULT_STROKE, color, ...(first ? newStrokeGeometry(first) : {}) }
     },
     updateAlign: updateAlign.bind(null, store),
     currentAlign,

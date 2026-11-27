@@ -160,6 +160,23 @@ test('adding a stroke creates stroke section item', async () => {
   expect(expectDefined(node, 'node node').strokes.length).toBe(1)
 })
 
+test('a stroke added on a dark canvas is white, so it shows', async () => {
+  const strokeItems = propertyItems(editor.page, 'strokes')
+  await strokeItems.first().getByRole('button', { name: 'Remove stroke' }).click()
+  const previous = await editor.page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const color = { ...store.state.pageColor }
+    store.setPageColor({ r: 0.12, g: 0.12, b: 0.12, a: 1 })
+    return color
+  })
+  await strokeSection().getByRole('button', { name: 'Add stroke' }).click()
+  const id = await getSelectedId()
+  const node = await getNode(expectDefined(id, 'selected id'))
+  expect(expectDefined(node, 'node').strokes[0].color).toMatchObject({ r: 1, g: 1, b: 1 })
+  await editor.page.evaluate((color) => window.kalka?.getStore?.()?.setPageColor(color), previous)
+})
+
 test('adding an effect creates effect item', async () => {
   const addBtn = effectsSection().getByRole('button', { name: 'Add effect' })
   await addBtn.click()
