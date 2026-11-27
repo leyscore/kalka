@@ -108,13 +108,13 @@ function restore(version: HistoryVersion) {
     <form
       v-if="!store.state.viewOnly"
       ref="nameForm"
-      class="flex gap-2 px-4 pb-3"
+      class="flex flex-wrap gap-2 px-4 pb-3"
       @submit.prevent="saveNamed"
     >
       <AppInput
         v-model="name"
         tone="panel"
-        class="min-w-0 flex-1"
+        class="min-w-32 flex-1"
         :aria-label="panels.versionsNameLabel"
         :placeholder="panels.versionsNameLabel"
         data-test-id="checkpoint-name"
@@ -140,21 +140,19 @@ function restore(version: HistoryVersion) {
         :data-kind="checkpoint.kind"
       >
         <span :class="timeline.point()" :data-latest="index === 0 || undefined" />
-        <div class="flex items-start gap-1">
-          <div class="min-w-0 flex-1">
-            <p
-              :class="timeline.subject()"
-              class="data-[kind=named]:font-semibold"
-              :data-kind="checkpoint.kind"
-            >
-              {{ title(checkpoint) }}
-            </p>
-            <p :class="timeline.detail()">{{ detail(checkpoint) }}</p>
-          </div>
+        <p
+          :class="timeline.subject()"
+          class="data-[kind=named]:font-semibold"
+          :data-kind="checkpoint.kind"
+        >
+          {{ title(checkpoint) }}
+        </p>
+        <p :class="timeline.detail()">{{ detail(checkpoint) }}</p>
+        <!-- The actions get a row of their own so a narrow panel never squeezes the name out. -->
+        <div class="-ml-2 flex flex-wrap gap-0.5 pt-0.5">
           <AppButton
             size="xs"
             variant="ghost"
-            class="shrink-0"
             data-test-id="checkpoint-preview"
             :disabled="busy !== null"
             @click="preview(checkpoint)"
@@ -164,7 +162,6 @@ function restore(version: HistoryVersion) {
           <AppButton
             size="xs"
             variant="ghost"
-            class="shrink-0"
             data-test-id="checkpoint-compare"
             :disabled="busy !== null"
             @click="compare(checkpoint)"
@@ -175,7 +172,6 @@ function restore(version: HistoryVersion) {
             v-if="!store.state.viewOnly"
             size="xs"
             variant="ghost"
-            class="shrink-0"
             data-test-id="checkpoint-restore"
             :disabled="busy !== null"
             :loading="busy === checkpoint.id"

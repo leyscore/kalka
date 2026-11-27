@@ -101,3 +101,23 @@ test('Compare changes lists the layers and variables a version differs by', asyn
     .poll(() => page.evaluate(() => [...(window.kalka?.getStore?.()?.state.selectedIds ?? [])]))
     .toEqual([id])
 })
+
+test('a version shows its name beside its actions', async ({ page }) => {
+  const id = await open(page)
+  await page.evaluate((nodeId) => {
+    window.kalka?.getStore?.()?.graph.updateNode(nodeId, { name: 'Hero' })
+  }, id)
+
+  await page.getByTestId('left-panel-history-tab').click()
+  const history = page.getByTestId('checkpoint-history')
+  const name = history.getByTestId('checkpoint-name')
+  // The name field keeps room to type in, beside its button.
+  expect((await name.boundingBox())?.width ?? 0).toBeGreaterThan(100)
+  await name.fill('Before test')
+  await history.getByTestId('checkpoint-save').click()
+  const version = history.locator('[data-slot="checkpoint"]').first()
+  const label = version.getByText('Before test')
+  await expect(label).toBeVisible()
+  expect((await label.boundingBox())?.width ?? 0).toBeGreaterThan(40)
+
+})
