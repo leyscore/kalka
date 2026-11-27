@@ -195,8 +195,16 @@ describe('variant authoring', () => {
       kind: 'changed'
     })
     expect(editor.graph.getNode(primaryLarge.id)?.componentPropertyValues.Size).toBe('Medium')
+    // Large was this variant's alone, so it leaves the property; Small is still used.
+    const sizeOptions = () =>
+      editor.graph
+        .getNode(componentSet.id)
+        ?.componentPropertyDefinitions.find((definition) => definition.name === 'Size')
+        ?.variantOptions
+    expect(sizeOptions()).toEqual(['Small', 'Medium'])
     editor.undo.undo()
     expect(editor.graph.getNode(primaryLarge.id)?.componentPropertyValues.Size).toBe('Large')
+    expect(sizeOptions()).toEqual(['Small', 'Large'])
 
     const duplicateId = editor.duplicateVariant(primarySmall.id)
     expect(duplicateId).toBeString()

@@ -292,11 +292,15 @@ export function setVariantPropertyValue(
     return { kind: 'conflict', componentIds: [variantId, conflicting.id] }
   }
 
+  const released: Record<string, string> =
+    definition.name in variant.componentPropertyValues
+      ? { [definition.name]: variant.componentPropertyValues[definition.name] }
+      : {}
   setVariantValues(ctx, componentSetId, variantId, {
     ...variant.componentPropertyValues,
     [definition.name]: normalizedValue
   })
-  refreshVariantOptions(ctx, componentSetId)
+  refreshVariantOptions(ctx, componentSetId, released)
   const after = captureVariantSnapshot(ctx, componentSetId)
   if (after) recordSnapshotChange(ctx, componentSetId, `Change ${definition.name}`, before, after)
   return { kind: 'changed' }

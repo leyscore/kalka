@@ -94,15 +94,27 @@ export function updateVariantName(
     ctx.graph.updateNode(variant.id, { name: buildVariantName(values) })
 }
 
-export function refreshVariantOptions(ctx: EditorContext, componentSetId: string): void {
+/**
+ * Brings a set's variant options in line with its variants: values a variant uses are added.
+ * `released` names values a change just took off a variant, by property name; one that no variant
+ * uses any more leaves the property, as in Figma.
+ */
+export function refreshVariantOptions(
+  ctx: EditorContext,
+  componentSetId: string,
+  released: Readonly<Record<string, string>> = {}
+): void {
   const componentSet = getComponentSet(ctx.graph, componentSetId)
   if (!componentSet) return
   const collected = collectVariantOptions(ctx.graph, componentSetId)
   const definitions = componentSet.componentPropertyDefinitions.map((definition) => {
     if (definition.type !== 'VARIANT') return definition
     const present = collected.get(definition.name) ?? new Set<string>()
+    const unused = released[definition.name]
     const options = [
-      ...(definition.variantOptions ?? []),
+      ...(definition.variantOptions ?? []).filter(
+        (value) => value !== unused || present.has(value)
+      ),
       ...[...present].filter((value) => !definition.variantOptions?.includes(value))
     ]
     return {
