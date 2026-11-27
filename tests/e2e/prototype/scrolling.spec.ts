@@ -69,11 +69,7 @@ test('presenting, a list that scrolls vertically scrolls under the wheel, not th
 
   // The list moved under the pointer; the header above it stayed.
   await expect
-    .poll(() =>
-      presented
-        .locator('[data-layer="List"]')
-        .evaluate((list) => list.scrollTop)
-    )
+    .poll(() => presented.locator('[data-layer="List"]').evaluate((list) => list.scrollTop))
     .toBeGreaterThan(0)
   expect((await header.boundingBox())?.y).toBe(headerTop)
   await page.evaluate(() => window.kalka?.getStore?.().stopPlay())

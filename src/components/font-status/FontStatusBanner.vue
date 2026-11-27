@@ -9,8 +9,8 @@ import { useDocumentFontStatus } from '@/app/editor/fonts/status'
 import { toast } from '@/app/shell/ui'
 import FontPicker from '@/components/font-picker/FontPicker.vue'
 import MissingFontsPrompt from '@/components/font-status/MissingFontsPrompt.vue'
-import AppSelect from '@/components/ui/select/AppSelect.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'
+import AppSelect from '@/components/ui/select/AppSelect.vue'
 
 const { fonts } = useI18n()
 const expanded = ref(false)

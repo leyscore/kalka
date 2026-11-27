@@ -93,7 +93,9 @@ test('dragging inside the selected layer moves it, even where another layer is d
   const [under, over] = await page.evaluate(() => {
     const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
-    return store.graph.getChildren(store.state.currentPageId).map((node) => ({ id: node.id, x: node.x }))
+    return store.graph
+      .getChildren(store.state.currentPageId)
+      .map((node) => ({ id: node.id, x: node.x }))
   })
   // Select the lower one where nothing covers it, then drag from where the upper one covers it.
   await canvas.click(120, 120)

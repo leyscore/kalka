@@ -186,5 +186,6 @@ export const panelDocumentMessages = {
   versionsBeforeRestoreAt: params('Before restoring the version of {time}'),
   versionsRestoredAt: params('Restored the version of {time}.'),
   versionsRestoreConfirmTitle: params('Restore the version of {time}?'),
-  versionsRestoreConfirmDescription: 'What is on the canvas now is kept as a version first, so you can come back to it.'
+  versionsRestoreConfirmDescription:
+    'What is on the canvas now is kept as a version first, so you can come back to it.'
 } as const

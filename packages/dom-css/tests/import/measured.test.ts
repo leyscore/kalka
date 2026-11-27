@@ -382,14 +382,17 @@ describe('measured HTML import', () => {
 
 describe('a measured table', () => {
   const cell = (tag: string, text: string, x: number, y: number) =>
-    element(tag, box(x, y, 80, 38), {
-      ...BLOCK,
-      display: 'table-cell',
-      padding: '8px',
-      'background-color': 'rgb(240, 240, 240)'
-    }, [
-      { type: 'text', text, layoutBox: box(x + 8, y + 9, text.length * 8, 20) }
-    ])
+    element(
+      tag,
+      box(x, y, 80, 38),
+      {
+        ...BLOCK,
+        display: 'table-cell',
+        padding: '8px',
+        'background-color': 'rgb(240, 240, 240)'
+      },
+      [{ type: 'text', text, layoutBox: box(x + 8, y + 9, text.length * 8, 20) }]
+    )
 
   test('is a grid of cells sized by their content, so a longer cell widens its column', () => {
     const table = element('table', box(0, 0, 160, 76), { ...BLOCK, display: 'table' }, [
