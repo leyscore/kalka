@@ -1,7 +1,7 @@
 import type { EditorStore } from '@/app/editor/active-store'
 import { pasteOverSelection } from '@/app/editor/clipboard/paste-over'
-import { copyLayersAsPNG } from '@/app/editor/clipboard/png'
 import { pasteClipboardToReplace } from '@/app/editor/clipboard/paste-to-replace'
+import { copyLayersAsPNG } from '@/app/editor/clipboard/png'
 import {
   copySelectionProperties,
   pasteClipboardProperties

@@ -136,9 +136,9 @@ test('a gradient handle over a resize handle drags the gradient, not the layer',
   const b = await onCanvas({ x: 110, y: 120 })
   // Pressed straight away, with no hover over the handle first, as a stylus or a quick hand does.
   const box = await page.getByTestId('canvas-element').boundingBox()
-  const at = (p: { x: number; y: number }) => ({ x: (box?.x ?? 0) + p.x, y: (box?.y ?? 0) + p.y })
+  const at = (p: Vector) => ({ x: (box?.x ?? 0) + p.x, y: (box?.y ?? 0) + p.y })
   const cdp = await page.context().newCDPSession(page)
-  const send = (type: 'mousePressed' | 'mouseMoved' | 'mouseReleased', p: { x: number; y: number }) =>
+  const send = (type: 'mousePressed' | 'mouseMoved' | 'mouseReleased', p: Vector) =>
     cdp.send('Input.dispatchMouseEvent', {
       type,
       ...at(p),
@@ -148,7 +148,10 @@ test('a gradient handle over a resize handle drags the gradient, not the layer',
     })
   await send('mousePressed', a)
   for (let step = 1; step <= 8; step++)
-    await send('mouseMoved', { x: a.x + ((b.x - a.x) * step) / 8, y: a.y + ((b.y - a.y) * step) / 8 })
+    await send('mouseMoved', {
+      x: a.x + ((b.x - a.x) * step) / 8,
+      y: a.y + ((b.y - a.y) * step) / 8
+    })
   await send('mouseReleased', b)
   await cdp.detach()
   await expect(picker).toBeVisible()

@@ -15,13 +15,13 @@ import {
   toggleCommentPlacing
 } from '@/app/comments/service'
 import { requestNamedVersion } from '@/app/document/versions/save-request'
+import { copyLayersAsPNG } from '@/app/editor/clipboard/png'
 import {
   copySelectionProperties,
   pasteClipboardProperties
 } from '@/app/editor/clipboard/properties'
 import { pickColorForSelection } from '@/app/editor/color/eyedropper'
 import { openFind } from '@/app/editor/find/state'
-import { copyLayersAsPNG } from '@/app/editor/clipboard/png'
 import { copySelectionLink } from '@/app/editor/selection/link'
 import { requestRenameSelection } from '@/app/editor/selection/rename-dialog'
 import { TOOL_SHORTCUTS } from '@/app/editor/session'

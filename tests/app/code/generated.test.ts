@@ -17,7 +17,9 @@ test('Tailwind JSX draws an icon inside a button as SVG, not as a filled box', (
     name: 'path',
     width: 20,
     height: 20,
-    fills: [{ type: 'SOLID', color: { r: 0.15, g: 0.39, b: 0.92, a: 1 }, opacity: 1, visible: true }],
+    fills: [
+      { type: 'SOLID', color: { r: 0.15, g: 0.39, b: 0.92, a: 1 }, opacity: 1, visible: true }
+    ],
     vectorNetwork: {
       vertices: [
         { x: 0, y: 10 },

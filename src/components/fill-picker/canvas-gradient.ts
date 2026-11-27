@@ -99,7 +99,7 @@ export function useCanvasGradientHandles({
   function keepOpen(event: CustomEvent<{ originalEvent: Event }>) {
     const edit = store.state.gradientEdit
     if (!owned(edit)) return
-    const press = event.detail?.originalEvent
+    const press = event.detail.originalEvent
     const onHandle =
       edit.handle !== null ||
       edit.dragging ||

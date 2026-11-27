@@ -103,7 +103,7 @@ const sections = computed(() => {
   })
 })
 
-const filter = useTemplateRef<InstanceType<typeof AppInput>>('filter')
+const filter = useTemplateRef<{ focus: () => void }>('filter')
 
 /** The dialog opens on its filter, so typing narrows the list at once. */
 function focusFilter(event: Event) {

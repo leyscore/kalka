@@ -20,7 +20,10 @@ function french(catalog: string): Record<string, string> {
 }
 
 async function openInFrench(page: Page) {
-  await page.addInitScript(() => localStorage.setItem('kalka-locale', 'fr'))
+  await page.addInitScript(() =>
+    // oxlint-disable-next-line kalka/no-direct-storage-access -- Picks the language before the app loads.
+    localStorage.setItem('kalka-locale', 'fr')
+  )
   await page.goto('/?test')
   await new CanvasHelper(page).waitForInit()
 }
@@ -77,7 +80,7 @@ test('the export button is named in the chosen language', async ({ page }) => {
     const editor = window.kalka?.getStore?.()
     if (!editor) throw new Error('Editor unavailable')
     const id = editor.createShape('RECTANGLE', 100, 100, 180, 120)
-    editor.updateNode(id, { name: 'Card', exportSettings: [{ format: 'PNG', scale: 1 }] })
+    editor.updateNode(id, { name: 'Card', exportSettings: [{ format: 'png', scale: 1 }] })
     editor.select([id])
   })
   await expect(page.getByTestId('export-button')).toHaveText(

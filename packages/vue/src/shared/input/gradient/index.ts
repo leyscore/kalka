@@ -6,6 +6,7 @@ import type { Fill, SceneNode } from '@kalka/scene-graph'
 import { copyFills, copyStrokes } from '@kalka/scene-graph/copy'
 import type { Vector } from '@kalka/scene-graph/primitives'
 
+import { getPointerCoords } from '#vue/shared/input/geometry'
 import {
   dragGradientHandle,
   editedGradient,
@@ -14,7 +15,6 @@ import {
   type GradientEdit,
   type GradientHandle
 } from '#vue/shared/input/gradient/geometry'
-import { getPointerCoords } from '#vue/shared/input/geometry'
 import type { DragGradientHandle } from '#vue/shared/input/types'
 
 export * from '#vue/shared/input/gradient/geometry'
