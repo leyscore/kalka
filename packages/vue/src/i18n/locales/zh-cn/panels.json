@@ -172,6 +172,8 @@
   "versionsServerBranchOlder": "此分支来自较旧的服务器：请改为合并。",
   "versionsBeforeRestoreAt": "恢复 {time} 的版本之前",
   "versionsRestoredAt": "已恢复 {time} 的版本。",
+  "versionsRestoreConfirmTitle": "恢复 {time} 的版本?",
+  "versionsRestoreConfirmDescription": "画布上的当前内容会先保存为一个版本,以便之后返回。",
   "layers": "图层",
   "pages": "页面",
   "design": "设计",

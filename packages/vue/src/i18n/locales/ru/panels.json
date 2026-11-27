@@ -176,6 +176,8 @@
   "versionsServerBranchOlder": "Эта ветка создана на более старом сервере: лучше слейте её.",
   "versionsBeforeRestoreAt": "Перед восстановлением версии от {time}",
   "versionsRestoredAt": "Версия от {time} восстановлена.",
+  "versionsRestoreConfirmTitle": "Восстановить версию от {time}?",
+  "versionsRestoreConfirmDescription": "Текущее содержимое холста сначала сохранится как версия, чтобы к нему можно было вернуться.",
   "layers": "Слои",
   "pages": "Страницы",
   "design": "Дизайн",

@@ -184,5 +184,7 @@ export const panelDocumentMessages = {
   versionsServerBranchUpdated: 'The branch has the changes you chose from the main file.',
   versionsServerBranchOlder: 'This branch comes from an older server: merge it instead.',
   versionsBeforeRestoreAt: params('Before restoring the version of {time}'),
-  versionsRestoredAt: params('Restored the version of {time}.')
+  versionsRestoredAt: params('Restored the version of {time}.'),
+  versionsRestoreConfirmTitle: params('Restore the version of {time}?'),
+  versionsRestoreConfirmDescription: 'What is on the canvas now is kept as a version first, so you can come back to it.'
 } as const

@@ -102,7 +102,7 @@ test('Compare changes lists the layers and variables a version differs by', asyn
     .toEqual([id])
 })
 
-test('a version shows its name beside its actions', async ({ page }) => {
+test('a version shows its name and time, and restoring it asks first', async ({ page }) => {
   const id = await open(page)
   await page.evaluate((nodeId) => {
     window.kalka?.getStore?.()?.graph.updateNode(nodeId, { name: 'Hero' })
@@ -120,4 +120,16 @@ test('a version shows its name beside its actions', async ({ page }) => {
   await expect(label).toBeVisible()
   expect((await label.boundingBox())?.width ?? 0).toBeGreaterThan(40)
 
+  await page.evaluate((nodeId) => {
+    window.kalka?.getStore?.()?.graph.updateNode(nodeId, { name: 'Changed' })
+  }, id)
+  await version.getByTestId('checkpoint-restore').click()
+  const confirm = page.getByRole('alertdialog')
+  await expect(confirm).toBeVisible()
+  await confirm.getByRole('button', { name: 'Cancel' }).click()
+  expect(await layerName(page, id)).toBe('Changed')
+
+  await version.getByTestId('checkpoint-restore').click()
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Restore' }).click()
+  await expect.poll(() => layerName(page, id)).toBe('Hero')
 })

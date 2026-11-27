@@ -14,6 +14,7 @@ import { useNamedVersionFocus } from '@/app/document/versions/save-request'
 import { useEditorStore } from '@/app/editor/active-store'
 import { toast } from '@/app/shell/ui'
 import AppButton from '@/components/ui/button/AppButton.vue'
+import AppConfirmationDialog from '@/components/ui/dialog/AppConfirmationDialog.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 import { versionTimeline } from '@/theme/panel/folder'
@@ -88,6 +89,21 @@ function compare(version: HistoryVersion) {
       afterIsOpen: true
     })
   )
+}
+
+/** The version a restore waits on: restoring replaces the canvas, so it asks first. */
+const pendingRestore = ref<HistoryVersion | null>(null)
+const confirmingRestore = ref(false)
+
+function askRestore(version: HistoryVersion) {
+  pendingRestore.value = version
+  confirmingRestore.value = true
+}
+
+function confirmRestore() {
+  const version = pendingRestore.value
+  pendingRestore.value = null
+  if (version) restore(version)
 }
 
 function restore(version: HistoryVersion) {
@@ -175,7 +191,7 @@ function restore(version: HistoryVersion) {
             data-test-id="checkpoint-restore"
             :disabled="busy !== null"
             :loading="busy === checkpoint.id"
-            @click="restore(checkpoint)"
+            @click="askRestore(checkpoint)"
           >
             {{ panels.versionsRestore }}
           </AppButton>
@@ -184,5 +200,18 @@ function restore(version: HistoryVersion) {
     </ol>
     <p v-else class="px-4 pb-4 text-xs text-muted">{{ panels.versionsAutoNone }}</p>
     <AppAlert v-if="error" tone="error" :heading="error" class="mx-4 mb-3" />
+    <AppConfirmationDialog
+      v-model:open="confirmingRestore"
+      :heading="
+        panels.versionsRestoreConfirmTitle({
+          time: pendingRestore ? checkpointTime(pendingRestore) : ''
+        })
+      "
+      :description="panels.versionsRestoreConfirmDescription"
+      :cancel-label="panels.versionsCancel"
+      :confirm-label="panels.versionsRestore"
+      @confirm="confirmRestore"
+      @cancel="pendingRestore = null"
+    />
   </section>
 </template>

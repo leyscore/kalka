@@ -176,6 +176,8 @@
   "versionsServerBranchOlder": "Ta gałąź pochodzi ze starszego serwera: zamiast tego ją scal.",
   "versionsBeforeRestoreAt": "Przed przywróceniem wersji z {time}",
   "versionsRestoredAt": "Przywrócono wersję z {time}.",
+  "versionsRestoreConfirmTitle": "Przywrócić wersję z {time}?",
+  "versionsRestoreConfirmDescription": "To, co jest teraz na płótnie, zostanie najpierw zachowane jako wersja, aby można było do niego wrócić.",
   "layers": "Warstwy",
   "pages": "Strony",
   "design": "Design",

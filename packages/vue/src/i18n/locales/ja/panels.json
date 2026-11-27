@@ -172,6 +172,8 @@
   "versionsServerBranchOlder": "このブランチは古いサーバーで作成されました。代わりにマージしてください。",
   "versionsBeforeRestoreAt": "{time} のバージョンを復元する前",
   "versionsRestoredAt": "{time} のバージョンを復元しました。",
+  "versionsRestoreConfirmTitle": "{time} のバージョンを復元しますか?",
+  "versionsRestoreConfirmDescription": "現在のキャンバスの内容はまずバージョンとして保存されるため、後で戻せます。",
   "untitled": "無題",
   "layers": "レイヤー",
   "pages": "ページ",
