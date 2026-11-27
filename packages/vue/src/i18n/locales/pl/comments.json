@@ -41,6 +41,11 @@
   "noChanges": "Brak zmian agentów. Każdą można tu cofnąć.",
   "changeLabel": "{name} zmienił {page}",
   "edits": "Edycje: {count}",
+  "replies": {
+    "one": "{count} odpowiedź",
+    "few": "{count} odpowiedzi",
+    "many": "{count} odpowiedzi"
+  },
   "restoreBefore": "Przywróć sprzed tej zmiany",
   "restoreUndo": "Przywróć sprzed zmiany agenta",
   "addReaction": "Dodaj reakcję",

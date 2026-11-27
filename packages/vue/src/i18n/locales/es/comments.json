@@ -41,6 +41,10 @@
   "noChanges": "Aún no hay cambios de agentes. Cada uno se puede deshacer desde aquí.",
   "changeLabel": "{name} cambió {page}",
   "edits": "{count} ediciones",
+  "replies": {
+    "one": "{count} respuesta",
+    "many": "{count} respuestas"
+  },
   "restoreBefore": "Restaurar a antes",
   "restoreUndo": "Restaurar a antes de un cambio de agente",
   "addReaction": "Añadir una reacción",

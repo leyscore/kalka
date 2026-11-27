@@ -1,4 +1,4 @@
-import { params } from '@nanostores/i18n'
+import { count, params } from '@nanostores/i18n'
 
 import { i18n } from '#vue/i18n/create'
 
@@ -45,6 +45,7 @@ export const commentsMessageDefaults = {
   noChanges: 'No agent changes yet. Each agent change can be put back from here.',
   changeLabel: params('{name} changed {page}'),
   edits: params('{count} edits'),
+  replies: count({ one: '{count} reply', many: '{count} replies' }),
   restoreBefore: 'Restore before this',
   restoreUndo: 'Restore before an agent change',
   addReaction: 'Add a reaction',

@@ -228,6 +228,13 @@ async function revealTask(task: AgentTask) {
             </span>
             <span class="line-clamp-2 text-sm text-surface">{{ thread.messages[0]?.text }}</span>
             <span
+              v-if="thread.messages.length > 1"
+              class="text-xs text-muted"
+              data-slot="comments-panel-replies"
+            >
+              {{ messages.replies(thread.messages.length - 1) }}
+            </span>
+            <span
               v-if="stateLine(thread)"
               class="text-xs text-muted"
               :data-state="thread.agent?.state"

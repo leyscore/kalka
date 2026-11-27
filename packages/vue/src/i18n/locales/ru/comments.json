@@ -41,6 +41,11 @@
   "noChanges": "Изменений агентов пока нет. Любое можно откатить отсюда.",
   "changeLabel": "{name} изменил {page}",
   "edits": "Правок: {count}",
+  "replies": {
+    "one": "{count} ответ",
+    "few": "{count} ответа",
+    "many": "{count} ответов"
+  },
   "restoreBefore": "Восстановить до этого",
   "restoreUndo": "Восстановить до изменения агента",
   "addReaction": "Добавить реакцию",

@@ -41,6 +41,9 @@
   "noChanges": "エージェントの変更はまだありません。各変更はここから元に戻せます。",
   "changeLabel": "{name} が {page} を変更",
   "edits": "{count} 件の編集",
+  "replies": {
+    "many": "返信 {count} 件"
+  },
   "restoreBefore": "この前に戻す",
   "restoreUndo": "エージェントの変更前に戻す",
   "addReaction": "リアクションを追加",

@@ -175,6 +175,14 @@ test('the panel lists threads open and resolved, and resolving one moves it', as
   await page.keyboard.press('Escape')
   await panel.locator('[data-slot="comments-panel-thread"]').click()
   await expect(thread).toContainText('First note')
+
+  // A reply shows as a count under the thread in the list.
+  const replies = panel.locator('[data-slot="comments-panel-replies"]')
+  await expect(replies).toHaveCount(0)
+  await thread.getByRole('textbox').fill('Done')
+  await thread.getByRole('textbox').press('Enter')
+  await expect(replies).toHaveCount(1)
+  await expect(replies).toContainText('1')
 })
 
 test('comments work in a document opened after the editor started', async ({ page }) => {

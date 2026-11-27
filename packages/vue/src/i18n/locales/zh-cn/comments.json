@@ -41,6 +41,9 @@
   "noChanges": "暂无智能体更改。每项更改都可以在这里还原。",
   "changeLabel": "{name} 修改了 {page}",
   "edits": "{count} 次编辑",
+  "replies": {
+    "many": "{count} 条回复"
+  },
   "restoreBefore": "还原到此之前",
   "restoreUndo": "还原到智能体更改之前",
   "addReaction": "添加回应",

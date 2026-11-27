@@ -41,6 +41,10 @@
   "noChanges": "Aucune modification d’agent pour l’instant. Chacune peut être annulée d’ici.",
   "changeLabel": "{name} a modifié {page}",
   "edits": "{count} modifications",
+  "replies": {
+    "one": "{count} réponse",
+    "many": "{count} réponses"
+  },
   "restoreBefore": "Restaurer avant",
   "restoreUndo": "Restaurer avant une modification d’agent",
   "addReaction": "Ajouter une réaction",

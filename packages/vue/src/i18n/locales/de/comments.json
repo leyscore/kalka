@@ -41,6 +41,10 @@
   "noChanges": "Noch keine Änderungen von Agenten. Jede lässt sich hier zurücksetzen.",
   "changeLabel": "{name} hat {page} geändert",
   "edits": "{count} Bearbeitungen",
+  "replies": {
+    "one": "{count} Antwort",
+    "many": "{count} Antworten"
+  },
   "restoreBefore": "Davor wiederherstellen",
   "restoreUndo": "Vor einer Agentenänderung wiederherstellen",
   "addReaction": "Reaktion hinzufügen",

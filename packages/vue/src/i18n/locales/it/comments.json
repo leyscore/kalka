@@ -41,6 +41,10 @@
   "noChanges": "Ancora nessuna modifica degli agenti. Ognuna si può annullare da qui.",
   "changeLabel": "{name} ha modificato {page}",
   "edits": "{count} modifiche",
+  "replies": {
+    "one": "{count} risposta",
+    "many": "{count} risposte"
+  },
   "restoreBefore": "Ripristina a prima",
   "restoreUndo": "Ripristina a prima di una modifica dell’agente",
   "addReaction": "Aggiungi una reazione",
