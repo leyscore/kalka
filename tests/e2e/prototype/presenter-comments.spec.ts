@@ -59,8 +59,13 @@ test('comments pin onto the presented screen and a click in comment mode adds on
   expect(Math.abs((pin?.x ?? 0) - (box.x + 20))).toBeLessThan(3)
   expect(Math.abs((pin?.y ?? 0) + (pin?.height ?? 0) - (box.y + 10))).toBeLessThan(3)
 
-  // C turns comment mode on in the presenter as on the canvas.
+  // Comment mode stays on after posting; Escape closes the thread, then leaves the mode.
+  await expect(page.locator('[data-slot="comment-placement"]')).toBeVisible()
   await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+  await expect(page.locator('[data-slot="comment-placement"]')).toHaveCount(0)
+
+  // C turns comment mode on in the presenter as on the canvas.
   await page.keyboard.press('c')
   await expect(page.locator('[data-slot="comment-placement"]')).toBeVisible()
   await page.evaluate(() => window.kalka?.getStore?.().stopPlay())
