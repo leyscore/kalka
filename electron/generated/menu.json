@@ -691,7 +691,7 @@
       {
         "id": "selection.flatten",
         "label": "Flatten",
-        "accelerator": "Alt+Shift+F"
+        "accelerator": "CmdOrCtrl+E"
       },
       {
         "id": "selection.outlineText",
@@ -704,8 +704,7 @@
       },
       {
         "id": "rasterize-selection",
-        "label": "Rasterize Selection",
-        "accelerator": "CmdOrCtrl+E"
+        "label": "Rasterize Selection"
       },
       {
         "id": "set-thumbnail",

@@ -93,3 +93,22 @@ test('N and Shift+N select the next and previous top-level frame', async () => {
   await editor.page.keyboard.press('KeyN')
   await expect.poll(selected).toEqual([ids.a])
 })
+
+test('Cmd+E flattens the selection into a vector, as in Figma', async () => {
+  await editor.canvas.drawRect(120, 120, 120, 90)
+  await editor.canvas.drawEllipse(180, 160, 120, 90)
+  await editor.canvas.selectAll()
+  await editor.page.keyboard.press('ControlOrMeta+KeyE')
+  await expect
+    .poll(() =>
+      editor.page.evaluate(() => {
+        const store = window.kalka?.getStore?.()
+        if (!store) return null
+        return store.graph.getChildren(store.state.currentPageId).map((node) => ({
+          type: node.type,
+          image: node.fills.some((fill) => fill.type === 'IMAGE')
+        }))
+      })
+    )
+    .toEqual([{ type: 'VECTOR', image: false }])
+})

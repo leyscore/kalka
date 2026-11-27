@@ -22,7 +22,6 @@ import {
 import { pickColorForSelection } from '@/app/editor/color/eyedropper'
 import { openFind } from '@/app/editor/find/state'
 import { copySelectionLink } from '@/app/editor/selection/link'
-import { rasterizeSelection } from '@/app/editor/selection/rasterize'
 import { requestRenameSelection } from '@/app/editor/selection/rename-dialog'
 import { TOOL_SHORTCUTS } from '@/app/editor/session'
 import { openSettings } from '@/app/settings/open'
@@ -456,11 +455,6 @@ export function editorShortcutDefinitions(): ShortcutDefinition[] {
       // Option+L, by key position: Option turns the letter into another character on macOS.
       keys: 'Alt+KeyL',
       run: ({ store }) => store.collapseLayers()
-    },
-    {
-      id: 'rasterize-selection',
-      keys: '$mod+KeyE',
-      run: ({ store }) => void rasterizeSelection(store)
     },
     ...commandShortcuts(
       'selection.bringForward',

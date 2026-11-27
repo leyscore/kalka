@@ -119,9 +119,10 @@ export const EDITOR_COMMAND_METADATA = {
     keybinding: 'Alt+Shift+KeyE',
     contextTestId: 'context-boolean-exclude'
   },
+  // Figma's Cmd+E, with its Option+Shift+F alongside.
   'selection.flatten': {
-    shortcut: 'ALT+SHIFT+F',
-    keybinding: 'Alt+Shift+KeyF',
+    shortcut: 'MOD+E',
+    keybinding: ['$mod+KeyE', 'Alt+Shift+KeyF'],
     contextTestId: 'context-flatten'
   },
   'selection.outlineText': { contextTestId: 'context-outline-text' },
