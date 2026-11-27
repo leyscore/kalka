@@ -99,6 +99,27 @@ test('C pins a comment on a layer, which moves with it', async ({ page }) => {
   await expect(pins(page)).toHaveCount(1)
 })
 
+test('a pin follows its layer as it is dragged on the canvas', async ({ page }) => {
+  const cardId = await open(page)
+  await comment(page, 120, 100, 'Align the title')
+  await page.keyboard.press('Escape')
+  await expect(pins(page)).toHaveCount(1)
+  const before = await pins(page).boundingBox()
+
+  // Drag the card by its title 80 page pixels to the right, as one moves a frame.
+  const canvas = new CanvasHelper(page)
+  const start = await canvasPoint(page, 50, 30)
+  const end = await canvasPoint(page, 130, 30)
+  await canvas.drag(start.x, start.y, end.x, end.y)
+  await expect
+    .poll(() => page.evaluate((id) => window.kalka?.getStore?.()?.graph.getNode(id)?.x, cardId))
+    .toBe(120)
+  const zoom = await page.evaluate(() => window.kalka?.getStore?.()?.state.zoom ?? 1)
+  await expect
+    .poll(async () => ((await pins(page).boundingBox())?.x ?? 0) - (before?.x ?? 0))
+    .toBeCloseTo(80 * zoom, 0)
+})
+
 test('a request to the agent waits on its pin until an MCP agent takes it and answers', async ({
   page
 }) => {

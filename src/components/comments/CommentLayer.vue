@@ -67,6 +67,9 @@ function anchorPoint(anchor: CommentAnchor) {
 
 const pins = computed(() => {
   void placement.value
+  // Pins sit on layers, so they follow every move of the scene, the live drag included.
+  void store.state.sceneVersion
+  void store.state.renderVersion
   if (!comments.state.value.pinsVisible) return []
   return comments.pageThreads.value.flatMap((thread) => {
     const point = comments.position(thread)
@@ -76,6 +79,8 @@ const pins = computed(() => {
 })
 
 const draftPosition = computed(() => {
+  void store.state.sceneVersion
+  void store.state.renderVersion
   const draft = comments.state.value.draft
   return draft ? toScreen(anchorPoint(draft)) : null
 })
