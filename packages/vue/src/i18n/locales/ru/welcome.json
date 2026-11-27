@@ -43,6 +43,7 @@
   "openFile": "Открыть файл .fig или .html",
   "pasteHTML": "Вставить HTML",
   "openURL": "Открыть по ссылке",
+  "importFigma": "Импортировать из Figma…",
   "openSample": "Открыть пример",
   "importSentence": "Или импортируйте {file}, {html}, {url} или {claude}.",
   "importFile": "файл .fig или .html",

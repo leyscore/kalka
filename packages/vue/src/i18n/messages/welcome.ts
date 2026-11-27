@@ -48,6 +48,7 @@ export const welcomeMessageDefaults = {
   openFile: 'Open a .fig or .html file',
   pasteHTML: 'Paste HTML',
   openURL: 'Open from a URL',
+  importFigma: 'Import from Figma…',
   openSample: 'Open the sample file',
   importSentence: params('Or import {file}, {html}, {url} or {claude}.'),
   importFile: 'a .fig or .html file',

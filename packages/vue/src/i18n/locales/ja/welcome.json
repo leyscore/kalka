@@ -43,6 +43,7 @@
   "openFile": ".figまたは.htmlファイルを開く",
   "pasteHTML": "HTMLを貼り付け",
   "openURL": "URLから開く",
+  "importFigma": "Figmaから読み込む…",
   "openSample": "サンプルファイルを開く",
   "importSentence": "{file}、{html}、{url}、{claude}から読み込むこともできます。",
   "importFile": ".fig・.htmlファイル",

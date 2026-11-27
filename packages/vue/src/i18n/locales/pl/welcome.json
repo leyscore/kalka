@@ -43,6 +43,7 @@
   "openFile": "Otwórz plik .fig lub .html",
   "pasteHTML": "Wklej HTML",
   "openURL": "Otwórz z adresu URL",
+  "importFigma": "Importuj z Figmy…",
   "openSample": "Otwórz plik przykładowy",
   "importSentence": "Lub zaimportuj {file}, {html}, {url} albo {claude}.",
   "importFile": "plik .fig lub .html",

@@ -95,6 +95,15 @@ const presets = computed(() => {
     <button type="button" :class="homeAction" data-test-id="home-open-file" @click="openFileDialog">
       <icon-hugeicons-file-import class="size-4" />{{ menu.open }}
     </button>
+    <!-- Open takes a .fig too; someone coming from Figma looks for the word Import. -->
+    <button
+      type="button"
+      :class="homeAction"
+      data-test-id="home-import-figma"
+      @click="openFileDialog"
+    >
+      <icon-hugeicons-figma class="size-4" />{{ welcome.importFigma }}
+    </button>
     <button
       v-if="canOpenFolder"
       type="button"

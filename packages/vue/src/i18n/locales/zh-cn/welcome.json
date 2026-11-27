@@ -43,6 +43,7 @@
   "openFile": "打开 .fig 或 .html 文件",
   "pasteHTML": "粘贴 HTML",
   "openURL": "从 URL 打开",
+  "importFigma": "从 Figma 导入…",
   "openSample": "打开示例文件",
   "importSentence": "或导入{file}、{html}、{url}或{claude}。",
   "importFile": ".fig 或 .html 文件",
