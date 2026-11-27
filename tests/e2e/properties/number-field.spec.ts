@@ -46,6 +46,15 @@ test('NumberField commits arithmetic and relative expressions', async () => {
   editor.canvas.assertNoErrors()
 })
 
+test('a negative value typed over the selected value replaces it', async () => {
+  const field = xField()
+  await field.click({ clickCount: 3 })
+  await editor.page.keyboard.type('-12')
+  await editor.page.keyboard.press('Enter')
+  await editor.canvas.waitForRender()
+  expect((await getSelectedNode(editor.page))?.x).toBe(-12)
+})
+
 test('NumberField invalid input and Escape restore the previous value', async () => {
   const field = xField()
   // Cancellation restores the exact graph coordinate, not its rounded display value.

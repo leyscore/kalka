@@ -29,9 +29,14 @@ describe('evaluateNumberExpression', () => {
 
   test('evaluates leading operators relative to the current value', () => {
     expect(value('+10')).toBe(30)
-    expect(value('-4')).toBe(16)
     expect(value('*2')).toBe(40)
     expect(value('/4')).toBe(5)
+  })
+
+  test('reads a leading minus as a negative number, as Figma does', () => {
+    expect(value('-4')).toBe(-4)
+    expect(value('-12+2')).toBe(-10)
+    expect(value('20-4')).toBe(16)
   })
 
   test('evaluates percentages against a finite maximum', () => {

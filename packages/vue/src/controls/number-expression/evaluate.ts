@@ -114,7 +114,9 @@ export function evaluateNumberExpression(
       : { ok: false, error: 'non-finite' }
   }
 
-  const relative = /^[+\-*/]/.test(source)
+  // A leading minus is a negative number, as Figma reads it: typed over a selected value, -12 is
+  // meant as -12. Subtracting from the value is typed after it, as in 96-12.
+  const relative = /^[+*/]/.test(source)
   if (relative && mixed) return { ok: false, error: 'relative-requires-value' }
   if (relative && !Number.isFinite(current)) return { ok: false, error: 'non-finite' }
 
