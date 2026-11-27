@@ -23,7 +23,7 @@ export function startWithPrompt(prompt: string): 'started' | 'needs-setup' {
 
 /** Sizes a new design can start from, in CSS pixels. */
 export const FRAME_PRESETS = [
-  { id: 'desktop', width: 1440, height: 900 },
+  { id: 'desktop', width: 1440, height: 1024 },
   { id: 'laptop', width: 1280, height: 800 },
   { id: 'tablet', width: 834, height: 1194 },
   { id: 'mobile', width: 390, height: 844 },
