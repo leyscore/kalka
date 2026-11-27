@@ -149,3 +149,25 @@ describe('Tailwind JSX structure', () => {
     expect(jsx).not.toContain('rounded')
   })
 })
+
+describe('code for a developer', () => {
+  test('leaves layer names out unless asked, and lays auto layout out with flex and gap', () => {
+    const graph = makeGraph()
+    const row = graph.createNode('FRAME', pageId(graph), {
+      name: 'Row',
+      layoutMode: 'HORIZONTAL',
+      itemSpacing: 12,
+      primaryAxisSizing: 'HUG',
+      counterAxisSizing: 'HUG',
+      width: 300,
+      height: 80
+    })
+    graph.createNode('RECTANGLE', row.id, { name: 'A', width: 40, height: 40 })
+    graph.createNode('RECTANGLE', row.id, { name: 'B', width: 40, height: 40, x: 52 })
+    const code = sceneNodesToTailwindJSX(graph, [row.id])
+    expect(code).not.toContain('data-name')
+    expect(code).toContain('flex')
+    expect(code).toContain('gap-3')
+    expect(code).not.toContain('absolute')
+  })
+})

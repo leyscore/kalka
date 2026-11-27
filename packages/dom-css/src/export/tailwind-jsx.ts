@@ -6,8 +6,14 @@ import { mergeClassNames, serializeTailwindClasses } from './html'
 import { sceneNodeToDesignDocument, type SceneGraphToDesignOptions } from './projection'
 import { tidyDesignDocument } from './tidy'
 
-/** Engine services the projection takes, such as drawing vector layers as SVG. */
-type ProjectionServices = Pick<SceneGraphToDesignOptions, 'vectorElement'>
+/**
+ * Engine services the projection takes, such as drawing vector layers as SVG, and whether each
+ * element names its layer in `data-name`: off by default, since the names are the designer's
+ * and the developer's code does not need them.
+ */
+type ProjectionServices = Pick<SceneGraphToDesignOptions, 'vectorElement'> & {
+  layerNames?: boolean
+}
 
 /** HTML attribute names that JSX spells differently. */
 const JSX_ATTRIBUTE_NAMES: Record<string, string> = {
@@ -33,39 +39,46 @@ function tagName(node: DesignElement): string {
   return layer?.type === 'TEXT' && !layer.htmlTag ? 'p' : node.tagName
 }
 
-function attributes(node: DesignElement, themeVariables: readonly string[]): SyntaxNode[] {
+interface PrintOptions {
+  themeVariables: readonly string[]
+  layerNames: boolean
+}
+
+function attributes(node: DesignElement, options: PrintOptions): SyntaxNode[] {
   const { class: className, ...attrs } = node.attrs
-  const name = node.sourceSceneNode?.name
+  const name = options.layerNames ? node.sourceSceneNode?.name : undefined
   const entries: [string, string | undefined][] = [
     ['data-name', name && name !== node.sourceSceneNode?.type ? name : undefined],
     ...Object.entries(attrs),
-    ['className', mergeClassNames(className, serializeTailwindClasses(node, themeVariables))]
+    [
+      'className',
+      mergeClassNames(className, serializeTailwindClasses(node, options.themeVariables))
+    ]
   ]
   return entries.flatMap(([key, value]) =>
     value === undefined ? [] : [jsx.attribute(jsxAttributeName(key), jsx.stringValue(value))]
   )
 }
 
-function element(
-  node: DesignElement,
-  depth: number,
-  themeVariables: readonly string[]
-): SyntaxNode {
-  const children = node.children.map((child) => jsxNode(child, depth + 1, themeVariables))
+function element(node: DesignElement, depth: number, options: PrintOptions): SyntaxNode {
+  const children = node.children.map((child) => jsxNode(child, depth + 1, options))
   // A lone text child stays on the element's line.
   const inline = children.length === 1 && node.children[0]?.type === 'text'
-  return jsx.element(tagName(node), attributes(node, themeVariables), children, depth, inline)
+  return jsx.element(tagName(node), attributes(node, options), children, depth, inline)
 }
 
-function jsxNode(node: DesignNode, depth: number, themeVariables: readonly string[]): SyntaxNode {
-  return node.type === 'text' ? jsx.text(node.text) : element(node, depth, themeVariables)
+function jsxNode(node: DesignNode, depth: number, options: PrintOptions): SyntaxNode {
+  return node.type === 'text' ? jsx.text(node.text) : element(node, depth, options)
 }
 
 /** Print a design document as Tailwind JSX, one top-level element per block. */
-export function designDocumentToTailwindJSX(document: DesignDocument): string {
-  const themeVariables = document.tokens?.themeVariables() ?? []
+export function designDocumentToTailwindJSX(
+  document: DesignDocument,
+  { layerNames = false }: { layerNames?: boolean } = {}
+): string {
+  const options = { themeVariables: document.tokens?.themeVariables() ?? [], layerNames }
   return tidyDesignDocument(document, { shorthands: false })
-    .children.map((node) => jsx.printJSX(jsxNode(node, 0, themeVariables)))
+    .children.map((node) => jsx.printJSX(jsxNode(node, 0, options)))
     .join('\n\n')
 }
 
@@ -94,7 +107,7 @@ function collectLayerIds(node: DesignNode, layerIds: Array<string | null>): void
 export function sceneNodesToTailwindJSXWithLayers(
   graph: SceneGraph,
   nodeIds: string[],
-  { vectorElement }: ProjectionServices = {}
+  { vectorElement, layerNames }: ProjectionServices = {}
 ): TailwindJSXWithLayers {
   const layerIds: Array<string | null> = []
   const blocks: string[] = []
@@ -103,7 +116,7 @@ export function sceneNodesToTailwindJSXWithLayers(
       includeSourceIds: false,
       vectorElement
     })
-    const code = designDocumentToTailwindJSX(document)
+    const code = designDocumentToTailwindJSX(document, { layerNames })
     if (!code) continue
     blocks.push(code)
     for (const node of document.children) collectLayerIds(node, layerIds)

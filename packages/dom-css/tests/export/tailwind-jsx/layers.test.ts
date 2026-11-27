@@ -19,10 +19,14 @@ describe('Tailwind JSX layer order', () => {
     const swatch = graph.createNode('RECTANGLE', card.id, { name: 'Swatch', width: 20, height: 20 })
     const badge = graph.createNode('FRAME', pageId(graph), { name: 'Badge', width: 40, height: 20 })
 
-    const result = sceneNodesToTailwindJSXWithLayers(graph, [card.id, badge.id])
+    const result = sceneNodesToTailwindJSXWithLayers(graph, [card.id, badge.id], {
+      layerNames: true
+    })
 
     expect(result.layerIds).toEqual([card.id, title.id, swatch.id, badge.id])
     expect(openingTagNames(result.code)).toEqual(['Card', 'Title', 'Swatch', 'Badge'])
-    expect(result.code).toBe(sceneNodesToTailwindJSX(graph, [card.id, badge.id]))
+    expect(result.code).toBe(
+      sceneNodesToTailwindJSX(graph, [card.id, badge.id], { layerNames: true })
+    )
   })
 })

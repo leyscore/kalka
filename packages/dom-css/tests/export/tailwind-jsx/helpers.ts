@@ -12,6 +12,7 @@ export function pageId(graph: SceneGraph) {
   return graph.getPages()[0].id
 }
 
+/** Tailwind JSX for one layer, naming each element's layer so a test can find it. */
 export function tw(graph: SceneGraph, nodeId: string) {
-  return sceneNodesToTailwindJSX(graph, [nodeId])
+  return sceneNodesToTailwindJSX(graph, [nodeId], { layerNames: true })
 }
