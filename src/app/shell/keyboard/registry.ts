@@ -114,9 +114,16 @@ function originatedInOverlay(event: KeyboardEvent) {
     .some((target) => target instanceof Element && target.matches(EDITOR_SHORTCUT_OVERLAY_SELECTOR))
 }
 
-/** A popover, menu, or dialog that is open; one fading out after closing no longer counts. */
+/**
+ * A popover, menu, or dialog that is open; one fading out after closing no longer counts, nor
+ * one that leaves the editor's keys working, such as the editor tour.
+ */
 function hasOpenDismissableLayer() {
-  return document.querySelector('[data-dismissable-layer]:not([data-state="closed"])') !== null
+  return (
+    document.querySelector(
+      '[data-dismissable-layer]:not([data-state="closed"]):not([data-keeps-shortcuts])'
+    ) !== null
+  )
 }
 
 function shouldIgnoreShortcut(

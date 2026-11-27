@@ -107,8 +107,10 @@ const spotlight = computed(() => {
           :collision-padding="16"
           class="z-[160] w-[320px] rounded-[16px] bg-float p-5 text-surface shadow-[0_0_0_1px_var(--color-float-border),var(--float-shadow)] backdrop-blur-[28px] backdrop-saturate-150 outline-none animate-in fade-in zoom-in-95 duration-200"
           data-test-id="editor-tour"
+          data-keeps-shortcuts
           @escape-key-down="endTour"
           @interact-outside.prevent
+          @open-auto-focus.prevent
         >
           <p class="mb-1.5 font-mono text-[11px] font-medium text-highlight tabular-nums">
             {{ welcome.tourStep({ current: (tourIndex ?? 0) + 1, total: TOUR_STOPS.length }) }}

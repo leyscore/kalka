@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 
+import { appRuntimeConfig } from '@/app/runtime/config'
 import { appPreferences, updateOnboarding } from '@/app/settings/preferences/store'
 import type { RailPanel } from '@/app/shell/left-panel/use'
 
@@ -47,8 +48,12 @@ export function endTour(): void {
   updateOnboarding({ tour: 'done' })
 }
 
-/** The first document someone opens after the welcome gets the tour, once. */
+/**
+ * The first document someone opens after the welcome gets the tour, once; not in test mode
+ * (`?test`), where a person or an agent plays the editor from a known state.
+ */
 export function offerTourOnFirstDocument(): void {
+  if (appRuntimeConfig.test) return
   if (appPreferences.value.onboarding.tour === 'done' || tourIndex.value !== null) return
   startTour()
 }
